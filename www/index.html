@@ -4,6 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#0b1220">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" href="./icons/icon.svg" type="image/svg+xml">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="MASTER WORLD VIP">
 <meta name="description" content="MASTER WORLD VIP — global AI-powered digital platform">
 <title>MASTER WORLD VIP</title>
 <style>
@@ -29,7 +34,7 @@
 <button data-page="updates">⟳ Update Center</button>
 </nav></aside>
 <main class="main">
-<header class="top"><div><div class="eyebrow">GLOBAL AI-POWERED WORKSPACE</div><h1 id="pageTitle">MASTER WORLD VIP Dashboard</h1><div class="muted">একটি জায়গা থেকে আপনার ডিজিটাল প্ল্যাটফর্ম পরিচালনা করুন</div></div><span class="pill" id="appStatus">Frontend + Auth setup</span></header>
+<header class="top"><div><div class="eyebrow">GLOBAL AI-POWERED WORKSPACE</div><h1 id="pageTitle">MASTER WORLD VIP Dashboard</h1><div class="muted">একটি জায়গা থেকে আপনার ডিজিটাল প্ল্যাটফর্ম পরিচালনা করুন</div></div><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><button class="btn secondary" id="installApp" type="button" hidden>Install App</button><span class="pill" id="appStatus">PWA-ready · Stage 1</span></div></header>
 
 <section class="page active" id="overview">
 <div class="grid">
@@ -251,6 +256,12 @@ $('withdrawConsent').onclick=()=>{
  say('consentStatus','ঐচ্ছিক consent প্রত্যাহার করা হয়েছে এবং এই ডিভাইসে সংরক্ষণ হয়েছে।');
 };
 loadConsent();
+let installPrompt=null;
+const installButton=$('installApp');
+window.addEventListener('beforeinstallprompt',event=>{event.preventDefault();installPrompt=event;installButton.hidden=false;});
+installButton.addEventListener('click',async()=>{if(!installPrompt){say('authstatus','Chrome menu থেকে Install app / Add to Home screen নির্বাচন করুন।');return;}installPrompt.prompt();await installPrompt.userChoice;installPrompt=null;installButton.hidden=true;});
+window.addEventListener('appinstalled',()=>{installButton.hidden=true;$('appStatus').textContent='Installed on this device';});
+if('serviceWorker' in navigator && location.protocol.startsWith('http')){window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(err=>console.warn('PWA offline setup:',err)));}
 $('showSql').onclick=()=>{$('sqlBlock').classList.toggle('hidden');$('sqlBlock').textContent=sql;};
 </script>
 </body></html>
