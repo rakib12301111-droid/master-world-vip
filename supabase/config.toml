@@ -1,0 +1,2 @@
+[functions.check-updates]
+verify_jwt = false
