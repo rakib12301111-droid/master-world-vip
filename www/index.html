@@ -97,7 +97,20 @@
 
 <section class="page" id="privacy"><article class="card"><h2>♢ Privacy & GDPR</h2><div class="feature-list">
 <div class="feature"><strong>Transparent data collection</strong><div class="status">Policy required</div></div><div class="feature"><strong>Consent management</strong><div class="status">Planned</div></div><div class="feature"><strong>Access / correction</strong><div class="status">Profile foundation</div></div><div class="feature"><strong>Account/data deletion</strong><div class="status">Secure deletion workflow required</div></div><div class="feature"><strong>Privacy policy & cookie consent</strong><div class="status">Legal review required</div></div><div class="feature"><strong>Data breach response</strong><div class="status">Operational process required</div></div></div>
-<div class="notice">GDPR/অন্যান্য privacy law মেনে চলার জন্য বাস্তব data controls, legal review ও operational process দরকার। এই prototype কোনো certification বা পূর্ণ আইনি সম্মতির দাবি করছে না।</div><button class="btn secondary" id="showSql">Database setup SQL দেখুন</button><pre id="sqlBlock" class="code hidden"></pre></article></section>
+<div class="section">
+<h3>আপনার Privacy Preferences</h3>
+<p class="muted small">ঐচ্ছিক ব্যবহারের জন্য আপনার পছন্দ নির্বাচন করুন। প্রয়োজনীয় account/security storage সবসময় চালু থাকবে।</p>
+<div class="feature-list">
+<div class="feature"><strong>Essential account & security</strong><div class="status">Always active — login and security</div></div>
+<div class="feature"><strong>Analytics consent</strong><label><input id="consentAnalytics" type="checkbox" style="width:auto;margin-right:7px"> Allow anonymous usage analytics</label></div>
+<div class="feature"><strong>Personalization consent</strong><label><input id="consentPersonalization" type="checkbox" style="width:auto;margin-right:7px"> Allow saved preferences</label></div>
+<div class="feature"><strong>Notifications consent</strong><label><input id="consentNotifications" type="checkbox" style="width:auto;margin-right:7px"> Allow product notifications</label></div>
+</div>
+<div class="actions"><button class="btn" id="saveConsent">Save privacy choices</button><button class="btn secondary" id="withdrawConsent">Withdraw optional consent</button></div>
+<div id="consentStatus" class="item" role="status">আপনার privacy পছন্দ এখনো সংরক্ষণ করা হয়নি।</div>
+</div>
+<div class="notice">এই consent controls আপাতত শুধু এই ডিভাইসের browser-এ পছন্দ সংরক্ষণ করে। কোনো analytics/notification service চালু নয়। পূর্ণ GDPR/অন্যান্য privacy law compliance-এর জন্য server-side consent records, policy, deletion workflow, legal review ও operational process এখনও প্রয়োজন। এই prototype কোনো certification বা পূর্ণ আইনি সম্মতির দাবি করছে না।</div>
+<button class="btn secondary" id="showSql">Database setup SQL দেখুন</button><pre id="sqlBlock" class="code hidden"></pre></article></section>
 
 <section class="page" id="updates"><article class="card"><h2>⟳ Update Center & Build Inventory</h2><div class="item"><b>Stage 1 — Frontend foundation</b><br><span class="tag">In repository</span><p class="muted small">Responsive dashboard ও feature sections.</p></div><div class="item"><b>Supabase Auth connection</b><br><span class="tag">Code added — needs project configuration/testing</span><p class="muted small">Registration, login, logout, password reset ও own-profile workflow.</p></div><div class="item"><b>Database, roles, AI, Facebook APIs, notifications, referrals, analytics, Play Store release</b><br><span class="tag">Planned / not live</span><p class="muted small">প্রতিটি মডিউল আলাদা ধাপে বাস্তবায়ন ও পরীক্ষা হবে।</p></div><p class="muted small">মডিউলভিত্তিক update architecture ভবিষ্যতে যোগ হবে; এই পৃষ্ঠা এখনো সফটওয়্যার আপডেট ডাউনলোড করে না।</p></article></section>
 
@@ -224,6 +237,20 @@ drop trigger if exists on_auth_user_created_profile on auth.users;
 create trigger on_auth_user_created_profile
 after insert on auth.users
 for each row execute procedure public.create_profile_for_new_user();`;
+function loadConsent(){
+ try{const p=JSON.parse(localStorage.getItem('mwvip_privacy_choices')||'{}');$('consentAnalytics').checked=!!p.analytics;$('consentPersonalization').checked=!!p.personalization;$('consentNotifications').checked=!!p.notifications;if(p.savedAt)say('consentStatus','এই ডিভাইসে সংরক্ষিত পছন্দ পাওয়া গেছে। সর্বশেষ সংরক্ষণ: '+new Date(p.savedAt).toLocaleString());}catch(e){say('consentStatus','সংরক্ষিত পছন্দ পড়া যায়নি।');}
+}
+$('saveConsent').onclick=()=>{
+ const p={analytics:$('consentAnalytics').checked,personalization:$('consentPersonalization').checked,notifications:$('consentNotifications').checked,savedAt:new Date().toISOString()};
+ localStorage.setItem('mwvip_privacy_choices',JSON.stringify(p));
+ say('consentStatus','আপনার ঐচ্ছিক privacy choices এই ডিভাইসে সংরক্ষণ হয়েছে। পরে পরিবর্তন বা প্রত্যাহার করতে পারবেন।');
+};
+$('withdrawConsent').onclick=()=>{
+ $('consentAnalytics').checked=false;$('consentPersonalization').checked=false;$('consentNotifications').checked=false;
+ localStorage.setItem('mwvip_privacy_choices',JSON.stringify({analytics:false,personalization:false,notifications:false,savedAt:new Date().toISOString()}));
+ say('consentStatus','ঐচ্ছিক consent প্রত্যাহার করা হয়েছে এবং এই ডিভাইসে সংরক্ষণ হয়েছে।');
+};
+loadConsent();
 $('showSql').onclick=()=>{$('sqlBlock').classList.toggle('hidden');$('sqlBlock').textContent=sql;};
 </script>
 </body></html>
