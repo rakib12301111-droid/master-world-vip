@@ -113,7 +113,9 @@ document.querySelectorAll('[data-page]').forEach(b=>b.addEventListener('click',(
 document.querySelectorAll('[data-go]').forEach(b=>b.addEventListener('click',()=>showPage(b.dataset.go)));
 let client=null,currentUser=null;
 function say(id,msg){$(id).textContent=msg;}
-function config(){try{return JSON.parse(localStorage.getItem('mwvip_supabase_config')||'{}')}catch(e){return {}}}
+const SUPABASE_PROJECT_URL='https://lztbbrzeuyjkuiyzrsxp.supabase.co';
+const SUPABASE_PUBLISHABLE_KEY='sb_publishable_r6Qq3bM6nSgbqvKTYQZdUQ_ux2kUc8r';
+function config(){try{const saved=JSON.parse(localStorage.getItem('mwvip_supabase_config')||'{}');return {url:saved.url||SUPABASE_PROJECT_URL,key:saved.key||SUPABASE_PUBLISHABLE_KEY}}catch(e){return {url:SUPABASE_PROJECT_URL,key:SUPABASE_PUBLISHABLE_KEY}}}
 function setStatus(msg){say('authstatus',msg);}
 async function connect(){
  const url=$('sburl').value.trim(),key=$('sbkey').value.trim();
@@ -132,7 +134,7 @@ async function connect(){
  }catch(e){client=null;setStatus('সংযোগে সমস্যা: '+e.message)}
 }
 $('connect').onclick=connect;
-const saved=config();$('sburl').value=saved.url||'';$('sbkey').value=saved.key||'';
+const saved=config();$('sburl').value=saved.url||SUPABASE_PROJECT_URL;$('sbkey').value=saved.key||SUPABASE_PUBLISHABLE_KEY;
 if(saved.url&&saved.key){connect().catch(()=>{});}
 $('disconnect').onclick=async()=>{if(client)await client.auth.signOut();client=null;currentUser=null;localStorage.removeItem('mwvip_supabase_config');$('sburl').value='';$('sbkey').value='';$('dashAuth').textContent='Not connected';setStatus('এই ডিভাইস থেকে Supabase config সরানো হয়েছে। Supabase project বা account মুছে যায়নি।');};
 $('signup').onclick=async()=>{
