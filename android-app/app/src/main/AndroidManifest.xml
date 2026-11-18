@@ -3,6 +3,8 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <application
         android:allowBackup="false"
+        android:icon="@drawable/ic_launcher"
+        android:roundIcon="@drawable/ic_launcher"
         android:label="MASTER WORLD VIP"
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="false">
