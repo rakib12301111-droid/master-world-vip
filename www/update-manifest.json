@@ -1,0 +1,72 @@
+{
+  "schema_version": 1,
+  "app": "MASTER WORLD VIP",
+  "updated_at": "2026-11-19",
+  "note": "Status describes repository implementation only. A feature is not live until its external setup and tests are verified.",
+  "stages": [
+    {
+      "id": "frontend",
+      "title": "Stage 1 — Dashboard ও PWA foundation",
+      "status": "available",
+      "summary": "Responsive dashboard, navigation, PWA shell এবং service-worker update flow repository-তে আছে।",
+      "requires": "বাস্তব Android browser/device update test",
+      "page": "overview"
+    },
+    {
+      "id": "auth-community",
+      "title": "Stage 2 — Supabase Auth ও Global Community",
+      "status": "testing",
+      "summary": "Auth, profile, member search, friend request, private chat ও group chat-এর frontend/SQL ভিত্তি আছে; production test নিশ্চিত নয়।",
+      "requires": "প্রথমে base SQL, community SQL apply; Supabase Auth email settings ও end-to-end security tests",
+      "page": "account"
+    },
+    {
+      "id": "privacy",
+      "title": "Stage 3 — Privacy & Data Rights",
+      "status": "testing",
+      "summary": "Consent sync, append-only consent event এবং access/correction/deletion request queue-এর code/migration যোগ হয়েছে।",
+      "requires": "Privacy migration apply, authenticated tests, deletion fulfilment workflow, policy ও legal review",
+      "page": "privacy"
+    },
+    {
+      "id": "ai",
+      "title": "Stage 4 — AI Assistant ও Image Search",
+      "status": "blocked",
+      "summary": "AI Edge Function foundation আছে; provider integration live নয়।",
+      "requires": "AI_PROVIDER_API_KEY secret, provider/model configuration, function deployment ও response/license tests",
+      "page": "ai"
+    },
+    {
+      "id": "facebook",
+      "title": "Stage 5 — Facebook Discovery ও Active User Finder",
+      "status": "blocked",
+      "summary": "বর্তমানে UI/plan; real discovery চালু নয়।",
+      "requires": "Meta app, approved permissions/data access, consent-first manual workflow ও policy review",
+      "page": "facebook"
+    },
+    {
+      "id": "growth-admin",
+      "title": "Stage 6 — Referral, Notifications ও Admin",
+      "status": "testing",
+      "summary": "কিছু schema/UI foundation আছে; reward, delivery ও privileged operations verified নয়।",
+      "requires": "Fraud-resistant referral rules, notification provider, server-side admin authorization ও audit tests",
+      "page": "growth"
+    },
+    {
+      "id": "android",
+      "title": "Stage 7 — Android APK",
+      "status": "testing",
+      "summary": "Android WebView wrapper ও debug build workflow আছে; release artifact/install/signing verified নয়।",
+      "requires": "Debug build artifact, device test, protected release signing key ও release build",
+      "page": "updates"
+    },
+    {
+      "id": "play",
+      "title": "Stage 8 — Google Play Store",
+      "status": "planned",
+      "summary": "Google Play-এ প্রকাশিত নয়।",
+      "requires": "Developer account, signed AAB, store listing, privacy declarations, policy review ও Play approval",
+      "page": "updates"
+    }
+  ]
+}
