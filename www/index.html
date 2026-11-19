@@ -33,6 +33,7 @@
 <button data-page="admin">⚙ Admin & Security</button>
 <button data-page="privacy">♢ Privacy & GDPR</button>
 <button data-page="updates">⟳ Update Center</button>
+<button data-page="progress">☷ কাজের অগ্রগতি</button>
 </nav></aside>
 <main class="main">
 <header class="top"><div><div class="eyebrow">GLOBAL AI-POWERED WORKSPACE</div><h1 id="pageTitle">MASTER WORLD VIP Dashboard</h1><div class="muted">একটি জায়গা থেকে আপনার ডিজিটাল প্ল্যাটফর্ম পরিচালনা করুন</div></div><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><button class="btn secondary" id="installApp" type="button" hidden>Install App</button><span class="pill" id="appStatus">PWA-ready · Stage 1</span></div></header>
@@ -172,13 +173,60 @@
 
 <section class="page" id="updates"><article class="card"><h2>⟳ Update Center & One-Click Update</h2><div class="item"><b>Installed app version</b><br><span class="tag">PWA · Browser-managed</span><p class="muted small">এই বাটন নতুন প্রকাশিত ওয়েব/PWA build পরীক্ষা করবে। Android APK বা Play Store app নীরবে ইনস্টল করতে পারে না; সেগুলোর আপডেট Android/Play Store অনুমোদনের মাধ্যমে হয়।</p><div class="actions"><button class="btn" id="checkAppUpdate">আপডেট পরীক্ষা করুন</button><button class="btn secondary" id="applyAppUpdate" disabled>Allow — Update Now</button></div><div id="appUpdateStatus" class="notice" role="status">আপডেট পরীক্ষা করা হয়নি।</div></div><div class="item"><b>Stage 1 — Frontend foundation</b><br><span class="tag">In repository</span><p class="muted small">Responsive dashboard ও feature sections.</p></div><div class="item"><b>Supabase Auth connection</b><br><span class="tag">Code added — needs project configuration/testing</span><p class="muted small">Registration, login, logout, password reset ও own-profile workflow.</p></div><div class="item"><b>Global Community — member search, friend requests, direct chat, groups and in-app notifications</b><br><span class="tag">Code added — SQL apply & integration test pending</span><p class="muted small">Migration: supabase/migrations/202611190001_global_community.sql. Realtime/push delivery and production security review remain pending.</p></div><div class="item"><b>AI, Facebook APIs, referrals, analytics, admin operations and Play Store release</b><br><span class="tag">Planned / not live</span><p class="muted small">প্রতিটি মডিউল আলাদা ধাপে বাস্তবায়ন ও পরীক্ষা হবে।</p></div><p class="muted small">মডিউলভিত্তিক update architecture ভবিষ্যতে যোগ হবে; এই পৃষ্ঠা এখনো সফটওয়্যার আপডেট ডাউনলোড করে না।</p></article></section>
 
+
+<section class="page" id="progress">
+<article class="card">
+<h2>☷ MASTER WORLD VIP — কাজের অগ্রগতি</h2>
+<p class="muted">এই তালিকা GitHub-এ থাকা কোড ও প্রকল্পের বর্তমান নথির ভিত্তিতে তৈরি। কোড থাকা মানেই সার্ভারে চালু বা সফলভাবে পরীক্ষা করা হয়েছে—এমন নয়।</p>
+<div class="grid">
+<div class="card"><div class="label">UI / কোডের ভিত্তি আছে</div><div class="stat">10</div></div>
+<div class="card"><div class="label">সেটআপ / পরীক্ষা বাকি</div><div class="stat">14</div></div>
+<div class="card"><div class="label">সম্পূর্ণ লাইভ ও যাচাইকৃত</div><div class="stat">এখনো নিশ্চিত নয়</div></div>
+<div class="card"><div class="label">Google Play</div><div class="stat">প্রকাশিত নয়</div></div>
+</div>
+<div class="notice">অবস্থা বোঝার নিয়ম: “কোড/UI আছে” = প্রাথমিক কাজ তৈরি; “সেটআপ বাকি” = সার্ভার/API/অনুমতি যুক্ত করতে হবে; “পরীক্ষা বাকি” = বাস্তবে চালিয়ে সফলতা যাচাই হয়নি; “প্রকাশিত নয়” = ব্যবহারকারীদের জন্য রিলিজ হয়নি।</div>
+<div class="section">
+<h2>আপনার পিন করা কাজের তালিকা</h2>
+<div class="feature-list">
+<div class="feature"><strong>Dashboard ও App UI</strong><span class="tag">UI তৈরি</span><div class="status">মূল dashboard ও একাধিক বিভাগ আছে; সম্পূর্ণ UX ও device testing বাকি।</div></div>
+<div class="feature"><strong>Login / Registration</strong><span class="tag">কোড আছে</span><div class="status">Supabase Auth UI ও সংযোগ কোড আছে; বাস্তব signup/login/reset পরীক্ষা বাকি।</div></div>
+<div class="feature"><strong>Member Profile</strong><span class="tag">প্রাথমিক</span><div class="status">প্রোফাইল দেখানো/সংরক্ষণের কোড ও database foundation আছে; migration ও RLS পরীক্ষা বাকি।</div></div>
+<div class="feature"><strong>Friends ও Private Messaging</strong><span class="tag">প্রাথমিক কোড</span><div class="status">UI, SQL schema ও query আছে; migration apply, নিরাপত্তা ও end-to-end পরীক্ষা বাকি।</div></div>
+<div class="feature"><strong>Group Chat</strong><span class="tag">প্রাথমিক কোড</span><div class="status">Group UI ও database foundation আছে; বাস্তব group/member/message পরীক্ষা বাকি।</div></div>
+<div class="feature"><strong>AI Assistant</strong><span class="tag">Backend ফাংশন আছে</span><div class="status">AI Edge Function আছে; provider secret, deploy, UI integration ও live test বাকি।</div></div>
+<div class="feature"><strong>Facebook Discovery</strong><span class="tag">পরিকল্পিত / UI</span><div class="status">Placeholder UI আছে; Meta অনুমোদন, API ও বৈধ data access বাকি।</div></div>
+<div class="feature"><strong>AI Active User Finder</strong><span class="tag">পরিকল্পিত</span><div class="status">AI-assisted ও manual workflow সম্পূর্ণ তৈরি/পরীক্ষিত নয়; consent ও Meta policy মেনে বাস্তবায়ন বাকি।</div></div>
+<div class="feature"><strong>Notifications</strong><span class="tag">প্রাথমিক</span><div class="status">Notification UI ও database foundation আছে; delivery provider, push setup ও পরীক্ষা বাকি।</div></div>
+<div class="feature"><strong>Privacy ও Security</strong><span class="tag">প্রাথমিক</span><div class="status">Consent UI ও SQL/RLS foundation আছে; পূর্ণ security audit, policy ও legal review বাকি।</div></div>
+<div class="feature"><strong>Referral ও Global Growth</strong><span class="tag">প্রাথমিক</span><div class="status">Referral schema/UI foundation আছে; reward rules, fraud controls ও server workflow বাকি।</div></div>
+<div class="feature"><strong>Admin System</strong><span class="tag">প্রাথমিক</span><div class="status">Roles/audit database foundation ও UI আছে; secure admin operations ও permission testing বাকি।</div></div>
+<div class="feature"><strong>PWA Update System</strong><span class="tag">কোড আছে</span><div class="status">Service worker, update UI ও check-updates function আছে; সর্বশেষ deployment এবং বাস্তব device update test নিশ্চিত করা বাকি।</div></div>
+<div class="feature"><strong>Android APK</strong><span class="tag">Build workflow আছে</span><div class="status">Android WebView wrapper ও debug build workflow আছে; build artifact, install test এবং release signing বাকি।</div></div>
+<div class="feature"><strong>Google Play Store</strong><span class="tag">প্রকাশিত নয়</span><div class="status">Production release, signing, store listing, developer account ও policy review বাকি।</div></div>
+</div>
+</div>
+<div class="section item">
+<h2>পরবর্তী কাজের অগ্রাধিকার</h2>
+<ol>
+<li>Supabase-এর দুইটি SQL migration সঠিক ক্রমে apply করে database পরীক্ষা।</li>
+<li>Login, profile, friend request, private chat ও group chat end-to-end পরীক্ষা।</li>
+<li>AI provider secret যোগ করে Edge Function deploy ও পরীক্ষা।</li>
+<li>Notifications, privacy/security ও admin workflow সম্পন্ন করা।</li>
+<li>PWA update এবং Android debug APK বাস্তব ডিভাইসে পরীক্ষা।</li>
+<li>তারপর production APK ও Google Play release প্রস্তুত করা।</li>
+</ol>
+<p class="muted small">এই পৃষ্ঠার অবস্থা প্রকল্পের কাজ এগোনোর সঙ্গে নিয়মিত আপডেট করা হবে। কোনো ফিচার বাস্তবে চালু ও পরীক্ষা না হওয়া পর্যন্ত সেটিকে “সম্পন্ন” বলা হবে না।</p>
+</div>
+</article>
+</section>
+
 <div class="footer">MASTER WORLD VIP · Integrated frontend + Supabase Auth starter · Not yet production-ready</div>
 </main></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 const $=id=>document.getElementById(id);
 const pages=[...document.querySelectorAll('.page')];
-const titles={overview:'MASTER WORLD VIP Dashboard',account:'Registration & Login',members:'Member Hub',ai:'AI Center',facebook:'Facebook Center',growth:'Global Growth',admin:'Admin & Security',privacy:'Privacy & GDPR',updates:'Update Center'};
+const titles={overview:'MASTER WORLD VIP Dashboard',account:'Registration & Login',members:'Member Hub',ai:'AI Center',facebook:'Facebook Center',growth:'Global Growth',admin:'Admin & Security',privacy:'Privacy & GDPR',updates:'Update Center',progress:'কাজের অগ্রগতি / Project Progress'};
 function showPage(id){pages.forEach(p=>p.classList.toggle('active',p.id===id));document.querySelectorAll('[data-page]').forEach(b=>b.classList.toggle('active',b.dataset.page===id));$('pageTitle').textContent=titles[id]||titles.overview;window.scrollTo({top:0,behavior:'smooth'});}
 document.querySelectorAll('[data-page]').forEach(b=>b.addEventListener('click',()=>showPage(b.dataset.page)));
 document.querySelectorAll('[data-go]').forEach(b=>b.addEventListener('click',()=>showPage(b.dataset.go)));
