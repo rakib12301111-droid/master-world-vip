@@ -1,5 +1,5 @@
 -- MASTER WORLD VIP Admin RBAC — Stage 1 migration
--- IMPORTANT: Replace OWNER_EMAIL_HERE with the verified email of the platform owner.
+-- IMPORTANT: Replace rakib12301111@gmail.com with the verified email of the platform owner.
 -- Run once in Supabase SQL Editor after confirming the target project.
 
 create table if not exists public.app_user_roles (
@@ -91,5 +91,5 @@ grant execute on function public.get_admin_audit_logs() to authenticated;
 
 -- Owner bootstrap: edit the email below before running this statement.
 insert into public.app_user_roles(user_id,role)
-select id,'owner' from auth.users where lower(email)=lower('OWNER_EMAIL_HERE')
+select id,'owner' from auth.users where lower(email)=lower('rakib12301111@gmail.com')
 on conflict(user_id) do update set role='owner',updated_at=now();
