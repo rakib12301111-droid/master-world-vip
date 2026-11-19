@@ -419,6 +419,8 @@ if('serviceWorker' in navigator && location.protocol.startsWith('http')){window.
 let mwvipWaitingWorker=null;
 let mwvipUpdateRegistration=null;
 let mwvipReloadOnControllerChange=false;
+const UPDATE_CHECK_URL=SUPABASE_PROJECT_URL+'/functions/v1/check-updates';
+const APP_VERSION='3.1.0';
 function setUpdateStatus(message, isSuccess=false){
  const el=$('appUpdateStatus'); if(!el)return;
  el.textContent=message; el.classList.toggle('success',!!isSuccess);
@@ -445,28 +447,58 @@ if('serviceWorker' in navigator){
   if(mwvipReloadOnControllerChange){mwvipReloadOnControllerChange=false;location.reload();}
  });
 }
+async function requestUpdateStatus(){
+ const cfg=config();
+ const response=await fetch(UPDATE_CHECK_URL,{
+  method:'POST',
+  headers:{
+   'apikey':cfg.key,
+   'Authorization':'Bearer '+cfg.key,
+   'Content-Type':'application/json'
+  },
+  body:JSON.stringify({current_version:APP_VERSION})
+ });
+ const payload=await response.json().catch(()=>({}));
+ if(!response.ok || payload.success!==true){
+  throw new Error(payload.error||payload.message||('Update service returned HTTP '+response.status));
+ }
+ return payload;
+}
 $('checkAppUpdate').onclick=async()=>{
  const btn=$('checkAppUpdate');btn.disabled=true;
+ $('applyAppUpdate').disabled=true;
+ mwvipWaitingWorker=null;
  try{
-  if(!('serviceWorker' in navigator)){setUpdateStatus('এই ব্রাউজারে PWA update সমর্থিত নয়।');return;}
+  setUpdateStatus('সার্ভার থেকে আপডেটের তথ্য যাচাই হচ্ছে…');
+  const release=await requestUpdateStatus();
+  if(!('serviceWorker' in navigator)){
+   setUpdateStatus('সার্ভার সংযোগ সফল, কিন্তু এই ব্রাউজারে PWA update সমর্থিত নয়।');return;
+  }
   const reg=mwvipUpdateRegistration||await navigator.serviceWorker.getRegistration('./');
-  if(!reg){setUpdateStatus('Service Worker পাওয়া যায়নি। HTTPS-এ প্রকাশিত অ্যাপ খুলুন।');return;}
+  if(!reg){setUpdateStatus('Update API সংযোগ সফল, কিন্তু Service Worker পাওয়া যায়নি। HTTPS-এ প্রকাশিত অ্যাপ খুলুন।');return;}
   mwvipUpdateRegistration=reg;
   await reg.update();
   if(reg.waiting){watchUpdateWorker(reg.waiting);return;}
   if(reg.installing){
-   setUpdateStatus('নতুন সংস্করণ ডাউনলোড/প্রস্তুত হচ্ছে…');
+   setUpdateStatus('সার্ভার যাচাই সফল। নতুন PWA ফাইল প্রস্তুত হচ্ছে…');
    const worker=reg.installing;
    await new Promise(resolve=>{
-    if(worker.state==='installed'||worker.state==='activated')return resolve();
+    if(worker.state==='installed'||worker.state==='activated'||worker.state==='redundant')return resolve();
     worker.addEventListener('statechange',()=>{if(worker.state==='installed'||worker.state==='activated'||worker.state==='redundant')resolve();});
     setTimeout(resolve,20000);
    });
    if(reg.waiting){watchUpdateWorker(reg.waiting);return;}
   }
-  setUpdateStatus('নতুন PWA build পাওয়া যায়নি। আপনি বর্তমানে প্রকাশিত সংস্করণ ব্যবহার করছেন।',true);
- }catch(error){setUpdateStatus('আপডেট পরীক্ষা করা যায়নি: '+(error?.message||String(error)));}
- finally{btn.disabled=false;}
+  if(release.update_available){
+   setUpdateStatus('সার্ভারে নতুন সংস্করণ '+release.latest_version+' প্রকাশিত, কিন্তু নতুন PWA build এখনো Service Worker-এ পাওয়া যায়নি। ওয়েব অ্যাপের নতুন ফাইল প্রকাশ করতে হবে।');
+  }else{
+   setUpdateStatus('সার্ভার যাচাই সফল। '+(release.latest_version?'সর্বশেষ সংস্করণ '+release.latest_version+'. ':'')+'নতুন PWA build পাওয়া যায়নি; বর্তমান প্রকাশিত সংস্করণই চালু আছে।',true);
+  }
+ }catch(error){
+  setUpdateStatus('আপডেট পরীক্ষা ব্যর্থ: '+(error?.message||String(error)));
+ }finally{
+  btn.disabled=false;
+ }
 };
 $('applyAppUpdate').onclick=()=>{
  const worker=mwvipWaitingWorker||mwvipUpdateRegistration?.waiting;
