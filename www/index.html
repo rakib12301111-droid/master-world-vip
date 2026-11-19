@@ -150,9 +150,24 @@
 <div class="feature"><strong>Global Promotion</strong><div class="status">Planned</div></div><div class="feature"><strong>Referral & transparent rewards</strong><div class="status">Planned</div></div><div class="feature"><strong>Shareable app links</strong><div class="status">Planned</div></div><div class="feature"><strong>Multilingual website</strong><div class="status">BN/EN foundation</div></div><div class="feature"><strong>Public landing page</strong><div class="status">Planned</div></div><div class="feature"><strong>Install/signup/country analytics</strong><div class="status">Planned</div></div><div class="feature"><strong>Google Play release</strong><div class="status">Build, policy review & approval required</div></div><div class="feature"><strong>Real testimonials</strong><div class="status">Only verified, consented feedback</div></div></div>
 <div class="notice">বিশ্বব্যাপী পৌঁছানো Play Store approval, country availability, marketing এবং মানুষের adoption-এর ওপর নির্ভর করে—নিশ্চিত ফল নয়। কোনো ভুয়া review বা growth claim দেখানো হবে না।</div></article></section>
 
-<section class="page" id="admin"><article class="card"><h2>⚙ Admin & Security</h2><div class="feature-list">
-<div class="feature"><strong>Role-based access</strong><div class="status">Server-side authorization required</div></div><div class="feature"><strong>Admin dashboard</strong><div class="status">Planned</div></div><div class="feature"><strong>Audit/security logs</strong><div class="status">Planned</div></div><div class="feature"><strong>Support center</strong><div class="status">Planned</div></div><div class="feature"><strong>Consent-based notifications</strong><div class="status">Planned</div></div><div class="feature"><strong>Modular update system</strong><div class="status">Architecture planned</div></div></div>
-<div class="notice">এই পৃষ্ঠায় এখনো Admin permission দেওয়া হয়নি। শুধু UI লুকিয়ে/দেখিয়ে নিরাপত্তা হয় না; সব role check অবশ্যই backend/database policy-তে করতে হবে।</div></article></section>
+<section class="page" id="admin"><article class="card"><h2>⚙ Admin & Security Center</h2>
+<p class="muted">Owner-controlled administration · Server-side role verification</p>
+<div class="grid">
+<div class="feature"><strong>আপনার Access</strong><div class="stat" id="myAdminRole">যাচাই হচ্ছে…</div><div class="status" id="myAdminAccessStatus">Supabase session যাচাই হচ্ছে</div></div>
+<div class="feature"><strong>Role hierarchy</strong><div class="status">Owner → Super Admin → Admin → Moderator → Member</div></div>
+<div class="feature"><strong>Security & Audit</strong><div class="status">Database-backed event log</div></div>
+<div class="feature"><strong>Support & Notifications</strong><div class="status">পরবর্তী service integration প্রয়োজন</div></div>
+</div>
+<div class="section item"><h3>সদস্যের Admin অনুমতি পরিচালনা</h3>
+<p class="muted small">শুধু Owner role server-side যাচাই হওয়ার পরই এই অপারেশন অনুমোদিত হবে। সদস্যের Supabase User UUID দিন।</p>
+<div class="field"><label for="adminTargetUser">Member User UUID</label><input id="adminTargetUser" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"></div>
+<div class="field"><label for="adminTargetRole">নতুন Role</label><select id="adminTargetRole"><option value="member">Member</option><option value="moderator">Moderator</option><option value="admin">Admin</option><option value="super_admin">Super Admin</option></select></div>
+<div class="actions"><button class="btn" id="saveMemberRole">Role পরিবর্তন করুন</button><button class="btn secondary" id="refreshAdminAccess">Access যাচাই করুন</button></div>
+<div id="adminActionStatus" class="notice" role="status">Role migration ও Owner bootstrap সম্পন্ন হওয়ার পর নিয়ন্ত্রণ চালু হবে।</div>
+</div>
+<div class="section item"><h3>Security Audit Log</h3><button class="btn secondary" id="loadAdminAudit">Audit log দেখুন</button><div id="adminAuditList" class="section small">Owner access যাচাইয়ের পর log দেখা যাবে।</div></div>
+<div class="notice">গুরুত্বপূর্ণ: UI নিজে কাউকে Admin বানায় না। সব অনুমতি Supabase database function/RLS দিয়ে যাচাই হবে। Owner ছাড়া অন্য কোনো role নতুন Admin বা Super Admin তৈরি করতে পারবে না। Owner account bootstrap করতে migration-এ নিজের verified account email বসিয়ে SQL একবার চালাতে হবে।</div>
+</article></section>
 
 <section class="page" id="privacy"><article class="card"><h2>♢ Privacy & GDPR</h2><div class="feature-list">
 <div class="feature"><strong>Transparent data collection</strong><div class="status">Policy required</div></div><div class="feature"><strong>Consent management</strong><div class="status">Planned</div></div><div class="feature"><strong>Access / correction</strong><div class="status">Profile foundation</div></div><div class="feature"><strong>Account/data deletion</strong><div class="status">Secure deletion workflow required</div></div><div class="feature"><strong>Privacy policy & cookie consent</strong><div class="status">Legal review required</div></div><div class="feature"><strong>Data breach response</strong><div class="status">Operational process required</div></div></div>
@@ -543,7 +558,7 @@ let mwvipWaitingWorker=null;
 let mwvipUpdateRegistration=null;
 let mwvipReloadOnControllerChange=false;
 const UPDATE_CHECK_URL=SUPABASE_PROJECT_URL+'/functions/v1/check-updates';
-const APP_VERSION='3.1.0';
+const APP_VERSION='3.2.0';
 function setUpdateStatus(message, isSuccess=false){
  const el=$('appUpdateStatus'); if(!el)return;
  el.textContent=message; el.classList.toggle('success',!!isSuccess);
@@ -663,6 +678,35 @@ $('applyAppUpdate').onclick=()=>{
  mwvipReloadOnControllerChange=true;
  worker.postMessage({type:'SKIP_WAITING'});
  setUpdateStatus('আপডেট সক্রিয় হচ্ছে…');
+};
+
+
+// Owner-controlled Admin & Security UI. All privileged checks run on Supabase.
+async function refreshAdminAccess(){
+ const roleEl=$('myAdminRole'),statusEl=$('myAdminAccessStatus');
+ if(!client||!currentUser){roleEl.textContent='Guest';statusEl.textContent='Admin status দেখতে লগইন করুন।';return;}
+ const {data,error}=await client.rpc('get_my_admin_access');
+ if(error){roleEl.textContent='Not configured';statusEl.textContent='Admin role migration/Owner bootstrap প্রয়োজন: '+error.message;return;}
+ roleEl.textContent=data||'Member';
+ statusEl.textContent=data==='owner'?'আপনি Owner — সব role নিয়ন্ত্রণ করতে পারবেন।':(data==='super_admin'?'Super Admin access':(data==='admin'?'Admin access':(data==='moderator'?'Moderator access':'সাধারণ সদস্য; Admin নিয়ন্ত্রণ নেই।')));
+}
+$('refreshAdminAccess').onclick=()=>refreshAdminAccess().catch(e=>say('adminActionStatus',e.message));
+$('saveMemberRole').onclick=async()=>{
+ if(!client||!currentUser){say('adminActionStatus','আগে লগইন করুন।');return;}
+ const target=$('adminTargetUser').value.trim(),role=$('adminTargetRole').value;
+ if(!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(target)){say('adminActionStatus','সঠিক Supabase User UUID দিন।');return;}
+ say('adminActionStatus','Server-side permission যাচাই হচ্ছে…');
+ const {data,error}=await client.rpc('owner_set_member_role',{p_target_user_id:target,p_new_role:role});
+ if(error){say('adminActionStatus','পরিবর্তন হয়নি: '+error.message);return;}
+ say('adminActionStatus',data?'Role সফলভাবে আপডেট হয়েছে।':'Server অনুমতি দেয়নি।');
+};
+$('loadAdminAudit').onclick=async()=>{
+ if(!client||!currentUser){say('adminAuditList','আগে লগইন করুন।');return;}
+ const {data,error}=await client.rpc('get_admin_audit_logs');
+ if(error){say('adminAuditList','Audit log পাওয়া যায়নি: '+error.message);return;}
+ const host=$('adminAuditList');host.replaceChildren();
+ (data||[]).forEach(item=>{const row=document.createElement('div');row.className='feature';row.textContent=[item.action,item.target_user_id,item.created_at].filter(Boolean).join(' · ');host.append(row);});
+ if(!data?.length)host.textContent='এখনো কোনো audit event নেই।';
 };
 
 $('showSql').onclick=()=>{$('sqlBlock').classList.toggle('hidden');$('sqlBlock').textContent=sql;};
