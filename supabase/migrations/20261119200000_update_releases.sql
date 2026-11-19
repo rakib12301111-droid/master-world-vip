@@ -11,7 +11,7 @@ create table if not exists public.update_releases (
   created_at timestamptz not null default now(),
   published_at timestamptz,
   constraint update_releases_semver_check
-    check (version ~ '^v?[0-9]+\\.[0-9]+\\.[0-9]+(-[0-9A-Za-z.-]+)?(\\+[0-9A-Za-z.-]+)?$')
+    check (version ~ '^v?[0-9]+[.][0-9]+[.][0-9]+(-[0-9A-Za-z.-]+)?([+][0-9A-Za-z.-]+)?$')
 );
 
 create index if not exists update_releases_published_idx
