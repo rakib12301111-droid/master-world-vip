@@ -1,5 +1,5 @@
 const SUPABASE_URL = "https://lztbbrzeuyjkuiyzrsxp.supabase.co";
-const CURRENT_APP_VERSION = "3.1.0";
+const CURRENT_APP_VERSION = "3.2.0";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
