@@ -168,7 +168,17 @@
 <div class="actions"><button class="btn" id="saveConsent">Save privacy choices</button><button class="btn secondary" id="withdrawConsent">Withdraw optional consent</button></div>
 <div id="consentStatus" class="item" role="status">আপনার privacy পছন্দ এখনো সংরক্ষণ করা হয়নি।</div>
 </div>
-<div class="notice">এই consent controls আপাতত শুধু এই ডিভাইসের browser-এ পছন্দ সংরক্ষণ করে। কোনো analytics/notification service চালু নয়। পূর্ণ GDPR/অন্যান্য privacy law compliance-এর জন্য server-side consent records, policy, deletion workflow, legal review ও operational process এখনও প্রয়োজন। এই prototype কোনো certification বা পূর্ণ আইনি সম্মতির দাবি করছে না।</div>
+<div class="section item">
+<h3>Data access / correction / deletion request</h3>
+<p class="muted small">নিজের account থেকে তথ্যের কপি, সংশোধন বা account deletion-এর অনুরোধ জমা দিন। Deletion request জমা দিলেই account সঙ্গে সঙ্গে মুছে যাবে না; নিরাপদ identity check, retention/legal review ও authorized server-side deletion process প্রয়োজন।</p>
+<div class="field"><label for="privacyRequestType">অনুরোধের ধরন</label><select id="privacyRequestType"><option value="access">আমার তথ্যের কপি / Access</option><option value="correction">তথ্য সংশোধন / Correction</option><option value="deletion">Account ও data deletion</option></select></div>
+<div class="field"><label for="privacyRequestDetails">বিস্তারিত (ঐচ্ছিক)</label><textarea id="privacyRequestDetails" placeholder="কোন তথ্য বা সংশোধন প্রয়োজন তা লিখুন"></textarea></div>
+<label><input id="privacyRequestConfirm" type="checkbox" style="width:auto;margin-right:7px">আমি বুঝেছি এটি একটি অনুরোধ; deletion স্বয়ংক্রিয়ভাবে বা সঙ্গে সঙ্গে হবে না।</label>
+<div class="actions"><button class="btn" id="submitPrivacyRequest">অনুরোধ জমা দিন</button><button class="btn secondary" id="refreshPrivacyRequests">আমার অনুরোধ দেখুন</button></div>
+<div id="privacyRequestStatus" class="item" role="status">অনুরোধের জন্য Supabase-এ লগইন প্রয়োজন।</div>
+<div id="privacyRequestList" class="small muted">কোনো অনুরোধ লোড হয়নি।</div>
+</div>
+<div class="notice">ঐচ্ছিক consent এখন লগইন থাকলে Supabase-এ বর্তমান পছন্দ এবং অপরিবর্তনীয় consent history হিসেবে সংরক্ষণের চেষ্টা করবে; লগইন না থাকলে শুধু এই browser-এ থাকবে। Analytics/notification service নিজে থেকে চালু হবে না। Access/correction/deletion request queue তৈরি হয়েছে, কিন্তু বাস্তব deletion, policy publication, breach-response operation, legal review ও retention schedule এখনও প্রয়োজন। এটি GDPR certification বা পূর্ণ আইনি compliance-এর দাবি নয়।</div>
 <button class="btn secondary" id="showSql">Database setup SQL দেখুন</button><pre id="sqlBlock" class="code hidden"></pre></article></section>
 
 <section class="page" id="updates"><article class="card"><h2>⟳ Update Center & One-Click Update</h2><div class="item"><b>Installed app version</b><br><span class="tag">PWA · Browser-managed</span><p class="muted small">এই বাটন নতুন প্রকাশিত ওয়েব/PWA build পরীক্ষা করবে। Android APK বা Play Store app নীরবে ইনস্টল করতে পারে না; সেগুলোর আপডেট Android/Play Store অনুমোদনের মাধ্যমে হয়।</p><div class="actions"><button class="btn" id="checkAppUpdate">আপডেট পরীক্ষা করুন</button><button class="btn secondary" id="applyAppUpdate" disabled>Allow — Update Now</button></div><div id="appUpdateStatus" class="notice" role="status">আপডেট পরীক্ষা করা হয়নি।</div></div><div class="item"><b>Stage 1 — Frontend foundation</b><br><span class="tag">In repository</span><p class="muted small">Responsive dashboard ও feature sections.</p></div><div class="item"><b>Supabase Auth connection</b><br><span class="tag">Code added — needs project configuration/testing</span><p class="muted small">Registration, login, logout, password reset ও own-profile workflow.</p></div><div class="item"><b>Global Community — member search, friend requests, direct chat, groups and in-app notifications</b><br><span class="tag">Code added — SQL apply & integration test pending</span><p class="muted small">Migration: supabase/migrations/202611190001_global_community.sql. Realtime/push delivery and production security review remain pending.</p></div><div class="item"><b>AI, Facebook APIs, referrals, analytics, admin operations and Play Store release</b><br><span class="tag">Planned / not live</span><p class="muted small">প্রতিটি মডিউল আলাদা ধাপে বাস্তবায়ন ও পরীক্ষা হবে।</p></div><p class="muted small">মডিউলভিত্তিক update architecture ভবিষ্যতে যোগ হবে; এই পৃষ্ঠা এখনো সফটওয়্যার আপডেট ডাউনলোড করে না।</p></article></section>
@@ -197,7 +207,7 @@
 <div class="feature"><strong>Facebook Discovery</strong><span class="tag">পরিকল্পিত / UI</span><div class="status">Placeholder UI আছে; Meta অনুমোদন, API ও বৈধ data access বাকি।</div></div>
 <div class="feature"><strong>AI Active User Finder</strong><span class="tag">পরিকল্পিত</span><div class="status">AI-assisted ও manual workflow সম্পূর্ণ তৈরি/পরীক্ষিত নয়; consent ও Meta policy মেনে বাস্তবায়ন বাকি।</div></div>
 <div class="feature"><strong>Notifications</strong><span class="tag">প্রাথমিক</span><div class="status">Notification UI ও database foundation আছে; delivery provider, push setup ও পরীক্ষা বাকি।</div></div>
-<div class="feature"><strong>Privacy ও Security</strong><span class="tag">প্রাথমিক</span><div class="status">Consent UI ও SQL/RLS foundation আছে; পূর্ণ security audit, policy ও legal review বাকি।</div></div>
+<div class="feature"><strong>Privacy ও Security</strong><span class="tag">Consent sync + request queue কোড যুক্ত</span><div class="status">নতুন privacy migration apply ও বাস্তব Supabase test, deletion fulfilment, policy, breach-response process এবং legal review বাকি।</div></div>
 <div class="feature"><strong>Referral ও Global Growth</strong><span class="tag">প্রাথমিক</span><div class="status">Referral schema/UI foundation আছে; reward rules, fraud controls ও server workflow বাকি।</div></div>
 <div class="feature"><strong>Admin System</strong><span class="tag">প্রাথমিক</span><div class="status">Roles/audit database foundation ও UI আছে; secure admin operations ও permission testing বাকি।</div></div>
 <div class="feature"><strong>PWA Update System</strong><span class="tag">কোড আছে</span><div class="status">GitHub Actions-এ সর্বশেষ commit e39725c-এর build ও GitHub Pages deployment সফল (১৯ Nov 2026); PWA update বাস্তব Android ডিভাইসে পরীক্ষা বাকি।</div></div>
@@ -249,7 +259,7 @@ async function connect(){
   setStatus(currentUser?'সংযুক্ত এবং লগইন আছে: '+currentUser.email:'Supabase সংযুক্ত হয়েছে। এখন Register অথবা Login করুন।');
   $('dashAuth').textContent=currentUser?'Logged in':'Connected';
   if(currentUser)await loadProfile();
-  client.auth.onAuthStateChange((_event,session)=>{currentUser=session?.user||null;$('dashAuth').textContent=currentUser?'Logged in':'Connected';if(currentUser){$('memberstatus').textContent='লগইন আছে: '+currentUser.email;setTimeout(()=>loadProfile(),0)}else{$('memberstatus').textContent='লগইন করুন।';$('profileResult').textContent='লগইন করা নেই।'}});
+  client.auth.onAuthStateChange((_event,session)=>{currentUser=session?.user||null;$('dashAuth').textContent=currentUser?'Logged in':'Connected';if(currentUser){$('memberstatus').textContent='লগইন আছে: '+currentUser.email;setTimeout(()=>{loadProfile();loadPrivacyRequests();},0)}else{$('memberstatus').textContent='লগইন করুন।';$('profileResult').textContent='লগইন করা নেই।';$('privacyRequestList').textContent='অনুরোধ দেখতে লগইন করুন।'}});
  }catch(e){client=null;setStatus('সংযোগে সমস্যা: '+e.message)}
 }
 $('connect').onclick=connect;
@@ -263,14 +273,14 @@ $('signup').onclick=async()=>{
  say('authmsg','অ্যাকাউন্ট তৈরি হচ্ছে…');
  const {data,error}=await client.auth.signUp({email,password,options:{data:{display_name:name}}});
  say('authmsg',error?'Registration error: '+error.message:(data.session?'অ্যাকাউন্ট তৈরি হয়েছে এবং লগইন হয়েছে।':'অ্যাকাউন্ট তৈরি হয়েছে। ইমেইল inbox/spam থেকে verification সম্পন্ন করুন, তারপর Login করুন।'));
- if(data.session){currentUser=data.user;await ensureProfile(name);}
+ if(data.session){currentUser=data.user;await ensureProfile(name);await loadPrivacyRequests();}
 };
 $('login').onclick=async()=>{
  if(!client){say('authmsg','আগে Supabase সংযোগ করুন।');return}
  const email=$('loginemail').value.trim(),password=$('loginpass').value;
  const {data,error}=await client.auth.signInWithPassword({email,password});
  say('authmsg',error?'Login error: '+error.message:'Login সফল: '+data.user.email);
- if(data.user){currentUser=data.user;await loadProfile();}
+ if(data.user){currentUser=data.user;await loadProfile();await loadPrivacyRequests();}
 };
 $('logout').onclick=async()=>{if(!client){say('authmsg','আগে Supabase সংযোগ করুন।');return}const {error}=await client.auth.signOut();currentUser=null;say('authmsg',error?'Logout error: '+error.message:'Logout সফল হয়েছে।');$('dashAuth').textContent='Connected';$('memberstatus').textContent='লগইন করুন।';};
 $('reset').onclick=async()=>{if(!client){say('authmsg','আগে Supabase সংযোগ করুন।');return}const email=$('loginemail').value.trim()||$('signupemail').value.trim();if(!email){say('authmsg','Password reset-এর জন্য ইমেইল লিখুন।');return}const {error}=await client.auth.resetPasswordForEmail(email,{redirectTo:location.origin+location.pathname});say('authmsg',error?'Reset error: '+error.message:'Password reset link পাঠানো হলে ইমেইল দেখুন। Supabase Auth URL configuration-এ এই site URL অনুমোদিত থাকতে হবে।');};
@@ -442,19 +452,57 @@ drop trigger if exists on_auth_user_created_profile on auth.users;
 create trigger on_auth_user_created_profile
 after insert on auth.users
 for each row execute procedure public.create_profile_for_new_user();`;
-function loadConsent(){
- try{const p=JSON.parse(localStorage.getItem('mwvip_privacy_choices')||'{}');$('consentAnalytics').checked=!!p.analytics;$('consentPersonalization').checked=!!p.personalization;$('consentNotifications').checked=!!p.notifications;if(p.savedAt)say('consentStatus','এই ডিভাইসে সংরক্ষিত পছন্দ পাওয়া গেছে। সর্বশেষ সংরক্ষণ: '+new Date(p.savedAt).toLocaleString());}catch(e){say('consentStatus','সংরক্ষিত পছন্দ পড়া যায়নি।');}
+function currentPrivacyChoices(){
+ return {analytics:$('consentAnalytics').checked,personalization:$('consentPersonalization').checked,notifications:$('consentNotifications').checked};
 }
-$('saveConsent').onclick=()=>{
- const p={analytics:$('consentAnalytics').checked,personalization:$('consentPersonalization').checked,notifications:$('consentNotifications').checked,savedAt:new Date().toISOString()};
+function loadConsent(){
+ try{const p=JSON.parse(localStorage.getItem('mwvip_privacy_choices')||'{}');$('consentAnalytics').checked=!!p.analytics;$('consentPersonalization').checked=!!p.personalization;$('consentNotifications').checked=!!p.notifications;if(p.savedAt)say('consentStatus','এই browser-এ সংরক্ষিত পছন্দ পাওয়া গেছে। Supabase sync অবস্থা লগইন করলে যাচাই হবে।');}catch(e){say('consentStatus','সংরক্ষিত পছন্দ পড়া যায়নি।');}
+}
+async function savePrivacyChoices(){
+ const p={...currentPrivacyChoices(),savedAt:new Date().toISOString(),policyVersion:'1.0'};
  localStorage.setItem('mwvip_privacy_choices',JSON.stringify(p));
- say('consentStatus','আপনার ঐচ্ছিক privacy choices এই ডিভাইসে সংরক্ষণ হয়েছে। পরে পরিবর্তন বা প্রত্যাহার করতে পারবেন।');
-};
-$('withdrawConsent').onclick=()=>{
+ if(client&&currentUser){
+  const {error}=await client.rpc('save_my_privacy_choices',{p_analytics:p.analytics,p_personalization:p.personalization,p_notifications:p.notifications,p_policy_version:p.policyVersion});
+  if(error){say('consentStatus','এই browser-এ পছন্দ সংরক্ষিত হয়েছে, কিন্তু server sync ব্যর্থ: '+error.message+'। SQL migration apply হয়েছে কি না দেখুন।');return;}
+  say('consentStatus','ঐচ্ছিক পছন্দ Supabase-এ সংরক্ষিত এবং consent history-তে নথিভুক্ত হয়েছে। পরে পরিবর্তন বা প্রত্যাহার করতে পারবেন।');
+ }else{
+  say('consentStatus','এই browser-এ পছন্দ সংরক্ষিত হয়েছে। Server-side record করতে লগইন করে Supabase privacy migration চালু করুন।');
+ }
+}
+$('saveConsent').onclick=()=>savePrivacyChoices().catch(e=>say('consentStatus','সংরক্ষণ ব্যর্থ: '+e.message));
+$('withdrawConsent').onclick=async()=>{
  $('consentAnalytics').checked=false;$('consentPersonalization').checked=false;$('consentNotifications').checked=false;
- localStorage.setItem('mwvip_privacy_choices',JSON.stringify({analytics:false,personalization:false,notifications:false,savedAt:new Date().toISOString()}));
- say('consentStatus','ঐচ্ছিক consent প্রত্যাহার করা হয়েছে এবং এই ডিভাইসে সংরক্ষণ হয়েছে।');
+ await savePrivacyChoices();
+ if(client&&currentUser)say('consentStatus','সব ঐচ্ছিক consent প্রত্যাহার করে Supabase-এ নথিভুক্ত করা হয়েছে। Essential account/security storage চালু থাকবে।');
+ else say('consentStatus','এই browser-এ সব ঐচ্ছিক consent প্রত্যাহার করা হয়েছে। Server record-এর জন্য লগইন প্রয়োজন।');
 };
+$('submitPrivacyRequest').onclick=async()=>{
+ if(!client||!currentUser){say('privacyRequestStatus','অনুরোধ জমা দিতে আগে Supabase-এ লগইন করুন।');return;}
+ if(!$('privacyRequestConfirm').checked){say('privacyRequestStatus','অনুরোধ জমার আগে নিশ্চিতকরণ checkbox নির্বাচন করুন।');return;}
+ const requestType=$('privacyRequestType').value;
+ const details=$('privacyRequestDetails').value.trim();
+ say('privacyRequestStatus','অনুরোধ জমা হচ্ছে…');
+ const {data,error}=await client.from('account_data_requests').insert({user_id:currentUser.id,request_type:requestType,details:details||null}).select('id,request_type,status,created_at').single();
+ if(error){say('privacyRequestStatus','অনুরোধ জমা হয়নি: '+error.message+'। Privacy migration apply হয়েছে কি না দেখুন।');return;}
+ $('privacyRequestDetails').value='';$('privacyRequestConfirm').checked=false;
+ say('privacyRequestStatus','আপনার অনুরোধ জমা হয়েছে। Reference: '+data.id+' · Status: '+data.status+'. এটি এখনো সম্পন্ন deletion নয়।');
+ await loadPrivacyRequests();
+};
+async function loadPrivacyRequests(){
+ if(!client||!currentUser){say('privacyRequestList','অনুরোধ দেখতে আগে লগইন করুন।');return;}
+ const {data,error}=await client.from('account_data_requests').select('id,request_type,status,created_at,admin_note').order('created_at',{ascending:false}).limit(20);
+ if(error){say('privacyRequestList','অনুরোধ লোড হয়নি: '+error.message);return;}
+ const labels={access:'তথ্যের কপি',correction:'তথ্য সংশোধন',deletion:'Account deletion'};
+ $('privacyRequestList').replaceChildren();
+ if(!data?.length){$('privacyRequestList').textContent='এখনো কোনো অনুরোধ নেই।';return;}
+ data.forEach(item=>{
+  const row=document.createElement('div');row.className='item';row.style.marginTop='7px';
+  const title=document.createElement('strong');title.textContent=(labels[item.request_type]||item.request_type)+' · '+item.status;
+  const meta=document.createElement('div');meta.className='muted small';meta.textContent=new Date(item.created_at).toLocaleString()+' · '+item.id;
+  row.append(title,meta);if(item.admin_note){const note=document.createElement('p');note.textContent=item.admin_note;row.append(note);} $('privacyRequestList').append(row);
+ });
+}
+$('refreshPrivacyRequests').onclick=()=>loadPrivacyRequests().catch(e=>say('privacyRequestList',e.message));
 loadConsent();
 let installPrompt=null;
 const installButton=$('installApp');
