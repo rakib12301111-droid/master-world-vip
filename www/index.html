@@ -771,12 +771,17 @@ $('sendMemberBroadcast').onclick=async()=>{
  if(!confirm('এই ঘোষণা অ্যাপের সব অন্য সদস্যের ইনবক্সে পাঠাবেন?'))return;
  const btn=$('sendMemberBroadcast');btn.disabled=true;
  say('broadcastStatus','Server permission যাচাই করে পাঠানো হচ্ছে…');
- const {data,error}=await client.rpc('send_member_broadcast',{p_title:title,p_body:body});
- btn.disabled=false;
- if(error){say('broadcastStatus','পাঠানো যায়নি: '+error.message);return;}
- const result=Array.isArray(data)?data[0]:data;
- say('broadcastStatus','সফল: '+(result?.recipient_count??0)+' জন সদস্যের ইনবক্সে ঘোষণা পৌঁছে দেওয়া হয়েছে।',true);
- $('broadcastTitle').value='';$('broadcastBody').value='';
+ try{
+  const {data,error}=await client.rpc('send_member_broadcast',{p_title:title,p_body:body});
+  if(error){say('broadcastStatus','পাঠানো যায়নি: '+error.message);return;}
+  const result=Array.isArray(data)?data[0]:data;
+  say('broadcastStatus','সফল: '+(result?.recipient_count??0)+' জন সদস্যের ইনবক্সে ঘোষণা যোগ হয়েছে।');
+  $('broadcastTitle').value='';$('broadcastBody').value='';
+ }catch(error){
+  say('broadcastStatus','সংযোগ সমস্যার কারণে পাঠানো যায়নি। আবার চেষ্টা করুন।');
+ }finally{
+  btn.disabled=false;
+ }
 };
 $('loadAdminAudit').onclick=async()=>{
  if(!client||!currentUser){say('adminAuditList','আগে লগইন করুন।');return;}
