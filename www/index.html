@@ -23,6 +23,7 @@
 <aside class="side">
 <p class="brand">✦ MASTER WORLD VIP</p><p class="sub">Global Digital Platform</p>
 <nav class="nav" aria-label="Main navigation">
+<button data-page="setup">✓ One-Click Setup</button>
 <button class="active" data-page="overview">⌂ Overview</button>
 <button data-page="account">♙ Register / Login</button>
 <button data-page="members">♧ Member Hub</button>
@@ -37,6 +38,29 @@
 </nav></aside>
 <main class="main">
 <header class="top"><div><div class="eyebrow">GLOBAL AI-POWERED WORKSPACE</div><h1 id="pageTitle">MASTER WORLD VIP Dashboard</h1><div class="muted">একটি জায়গা থেকে আপনার ডিজিটাল প্ল্যাটফর্ম পরিচালনা করুন</div></div><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><button class="btn secondary" id="installApp" type="button" hidden>Install App</button><span class="pill" id="appStatus">PWA-ready · Stage 1</span></div></header>
+
+<section class="page" id="setup">
+<article class="card">
+<h2>✓ One-Click Setup System</h2>
+<p class="muted">Yes চাপলে নিরাপদ স্থানীয় default সেটিংস প্রয়োগ হবে। কোনো OS permission, account connection, analytics, অতিরিক্ত data collection বা legal consent স্বয়ংক্রিয়ভাবে চালু হবে না।</p>
+<div id="setupStatus" class="notice">Setup এখনো প্রয়োগ করা হয়নি। চাইলে আগে সেটিংস পর্যালোচনা করুন।</div>
+<div class="feature-list">
+<label class="feature"><input type="checkbox" id="setupBn" checked> বাংলা ভাষা ও Bangladesh region</label>
+<label class="feature"><input type="checkbox" id="setupDark" checked> Dark theme</label>
+<label class="feature"><input type="checkbox" id="setupSecurity" checked> Security alert preference</label>
+<label class="feature"><input type="checkbox" id="setupInApp" checked> In-app notifications</label>
+<label class="feature"><input type="checkbox" id="setupPrivacy" checked> Privacy-friendly defaults</label>
+<label class="feature"><input type="checkbox" id="setupBackup" checked> Backup/recovery reminder</label>
+<label class="feature"><input type="checkbox" id="setupSmartUpdate" checked> Smart Update checks</label>
+<label class="feature"><input type="checkbox" id="setupAnalytics"> Optional analytics (off by default)</label>
+</div>
+<div class="actions">
+<button class="btn" id="applySafeSetup" type="button">Yes — Apply Safe Setup</button>
+<button class="btn secondary" id="reviewSetup" type="button">Review / Edit Settings</button>
+<button class="btn secondary" id="laterSetup" type="button">Later / Skip</button>
+</div>
+<p class="muted small">Browser notification permission, backup upload, external account connection এবং optional analytics চালুর আগে আলাদা সম্মতি নেওয়া হবে। এই setup শুধু এই ডিভাইসের preference সংরক্ষণ করে।</p>
+</article></section>
 
 <section class="page active" id="overview">
 <div class="grid">
@@ -278,10 +302,43 @@
 <script>
 const $=id=>document.getElementById(id);
 const pages=[...document.querySelectorAll('.page')];
-const titles={overview:'MASTER WORLD VIP Dashboard',account:'Registration & Login',members:'Member Hub',ai:'AI Center',facebook:'Facebook Center',growth:'Global Growth',admin:'Admin & Security',privacy:'Privacy & GDPR',updates:'Update Center',progress:'কাজের অগ্রগতি / Project Progress'};
+const titles={setup:'One-Click Setup',overview:'MASTER WORLD VIP Dashboard',account:'Registration & Login',members:'Member Hub',ai:'AI Center',facebook:'Facebook Center',growth:'Global Growth',admin:'Admin & Security',privacy:'Privacy & GDPR',updates:'Update Center',progress:'কাজের অগ্রগতি / Project Progress'};
 function showPage(id){pages.forEach(p=>p.classList.toggle('active',p.id===id));document.querySelectorAll('[data-page]').forEach(b=>b.classList.toggle('active',b.dataset.page===id));$('pageTitle').textContent=titles[id]||titles.overview;window.scrollTo({top:0,behavior:'smooth'});}
 document.querySelectorAll('[data-page]').forEach(b=>b.addEventListener('click',()=>showPage(b.dataset.page)));
 document.querySelectorAll('[data-go]').forEach(b=>b.addEventListener('click',()=>showPage(b.dataset.go)));
+function readSetupPrefs(){try{return JSON.parse(localStorage.getItem('mwvip_setup_preferences')||'{}')}catch(e){return {}}}
+function setupChecked(id, fallback){const el=$(id);return el?el.checked:fallback;}
+function applySafeSetup(){
+ const prefs={
+  language:setupChecked('setupBn',true)?'bn':'en',
+  region:setupChecked('setupBn',true)?'BD':'',
+  theme:setupChecked('setupDark',true)?'dark':'system',
+  securityAlerts:setupChecked('setupSecurity',true),
+  inAppNotifications:setupChecked('setupInApp',true),
+  privacyFriendlyDefaults:setupChecked('setupPrivacy',true),
+  backupRecoveryReminder:setupChecked('setupBackup',true),
+  smartUpdateChecks:setupChecked('setupSmartUpdate',true),
+  analytics:setupChecked('setupAnalytics',false),
+  externalDataCollection:false,
+  browserNotificationPermission:'not_requested',
+  accountConnection:'not_connected',
+  legalConsent:'not_granted'
+ };
+ localStorage.setItem('mwvip_setup_preferences',JSON.stringify(prefs));
+ localStorage.setItem('mwvip_setup_completed','true');
+ const status=$('setupStatus');
+ if(status){status.className='notice success';status.textContent='নিরাপদ স্থানীয় সেটআপ প্রয়োগ হয়েছে। Analytics, data collection, browser permission, account connection ও legal consent বন্ধ/অপরিবর্তিত আছে।';}
+}
+function loadSetupPrefs(){
+ const p=readSetupPrefs();
+ const map={setupBn:p.language!=='en',setupDark:p.theme!=='system',setupSecurity:p.securityAlerts!==false,setupInApp:p.inAppNotifications!==false,setupPrivacy:p.privacyFriendlyDefaults!==false,setupBackup:p.backupRecoveryReminder!==false,setupSmartUpdate:p.smartUpdateChecks!==false,setupAnalytics:p.analytics===true};
+ Object.entries(map).forEach(([id,value])=>{if($(id))$(id).checked=value;});
+ if(localStorage.getItem('mwvip_setup_completed')==='true'&&$('setupStatus')){$('setupStatus').className='notice success';$('setupStatus').textContent='এই ডিভাইসে নিরাপদ setup preferences সংরক্ষিত আছে। Review / Edit দিয়ে পরিবর্তন করুন।';}
+}
+$('applySafeSetup').addEventListener('click',applySafeSetup);
+$('reviewSetup').addEventListener('click',()=>{$('setupStatus').textContent='সেটিংস পর্যালোচনা করুন; প্রয়োজনীয় checkbox বদলে Yes চাপুন।';});
+$('laterSetup').addEventListener('click',()=>{say('setupStatus','Setup পরে করা যাবে। কোনো সেটিংস পরিবর্তন হয়নি।');showPage('overview');});
+loadSetupPrefs();
 let client=null,currentUser=null;
 function say(id,msg){$(id).textContent=msg;}
 const SUPABASE_PROJECT_URL='https://lztbbrzeuyjkuiyzrsxp.supabase.co';
