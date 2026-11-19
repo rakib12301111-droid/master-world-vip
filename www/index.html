@@ -170,7 +170,7 @@
 <div class="notice">এই consent controls আপাতত শুধু এই ডিভাইসের browser-এ পছন্দ সংরক্ষণ করে। কোনো analytics/notification service চালু নয়। পূর্ণ GDPR/অন্যান্য privacy law compliance-এর জন্য server-side consent records, policy, deletion workflow, legal review ও operational process এখনও প্রয়োজন। এই prototype কোনো certification বা পূর্ণ আইনি সম্মতির দাবি করছে না।</div>
 <button class="btn secondary" id="showSql">Database setup SQL দেখুন</button><pre id="sqlBlock" class="code hidden"></pre></article></section>
 
-<section class="page" id="updates"><article class="card"><h2>⟳ Update Center & Build Inventory</h2><div class="item"><b>Stage 1 — Frontend foundation</b><br><span class="tag">In repository</span><p class="muted small">Responsive dashboard ও feature sections.</p></div><div class="item"><b>Supabase Auth connection</b><br><span class="tag">Code added — needs project configuration/testing</span><p class="muted small">Registration, login, logout, password reset ও own-profile workflow.</p></div><div class="item"><b>Global Community — member search, friend requests, direct chat, groups and in-app notifications</b><br><span class="tag">Code added — SQL apply & integration test pending</span><p class="muted small">Migration: supabase/migrations/202611190001_global_community.sql. Realtime/push delivery and production security review remain pending.</p></div><div class="item"><b>AI, Facebook APIs, referrals, analytics, admin operations and Play Store release</b><br><span class="tag">Planned / not live</span><p class="muted small">প্রতিটি মডিউল আলাদা ধাপে বাস্তবায়ন ও পরীক্ষা হবে।</p></div><p class="muted small">মডিউলভিত্তিক update architecture ভবিষ্যতে যোগ হবে; এই পৃষ্ঠা এখনো সফটওয়্যার আপডেট ডাউনলোড করে না।</p></article></section>
+<section class="page" id="updates"><article class="card"><h2>⟳ Update Center & One-Click Update</h2><div class="item"><b>Installed app version</b><br><span class="tag">PWA · Browser-managed</span><p class="muted small">এই বাটন নতুন প্রকাশিত ওয়েব/PWA build পরীক্ষা করবে। Android APK বা Play Store app নীরবে ইনস্টল করতে পারে না; সেগুলোর আপডেট Android/Play Store অনুমোদনের মাধ্যমে হয়।</p><div class="actions"><button class="btn" id="checkAppUpdate">আপডেট পরীক্ষা করুন</button><button class="btn secondary" id="applyAppUpdate" disabled>Allow — Update Now</button></div><div id="appUpdateStatus" class="notice" role="status">আপডেট পরীক্ষা করা হয়নি।</div></div><div class="item"><b>Stage 1 — Frontend foundation</b><br><span class="tag">In repository</span><p class="muted small">Responsive dashboard ও feature sections.</p></div><div class="item"><b>Supabase Auth connection</b><br><span class="tag">Code added — needs project configuration/testing</span><p class="muted small">Registration, login, logout, password reset ও own-profile workflow.</p></div><div class="item"><b>Global Community — member search, friend requests, direct chat, groups and in-app notifications</b><br><span class="tag">Code added — SQL apply & integration test pending</span><p class="muted small">Migration: supabase/migrations/202611190001_global_community.sql. Realtime/push delivery and production security review remain pending.</p></div><div class="item"><b>AI, Facebook APIs, referrals, analytics, admin operations and Play Store release</b><br><span class="tag">Planned / not live</span><p class="muted small">প্রতিটি মডিউল আলাদা ধাপে বাস্তবায়ন ও পরীক্ষা হবে।</p></div><p class="muted small">মডিউলভিত্তিক update architecture ভবিষ্যতে যোগ হবে; এই পৃষ্ঠা এখনো সফটওয়্যার আপডেট ডাউনলোড করে না।</p></article></section>
 
 <div class="footer">MASTER WORLD VIP · Integrated frontend + Supabase Auth starter · Not yet production-ready</div>
 </main></div>
@@ -414,6 +414,69 @@ window.addEventListener('beforeinstallprompt',event=>{event.preventDefault();ins
 installButton.addEventListener('click',async()=>{if(!installPrompt){say('authstatus','Chrome menu থেকে Install app / Add to Home screen নির্বাচন করুন।');return;}installPrompt.prompt();await installPrompt.userChoice;installPrompt=null;installButton.hidden=true;});
 window.addEventListener('appinstalled',()=>{installButton.hidden=true;$('appStatus').textContent='Installed on this device';});
 if('serviceWorker' in navigator && location.protocol.startsWith('http')){window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(err=>console.warn('PWA offline setup:',err)));}
+
+// PWA one-click update: browser-managed web assets only; never silently installs native APKs.
+let mwvipWaitingWorker=null;
+let mwvipUpdateRegistration=null;
+let mwvipReloadOnControllerChange=false;
+function setUpdateStatus(message, isSuccess=false){
+ const el=$('appUpdateStatus'); if(!el)return;
+ el.textContent=message; el.classList.toggle('success',!!isSuccess);
+}
+function watchUpdateWorker(worker){
+ if(!worker)return;
+ mwvipWaitingWorker=worker;
+ $('applyAppUpdate').disabled=false;
+ setUpdateStatus('নতুন PWA সংস্করণ প্রস্তুত। Allow — Update Now চাপলে অ্যাপটি নতুন সংস্করণে রিফ্রেশ হবে।');
+}
+if('serviceWorker' in navigator){
+ navigator.serviceWorker.getRegistration('./').then(reg=>{
+  mwvipUpdateRegistration=reg||null;
+  if(reg?.waiting)watchUpdateWorker(reg.waiting);
+  reg?.addEventListener('updatefound',()=>{
+   const worker=reg.installing;
+   if(!worker)return;
+   worker.addEventListener('statechange',()=>{
+    if(worker.state==='installed' && navigator.serviceWorker.controller)watchUpdateWorker(worker);
+   });
+  });
+ }).catch(()=>{});
+ navigator.serviceWorker.addEventListener('controllerchange',()=>{
+  if(mwvipReloadOnControllerChange){mwvipReloadOnControllerChange=false;location.reload();}
+ });
+}
+$('checkAppUpdate').onclick=async()=>{
+ const btn=$('checkAppUpdate');btn.disabled=true;
+ try{
+  if(!('serviceWorker' in navigator)){setUpdateStatus('এই ব্রাউজারে PWA update সমর্থিত নয়।');return;}
+  const reg=mwvipUpdateRegistration||await navigator.serviceWorker.getRegistration('./');
+  if(!reg){setUpdateStatus('Service Worker পাওয়া যায়নি। HTTPS-এ প্রকাশিত অ্যাপ খুলুন।');return;}
+  mwvipUpdateRegistration=reg;
+  await reg.update();
+  if(reg.waiting){watchUpdateWorker(reg.waiting);return;}
+  if(reg.installing){
+   setUpdateStatus('নতুন সংস্করণ ডাউনলোড/প্রস্তুত হচ্ছে…');
+   const worker=reg.installing;
+   await new Promise(resolve=>{
+    if(worker.state==='installed'||worker.state==='activated')return resolve();
+    worker.addEventListener('statechange',()=>{if(worker.state==='installed'||worker.state==='activated'||worker.state==='redundant')resolve();});
+    setTimeout(resolve,20000);
+   });
+   if(reg.waiting){watchUpdateWorker(reg.waiting);return;}
+  }
+  setUpdateStatus('নতুন PWA build পাওয়া যায়নি। আপনি বর্তমানে প্রকাশিত সংস্করণ ব্যবহার করছেন।',true);
+ }catch(error){setUpdateStatus('আপডেট পরীক্ষা করা যায়নি: '+(error?.message||String(error)));}
+ finally{btn.disabled=false;}
+};
+$('applyAppUpdate').onclick=()=>{
+ const worker=mwvipWaitingWorker||mwvipUpdateRegistration?.waiting;
+ if(!worker){setUpdateStatus('নতুন update worker প্রস্তুত নেই। আগে আবার আপডেট পরীক্ষা করুন।');return;}
+ $('applyAppUpdate').disabled=true;
+ mwvipReloadOnControllerChange=true;
+ worker.postMessage({type:'SKIP_WAITING'});
+ setUpdateStatus('আপডেট সক্রিয় হচ্ছে…');
+};
+
 $('showSql').onclick=()=>{$('sqlBlock').classList.toggle('hidden');$('sqlBlock').textContent=sql;};
 </script>
 </body></html>
