@@ -69,27 +69,30 @@ create table if not exists public.messages (
 );
 create index if not exists messages_conversation_created_idx
   on public.messages(conversation_id,created_at desc);
+
+-- SECURITY DEFINER membership helpers avoid recursive RLS policies.
+create or replace function public.is_conversation_member(target_conversation uuid, target_user uuid default auth.uid())
+returns boolean language sql stable security definer set search_path=public
+as $ select exists(select 1 from public.conversation_members cm where cm.conversation_id=target_conversation and cm.user_id=target_user); $;
+create or replace function public.is_group_member(target_group uuid, target_user uuid default auth.uid())
+returns boolean language sql stable security definer set search_path=public
+as $ select exists(select 1 from public.group_members gm where gm.group_id=target_group and gm.user_id=target_user); $;
+revoke all on function public.is_conversation_member(uuid,uuid) from public;
+revoke all on function public.is_group_member(uuid,uuid) from public;
+grant execute on function public.is_conversation_member(uuid,uuid) to authenticated;
+grant execute on function public.is_group_member(uuid,uuid) to authenticated;
 alter table public.conversations enable row level security;
 alter table public.conversation_members enable row level security;
 alter table public.messages enable row level security;
 drop policy if exists "conversation members read" on public.conversation_members;
 create policy "conversation members read" on public.conversation_members
-  for select to authenticated using (user_id=auth.uid() or exists (
-    select 1 from public.conversation_members mine
-    where mine.conversation_id=conversation_members.conversation_id and mine.user_id=auth.uid()
-  ));
+  for select to authenticated using (user_id=auth.uid() or public.is_conversation_member(conversation_id,auth.uid()));
 drop policy if exists "conversation participants read conversations" on public.conversations;
 create policy "conversation participants read conversations" on public.conversations
-  for select to authenticated using (exists (
-    select 1 from public.conversation_members cm
-    where cm.conversation_id=conversations.id and cm.user_id=auth.uid()
-  ));
+  for select to authenticated using (public.is_conversation_member(id,auth.uid()));
 drop policy if exists "conversation members read messages" on public.messages;
 create policy "conversation members read messages" on public.messages
-  for select to authenticated using (exists (
-    select 1 from public.conversation_members cm
-    where cm.conversation_id=messages.conversation_id and cm.user_id=auth.uid()
-  ));
+  for select to authenticated using (public.is_conversation_member(conversation_id,auth.uid()));
 drop policy if exists "conversation members send messages" on public.messages;
 create policy "conversation members send messages" on public.messages
   for insert to authenticated with check (
@@ -168,7 +171,7 @@ drop policy if exists "group members read roster" on public.group_members;
 create policy "group members read roster" on public.group_members
   for select to authenticated using (exists (
     select 1 from public.community_groups g where g.id=group_members.group_id
-      and (not g.is_private or exists (select 1 from public.group_members mine where mine.group_id=g.id and mine.user_id=auth.uid()))
+      and (not g.is_private or public.is_group_member(g.id,auth.uid()))
   ));
 drop policy if exists "members join public groups" on public.group_members;
 create policy "members join public groups" on public.group_members
@@ -186,14 +189,10 @@ create policy "group owner manages membership" on public.group_members
   );
 drop policy if exists "group members read posts" on public.group_messages;
 create policy "group members read posts" on public.group_messages
-  for select to authenticated using (exists (
-    select 1 from public.group_members gm where gm.group_id=group_messages.group_id and gm.user_id=auth.uid()
-  ));
+  for select to authenticated using (public.is_group_member(group_id,auth.uid()));
 drop policy if exists "group members send posts" on public.group_messages;
 create policy "group members send posts" on public.group_messages
-  for insert to authenticated with check (sender_id=auth.uid() and exists (
-    select 1 from public.group_members gm where gm.group_id=group_messages.group_id and gm.user_id=auth.uid()
-  ));
+  for insert to authenticated with check (sender_id=auth.uid() and public.is_group_member(group_id,auth.uid()));
 
 create or replace function public.create_community_group(group_name text, group_description text default '', private_group boolean default false)
 returns uuid language plpgsql security definer set search_path=public
