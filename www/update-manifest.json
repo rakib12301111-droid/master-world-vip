@@ -5,6 +5,14 @@
   "note": "Status describes repository implementation only. A feature is not live until its external setup and tests are verified.",
   "stages": [
     {
+      "id": "member-broadcast",
+      "title": "Stage 0.5 — Admin Member Broadcast",
+      "status": "testing",
+      "summary": "Owner/Super Admin/Admin-only broadcast UI, server-side permission check, in-app recipient inbox records and 3-per-hour rate limit added to repository.",
+      "requires": "Apply 20261119190000_member_broadcast.sql after base and Admin RBAC migrations; verify Owner bootstrap, admin send, member inbox/RLS and delivery counts in staging.",
+      "page": "admin"
+    },
+    {
       "id": "one-click-setup",
       "title": "Stage 0 — One-Click Safe Setup",
       "status": "testing",
@@ -24,7 +32,7 @@
       "id": "auth-community",
       "title": "Stage 2 — Supabase Auth ও Global Community",
       "status": "testing",
-      "summary": "Auth, profile, member search, friend request, private chat ও group chat-এর frontend/SQL ভিত্তি আছে; production test নিশ্চিত নয়।",
+      "summary": "Auth, profile, member search, friend request, private chat and group chat frontend/SQL foundation in repository; live database application and end-to-end tests not verified.",
       "requires": "প্রথমে base SQL, community SQL apply; Supabase Auth email settings ও end-to-end security tests",
       "page": "account"
     },
