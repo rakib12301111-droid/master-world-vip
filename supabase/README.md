@@ -6,7 +6,10 @@ This repository now contains a Supabase database migration and an authenticated 
 Open Supabase → SQL Editor → New query. Paste and run `supabase/migrations/202611180001_master_world_vip.sql`.
 This creates profiles, member roles, privacy consent, referrals, notifications, support tickets and audit log tables with RLS. New users receive a `member` role. Admin role grants are deliberately restricted to trusted project-owner operations.
 
-## 2. AI function
+## 2. Global Community
+Apply `supabase/migrations/202611190001_global_community.sql` after the existing foundation migration. It adds discoverable member profiles, friend requests, direct conversations, private messages, public/private group foundations, group messages and in-app notifications with row-level security. Review and test in a staging Supabase project first. The browser Community screen uses these tables/RPCs; realtime and push delivery are not configured yet.
+
+## 3. AI function
 Deploy `supabase/functions/ai-assistant/index.ts` as an Edge Function named `ai-assistant`. Add secrets in Supabase → Edge Functions → Secrets:
 - `AI_PROVIDER_API_KEY` (your provider key)
 - `AI_PROVIDER_URL` (optional; defaults to OpenAI-compatible chat completions endpoint)
@@ -14,7 +17,7 @@ Deploy `supabase/functions/ai-assistant/index.ts` as an Edge Function named `ai-
 
 The function requires a signed-in Supabase user. Never put provider keys or Supabase secret/service-role keys in browser code.
 
-## 3. What still needs external configuration/integration
+## 4. What still needs external configuration/integration
 - Apply the SQL migration in the Supabase project.
 - Deploy the Edge Function and supply a paid/authorized AI provider credential.
 - Facebook discovery requires a Meta app, approved permissions/access token and permitted Graph API use; this repo does not scrape accounts or access private data.
