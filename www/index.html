@@ -26,6 +26,7 @@
 <button class="active" data-page="overview">⌂ Overview</button>
 <button data-page="account">♙ Register / Login</button>
 <button data-page="members">♧ Member Hub</button>
+<button data-page="community">🌐 Community</button>
 <button data-page="ai">✧ AI Center</button>
 <button data-page="facebook">◎ Facebook Center</button>
 <button data-page="growth">↗ Global Growth</button>
@@ -77,6 +78,57 @@
 <article class="card"><h2>♧ Member Hub</h2><p class="muted">নিজের প্রোফাইল দেখা ও আপডেট করা।</p><div id="memberstatus" class="notice">প্রোফাইল ব্যবহারের আগে লগইন করুন এবং Supabase profiles table তৈরি করুন।</div>
 <div class="field"><label for="profileName">Display name</label><input id="profileName" placeholder="আপনার প্রদর্শিত নাম"></div><div class="field"><label for="profileCountry">Country</label><input id="profileCountry" placeholder="Bangladesh"></div><div class="actions"><button class="btn" id="saveProfile">Save my profile</button><button class="btn secondary" id="loadProfile">Refresh profile</button></div><div id="profileResult" class="item">এখনো কোনো প্রোফাইল লোড হয়নি।</div>
 <div class="notice">গোপনীয়তার জন্য সাধারণ সদস্যরা শুধু নিজের প্রোফাইল দেখতে ও সম্পাদনা করতে পারবেন। Admin-এর সকল সদস্য ব্যবস্থাপনা পরে নিরাপদ server-side role দিয়ে যুক্ত হবে।</div></article>
+</section>
+
+
+<section class="page" id="community">
+<article class="card">
+<h2>🌐 Global Community</h2>
+<p class="muted">সদস্য খুঁজুন, বন্ধুত্বের অনুরোধ পাঠান, ব্যক্তিগত বার্তা ও গ্রুপে যোগাযোগ করুন। আগে লগইন এবং Global Community database migration চালু থাকতে হবে।</p>
+<div id="communityStatus" class="notice">প্রথমে লগইন করুন।</div>
+<div class="two">
+<div class="item">
+<h3>সদস্য খুঁজুন</h3>
+<div class="field"><label for="memberSearch">নাম / Username</label><input id="memberSearch" placeholder="নাম বা username লিখুন"></div>
+<button class="btn" id="searchMembers">সদস্য খুঁজুন</button>
+<div id="memberSearchResults" class="section small">অনুসন্ধানের ফলাফল এখানে দেখাবে।</div>
+</div>
+<div class="item">
+<h3>বন্ধুত্বের অনুরোধ</h3>
+<button class="btn secondary" id="loadFriendRequests">অনুরোধ দেখুন</button>
+<div id="friendRequests" class="section small">এখনো লোড হয়নি।</div>
+</div>
+</div>
+<div class="section two">
+<div class="item">
+<h3>ব্যক্তিগত বার্তা</h3>
+<div class="field"><label for="chatUserId">বন্ধুর User ID</label><input id="chatUserId" placeholder="বন্ধুর প্রোফাইল থেকে ID"></div>
+<button class="btn secondary" id="startChat">Chat খুলুন</button>
+<input id="activeConversation" type="hidden">
+<div id="directMessages" class="section small">কোনো conversation খোলা নেই।</div>
+<div class="field"><label for="directMessageText">বার্তা</label><textarea id="directMessageText" placeholder="আপনার বার্তা লিখুন"></textarea></div>
+<button class="btn" id="sendDirectMessage">বার্তা পাঠান</button>
+</div>
+<div class="item">
+<h3>গ্রুপ তৈরি / যোগ দিন</h3>
+<div class="field"><label for="newGroupName">গ্রুপের নাম</label><input id="newGroupName" placeholder="গ্রুপের নাম"></div>
+<div class="field"><label for="newGroupDescription">বর্ণনা</label><input id="newGroupDescription" placeholder="গ্রুপ সম্পর্কে"></div>
+<button class="btn" id="createGroup">গ্রুপ তৈরি</button>
+<button class="btn secondary" id="loadGroups">Public Group দেখুন</button>
+<div id="groupResults" class="section small">গ্রুপের তালিকা এখানে দেখাবে।</div>
+<input id="activeGroupId" type="hidden">
+<div id="groupMessages" class="section small">গ্রুপ নির্বাচন করুন।</div>
+<div class="field"><label for="groupMessageText">গ্রুপ বার্তা</label><textarea id="groupMessageText" placeholder="গ্রুপে লিখুন"></textarea></div>
+<button class="btn" id="sendGroupMessage">গ্রুপে পাঠান</button>
+</div>
+</div>
+<div class="section item">
+<h3>নোটিফিকেশন</h3>
+<button class="btn secondary" id="loadNotifications">নোটিফিকেশন দেখুন</button>
+<div id="communityNotifications" class="section small">নোটিফিকেশন এখনো লোড হয়নি।</div>
+</div>
+<div class="notice">গোপনীয়তা: ব্যক্তিগত বার্তা কেবল conversation-এর সদস্যরা দেখতে পারবেন। বন্ধুত্ব গ্রহণের আগে সরাসরি chat শুরু করা যাবে না। Browser tab বন্ধ থাকলে push notification পেতে আলাদা অনুমতি ও delivery service প্রয়োজন।</div>
+</article>
 </section>
 
 <section class="page" id="ai"><article class="card"><h2>✧ AI Center</h2><p class="muted">বাংলা/ইংরেজি text assistant, voice assistant ও AI image search.</p><div class="feature-list">
@@ -197,6 +249,105 @@ $('saveProfile').onclick=async()=>{
  if(error)say('memberstatus','Save error: '+error.message+' — profiles table/RLS SQL setup হয়েছে কি না দেখুন।');
  else{say('memberstatus','আপনার প্রোফাইল সংরক্ষিত হয়েছে।');await loadProfile();}
 };
+
+function communityReady(){if(!client||!currentUser){say('communityStatus','আগে Register/Login থেকে Supabase-এ লগইন করুন।');return false}return true;}
+function safeText(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+async function searchCommunityMembers(){
+ if(!communityReady())return;
+ const q=$('memberSearch').value.trim();if(q.length<2){say('memberSearchResults','কমপক্ষে ২ অক্ষর লিখুন।');return;}
+ const {data,error}=await client.from('profiles').select('id,display_name,username,country,bio').eq('is_discoverable',true).or('display_name.ilike.%'+q+'%,username.ilike.%'+q+'%').limit(20);
+ if(error){say('memberSearchResults','Member search error: '+error.message+' — Global Community SQL migration চালানো হয়েছে কি?');return;}
+ if(!data?.length){say('memberSearchResults','কোনো discoverable member পাওয়া যায়নি।');return;}
+ $('memberSearchResults').innerHTML=data.map(p=>'<div class="feature"><b>'+safeText(p.display_name||'Member')+'</b> · @'+safeText(p.username||'—')+'<br><span class="muted">'+safeText(p.country||'')+'</span><br><small>User ID: '+safeText(p.id)+'</small><br><button class="btn secondary" data-friend="'+safeText(p.id)+'">বন্ধুত্বের অনুরোধ</button></div>').join('');
+ $('memberSearchResults').querySelectorAll('[data-friend]').forEach(b=>b.onclick=()=>sendFriendRequest(b.dataset.friend));
+}
+async function sendFriendRequest(id){
+ if(!communityReady())return;
+ const {error}=await client.from('friend_requests').insert({requester_id:currentUser.id,addressee_id:id,status:'pending'});
+ say('communityStatus',error?'Request error: '+error.message:'বন্ধুত্বের অনুরোধ পাঠানো হয়েছে।');
+}
+async function loadFriendRequests(){
+ if(!communityReady())return;
+ const {data,error}=await client.from('friend_requests').select('id,requester_id,addressee_id,status,created_at').eq('addressee_id',currentUser.id).eq('status','pending').order('created_at',{ascending:false});
+ if(error){say('friendRequests','Load error: '+error.message);return;}
+ if(!data?.length){say('friendRequests','নতুন অনুরোধ নেই।');return;}
+ $('friendRequests').innerHTML=data.map(x=>'<div class="feature">From: '+safeText(x.requester_id)+'<br><button class="btn" data-accept="'+x.id+'">Accept</button> <button class="btn secondary" data-decline="'+x.id+'">Decline</button></div>').join('');
+ $('friendRequests').querySelectorAll('[data-accept]').forEach(b=>b.onclick=()=>respondFriend(b.dataset.accept,'accepted'));
+ $('friendRequests').querySelectorAll('[data-decline]').forEach(b=>b.onclick=()=>respondFriend(b.dataset.decline,'declined'));
+}
+async function respondFriend(id,status){
+ const {error}=await client.from('friend_requests').update({status}).eq('id',id).eq('addressee_id',currentUser.id);
+ say('communityStatus',error?'Update error: '+error.message:'Friend request '+status+'.');loadFriendRequests();
+}
+async function openDirectChat(){
+ if(!communityReady())return;
+ const target=$('chatUserId').value.trim();if(!target){say('communityStatus','বন্ধুর User ID দিন।');return;}
+ const {data,error}=await client.rpc('start_direct_conversation',{target_user:target});
+ if(error){say('communityStatus','Chat শুরু হয়নি: '+error.message);return;}
+ $('activeConversation').value=data;say('communityStatus','ব্যক্তিগত conversation খোলা হয়েছে।');loadDirectMessages();
+}
+async function loadDirectMessages(){
+ const id=$('activeConversation').value;if(!id)return;
+ const {data,error}=await client.from('messages').select('id,sender_id,body,created_at').eq('conversation_id',id).order('created_at',{ascending:true}).limit(100);
+ if(error){say('directMessages','Messages load error: '+error.message);return;}
+ $('directMessages').innerHTML=(data||[]).map(m=>'<div class="feature"><b>'+(m.sender_id===currentUser.id?'আপনি':'সদস্য')+'</b><br>'+safeText(m.body)+'<br><span class="muted">'+new Date(m.created_at).toLocaleString()+'</span></div>').join('')||'এখনো কোনো বার্তা নেই।';
+}
+async function sendDirectMessage(){
+ if(!communityReady())return;
+ const conversation_id=$('activeConversation').value,body=$('directMessageText').value.trim();
+ if(!conversation_id||!body){say('communityStatus','আগে chat খুলুন এবং বার্তা লিখুন।');return;}
+ const {error}=await client.from('messages').insert({conversation_id,sender_id:currentUser.id,body});
+ if(error){say('communityStatus','Message error: '+error.message);return;}
+ $('directMessageText').value='';loadDirectMessages();
+}
+async function createCommunityGroup(){
+ if(!communityReady())return;
+ const name=$('newGroupName').value.trim();if(name.length<2){say('communityStatus','গ্রুপের নাম কমপক্ষে ২ অক্ষরের হতে হবে।');return;}
+ const {data,error}=await client.rpc('create_community_group',{group_name:name,group_description:$('newGroupDescription').value.trim(),private_group:false});
+ if(error){say('communityStatus','Group create error: '+error.message);return;}
+ $('activeGroupId').value=data;say('communityStatus','গ্রুপ তৈরি হয়েছে।');loadCommunityGroups();
+}
+async function loadCommunityGroups(){
+ if(!communityReady())return;
+ const {data,error}=await client.from('community_groups').select('id,name,description,owner_id,created_at').eq('is_private',false).order('created_at',{ascending:false}).limit(30);
+ if(error){say('groupResults','Group load error: '+error.message);return;}
+ $('groupResults').innerHTML=(data||[]).map(g=>'<div class="feature"><b>'+safeText(g.name)+'</b><br>'+safeText(g.description)+'<br><button class="btn secondary" data-join="'+g.id+'">Join / Open</button></div>').join('')||'এখনো public group নেই।';
+ $('groupResults').querySelectorAll('[data-join]').forEach(b=>b.onclick=()=>joinCommunityGroup(b.dataset.join));
+}
+async function joinCommunityGroup(id){
+ const {error}=await client.from('group_members').insert({group_id:id,user_id:currentUser.id,role:'member'});
+ if(error&& !String(error.message).includes('duplicate')){say('communityStatus','Join error: '+error.message);return;}
+ $('activeGroupId').value=id;say('communityStatus','গ্রুপে যোগ হয়েছেন / আগে থেকেই সদস্য।');loadGroupMessages();
+}
+async function loadGroupMessages(){
+ const id=$('activeGroupId').value;if(!id)return;
+ const {data,error}=await client.from('group_messages').select('id,sender_id,body,created_at').eq('group_id',id).order('created_at',{ascending:true}).limit(100);
+ if(error){say('groupMessages','Group messages error: '+error.message);return;}
+ $('groupMessages').innerHTML=(data||[]).map(m=>'<div class="feature"><b>'+(m.sender_id===currentUser.id?'আপনি':'সদস্য')+'</b><br>'+safeText(m.body)+'<br><span class="muted">'+new Date(m.created_at).toLocaleString()+'</span></div>').join('')||'এখনো কোনো বার্তা নেই।';
+}
+async function sendGroupMessage(){
+ if(!communityReady())return;
+ const group_id=$('activeGroupId').value,body=$('groupMessageText').value.trim();
+ if(!group_id||!body){say('communityStatus','আগে গ্রুপে Join/Open করুন এবং বার্তা লিখুন।');return;}
+ const {error}=await client.from('group_messages').insert({group_id,sender_id:currentUser.id,body});
+ if(error){say('communityStatus','Group message error: '+error.message);return;}
+ $('groupMessageText').value='';loadGroupMessages();
+}
+async function loadCommunityNotifications(){
+ if(!communityReady())return;
+ const {data,error}=await client.from('notifications').select('id,title,body,category,read_at,created_at').eq('user_id',currentUser.id).order('created_at',{ascending:false}).limit(30);
+ if(error){say('communityNotifications','Notification error: '+error.message);return;}
+ $('communityNotifications').innerHTML=(data||[]).map(n=>'<div class="feature"><b>'+safeText(n.title)+'</b><br>'+safeText(n.body)+'<br><span class="muted">'+new Date(n.created_at).toLocaleString()+'</span>'+(n.read_at?' · Read':' · Unread')+'</div>').join('')||'নতুন নোটিফিকেশন নেই।';
+}
+$('searchMembers').onclick=searchCommunityMembers;
+$('loadFriendRequests').onclick=loadFriendRequests;
+$('startChat').onclick=openDirectChat;
+$('sendDirectMessage').onclick=sendDirectMessage;
+$('createGroup').onclick=createCommunityGroup;
+$('loadGroups').onclick=loadCommunityGroups;
+$('sendGroupMessage').onclick=sendGroupMessage;
+$('loadNotifications').onclick=loadCommunityNotifications;
+
 $('fbSearch').onclick=()=>{const q=$('fbQuery').value.trim(),country=$('fbCountry').value;say('fbResult',(q?'অনুসন্ধানের বিষয়: '+q+'. ':'')+(country?'দেশ: '+country+'. ':'')+'বাস্তব ফলাফলের জন্য অনুমোদিত Meta API/data provider সংযুক্ত করতে হবে। এখনো কোনো অ্যাকাউন্ট অনুসন্ধান করা হয়নি।');};
 const sql=`create table if not exists public.profiles (
   id uuid primary key references auth.users(id) on delete cascade,
