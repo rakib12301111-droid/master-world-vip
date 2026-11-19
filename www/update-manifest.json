@@ -48,9 +48,9 @@
       "id": "growth-admin",
       "title": "Stage 6 — Referral, Notifications ও Admin",
       "status": "testing",
-      "summary": "কিছু schema/UI foundation আছে; reward, delivery ও privileged operations verified নয়।",
-      "requires": "Fraud-resistant referral rules, notification provider, server-side admin authorization ও audit tests",
-      "page": "growth"
+      "summary": "Owner-controlled Admin RBAC UI ও SQL migration repository-তে যোগ হয়েছে; Owner email bootstrap, migration apply ও security tests বাকি.",
+      "requires": "নিজের verified email দিয়ে Owner bootstrap, migration apply, RLS/RPC tests এবং device update verification",
+      "page": "admin"
     },
     {
       "id": "android",
