@@ -413,7 +413,7 @@ const installButton=$('installApp');
 window.addEventListener('beforeinstallprompt',event=>{event.preventDefault();installPrompt=event;installButton.hidden=false;});
 installButton.addEventListener('click',async()=>{if(!installPrompt){say('authstatus','Chrome menu থেকে Install app / Add to Home screen নির্বাচন করুন।');return;}installPrompt.prompt();await installPrompt.userChoice;installPrompt=null;installButton.hidden=true;});
 window.addEventListener('appinstalled',()=>{installButton.hidden=true;$('appStatus').textContent='Installed on this device';});
-if('serviceWorker' in navigator && location.protocol.startsWith('http')){window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(err=>console.warn('PWA offline setup:',err)));}
+if('serviceWorker' in navigator && location.protocol.startsWith('http')){window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js',{updateViaCache:'none'}).then(reg=>{mwvipUpdateRegistration=reg;}).catch(err=>console.warn('PWA offline setup:',err)));}
 
 // PWA one-click update: browser-managed web assets only; never silently installs native APKs.
 let mwvipWaitingWorker=null;
