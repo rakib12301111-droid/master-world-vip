@@ -9,7 +9,17 @@ This creates profiles, member roles, privacy consent, referrals, notifications, 
 ## 2. Global Community
 Apply `supabase/migrations/202611190001_global_community.sql` after the existing foundation migration. It adds discoverable member profiles, friend requests, direct conversations, private messages, public/private group foundations, group messages and in-app notifications with row-level security. Review and test in a staging Supabase project first. The browser Community screen uses these tables/RPCs; realtime and push delivery are not configured yet.
 
-## 3. AI function
+
+## 3. Admin roles and member broadcast
+Apply these migrations in order after the foundation migration:
+1. `supabase/migrations/20261119180000_admin_rbac_owner_control.sql` — before running it, confirm the owner email in its final bootstrap statement matches the verified owner account in Supabase Auth.
+2. `supabase/migrations/20261119190000_member_broadcast.sql` — creates the admin-only broadcast inbox and recipient delivery records.
+
+The Admin & Security screen includes a broadcast composer. Only users with `owner`, `super_admin`, or `admin` in `app_user_roles` can send; the server limits each sender to three broadcasts per hour. Broadcasts create in-app notifications/inbox records for all other registered users. This does not itself send OS push notifications; a push provider and device registration are separate work.
+
+Test in staging: owner bootstrap, unauthorized member rejection, admin send, recipient visibility, read-state updates, delivery count, and rate-limit behavior. Do not claim broadcast is live until the migrations are applied to the target Supabase project and these tests pass.
+
+## 4. AI function
 Deploy `supabase/functions/ai-assistant/index.ts` as an Edge Function named `ai-assistant`. Add secrets in Supabase → Edge Functions → Secrets:
 - `AI_PROVIDER_API_KEY` (your provider key)
 - `AI_PROVIDER_URL` (optional; defaults to OpenAI-compatible chat completions endpoint)
@@ -17,7 +27,7 @@ Deploy `supabase/functions/ai-assistant/index.ts` as an Edge Function named `ai-
 
 The function requires a signed-in Supabase user. Never put provider keys or Supabase secret/service-role keys in browser code.
 
-## 4. What still needs external configuration/integration
+## 5. What still needs external configuration/integration
 - Apply the SQL migration in the Supabase project.
 - Deploy the Edge Function and supply a paid/authorized AI provider credential.
 - Facebook discovery requires a Meta app, approved permissions/access token and permitted Graph API use; this repo does not scrape accounts or access private data.
