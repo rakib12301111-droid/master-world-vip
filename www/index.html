@@ -181,7 +181,34 @@
 <div class="notice">ঐচ্ছিক consent এখন লগইন থাকলে Supabase-এ বর্তমান পছন্দ এবং অপরিবর্তনীয় consent history হিসেবে সংরক্ষণের চেষ্টা করবে; লগইন না থাকলে শুধু এই browser-এ থাকবে। Analytics/notification service নিজে থেকে চালু হবে না। Access/correction/deletion request queue তৈরি হয়েছে, কিন্তু বাস্তব deletion, policy publication, breach-response operation, legal review ও retention schedule এখনও প্রয়োজন। এটি GDPR certification বা পূর্ণ আইনি compliance-এর দাবি নয়।</div>
 <button class="btn secondary" id="showSql">Database setup SQL দেখুন</button><pre id="sqlBlock" class="code hidden"></pre></article></section>
 
-<section class="page" id="updates"><article class="card"><h2>⟳ Update Center & One-Click Update</h2><div class="item"><b>Installed app version</b><br><span class="tag">PWA · Browser-managed</span><p class="muted small">এই বাটন নতুন প্রকাশিত ওয়েব/PWA build পরীক্ষা করবে। Android APK বা Play Store app নীরবে ইনস্টল করতে পারে না; সেগুলোর আপডেট Android/Play Store অনুমোদনের মাধ্যমে হয়।</p><div class="actions"><button class="btn" id="checkAppUpdate">আপডেট পরীক্ষা করুন</button><button class="btn secondary" id="applyAppUpdate" disabled>Allow — Update Now</button></div><div id="appUpdateStatus" class="notice" role="status">আপডেট পরীক্ষা করা হয়নি।</div></div><div class="item"><b>Stage 1 — Frontend foundation</b><br><span class="tag">In repository</span><p class="muted small">Responsive dashboard ও feature sections.</p></div><div class="item"><b>Supabase Auth connection</b><br><span class="tag">Code added — needs project configuration/testing</span><p class="muted small">Registration, login, logout, password reset ও own-profile workflow.</p></div><div class="item"><b>Global Community — member search, friend requests, direct chat, groups and in-app notifications</b><br><span class="tag">Code added — SQL apply & integration test pending</span><p class="muted small">Migration: supabase/migrations/202611190001_global_community.sql. Realtime/push delivery and production security review remain pending.</p></div><div class="item"><b>AI, Facebook APIs, referrals, analytics, admin operations and Play Store release</b><br><span class="tag">Planned / not live</span><p class="muted small">প্রতিটি মডিউল আলাদা ধাপে বাস্তবায়ন ও পরীক্ষা হবে।</p></div><p class="muted small">মডিউলভিত্তিক update architecture ভবিষ্যতে যোগ হবে; এই পৃষ্ঠা এখনো সফটওয়্যার আপডেট ডাউনলোড করে না।</p></article></section>
+<section class="page" id="updates">
+<article class="card">
+<h2>⟳ Update Center & One-Click Update</h2>
+<p class="muted">এক জায়গা থেকে PWA update পরীক্ষা, feature rollout-এর ধাপ দেখা এবং প্রয়োজনীয় setup-এ যাওয়া। Update manifest অ্যাপের পরবর্তী কাজ ও dependency জানায়; এটি নিজে থেকে গোপন key, SQL execution, Meta approval বা Play Store release করতে পারে না।</p>
+<div class="item">
+<b>Installed app version</b><br><span class="tag">PWA · Browser-managed</span>
+<p class="muted small">এই বাটন প্রকাশিত ওয়েব/PWA build পরীক্ষা করবে। Android APK বা Play Store app নীরবে ইনস্টল করতে পারে না; সেগুলোর আপডেট Android/Play Store অনুমোদনের মাধ্যমে হয়।</p>
+<div class="actions"><button class="btn" id="checkAppUpdate">আপডেট পরীক্ষা করুন</button><button class="btn secondary" id="applyAppUpdate" disabled>Allow — Update Now</button><button class="btn secondary" id="refreshUpdatePlan">কাজের তালিকা রিফ্রেশ</button></div>
+<div id="appUpdateStatus" class="notice" role="status">আপডেট পরীক্ষা করা হয়নি।</div>
+<div id="updateManifestStatus" class="muted small" role="status">Update plan লোড হচ্ছে…</div>
+</div>
+<div class="section">
+<h2>ধাপে ধাপে Feature Rollout</h2>
+<p class="muted small">একটি ধাপের প্রয়োজনীয় কাজ যাচাই না করে পরের ধাপকে সম্পন্ন দেখানো হবে না।</p>
+<div id="updateRoadmap" class="feature-list"><div class="feature">Update plan লোড হচ্ছে…</div></div>
+</div>
+<div class="section item">
+<h3>পরবর্তী করণীয় — Backend setup</h3>
+<p class="small muted">Database migration চালাতে Supabase Dashboard → SQL Editor ব্যবহার করতে হবে। নিচের migration ফাইলগুলো repository-তে রাখা আছে; চালানোর আগে একই project ও সঠিক ক্রম নিশ্চিত করুন।</p>
+<ol class="small">
+<li><code>supabase/migrations/202611180001_master_world_vip.sql</code></li>
+<li><code>supabase/migrations/202611190001_global_community.sql</code></li>
+<li><code>supabase/migrations/202611190002_privacy_rights.sql</code></li>
+</ol>
+<div class="actions"><button class="btn secondary" data-go="account">Supabase Account Setup খুলুন</button><button class="btn secondary" data-go="progress">সম্পূর্ণ কাজের তালিকা দেখুন</button></div>
+</div>
+<div class="notice">স্বয়ংক্রিয় PWA update কেবল browser-managed web files-এর জন্য। Database migration, AI provider secret, Meta permissions, notification provider, signing key ও Google Play submission-এর জন্য আলাদা অনুমোদিত setup প্রয়োজন।</div>
+</article></section>
 
 
 <section class="page" id="progress">
@@ -543,6 +570,39 @@ if('serviceWorker' in navigator){
   if(mwvipReloadOnControllerChange){mwvipReloadOnControllerChange=false;location.reload();}
  });
 }
+const UPDATE_PLAN_URL='./update-manifest.json';
+function renderUpdatePlan(plan){
+ const host=$('updateRoadmap');host.replaceChildren();
+ const stateLabel={available:'কোড/ভিত্তি আছে',blocked:'বাহ্যিক setup প্রয়োজন',planned:'পরিকল্পিত',testing:'পরীক্ষা বাকি',released:'প্রকাশিত ও যাচাইকৃত'};
+ (plan.stages||[]).forEach((stage,index)=>{
+  const card=document.createElement('div');card.className='feature';
+  const heading=document.createElement('strong');heading.textContent=(index+1)+'. '+stage.title;
+  const badge=document.createElement('span');badge.className='tag';badge.textContent=stateLabel[stage.status]||stage.status;
+  const detail=document.createElement('div');detail.className='status';detail.textContent=stage.summary;
+  const deps=document.createElement('p');deps.className='muted small';deps.textContent='পরবর্তী প্রয়োজন: '+(stage.requires||'কোনো অতিরিক্ত dependency উল্লেখ নেই');
+  card.append(heading,badge,detail,deps);
+  if(stage.page){
+   const action=document.createElement('button');action.type='button';action.className='btn secondary';action.style.marginTop='8px';action.textContent='এই বিভাগ খুলুন';
+   action.addEventListener('click',()=>showPage(stage.page));card.append(action);
+  }
+  host.append(card);
+ });
+}
+async function loadUpdatePlan(){
+ const status=$('updateManifestStatus');
+ try{
+  const response=await fetch(UPDATE_PLAN_URL+'?t='+Date.now(),{cache:'no-store'});
+  if(!response.ok)throw new Error('HTTP '+response.status);
+  const plan=await response.json();
+  if(!Array.isArray(plan.stages))throw new Error('Update manifest format invalid');
+  renderUpdatePlan(plan);
+  status.textContent='Update plan loaded · '+(plan.updated_at||'তারিখ উল্লেখ নেই')+' · '+plan.stages.length+'টি ধাপ';
+ }catch(error){
+  status.textContent='Update plan লোড হয়নি: '+error.message+'। PWA refresh করে আবার চেষ্টা করুন।';
+ }
+}
+$('refreshUpdatePlan').onclick=()=>loadUpdatePlan();
+loadUpdatePlan();
 async function requestUpdateStatus(){
  const cfg=config();
  const response=await fetch(UPDATE_CHECK_URL,{
