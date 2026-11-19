@@ -153,6 +153,12 @@
 <button class="btn secondary" id="loadNotifications">নোটিফিকেশন দেখুন</button>
 <div id="communityNotifications" class="section small">নোটিফিকেশন এখনো লোড হয়নি।</div>
 </div>
+<div class="section item">
+<h3>📢 সদস্যদের Broadcast Inbox</h3>
+<p class="muted small">Owner / Admin-এর পাঠানো ঘোষণা এখানে দেখাবে। প্রতিটি সদস্য শুধু নিজের জন্য পাঠানো ঘোষণা দেখতে পারবেন।</p>
+<button class="btn secondary" id="loadMemberBroadcasts">Broadcast দেখুন</button>
+<div id="memberBroadcastInbox" class="section small">Broadcast এখনো লোড হয়নি।</div>
+</div>
 <div class="notice">গোপনীয়তা: ব্যক্তিগত বার্তা কেবল conversation-এর সদস্যরা দেখতে পারবেন। বন্ধুত্ব গ্রহণের আগে সরাসরি chat শুরু করা যাবে না। Browser tab বন্ধ থাকলে push notification পেতে আলাদা অনুমতি ও delivery service প্রয়োজন।</div>
 </article>
 </section>
@@ -232,7 +238,7 @@
 <h2>⟳ Update Center & One-Click Update</h2>
 <p class="muted">এক জায়গা থেকে PWA update পরীক্ষা, feature rollout-এর ধাপ দেখা এবং প্রয়োজনীয় setup-এ যাওয়া। Update manifest অ্যাপের পরবর্তী কাজ ও dependency জানায়; এটি নিজে থেকে গোপন key, SQL execution, Meta approval বা Play Store release করতে পারে না।</p>
 <div class="item">
-<b>Installed app version</b><br><span class="tag">PWA · Browser-managed</span>
+<b>Installed app version</b><br><span class="tag">3.3.0 · PWA · Browser-managed</span>
 <p class="muted small">এই বাটন প্রকাশিত ওয়েব/PWA build পরীক্ষা করবে। Android APK বা Play Store app নীরবে ইনস্টল করতে পারে না; সেগুলোর আপডেট Android/Play Store অনুমোদনের মাধ্যমে হয়।</p>
 <div class="actions"><button class="btn" id="checkAppUpdate">আপডেট পরীক্ষা করুন</button><button class="btn secondary" id="applyAppUpdate" disabled>Allow — Update Now</button><button class="btn secondary" id="refreshUpdatePlan">কাজের তালিকা রিফ্রেশ</button></div>
 <div id="appUpdateStatus" class="notice" role="status">আপডেট পরীক্ষা করা হয়নি।</div>
@@ -250,6 +256,8 @@
 <li><code>supabase/migrations/202611180001_master_world_vip.sql</code></li>
 <li><code>supabase/migrations/202611190001_global_community.sql</code></li>
 <li><code>supabase/migrations/202611190002_privacy_rights.sql</code></li>
+<li><code>supabase/migrations/20261119180000_admin_rbac_owner_control.sql</code> — verified Owner email মিলিয়ে নিন</li>
+<li><code>supabase/migrations/20261119190000_member_broadcast.sql</code></li>
 </ol>
 <div class="actions"><button class="btn secondary" data-go="account">Supabase Account Setup খুলুন</button><button class="btn secondary" data-go="progress">সম্পূর্ণ কাজের তালিকা দেখুন</button></div>
 </div>
@@ -504,6 +512,32 @@ async function loadCommunityNotifications(){
  if(error){say('communityNotifications','Notification error: '+error.message);return;}
  $('communityNotifications').innerHTML=(data||[]).map(n=>'<div class="feature"><b>'+safeText(n.title)+'</b><br>'+safeText(n.body)+'<br><span class="muted">'+new Date(n.created_at).toLocaleString()+'</span>'+(n.read_at?' · Read':' · Unread')+'</div>').join('')||'নতুন নোটিফিকেশন নেই।';
 }
+async function loadMemberBroadcastInbox(){
+ if(!communityReady())return;
+ const host=$('memberBroadcastInbox');host.textContent='Broadcast inbox লোড হচ্ছে…';
+ const {data,error}=await client.from('member_broadcast_deliveries')
+  .select('broadcast_id,delivered_at,read_at,member_broadcasts(title,body,sender_id,created_at)')
+  .eq('user_id',currentUser.id).order('delivered_at',{ascending:false}).limit(50);
+ if(error){host.textContent='Broadcast inbox পাওয়া যায়নি: '+error.message+'। Admin/Owner migration প্রয়োগ হয়েছে কি না দেখুন।';return;}
+ host.replaceChildren();
+ (data||[]).forEach(item=>{
+  const b=item.member_broadcasts;if(!b)return;
+  const card=document.createElement('div');card.className='feature';
+  const title=document.createElement('b');title.textContent=b.title;card.append(title);
+  const body=document.createElement('p');body.textContent=b.body;card.append(body);
+  const meta=document.createElement('div');meta.className='muted small';meta.textContent=new Date(item.delivered_at).toLocaleString()+(item.read_at?' · পড়া হয়েছে':' · অপঠিত');card.append(meta);
+  if(!item.read_at){
+   const button=document.createElement('button');button.type='button';button.className='btn secondary';button.textContent='পড়া হয়েছে চিহ্নিত করুন';button.onclick=async()=>{
+    button.disabled=true;
+    const {error:updateError}=await client.from('member_broadcast_deliveries').update({read_at:new Date().toISOString()}).eq('broadcast_id',item.broadcast_id).eq('user_id',currentUser.id);
+    if(updateError){button.disabled=false;say('communityStatus','Read status update হয়নি: '+updateError.message);return;}
+    loadMemberBroadcastInbox();
+   };card.append(button);
+  }
+  host.append(card);
+ });
+ if(!host.children.length)host.textContent='আপনার জন্য এখনো কোনো Broadcast নেই।';
+}
 $('searchMembers').onclick=searchCommunityMembers;
 $('loadFriendRequests').onclick=loadFriendRequests;
 $('startChat').onclick=openDirectChat;
@@ -512,6 +546,7 @@ $('createGroup').onclick=createCommunityGroup;
 $('loadGroups').onclick=loadCommunityGroups;
 $('sendGroupMessage').onclick=sendGroupMessage;
 $('loadNotifications').onclick=loadCommunityNotifications;
+$('loadMemberBroadcasts').onclick=loadMemberBroadcastInbox;
 
 $('fbSearch').onclick=()=>{const q=$('fbQuery').value.trim(),country=$('fbCountry').value;say('fbResult',(q?'অনুসন্ধানের বিষয়: '+q+'. ':'')+(country?'দেশ: '+country+'. ':'')+'বাস্তব ফলাফলের জন্য অনুমোদিত Meta API/data provider সংযুক্ত করতে হবে। এখনো কোনো অ্যাকাউন্ট অনুসন্ধান করা হয়নি।');};
 const sql=`create table if not exists public.profiles (
