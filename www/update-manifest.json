@@ -5,6 +5,14 @@
   "note": "Status describes repository implementation only. A feature is not live until its external setup and tests are verified.",
   "stages": [
     {
+      "id": "release-center",
+      "title": "Stage 0.4 — Version 3.3.0 Update Center",
+      "status": "testing",
+      "summary": "Version 3.3.0 is aligned in PWA and check-updates function; release metadata migration and in-app Allow Now update flow are present in repository. Member Broadcast inbox is now connected in the Community UI.",
+      "requires": "Apply 20261119200000_update_releases.sql; deploy check-updates Edge Function with Supabase config; publish PWA build through GitHub Pages; verify a real waiting service worker and Allow Now reload on Android.",
+      "page": "updates"
+    },
+    {
       "id": "member-broadcast",
       "title": "Stage 0.5 — Admin Member Broadcast",
       "status": "testing",
