@@ -189,6 +189,13 @@
 <div class="actions"><button class="btn" id="saveMemberRole">Role পরিবর্তন করুন</button><button class="btn secondary" id="refreshAdminAccess">Access যাচাই করুন</button></div>
 <div id="adminActionStatus" class="notice" role="status">Role migration ও Owner bootstrap সম্পন্ন হওয়ার পর নিয়ন্ত্রণ চালু হবে।</div>
 </div>
+<div class="section item"><h3>📢 সব সদস্যকে ঘোষণা পাঠান</h3>
+<p class="muted small">শুধু Owner / Super Admin / Admin পাঠাতে পারবেন। প্রতি ঘণ্টায় সর্বোচ্চ ৩টি ঘোষণা। এটি সদস্যদের অ্যাপের ইনবক্সে পৌঁছাবে; Push notification provider আলাদাভাবে সেটআপ করতে হবে।</p>
+<div class="field"><label for="broadcastTitle">ঘোষণার শিরোনাম</label><input id="broadcastTitle" maxlength="120" placeholder="গুরুত্বপূর্ণ ঘোষণা"></div>
+<div class="field"><label for="broadcastBody">সবার জন্য বার্তা</label><textarea id="broadcastBody" maxlength="5000" placeholder="সদস্যদের জন্য বার্তা লিখুন"></textarea></div>
+<button class="btn" id="sendMemberBroadcast">সব সদস্যকে পাঠান</button>
+<div id="broadcastStatus" class="notice" role="status">Broadcast migration চালু হলে এখানে ফলাফল দেখাবে।</div>
+</div>
 <div class="section item"><h3>Security Audit Log</h3><button class="btn secondary" id="loadAdminAudit">Audit log দেখুন</button><div id="adminAuditList" class="section small">Owner access যাচাইয়ের পর log দেখা যাবে।</div></div>
 <div class="notice">গুরুত্বপূর্ণ: UI নিজে কাউকে Admin বানায় না। সব অনুমতি Supabase database function/RLS দিয়ে যাচাই হবে। Owner ছাড়া অন্য কোনো role নতুন Admin বা Super Admin তৈরি করতে পারবে না। Owner account bootstrap করতে migration-এ নিজের verified account email বসিয়ে SQL একবার চালাতে হবে।</div>
 </article></section>
@@ -615,7 +622,7 @@ let mwvipWaitingWorker=null;
 let mwvipUpdateRegistration=null;
 let mwvipReloadOnControllerChange=false;
 const UPDATE_CHECK_URL=SUPABASE_PROJECT_URL+'/functions/v1/check-updates';
-const APP_VERSION='3.2.0';
+const APP_VERSION='3.3.0';
 function setUpdateStatus(message, isSuccess=false){
  const el=$('appUpdateStatus'); if(!el)return;
  el.textContent=message; el.classList.toggle('success',!!isSuccess);
@@ -756,6 +763,20 @@ $('saveMemberRole').onclick=async()=>{
  const {data,error}=await client.rpc('owner_set_member_role',{p_target_user_id:target,p_new_role:role});
  if(error){say('adminActionStatus','পরিবর্তন হয়নি: '+error.message);return;}
  say('adminActionStatus',data?'Role সফলভাবে আপডেট হয়েছে।':'Server অনুমতি দেয়নি।');
+};
+$('sendMemberBroadcast').onclick=async()=>{
+ if(!client||!currentUser){say('broadcastStatus','আগে লগইন করুন।');return;}
+ const title=$('broadcastTitle').value.trim(),body=$('broadcastBody').value.trim();
+ if(title.length<2||!body){say('broadcastStatus','শিরোনাম কমপক্ষে ২ অক্ষর এবং বার্তা লিখুন।');return;}
+ if(!confirm('এই ঘোষণা অ্যাপের সব অন্য সদস্যের ইনবক্সে পাঠাবেন?'))return;
+ const btn=$('sendMemberBroadcast');btn.disabled=true;
+ say('broadcastStatus','Server permission যাচাই করে পাঠানো হচ্ছে…');
+ const {data,error}=await client.rpc('send_member_broadcast',{p_title:title,p_body:body});
+ btn.disabled=false;
+ if(error){say('broadcastStatus','পাঠানো যায়নি: '+error.message);return;}
+ const result=Array.isArray(data)?data[0]:data;
+ say('broadcastStatus','সফল: '+(result?.recipient_count??0)+' জন সদস্যের ইনবক্সে ঘোষণা পৌঁছে দেওয়া হয়েছে।',true);
+ $('broadcastTitle').value='';$('broadcastBody').value='';
 };
 $('loadAdminAudit').onclick=async()=>{
  if(!client||!currentUser){say('adminAuditList','আগে লগইন করুন।');return;}
