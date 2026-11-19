@@ -5,6 +5,14 @@
   "note": "Status describes repository implementation only. A feature is not live until its external setup and tests are verified.",
   "stages": [
     {
+      "id": "one-click-setup",
+      "title": "Stage 0 — One-Click Safe Setup",
+      "status": "testing",
+      "summary": "Consent-first local preferences, Yes/Review/Later flow added; optional analytics and sensitive permissions remain off unless separately approved.",
+      "requires": "Android/browser device test and review/edit persistence verification",
+      "page": "setup"
+    },
+    {
       "id": "frontend",
       "title": "Stage 1 — Dashboard ও PWA foundation",
       "status": "available",
