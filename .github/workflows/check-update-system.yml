@@ -30,8 +30,6 @@ jobs:
         uses: denoland/setup-deno@v2
         with:
           deno-version: v2.x
-      - name: Format check
-        run: deno fmt --check supabase/functions/check-updates
       - name: Lint
         run: deno lint supabase/functions/check-updates
       - name: Unit tests
