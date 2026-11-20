@@ -48,8 +48,8 @@
       "id": "auth-community",
       "title": "Stage 2 — Supabase Auth ও Global Community",
       "status": "testing",
-      "summary": "Auth, profile, member search, friend request, private chat and group chat frontend/SQL foundation in repository; live database application and end-to-end tests not verified.",
-      "requires": "Apply base and community SQL; verify Auth settings and end-to-end security tests in target Supabase project.",
+      "summary": "Auth, profile, member search, friend requests, private/group chat frontend and SQL foundations are in the repository. User reports a basic real message-exchange test passed; broader RLS, inbox, read/unread and multi-user security tests are not yet independently verified.",
+      "requires": "Verify the target Supabase migrations and RLS policies; test registration/login, profile, friend requests, private/group chat, inbox and read/unread behavior with multiple accounts.",
       "page": "account"
     },
     {
