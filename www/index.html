@@ -658,7 +658,7 @@ if('serviceWorker' in navigator && location.protocol.startsWith('http')){window.
 let mwvipWaitingWorker=null;
 let mwvipUpdateRegistration=null;
 let mwvipReloadOnControllerChange=false;
-const UPDATE_CHECK_URL=SUPABASE_PROJECT_URL+'/functions/v1/check-updates';
+function updateCheckUrl(){return config().url.replace(/\/$/,'')+'/functions/v1/check-updates';}
 const APP_VERSION='3.3.0';
 function setUpdateStatus(message, isSuccess=false){
  const el=$('appUpdateStatus'); if(!el)return;
@@ -721,7 +721,7 @@ $('refreshUpdatePlan').onclick=()=>loadUpdatePlan();
 loadUpdatePlan();
 async function requestUpdateStatus(){
  const cfg=config();
- const response=await fetch(UPDATE_CHECK_URL,{
+ const response=await fetch(updateCheckUrl(),{
   method:'POST',
   headers:{
    'apikey':cfg.key,
