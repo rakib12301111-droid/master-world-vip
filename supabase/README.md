@@ -13,6 +13,7 @@ Run each SQL file once in Supabase → SQL Editor, in this exact order:
 5. `supabase/migrations/20261119190000_member_broadcast.sql` — admin-to-all-member inbox broadcasts. Requires both the base notifications table and Admin RBAC.
 6. `supabase/migrations/20261119200000_update_releases.sql` — release metadata for Update Center.
 7. `supabase/migrations/20261120100000_inbox_push_foundation.sql` — unified inbox, unread/read markers and per-device Web Push subscription storage. Requires the global community migration first.
+8. `supabase/migrations/20261121120000_facebook_setup_orders.sql` — Facebook setup assistance order records, customer-only order visibility and Admin/Owner review. Requires the base and Admin RBAC migrations.
 
 Review and apply in a staging project first. The repository cannot confirm whether these migrations have already been applied to your live Supabase project.
 
