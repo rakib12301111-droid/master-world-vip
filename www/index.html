@@ -1145,7 +1145,76 @@ $('loadAdminAudit').onclick=async()=>{
 
 $('showSql').onclick=()=>{$('sqlBlock').classList.toggle('hidden');$('sqlBlock').textContent=sql;};
 
-/* Global news, local offline drafts, and on-device voice recorder. */
+
+/* Crisis news monitor. Media reports are never represented as official alerts. */
+const crisisTerms={
+ war:'(war OR armed conflict OR missile OR airstrike OR invasion OR ceasefire OR border clash)',
+ disaster:'(earthquake OR tsunami OR cyclone OR hurricane OR flood OR wildfire)',
+ health:'(pandemic OR epidemic OR outbreak OR public health emergency)',
+ security:'(terrorism OR terrorist attack OR mass shooting OR security emergency)'
+};
+const crisisMessages={
+ bn:{title:'MASTER WORLD VIP — গুরুত্বপূর্ণ সংবাদ',body:'নতুন সংকট-সম্পর্কিত সংবাদ পাওয়া গেছে। বিস্তারিত ও মূল উৎস যাচাই করুন।'},
+ en:{title:'MASTER WORLD VIP — Important news',body:'New crisis-related news found. Check details and original sources.'},
+ ar:{title:'MASTER WORLD VIP — أخبار مهمة',body:'تم العثور على أخبار مرتبطة بأزمة. تحقق من التفاصيل والمصادر الأصلية.'},
+ ur:{title:'MASTER WORLD VIP — اہم خبر',body:'بحران سے متعلق نئی خبر ملی ہے۔ تفصیلات اور اصل ذرائع دیکھیں۔'}
+};
+function crisisQuery(){
+ const terms=[];
+ if($('crisisWar').checked)terms.push(crisisTerms.war);
+ if($('crisisDisaster').checked)terms.push(crisisTerms.disaster);
+ if($('crisisHealth').checked)terms.push(crisisTerms.health);
+ if($('crisisSecurity').checked)terms.push(crisisTerms.security);
+ return terms.length?terms.join(' OR '):'';
+}
+function crisisTranslateUrl(text,lang){
+ return 'https://translate.google.com/?sl=auto&tl='+encodeURIComponent(lang)+'&text='+encodeURIComponent(text)+'&op=translate';
+}
+async function refreshCrisis(){
+ const host=$('crisisFeed'),status=$('crisisStatus'),query=crisisQuery();
+ host.replaceChildren();
+ if(!query){status.textContent='কমপক্ষে একটি সংবাদ বিষয় নির্বাচন করুন।';return;}
+ if(!navigator.onLine){status.textContent='ইন্টারনেট নেই। আগে পাওয়া সংবাদ থাকলে নিচে সংরক্ষিত কপি দেখুন; নতুন সংবাদ আনা যাচ্ছে না।';try{const cached=JSON.parse(localStorage.getItem('mwvip_crisis_cache_v1')||'[]');renderCrisis(cached);}catch(_e){}return;}
+ status.textContent='সাম্প্রতিক সংবাদ প্রতিবেদন খোঁজা হচ্ছে…';
+ const country=$('crisisCountry').value;
+ const q='('+query+') AND ('+(country==='Worldwide'?'worldwide':country)+')';
+ const url='https://api.gdeltproject.org/api/v2/doc/doc?query='+encodeURIComponent(q)+'&mode=ArtList&format=json&maxrecords=15&sort=HybridRel';
+ try{
+  const response=await fetch(url,{headers:{Accept:'application/json'}});
+  if(!response.ok)throw new Error('News service HTTP '+response.status);
+  const data=await response.json(),articles=(data.articles||[]).slice(0,15).map(a=>({title:a.title,url:a.url,domain:a.domain,date:a.seendate,language:a.language}));
+  if(!articles.length){status.textContent='এই মুহূর্তে নির্বাচিত বিষয়ের কোনো সংবাদ পাওয়া যায়নি।';return;}
+  localStorage.setItem('mwvip_crisis_cache_v1',JSON.stringify(articles));
+  status.textContent='সংবাদ সেবা থেকে '+articles.length+'টি প্রতিবেদন পাওয়া গেছে। এগুলো মিডিয়া রিপোর্ট; সরকারি সতর্কতা হিসেবে গণ্য করবেন না।';
+  renderCrisis(articles);
+  if(localStorage.getItem('mwvip_crisis_notice_optin')==='yes'&&'Notification'in window&&Notification.permission==='granted'&&document.visibilityState==='visible'){
+   const seen=localStorage.getItem('mwvip_crisis_last_notice')||'';
+   const latest=articles[0].url||articles[0].title;
+   if(latest&&latest!==seen){const msg=crisisMessages[$('crisisLanguage').value]||crisisMessages.bn;new Notification(msg.title,{body:msg.body,icon:'./icons/icon.svg'});localStorage.setItem('mwvip_crisis_last_notice',latest);}
+  }
+ }catch(error){
+  status.textContent='লাইভ সংবাদ আনা যায়নি। সংরক্ষিত সংবাদ থাকলে দেখানো হচ্ছে। সংবাদ সেবা বা নেটওয়ার্ক পরে আবার চেষ্টা করুন।';
+  try{renderCrisis(JSON.parse(localStorage.getItem('mwvip_crisis_cache_v1')||'[]'));}catch(_e){}
+ }
+}
+function renderCrisis(items){
+ const host=$('crisisFeed');host.replaceChildren();
+ items.forEach(item=>{
+  const card=document.createElement('article');card.className='feature';
+  const title=document.createElement('a');title.href=item.url;title.target='_blank';title.rel='noopener noreferrer';title.textContent=item.title||'সংবাদ শিরোনাম';
+  const meta=document.createElement('p');meta.className='muted small';meta.textContent=(item.domain||'সংবাদ উৎস')+' · '+(item.date||'প্রকাশের সময় অজানা')+' · মূল প্রতিবেদন';
+  const translate=document.createElement('a');translate.href=crisisTranslateUrl(item.title||'', $('crisisLanguage').value);translate.target='_blank';translate.rel='noopener noreferrer';translate.textContent='নির্বাচিত ভাষায় অনুবাদ দেখুন';
+  card.append(title,meta,translate);host.appendChild(card);
+ });
+}
+$('refreshCrisis').addEventListener('click',refreshCrisis);
+$('enableCrisisNotice').addEventListener('click',async()=>{
+ if(!('Notification'in window)){ $('crisisStatus').textContent='এই browser-এ Notification সমর্থিত নয়।';return;}
+ const permission=await Notification.requestPermission();
+ if(permission==='granted'){localStorage.setItem('mwvip_crisis_notice_optin','yes');$('crisisStatus').textContent='এই ডিভাইসের নোটিফিকেশন অনুমতি চালু হয়েছে। এই সংস্করণে নতুন সংবাদ এলে অ্যাপ খোলা থাকা অবস্থায় refresh করলে নোটিফিকেশন আসতে পারে; background push এখনো নয়.';}
+ else{$('crisisStatus').textContent='নোটিফিকেশন অনুমতি দেওয়া হয়নি; অ্যাপের ভেতরে সংবাদ দেখতে পারবেন।';}
+});
+\n/* Global news, local offline drafts, and on-device voice recorder. */
 function updateNetworkStatus(){
  const el=$('networkStatus');if(!el)return;
  el.textContent=navigator.onLine?'ইন্টারনেট সংযুক্ত। সার্ভার ফিচার ব্যবহারের জন্য লগইন ও backend-ও সচল থাকতে হবে।':'Offline: আগে cache হওয়া অ্যাপ অংশ দেখা যাবে; নতুন বার্তা/খবর পাঠানো বা গ্রহণ করা যাবে না।';
