@@ -1,0 +1,118 @@
+{
+  "schema_version": 1,
+  "country": "BD",
+  "country_name": "Bangladesh",
+  "source_policy": "Only publish numbers verified against official government or service-provider sources. No guessed or crowdsourced numbers.",
+  "records": [
+    {
+      "id": "bd-national-emergency",
+      "service": "জাতীয় জরুরি সেবা — পুলিশ, ফায়ার ও অ্যাম্বুলেন্স",
+      "category": "emergency",
+      "number": "999",
+      "availability": "২৪/৭",
+      "source_name": "Bangladesh Police / National Portal",
+      "source_url": "https://www.police.gov.bd/en/hot_line_number",
+      "verified_on": "2026-11-20"
+    },
+    {
+      "id": "bd-fire-102",
+      "service": "ফায়ার সার্ভিস হটলাইন",
+      "category": "fire",
+      "number": "102",
+      "availability": "জরুরি হটলাইন",
+      "source_name": "Bangladesh Police official hotline list",
+      "source_url": "https://www.police.gov.bd/en/hot_line_number",
+      "verified_on": "2026-11-20"
+    },
+    {
+      "id": "bd-fire-16163",
+      "service": "ফায়ার সার্ভিস — DDM AWARE তালিকাভুক্ত",
+      "category": "fire",
+      "number": "16163",
+      "availability": "DDM AWARE emergency service",
+      "source_name": "Department of Disaster Management AWARE",
+      "source_url": "https://rapid.ddm.gov.bd/service/list",
+      "verified_on": "2026-11-20"
+    },
+    {
+      "id": "bd-disaster",
+      "service": "দুর্যোগের আগাম বার্তা ও সহায়তা",
+      "category": "disaster",
+      "number": "1090",
+      "availability": "সরকারি দুর্যোগ হেল্পলাইন",
+      "source_name": "Bangladesh National Portal / DDM",
+      "source_url": "https://bangladesh.gov.bd/pages/static-pages/69a55ba386514399668e4e89",
+      "verified_on": "2026-11-20"
+    },
+    {
+      "id": "bd-health",
+      "service": "স্বাস্থ্য বাতায়ন / চিকিৎসা পরামর্শ",
+      "category": "medical",
+      "number": "16263",
+      "availability": "সরকারি স্বাস্থ্য হেল্পলাইন",
+      "source_name": "DDM AWARE / DGFP",
+      "source_url": "https://rapid.ddm.gov.bd/service/list",
+      "verified_on": "2026-11-20"
+    },
+    {
+      "id": "bd-power",
+      "service": "বিদ্যুৎ বিভাগ — অভিযোগ ও সেবা",
+      "category": "electricity",
+      "number": "16999",
+      "availability": "বিদ্যুৎ বিভাগ হটলাইন",
+      "source_name": "Bangladesh National Portal / Power Division",
+      "source_url": "https://powerdivision.gov.bd/",
+      "verified_on": "2026-11-20"
+    },
+    {
+      "id": "bd-desco",
+      "service": "DESCO কেন্দ্রীয় হটলাইন",
+      "category": "electricity",
+      "number": "16120",
+      "availability": "DESCO Hotline",
+      "source_name": "Dhaka Electric Supply PLC official website",
+      "source_url": "https://desco.gov.bd/pages/static-pages/6922dcbc933eb65569e11ba3",
+      "verified_on": "2026-11-20"
+    },
+    {
+      "id": "bd-desco-turag",
+      "service": "DESCO তুরাগ গ্রাহক সেবা কেন্দ্র — সার্বক্ষণিক",
+      "category": "electricity",
+      "number": "01324-435978",
+      "availability": "Turag customer service centre",
+      "source_name": "Dhaka Electric Supply PLC official list",
+      "source_url": "https://desco.gov.bd/pages/static-pages/6922dbda933eb65569e0cfee",
+      "verified_on": "2026-11-20"
+    },
+    {
+      "id": "bd-government-info",
+      "service": "সরকারি তথ্য ও সেবা",
+      "category": "government",
+      "number": "333",
+      "availability": "সরকারি হেল্পলাইন",
+      "source_name": "Bangladesh National Portal",
+      "source_url": "https://bangladesh.gov.bd/pages/static-pages/69a55ba386514399668e4e89",
+      "verified_on": "2026-11-20"
+    },
+    {
+      "id": "bd-child",
+      "service": "শিশু সহায়তা",
+      "category": "support",
+      "number": "1098",
+      "availability": "সরকারি হেল্পলাইন",
+      "source_name": "Bangladesh Police official hotline list",
+      "source_url": "https://www.police.gov.bd/en/hot_line_number",
+      "verified_on": "2026-11-20"
+    },
+    {
+      "id": "bd-women",
+      "service": "নারী ও শিশু নির্যাতন প্রতিরোধ",
+      "category": "support",
+      "number": "109",
+      "availability": "সরকারি হেল্পলাইন",
+      "source_name": "Bangladesh Police official hotline list",
+      "source_url": "https://www.police.gov.bd/en/hot_line_number",
+      "verified_on": "2026-11-20"
+    }
+  ]
+}

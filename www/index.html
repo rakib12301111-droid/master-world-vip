@@ -32,7 +32,7 @@
 <button data-page="community">🌐 Community</button>
 <button data-page="inbox">✉ Inbox</button>
 <button data-page="global">🌍 Global News & Offline</button>
-<button data-page="emergency">🚨 Emergency Offline</button>
+<button data-page="emergency">🚨 Emergency & Helplines</button>
 <button data-page="games">🎮 Games Center</button>
 <button data-page="ai">✧ AI Center</button>
 <button data-page="facebook">◎ Facebook Center</button>
@@ -207,6 +207,16 @@
 </section>
 
 <section class="page" id="emergency">
+<article class="card">
+<h2>☎️ Verified Emergency Helplines</h2>
+<p class="muted">দেশ নির্বাচন করে সরকারি/সেবাদাতার যাচাইকৃত নম্বর দেখুন। সর্বশেষ অনলাইন আপডেট থাকলে সেটি ডাউনলোড হবে; নেটওয়ার্ক না থাকলে সংরক্ষিত তালিকা দেখাবে। জরুরি অবস্থায় নম্বরের পাশে দেওয়া অফিসিয়াল উৎস মিলিয়ে নিন।</p>
+<div class="field"><label for="helplineCountry">দেশ</label><select id="helplineCountry"><option value="BD">বাংলাদেশ</option><option value="US">United States</option><option value="GB">United Kingdom</option><option value="IN">India</option><option value="SA">Saudi Arabia</option><option value="AE">United Arab Emirates</option><option value="OTHER">অন্যান্য দেশ</option></select></div>
+<div class="field"><label for="helplineSearch">সেবা খুঁজুন</label><input id="helplineSearch" type="search" placeholder="Police, Fire, Ambulance, Electricity..."></div>
+<div class="actions"><button class="btn" id="refreshHelplines" type="button">↻ অনলাইন তালিকা আপডেট</button></div>
+<div class="notice" id="helplineUpdateStatus" aria-live="polite">সংরক্ষিত সরকারি উৎসের তালিকা প্রস্তুত হচ্ছে…</div>
+<div id="helplineList" class="stack" aria-live="polite"></div>
+<p class="muted">বিদেশি দেশের নম্বর এই সংস্করণে যাচাইকৃত ডেটা না থাকলে দেখানো হবে না। ভুল নম্বর দেখানোর চেয়ে সরকারি উৎস না পাওয়া জানানো নিরাপদ।</p>
+</article>
 <article class="card">
 <h2>🚨 জরুরি নিরাপত্তা কেন্দ্র — Offline Guide</h2>
 <p class="muted">এই নির্দেশনাগুলো অ্যাপের সঙ্গে লোড হলে ইন্টারনেট ছাড়াও পড়া ও ফোনের সমর্থিত ভয়েসে শোনা যাবে। এগুলো সাধারণ প্রস্তুতি-তথ্য; স্থানীয় কর্তৃপক্ষের নির্দেশ সর্বাগ্রে মানুন।</p>
@@ -1183,6 +1193,72 @@ $('stopVoiceRecord').addEventListener('click',()=>{
 });
 updateNetworkStatus();
 
+
+
+/* Verified helpline directory: online refresh + offline snapshot fallback. */
+const bdHelplinesFallback={
+  "schema_version": 1,
+  "country": "BD",
+  "country_name": "Bangladesh",
+  "source_policy": "Only publish numbers verified against official government or service-provider sources. No crowdsourced/unverified phone numbers.",
+  "records": [
+    {"id":"bd-national-emergency","service":"জাতীয় জরুরি সেবা (পুলিশ, ফায়ার, অ্যাম্বুলেন্স)","category":"emergency","number":"999","availability":"24/7","source_name":"Bangladesh National Portal","source_url":"https://bangladesh.gov.bd/pages/static-pages/69a55ba386514399668e4e89","verified_on":"2026-11-20"},
+    {"id":"bd-fire","service":"ফায়ার সার্ভিস ও সিভিল ডিফেন্স","category":"fire","number":"102","availability":"জরুরি হটলাইন","source_name":"Bangladesh Police official hotline list / National Portal","source_url":"https://www.police.gov.bd/en/hot_line_number","verified_on":"2026-11-20"},
+    {"id":"bd-disaster","service":"দুর্যোগের আগাম বার্তা ও সহায়তা","category":"disaster","number":"1090","availability":"সরকারি দুর্যোগ হেল্পলাইন","source_name":"Bangladesh National Portal","source_url":"https://bangladesh.gov.bd/pages/static-pages/69a55ba386514399668e4e89","verified_on":"2026-11-20"},
+    {"id":"bd-health","service":"স্বাস্থ্য বাতায়ন / চিকিৎসা পরামর্শ","category":"medical","number":"16263","availability":"সরকারি স্বাস্থ্য হেল্পলাইন","source_name":"Ministry of Housing and Public Works government hotline list","source_url":"https://mohpw.gov.bd/pages/static-pages/694032a935ce18e1c0560276","verified_on":"2026-11-20"},
+    {"id":"bd-power","service":"বিদ্যুৎ বিভাগের কেন্দ্রীয় সেবা","category":"electricity","number":"16999","availability":"সরকারি বিদ্যুৎ হটলাইন","source_name":"Bangladesh Energy and Power Research Council","source_url":"https://eprc.portal.gov.bd/pages/static-pages/6922df9e933eb65569e230f9","verified_on":"2026-11-20"},
+    {"id":"bd-desco","service":"DESCO গ্রাহক সেবা / বিদ্যুৎ সমস্যা","category":"electricity","number":"16120","availability":"DESCO hotline","source_name":"Dhaka Electric Supply PLC official website","source_url":"https://desco.gov.bd/pages/static-pages/6922dcbc933eb65569e11ba3","verified_on":"2026-11-20"},
+    {"id":"bd-desco-turag","service":"DESCO তুরাগ গ্রাহক সেবা কেন্দ্র (সার্বক্ষণিক)","category":"electricity","number":"01324-435978","availability":"DESCO Turag service centre","source_name":"Dhaka Electric Supply PLC official service-centre list","source_url":"https://desco.gov.bd/pages/static-pages/6922dbda933eb65569e0cfee","verified_on":"2026-11-20"},
+    {"id":"bd-government-info","service":"সরকারি তথ্য ও সেবা","category":"government","number":"333","availability":"24/7","source_name":"Bangladesh National Portal","source_url":"https://bangladesh.gov.bd/pages/static-pages/69a55ba386514399668e4e89","verified_on":"2026-11-20"},
+    {"id":"bd-child","service":"শিশু সহায়তা","category":"support","number":"1098","availability":"সরকারি হেল্পলাইন","source_name":"Bangladesh Police official hotline list","source_url":"https://www.police.gov.bd/en/hot_line_number","verified_on":"2026-11-20"},
+    {"id":"bd-women","service":"নারী ও শিশু নির্যাতন প্রতিরোধ","category":"support","number":"109","availability":"সরকারি হেল্পলাইন","source_name":"Bangladesh Police official hotline list","source_url":"https://www.police.gov.bd/en/hot_line_number","verified_on":"2026-11-20"}
+  ]
+};
+let activeHelplineData=bdHelplinesFallback;
+function renderHelplines(){
+ const country=$('helplineCountry').value, query=($('helplineSearch').value||'').trim().toLowerCase();
+ const list=$('helplineList');list.innerHTML='';
+ if(country!=='BD'){
+  const box=document.createElement('div');box.className='notice';
+  box.textContent='এই দেশের সরকারি যাচাইকৃত নম্বরের ডেটাসেট এখনো যুক্ত হয়নি। ভুল নম্বর দেখানো হচ্ছে না। স্থানীয় সরকারি জরুরি সেবা/পুলিশ/ফায়ার সার্ভিসের অফিসিয়াল ওয়েবসাইট থেকে নম্বর নিশ্চিত করুন। অনলাইন ডেটাসেট যুক্ত হলে এখানে স্বয়ংক্রিয় আপডেট আসবে।';
+  list.appendChild(box);return;
+ }
+ const rows=activeHelplineData.records.filter(r=>(r.service+' '+r.category+' '+r.number).toLowerCase().includes(query));
+ if(!rows.length){list.textContent='মিল পাওয়া যায়নি।';return;}
+ rows.forEach(r=>{
+  const card=document.createElement('article');card.className='card';
+  const title=document.createElement('h3');title.textContent=r.service;
+  const number=document.createElement('p');number.className='helpline-number';number.textContent=r.number;
+  const meta=document.createElement('p');meta.className='muted';meta.textContent='উৎস: '+r.source_name+' · যাচাই: '+r.verified_on+' · '+r.availability;
+  const actions=document.createElement('div');actions.className='actions';
+  const call=document.createElement('a');call.className='btn';call.href='tel:'+r.number.replace(/[^+0-9]/g,'');call.textContent='📞 কল করুন';
+  const source=document.createElement('a');source.className='btn secondary';source.href=r.source_url;source.target='_blank';source.rel='noopener noreferrer';source.textContent='অফিসিয়াল উৎস';
+  actions.append(call,source);card.append(title,number,meta,actions);list.appendChild(card);
+ });
+}
+async function refreshHelplines(){
+ $('helplineUpdateStatus').textContent='অনলাইন সরকারি তালিকা যাচাই করা হচ্ছে…';
+ if($('helplineCountry').value!=='BD'){renderHelplines();$('helplineUpdateStatus').textContent='এই দেশের যাচাইকৃত ডেটাসেট এখনো প্রকাশিত হয়নি।';return;}
+ try{
+  const response=await fetch('./data/helplines-BD.json?updated='+encodeURIComponent(new Date().toISOString().slice(0,10)),{cache:'no-store'});
+  if(!response.ok)throw new Error('HTTP '+response.status);
+  const next=await response.json();
+  if(next.schema_version!==1||next.country!=='BD'||!Array.isArray(next.records))throw new Error('Invalid helpline dataset');
+  for(const item of next.records){if(!item.service||!item.number||!/^https:\/\//.test(item.source_url)||!item.verified_on)throw new Error('Incomplete source metadata');}
+  activeHelplineData=next;
+  try{localStorage.setItem('mwvip_helplines_BD_v1',JSON.stringify(next));}catch(_e){}
+  $('helplineUpdateStatus').textContent='অনলাইন তালিকা আপডেট হয়েছে। প্রতিটি নম্বরের সরকারি উৎস ও যাচাইয়ের তারিখ দেখুন।';
+ }catch(error){
+  try{const cached=JSON.parse(localStorage.getItem('mwvip_helplines_BD_v1')||'null');if(cached&&cached.country==='BD'&&Array.isArray(cached.records))activeHelplineData=cached;}catch(_e){}
+  $('helplineUpdateStatus').textContent='অনলাইন আপডেট পাওয়া যায়নি। সংরক্ষিত যাচাইকৃত তালিকা দেখানো হচ্ছে; নম্বর পরিবর্তিত হয়ে থাকতে পারে—কলের আগে অফিসিয়াল উৎস মিলিয়ে নিন।';
+ }
+ renderHelplines();
+}
+$('helplineCountry').addEventListener('change',()=>{renderHelplines();refreshHelplines();});
+$('helplineSearch').addEventListener('input',renderHelplines);
+$('refreshHelplines').addEventListener('click',refreshHelplines);
+renderHelplines();
+if(navigator.onLine)refreshHelplines();
 
 /* Offline emergency reference and local games. */
 const emergencyGuides={
