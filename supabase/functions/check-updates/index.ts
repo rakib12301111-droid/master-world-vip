@@ -1,80 +1,71 @@
-const SUPABASE_URL = "https://lztbbrzeuyjkuiyzrsxp.supabase.co";
-const CURRENT_APP_VERSION = "3.3.0";
+import { compareVersions, parseVersion } from "./version.ts";
+
+const FALLBACK_APP_VERSION = "3.3.0";
+const DEFAULT_SUPABASE_URL = "https://lztbbrzeuyjkuiyzrsxp.supabase.co";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, apikey, content-type",
+  "Access-Control-Allow-Headers": "authorization, apikey, content-type, x-client-info",
   "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-  "Content-Type": "application/json",
+  "Content-Type": "application/json; charset=utf-8",
+  "Cache-Control": "no-store, max-age=0",
 };
 
 function jsonResponse(data: unknown, status = 200) {
-  return new Response(JSON.stringify(data), {
-    status,
-    headers: corsHeaders,
-  });
+  return new Response(JSON.stringify(data), { status, headers: corsHeaders });
 }
 
-function parseVersion(version: string) {
-  const match = version.trim().match(
-    /^v?(\d+)\.(\d+)\.(\d+)(?:-([0-9A-Za-z.-]+))?(?:\+[0-9A-Za-z.-]+)?$/,
-  );
-
-  if (!match) return null;
-
-  return {
-    major: Number(match[1]),
-    minor: Number(match[2]),
-    patch: Number(match[3]),
-    prerelease: match[4] ?? null,
-  };
+function isPublicApiKey(value: string): boolean {
+  // Supabase publishable keys are preferred. Legacy anon JWT keys remain supported.
+  return /^sb_publishable_[A-Za-z0-9_-]+$/.test(value) ||
+    (/^eyJ[A-Za-z0-9_-]+\\.[A-Za-z0-9_-]+\\.[A-Za-z0-9_-]+$/.test(value));
 }
 
-function compareVersions(a: string, b: string): number {
-  const va = parseVersion(a);
-  const vb = parseVersion(b);
+async function readCurrentVersion(req: Request): Promise<string> {
+  const url = new URL(req.url);
+  let candidate = url.searchParams.get("current_version");
 
-  if (!va || !vb) {
-    throw new Error("Invalid version format");
+  if (req.method === "POST") {
+    let body: unknown;
+    try {
+      body = await req.json();
+    } catch {
+      throw new Error("Request body must be valid JSON");
+    }
+    if (body && typeof body === "object" && "current_version" in body) {
+      const value = (body as { current_version?: unknown }).current_version;
+      if (typeof value === "string") candidate = value;
+      else throw new Error("current_version must be a string");
+    }
   }
 
-  for (const key of ["major", "minor", "patch"] as const) {
-    if (va[key] > vb[key]) return 1;
-    if (va[key] < vb[key]) return -1;
-  }
-
-  if (va.prerelease === vb.prerelease) return 0;
-  if (va.prerelease === null) return 1;
-  if (vb.prerelease === null) return -1;
-
-  return va.prerelease.localeCompare(vb.prerelease);
+  const version = candidate?.trim() || FALLBACK_APP_VERSION;
+  if (!parseVersion(version)) throw new Error("Invalid current_version format");
+  return version;
 }
 
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
-    return new Response("ok", {
-      status: 200,
-      headers: corsHeaders,
-    });
+    return new Response("ok", { status: 200, headers: corsHeaders });
   }
 
-  if (!["GET", "POST"].includes(req.method)) {
-    return jsonResponse({
-      success: false,
-      error: "Method not allowed",
-    }, 405);
+  if (req.method !== "GET" && req.method !== "POST") {
+    return jsonResponse({ success: false, error: "Method not allowed" }, 405);
   }
 
   const apiKey = req.headers.get("apikey") ?? "";
-
-  if (!/^sb_publishable_[A-Za-z0-9_-]+$/.test(apiKey)) {
+  if (!isPublicApiKey(apiKey)) {
     return jsonResponse({
       success: false,
-      error: "A valid publishable API key is required",
+      error: "A valid Supabase publishable/anon API key is required",
     }, 401);
   }
 
   try {
+    const currentVersion = await readCurrentVersion(req);
+    const supabaseUrl = (Deno.env.get("SUPABASE_URL") || DEFAULT_SUPABASE_URL)
+      .replace(/\\/$/, "");
+
     const query = new URLSearchParams({
       select: "version,release_notes",
       status: "eq.published",
@@ -83,13 +74,11 @@ Deno.serve(async (req: Request) => {
     });
 
     const response = await fetch(
-      `${SUPABASE_URL}/rest/v1/update_releases?${query.toString()}`,
+      `${supabaseUrl}/rest/v1/update_releases?${query.toString()}`,
       {
         method: "GET",
-        headers: {
-          apikey: apiKey,
-          Accept: "application/json",
-        },
+        headers: { apikey: apiKey, Accept: "application/json" },
+        cache: "no-store",
       },
     );
 
@@ -97,45 +86,42 @@ Deno.serve(async (req: Request) => {
       return jsonResponse({
         success: false,
         error: "Unable to check for updates",
+        upstream_status: response.status,
       }, 502);
     }
 
-    const releases = await response.json();
+    const releases: unknown = await response.json();
+    if (!Array.isArray(releases)) {
+      return jsonResponse({ success: false, error: "Invalid release response" }, 502);
+    }
 
-    if (!Array.isArray(releases) || releases.length === 0) {
+    if (releases.length === 0) {
       return jsonResponse({
         success: true,
+        current_version: currentVersion,
         latest_version: null,
         release_notes: null,
         update_available: false,
       });
     }
 
-    const release = releases[0];
-
-    if (
-      typeof release.version !== "string" ||
-      !parseVersion(release.version)
-    ) {
-      return jsonResponse({
-        success: false,
-        error: "Invalid release version",
-      }, 500);
+    const release = releases[0] as { version?: unknown; release_notes?: unknown };
+    if (typeof release.version !== "string" || !parseVersion(release.version)) {
+      return jsonResponse({ success: false, error: "Invalid release version" }, 500);
     }
-
-    const updateAvailable =
-      compareVersions(release.version, CURRENT_APP_VERSION) > 0;
 
     return jsonResponse({
       success: true,
+      current_version: currentVersion,
       latest_version: release.version,
-      release_notes: release.release_notes ?? null,
-      update_available: updateAvailable,
+      release_notes: typeof release.release_notes === "string" ? release.release_notes : null,
+      update_available: compareVersions(release.version, currentVersion) > 0,
     });
-  } catch {
-    return jsonResponse({
-      success: false,
-      error: "Update check failed",
-    }, 500);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Update check failed";
+    const status = message.includes("current_version") || message.includes("Request body")
+      ? 400
+      : 500;
+    return jsonResponse({ success: false, error: message }, status);
   }
 });
