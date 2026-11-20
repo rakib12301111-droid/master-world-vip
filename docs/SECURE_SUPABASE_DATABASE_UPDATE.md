@@ -37,6 +37,7 @@ The workflow serializes deployments and refuses to run against a different proje
 4. Configure the GitHub Actions secrets listed above. Optionally protect the GitHub `production` environment with required reviewers.
 5. The first Owner/RBAC migration is a bootstrap dependency: before the app can authorize Owner requests, run the workflow once from GitHub Actions after the dry run and backup review. It creates `app_user_roles` and assigns Owner to the exact verified email in that migration. The user must already exist in Supabase Auth.
 6. After the bootstrap migration is successfully applied, the app Update Center can request Dry Run and Apply. The Edge Function validates the current Supabase access token, checks `app_user_roles.role = owner`, and only then dispatches the workflow.
-7. Deploy the frontend branch to the hosting environment only after review/merge. A queued response means the workflow was requested, not that the migration succeeded. Verify the Actions run and database afterward.
+7. The Update Center stores the returned request ID in the current browser session. Use **Update Status দেখুন** to retrieve the matching GitHub Actions run. The status endpoint is Owner-only and returns only run metadata (status, conclusion, run URL and timestamps), never logs or secrets.
+8. Deploy the frontend branch to the hosting environment only after review/merge. A queued response means the workflow was requested, not that the migration succeeded. Verify the Actions run and database afterward.
 
 The Update Center Apply action deliberately requires an explicit confirmation phrase and a backup acknowledgement. The workflow applies all pending migrations in timestamp order, so always inspect the Dry Run output first.
