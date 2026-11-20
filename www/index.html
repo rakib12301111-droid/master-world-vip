@@ -258,7 +258,7 @@
 <div class="actions"><button class="btn secondary" id="dbDryRun" type="button">১) Dry Run চালান</button></div>
 <label class="feature"><input type="checkbox" id="dbBackupConfirmed"> Supabase backup / recovery readiness যাচাই করেছি</label>
 <label class="feature">Apply নিশ্চিতকরণ লিখুন: <input id="dbApplyPhrase" type="text" autocomplete="off" placeholder="APPLY-MASTER-WORLD-VIP-MIGRATIONS"></label>
-<div class="actions"><button class="btn" id="dbApply" type="button">২) অনুমোদন দিয়ে Migration Apply</button></div>
+<div class="actions"><button class="btn" id="dbApply" type="button">২) অনুমোদন দিয়ে Migration Apply</button><button class="btn secondary" id="dbCheckStatus" type="button">৩) Update Status দেখুন</button></div>
 <div id="dbUpdateStatus" class="notice" role="status">শুধু Owner লগইন করলে এই সুবিধা কাজ করবে। প্রথমে Dry Run করুন। Apply সব pending migration চালাতে পারে।</div>
 <p class="small muted">প্রথমবার চালুর আগে Supabase Edge Function deploy এবং server-side GitHub Actions token secret সেট করতে হবে। Dry Run সফল ও backup যাচাই না করে Apply করবেন না।</p>
 </div>
@@ -764,12 +764,14 @@ async function loadUpdatePlan(){
  }
 }
 
+async function getOwnerSession(){
+ if(!client || !currentUser)throw new Error('আগে Owner অ্যাকাউন্টে লগইন করুন।');
+ const {data:{session},error}=await client.auth.getSession();
+ if(error||!session?.access_token)throw new Error('Login session পাওয়া যায়নি। আবার লগইন করুন।');
+ return {session,cfg:config()};
+}
 async function requestDatabaseMigration(mode){
- const status=$('dbUpdateStatus');
- const cfg=config();
- if(!client || !currentUser){status.textContent='আগে Owner অ্যাকাউন্টে লগইন করুন।';return;}
- const {data:{session},error:sessionError}=await client.auth.getSession();
- if(sessionError||!session?.access_token){status.textContent='Login session পাওয়া যায়নি। আবার লগইন করুন।';return;}
+ const {session,cfg}=await getOwnerSession();
  const response=await fetch(cfg.url.replace(/\/$/,'')+'/functions/v1/dispatch-db-update',{
   method:'POST',
   headers:{'apikey':cfg.key,'Authorization':'Bearer '+session.access_token,'Content-Type':'application/json'},
@@ -781,7 +783,29 @@ async function requestDatabaseMigration(mode){
  });
  const payload=await response.json().catch(()=>({}));
  if(!response.ok||payload.success!==true)throw new Error(payload.error||('HTTP '+response.status));
- status.textContent=payload.message+' Request queued. GitHub Actions run status আলাদাভাবে যাচাই করতে হবে।';
+ if(!payload.request_id)throw new Error('Request queued হলেও tracking ID পাওয়া যায়নি।');
+ sessionStorage.setItem('mwvip_db_update_request_id',payload.request_id);
+ $('dbUpdateStatus').textContent=payload.message+' · Request ID: '+payload.request_id+' · এখন Update Status দেখুন।';
+ return payload;
+}
+async function checkDatabaseUpdateStatus(){
+ const requestId=sessionStorage.getItem('mwvip_db_update_request_id');
+ if(!requestId)throw new Error('এই browser session-এ কোনো database update request ID নেই। আগে Dry Run বা Apply request পাঠান।');
+ const {session,cfg}=await getOwnerSession();
+ const response=await fetch(cfg.url.replace(/\/$/,'')+'/functions/v1/get-db-update-status',{
+  method:'POST',
+  headers:{'apikey':cfg.key,'Authorization':'Bearer '+session.access_token,'Content-Type':'application/json'},
+  body:JSON.stringify({request_id:requestId})
+ });
+ const payload=await response.json().catch(()=>({}));
+ if(!response.ok||payload.success!==true)throw new Error(payload.error||('HTTP '+response.status));
+ const labels={queued:'Queue-তে আছে / run তৈরি হচ্ছে',in_progress:'চলমান',completed:payload.conclusion==='success'?'সফলভাবে সম্পন্ন':('শেষ হয়েছে: '+(payload.conclusion||'অজানা ফলাফল')),requested:'অনুরোধ গ্রহণ করা হয়েছে'};
+ let message='Database Update Status: '+(labels[payload.status]||payload.status||'অজানা');
+ if(payload.conclusion)message+=' · ফলাফল: '+payload.conclusion;
+ if(payload.run_number)message+=' · Run #'+payload.run_number;
+ if(payload.html_url)message+=' · GitHub Actions: '+payload.html_url;
+ $('dbUpdateStatus').textContent=message;
+ return payload;
 }
 $('dbDryRun').onclick=async()=>{
  const b=$('dbDryRun');b.disabled=true;
@@ -800,6 +824,7 @@ $('dbApply').onclick=async()=>{
  finally{b.disabled=false;}
 };
 
+$('dbCheckStatus').onclick=async()=>{const b=$('dbCheckStatus');b.disabled=true;$('dbUpdateStatus').textContent='GitHub Actions status যাচাই হচ্ছে…';try{await checkDatabaseUpdateStatus();}catch(e){$('dbUpdateStatus').textContent='Status পাওয়া যায়নি: '+(e.message||e);}finally{b.disabled=false;}};
 $('refreshUpdatePlan').onclick=()=>loadUpdatePlan();
 loadUpdatePlan();
 async function requestUpdateStatus(){
