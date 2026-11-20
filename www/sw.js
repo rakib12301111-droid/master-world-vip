@@ -1,4 +1,4 @@
-const CACHE='mwvip-pwa-v11';
+const CACHE='mwvip-pwa-v12';
 const CORE=['./','./index.html','./manifest.webmanifest','./icons/icon.svg'];
 self.addEventListener('message',event=>{if(event.data&&event.data.type==='SKIP_WAITING')self.skipWaiting();});
 self.addEventListener('install',event=>{event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(CORE)));});
