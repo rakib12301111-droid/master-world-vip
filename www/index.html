@@ -268,17 +268,16 @@
 <div id="updateRoadmap" class="feature-list"><div class="feature">Update plan লোড হচ্ছে…</div></div>
 </div>
 <div class="section item">
-<h3>পরবর্তী করণীয় — Backend setup</h3>
-<p class="small muted">Database migration চালাতে Supabase Dashboard → SQL Editor ব্যবহার করতে হবে। নিচের migration ফাইলগুলো repository-তে রাখা আছে; চালানোর আগে একই project ও সঠিক ক্রম নিশ্চিত করুন।</p>
+<h3>পরবর্তী করণীয় — Secure Backend Setup</h3>
+<p class="small muted">Database migration অনুরোধ Update Center থেকে যাবে। প্রথমবার চালুর জন্য একবার authenticated Edge Function deploy ও server-side secret setup প্রয়োজন; কোনো secret অ্যাপের JavaScript-এ দেওয়া যাবে না।</p>
 <ol class="small">
-<li><code>supabase/migrations/202611180001_master_world_vip.sql</code></li>
-<li><code>supabase/migrations/202611190001_global_community.sql</code></li>
-<li><code>supabase/migrations/202611190002_privacy_rights.sql</code></li>
-<li><code>supabase/migrations/20261119180000_admin_rbac_owner_control.sql</code> — verified Owner email মিলিয়ে নিন</li>
-<li><code>supabase/migrations/20261119190000_member_broadcast.sql</code></li>
-<li><code>supabase/migrations/20261119200000_update_releases.sql</code> — Update Center release metadata</li>
+<li>Supabase-এ <code>dispatch-db-update</code> Edge Function deploy করুন।</li>
+<li>Supabase Function Secrets-এ GitHub Actions token এবং repository name সংরক্ষণ করুন।</li>
+<li>GitHub Actions-এ Supabase access token, database password ও project ref secrets দিন।</li>
+<li>Owner/RBAC migration প্রথমবার bootstrap করতে Dry Run ও backup যাচাইয়ের পর GitHub Actions workflow একবার চালাতে হবে।</li>
+<li>এরপর Owner লগইন করে উপরের Dry Run এবং অনুমোদিত Apply বাটন ব্যবহার করতে পারবেন।</li>
 </ol>
-<p class="muted small">Update check চালাতে <code>supabase/functions/check-updates</code> Edge Function ও <code>supabase/config.toml</code> deploy করতে হবে। Migration/Function deploy এখনো এই app button দিয়ে স্বয়ংক্রিয় হয় না।</p>
+<p class="muted small">প্রথম bootstrap সম্পন্ন না হওয়া পর্যন্ত Owner role যাচাই করা সম্ভব নয়। Dry Run queued মানে কেবল request পাঠানো হয়েছে—সফল Migration নয়। GitHub Actions result ও Supabase database যাচাই করতে হবে।</p>
 <div class="actions"><button class="btn secondary" data-go="account">Supabase Account Setup খুলুন</button><button class="btn secondary" data-go="progress">সম্পূর্ণ কাজের তালিকা দেখুন</button></div>
 </div>
 <div class="notice">স্বয়ংক্রিয় PWA update কেবল browser-managed web files-এর জন্য। Database migration, AI provider secret, Meta permissions, notification provider, signing key ও Google Play submission-এর জন্য আলাদা অনুমোদিত setup প্রয়োজন।</div>
