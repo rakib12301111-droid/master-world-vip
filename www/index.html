@@ -252,6 +252,16 @@
 <div id="appUpdateStatus" class="notice" role="status">আপডেট পরীক্ষা করা হয়নি।</div>
 <div id="updateManifestStatus" class="muted small" role="status">Update plan লোড হচ্ছে…</div>
 </div>
+<div class="section item" id="databaseUpdatePanel">
+<h3>🔐 Secure Database Update (Owner only)</h3>
+<p class="small muted">এখান থেকে Supabase migration-এর Dry Run বা অনুমোদিত Apply অনুরোধ পাঠানো যাবে। সার্ভারে Owner role যাচাই হবে; গোপন key এই পেজে রাখা হবে না।</p>
+<div class="actions"><button class="btn secondary" id="dbDryRun" type="button">১) Dry Run চালান</button></div>
+<label class="feature"><input type="checkbox" id="dbBackupConfirmed"> Supabase backup / recovery readiness যাচাই করেছি</label>
+<label class="feature">Apply নিশ্চিতকরণ লিখুন: <input id="dbApplyPhrase" type="text" autocomplete="off" placeholder="APPLY-MASTER-WORLD-VIP-MIGRATIONS"></label>
+<div class="actions"><button class="btn" id="dbApply" type="button">২) অনুমোদন দিয়ে Migration Apply</button></div>
+<div id="dbUpdateStatus" class="notice" role="status">শুধু Owner লগইন করলে এই সুবিধা কাজ করবে। প্রথমে Dry Run করুন। Apply সব pending migration চালাতে পারে।</div>
+<p class="small muted">প্রথমবার চালুর আগে Supabase Edge Function deploy এবং server-side GitHub Actions token secret সেট করতে হবে। Dry Run সফল ও backup যাচাই না করে Apply করবেন না।</p>
+</div>
 <div class="section">
 <h2>ধাপে ধাপে Feature Rollout</h2>
 <p class="muted small">একটি ধাপের প্রয়োজনীয় কাজ যাচাই না করে পরের ধাপকে সম্পন্ন দেখানো হবে না।</p>
@@ -754,6 +764,43 @@ async function loadUpdatePlan(){
   status.textContent='Update plan লোড হয়নি: '+error.message+'। PWA refresh করে আবার চেষ্টা করুন।';
  }
 }
+
+async function requestDatabaseMigration(mode){
+ const status=$('dbUpdateStatus');
+ const cfg=config();
+ if(!client || !currentUser){status.textContent='আগে Owner অ্যাকাউন্টে লগইন করুন।';return;}
+ const {data:{session},error:sessionError}=await client.auth.getSession();
+ if(sessionError||!session?.access_token){status.textContent='Login session পাওয়া যায়নি। আবার লগইন করুন।';return;}
+ const response=await fetch(cfg.url.replace(/\/$/,'')+'/functions/v1/dispatch-db-update',{
+  method:'POST',
+  headers:{'apikey':cfg.key,'Authorization':'Bearer '+session.access_token,'Content-Type':'application/json'},
+  body:JSON.stringify({
+   mode,
+   confirm_apply:$('dbApplyPhrase').value.trim(),
+   backup_confirmed:$('dbBackupConfirmed').checked
+  })
+ });
+ const payload=await response.json().catch(()=>({}));
+ if(!response.ok||payload.success!==true)throw new Error(payload.error||('HTTP '+response.status));
+ status.textContent=payload.message+' Request queued. GitHub Actions run status আলাদাভাবে যাচাই করতে হবে।';
+}
+$('dbDryRun').onclick=async()=>{
+ const b=$('dbDryRun');b.disabled=true;
+ try{$('dbUpdateStatus').textContent='Owner permission যাচাই ও Dry Run request পাঠানো হচ্ছে…';await requestDatabaseMigration('dry_run');}
+ catch(e){$('dbUpdateStatus').textContent='Dry Run request ব্যর্থ: '+(e.message||e);}
+ finally{b.disabled=false;}
+};
+$('dbApply').onclick=async()=>{
+ if(!$('dbBackupConfirmed').checked||$('dbApplyPhrase').value.trim()!=='APPLY-MASTER-WORLD-VIP-MIGRATIONS'){
+  $('dbUpdateStatus').textContent='Apply করতে backup checkbox এবং সঠিক confirmation phrase—দুটিই প্রয়োজন।';return;
+ }
+ if(!confirm('সব pending database migration চালানোর অনুরোধ পাঠাবেন? আগে Dry Run ও backup যাচাই করেছেন?'))return;
+ const b=$('dbApply');b.disabled=true;
+ try{$('dbUpdateStatus').textContent='Owner permission যাচাই ও Apply request পাঠানো হচ্ছে…';await requestDatabaseMigration('apply');}
+ catch(e){$('dbUpdateStatus').textContent='Apply request ব্যর্থ: '+(e.message||e);}
+ finally{b.disabled=false;}
+};
+
 $('refreshUpdatePlan').onclick=()=>loadUpdatePlan();
 loadUpdatePlan();
 async function requestUpdateStatus(){
