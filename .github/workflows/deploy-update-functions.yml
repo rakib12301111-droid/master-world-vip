@@ -4,8 +4,7 @@ on:
   push:
     branches: [main]
     paths:
-      - "supabase/functions/dispatch-db-update/**"
-      - "supabase/functions/get-db-update-status/**"
+      - "supabase/functions/**"
       - "supabase/config.toml"
       - ".github/workflows/deploy-update-functions.yml"
   workflow_dispatch:
@@ -43,14 +42,17 @@ jobs:
         with:
           version: latest
 
-      - name: Deploy authenticated Update Center functions
+      - name: Deploy all MASTER WORLD VIP Edge Functions
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
           SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
         run: |
           set -euo pipefail
+          supabase functions deploy ai-assistant --project-ref "$SUPABASE_PROJECT_REF"
+          supabase functions deploy check-updates --project-ref "$SUPABASE_PROJECT_REF"
           supabase functions deploy dispatch-db-update --project-ref "$SUPABASE_PROJECT_REF"
           supabase functions deploy get-db-update-status --project-ref "$SUPABASE_PROJECT_REF"
+          supabase functions deploy send-push --project-ref "$SUPABASE_PROJECT_REF"
 
       - name: Confirm deployment commands completed
-        run: echo "Supabase CLI deployment commands completed for the approved project."
+        run: echo "All configured MASTER WORLD VIP Edge Function deployment commands completed for the approved project."
