@@ -12,6 +12,7 @@ Run each SQL file once in Supabase → SQL Editor, in this exact order:
 4. `supabase/migrations/20261119180000_admin_rbac_owner_control.sql` — owner/admin roles and audit log. Verify the Owner email in the final bootstrap statement before running.
 5. `supabase/migrations/20261119190000_member_broadcast.sql` — admin-to-all-member inbox broadcasts. Requires both the base notifications table and Admin RBAC.
 6. `supabase/migrations/20261119200000_update_releases.sql` — release metadata for Update Center.
+7. `supabase/migrations/20261120100000_inbox_push_foundation.sql` — unified inbox, unread/read markers and per-device Web Push subscription storage. Requires the global community migration first.
 
 Review and apply in a staging project first. The repository cannot confirm whether these migrations have already been applied to your live Supabase project.
 
@@ -44,3 +45,8 @@ Never put provider keys or Supabase secret/service-role keys in browser code.
 - Google Play release requires a signed production Android App Bundle, developer account, store listing and policy review.
 
 Do not mark modules live until configured and tested in the target Supabase project and on real devices.
+
+
+## 5. Unified Inbox and Push foundation
+
+Apply `20261120100000_inbox_push_foundation.sql` after the Global Community migration. It adds `get_my_inbox()` and `mark_my_inbox_read()` RPCs, unread counts/read markers, and RLS-protected per-user browser push subscriptions. The PWA can request browser permission only after the member presses Enable Push, then store the browser subscription. Actual push delivery is not active until a trusted sender service is deployed with VAPID public/private keys; keep the private key in server secrets only. Test subscribe, unsubscribe, user isolation, inbox unread/read counts and real-device delivery before marking this feature live.
