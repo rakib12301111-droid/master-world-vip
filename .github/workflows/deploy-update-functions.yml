@@ -53,6 +53,7 @@ jobs:
           supabase functions deploy dispatch-db-update --project-ref "$SUPABASE_PROJECT_REF"
           supabase functions deploy get-db-update-status --project-ref "$SUPABASE_PROJECT_REF"
           supabase functions deploy send-push --project-ref "$SUPABASE_PROJECT_REF"
+          supabase functions deploy service-health --project-ref "$SUPABASE_PROJECT_REF"
 
       - name: Confirm deployment commands completed
         run: echo "All configured MASTER WORLD VIP Edge Function deployment commands completed for the approved project."

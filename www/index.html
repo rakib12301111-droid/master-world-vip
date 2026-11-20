@@ -258,8 +258,10 @@
 <div class="actions">
 <button class="btn" id="allowNowUpdateSetup" type="button">Allow Now — Setup & Check</button>
 <button class="btn secondary" id="openGitHubSecretSettings" type="button">GitHub Secret Settings খুলুন</button>
+<button class="btn secondary" id="ownerLiveHealthCheck" type="button">Owner Live Backend Check</button>
 </div>
 <div id="oneClickUpdateSetupStatus" class="notice" role="status">Allow Now চাপলে নিরাপদ setup ও সংযোগ পরীক্ষা শুরু হবে।</div>
+<div id="ownerLiveHealthStatus" class="notice" role="status">Owner login ও health function deploy হলে পূর্ণ server/schema check করা যাবে।</div>
 <ul class="small muted">
 <li>GitHub Environment secrets-এর মান browser থেকে পড়া বা লেখা যাবে না।</li>
 <li>নিরাপত্তার জন্য SUPABASE_ACCESS_TOKEN ও SUPABASE_DB_PASSWORD GitHub-এর production Environment-এ যোগ করতে হবে। SUPABASE_PROJECT_REF হলো নির্দিষ্ট project reference।</li>
@@ -881,6 +883,38 @@ async function runOneClickUpdateSetup(){
 }
 $('allowNowUpdateSetup').addEventListener('click',runOneClickUpdateSetup);
 $('openGitHubSecretSettings').addEventListener('click',()=>window.open('https://github.com/rakib12301111-droid/master-world-vip/settings/environments','_blank','noopener,noreferrer'));
+
+async function runOwnerLiveHealthCheck(){
+ const button=$('ownerLiveHealthCheck'),status=$('ownerLiveHealthStatus');
+ if(!client||!currentUser){status.textContent='প্রথমে Owner account দিয়ে লগইন করুন।';return;}
+ button.disabled=true;status.className='notice';status.textContent='Owner permission যাচাই করে backend/schema status পড়া হচ্ছে…';
+ try{
+  const {data,error}=await client.auth.getSession();
+  if(error||!data?.session)throw new Error('Login session পাওয়া যায়নি। আবার লগইন করুন।');
+  const cfg=config();
+  const response=await fetch(cfg.url.replace(/\/$/, '')+'/functions/v1/service-health',{
+   method:'GET',headers:{apikey:cfg.key,Authorization:'Bearer '+data.session.access_token},cache:'no-store'
+  });
+  const payload=await response.json().catch(()=>({}));
+  if(!response.ok)throw new Error(payload.error||('Health check HTTP '+response.status));
+  const db=payload.database||{},caps=payload.capabilities||{},secrets=payload.secrets||{};
+  const missing=(db.missing_tables||[]);
+  const missingKeys=Object.entries(secrets).filter(([,ok])=>!ok).map(([name])=>name);
+  const lines=[
+   'Owner-only backend check সম্পন্ন: '+(payload.checked_at||'সময় অনুপলব্ধ'),
+   'Database schema: '+(db.schema_ready?'সব প্রয়োজনীয় table পাওয়া গেছে':'অসম্পূর্ণ; missing '+missing.join(', ')),
+   'Update dispatch প্রস্তুত: '+(caps.update_dispatch_ready?'হ্যাঁ':'না'),
+   'Web Push sender প্রস্তুত: '+(caps.web_push_sender_ready?'হ্যাঁ':'না'),
+   'Chat/Group/Broadcast schema: '+(caps.live_messaging_schema_ready&&caps.group_broadcast_schema_ready?'প্রস্তুত':'অসম্পূর্ণ'),
+   'অনুপস্থিত server secret: '+(missingKeys.length?missingKeys.join(', '):'কোনোটি নেই'),
+   'এই পরীক্ষা message delivery, backup, Owner bootstrap বা বাস্তব push delivery প্রমাণ করে না।'
+  ];
+  status.textContent=lines.join(' ');status.className=db.schema_ready?'notice success':'notice';
+ }catch(error){status.textContent='Live Backend Check ব্যর্থ: '+(error.message||String(error));status.className='notice';}
+ finally{button.disabled=false;}
+}
+$('ownerLiveHealthCheck').addEventListener('click',runOwnerLiveHealthCheck);
+
 
 async function requestUpdateStatus(){
  const cfg=config();
