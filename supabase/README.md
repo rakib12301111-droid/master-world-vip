@@ -50,3 +50,23 @@ Do not mark modules live until configured and tested in the target Supabase proj
 ## 5. Unified Inbox and Push foundation
 
 Apply `20261120100000_inbox_push_foundation.sql` after the Global Community migration. It adds `get_my_inbox()` and `mark_my_inbox_read()` RPCs, unread counts/read markers, and RLS-protected per-user browser push subscriptions. The PWA can request browser permission only after the member presses Enable Push, then store the browser subscription. Actual push delivery is not active until a trusted sender service is deployed with VAPID public/private keys; keep the private key in server secrets only. Test subscribe, unsubscribe, user isolation, inbox unread/read counts and real-device delivery before marking this feature live.
+
+## 6. Real Web Push delivery setup
+
+The repository includes `supabase/functions/send-push/index.ts`. Deploy it after setting these Edge Function secrets (never put them in the web app):
+
+```sh
+supabase secrets set PUSH_WEBHOOK_SECRET="a-long-random-secret"
+supabase secrets set VAPID_PUBLIC_KEY="your-vapid-public-key"
+supabase secrets set VAPID_PRIVATE_KEY="your-vapid-private-key"
+supabase secrets set VAPID_SUBJECT="mailto:admin@example.com"
+supabase functions deploy send-push --no-verify-jwt
+```
+
+Also ensure `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` are available to the Edge Function runtime. The service-role key stays server-side only. Set the same random secret as the request header `x-push-webhook-secret` in a Supabase Database Webhook configured for table `public.notifications`, event INSERT, URL `https://lztbbrzeuyjkuiyzrsxp.supabase.co/functions/v1/send-push`. The webhook must send the row JSON payload and the secret header. Use a unique secret and rotate it if exposed.
+
+Before enabling for members, test with two consenting accounts and a test device: create a notification row for the recipient, verify the browser subscription is present, confirm the sender reports `sent: 1`, check notification display while the PWA is backgrounded, and confirm 404/410 subscriptions are cleaned up. Do not send message body content in push if privacy settings require generic alerts; current sender uses the notification title/body already stored in the notifications table.
+
+## 7. Android WebView limitation
+
+The current APK is a WebView shell. Web Push through a browser Service Worker is not guaranteed to work inside Android WebView, and this project has not yet added Firebase Cloud Messaging (FCM) native integration. Validate push in Chrome/PWA separately; native Android push requires FCM registration, a secure device-token table and a trusted FCM sender before claiming APK push support.
