@@ -363,6 +363,16 @@
 <div class="section item" id="serverCodePanel">
 <h3>🧩 Owner Server Code Box — SQL + Edge Function</h3>
 <p class="small muted">শুধু যাচাইকৃত Owner কোড জমা দিতে পারবেন। SQL migration হিসেবে সংরক্ষিত হয়ে Dry Run ও অনুমোদিত Apply workflow-তে যাবে। Edge Function নির্দিষ্ট function folder-এ সংরক্ষিত হবে এবং deployment workflow চালু হবে।</p>
+<div class="card" id="githubSecretsSetup">
+<h3>🔐 Secure GitHub Actions Secret Setup</h3>
+<p class="small muted">এখান থেকেই Supabase Access Token ও Database Password GitHub Actions-এ encrypted secret হিসেবে পাঠানো যাবে। এগুলো browser storage, app database বা source code-এ রাখা হবে না।</p>
+<label>Supabase Access Token<input id="mwvipSupabaseAccessToken" type="password" autocomplete="new-password" spellcheck="false" placeholder="Supabase Account → Access Tokens"></label>
+<label>Supabase Database Password<input id="mwvipSupabaseDbPassword" type="password" autocomplete="new-password" placeholder="Supabase database password"></label>
+<label class="feature"><input type="checkbox" id="mwvipConfirmSecretSetup"> আমি নিশ্চিত করছি—এগুলো আমার নিজের Supabase project-এর credentials এবং GitHub Actions-এ সংরক্ষণে সম্মতি দিচ্ছি।</label>
+<div class="actions"><button class="btn" id="mwvipConfigureSecrets" type="button">নিরাপদে GitHub Secrets সেট করুন</button><button class="btn secondary" id="mwvipClearSecrets" type="button">ঘর খালি করুন</button></div>
+<div id="mwvipSecretsStatus" class="notice" role="status">Owner login এবং server GitHub token-এর Actions Secrets: Read and write permission প্রয়োজন।</div>
+<p class="small muted">Submit করার পর input ঘর খালি হবে। Secret-এর মান আর দেখানো হবে না।</p>
+</div>
 <label class="feature">কোডের ধরন
 <select id="serverCodeKind"><option value="sql">SQL Database Code</option><option value="edge_function">Supabase Edge Function (TypeScript)</option></select></label>
 <label class="feature">নাম / Function name
@@ -940,6 +950,24 @@ $('dbApply').onclick=async()=>{
  finally{b.disabled=false;}
 };
 
+const secretSetupButton=$('mwvipConfigureSecrets');
+$('mwvipClearSecrets').onclick=()=>{$('mwvipSupabaseAccessToken').value='';$('mwvipSupabaseDbPassword').value='';$('mwvipConfirmSecretSetup').checked=false;$('mwvipSecretsStatus').textContent='Credential input ঘর খালি করা হয়েছে।';};
+secretSetupButton.onclick=async()=>{
+ const accessToken=$('mwvipSupabaseAccessToken').value.trim(),dbPassword=$('mwvipSupabaseDbPassword').value;
+ if(!accessToken||!dbPassword){$('mwvipSecretsStatus').textContent='দুটি credential-ই দিন।';return;}
+ if(!$('mwvipConfirmSecretSetup').checked){$('mwvipSecretsStatus').textContent='আগে নিজের project এবং secret সংরক্ষণের সম্মতি নিশ্চিত করুন।';return;}
+ if(!confirm('দুটি credential encrypted করে GitHub Actions Secrets-এ সংরক্ষণ করবেন?'))return;
+ secretSetupButton.disabled=true;$('mwvipSecretsStatus').textContent='Owner permission যাচাই করে encrypted secret GitHub-এ পাঠানো হচ্ছে…';
+ try{
+  const {session,cfg}=await getOwnerSession();
+  const response=await fetch(cfg.url.replace(/\/$/,'')+'/functions/v1/stage-server-code',{method:'POST',headers:{'apikey':cfg.key,'Authorization':'Bearer '+session.access_token,'Content-Type':'application/json'},body:JSON.stringify({kind:'configure_github_secrets',supabase_access_token:accessToken,supabase_db_password:dbPassword})});
+  const payload=await response.json().catch(()=>({}));
+  if(!response.ok||payload.success!==true)throw new Error(payload.error||('HTTP '+response.status));
+  $('mwvipSecretsStatus').textContent=payload.message||'GitHub Actions Secrets configured.';
+  $('mwvipSupabaseAccessToken').value='';$('mwvipSupabaseDbPassword').value='';$('mwvipConfirmSecretSetup').checked=false;
+ }catch(e){$('mwvipSecretsStatus').textContent='Secret setup ব্যর্থ: '+(e.message||e);}
+ finally{secretSetupButton.disabled=false;}
+};
 const serverKind=$('serverCodeKind'),serverSqlApproval=$('serverSqlApproval');
 serverKind.addEventListener('change',()=>{serverSqlApproval.hidden=serverKind.value!=='sql';});
 $('serverCodeClear').onclick=()=>{$('serverCodeInput').value='';$('serverCodeName').value='';$('serverCodeStatus').textContent='Code box cleared.';};
