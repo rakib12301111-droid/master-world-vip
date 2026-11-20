@@ -28,6 +28,7 @@
 <button data-page="account">♙ Register / Login</button>
 <button data-page="members">♧ Member Hub</button>
 <button data-page="community">🌐 Community</button>
+<button data-page="inbox">✉ Inbox</button>
 <button data-page="ai">✧ AI Center</button>
 <button data-page="facebook">◎ Facebook Center</button>
 <button data-page="growth">↗ Global Growth</button>
@@ -152,6 +153,7 @@
 <h3>নোটিফিকেশন</h3>
 <button class="btn secondary" id="loadNotifications">নোটিফিকেশন দেখুন</button>
 <div id="communityNotifications" class="section small">নোটিফিকেশন এখনো লোড হয়নি।</div>
+<div class="feature section"><h4>🔔 Browser Push Notification</h4><p class="muted small">Push চালু করতে আপনার স্পষ্ট অনুমতি নেওয়া হবে। VAPID public key এখানে দিন; private key কখনো এখানে দেবেন না। Push পাঠানোর server provider আলাদাভাবে configure করতে হবে।</p><div class="field"><label for="pushVapidPublicKey">VAPID Public Key</label><input id="pushVapidPublicKey" autocomplete="off" placeholder="B... (public key)"></div><div class="actions"><button class="btn" id="enablePushNotifications">এই ডিভাইসে Push চালু করুন</button><button class="btn secondary" id="disablePushNotifications">এই ডিভাইসে Push বন্ধ করুন</button></div><div id="pushStatus" class="muted small" role="status">Push অনুমতি এখনো চাওয়া হয়নি।</div></div>
 </div>
 <div class="section item">
 <h3>📢 সদস্যদের Broadcast Inbox</h3>
@@ -161,6 +163,10 @@
 </div>
 <div class="notice">গোপনীয়তা: ব্যক্তিগত বার্তা কেবল conversation-এর সদস্যরা দেখতে পারবেন। বন্ধুত্ব গ্রহণের আগে সরাসরি chat শুরু করা যাবে না। Browser tab বন্ধ থাকলে push notification পেতে আলাদা অনুমতি ও delivery service প্রয়োজন।</div>
 </article>
+</section>
+
+<section class="page" id="inbox">
+<article class="card"><h2>✉ Unified Inbox</h2><p class="muted">আপনার ব্যক্তিগত চ্যাট, গ্রুপ চ্যাট ও অপঠিত বার্তা এক জায়গায় দেখুন। কোনো কথোপকথন খুললে সেটি পড়া হয়েছে হিসেবে চিহ্নিত হবে।</p><div class="actions"><button class="btn" id="refreshInbox">Inbox রিফ্রেশ</button><button class="btn secondary" data-go="community">Community / নতুন Chat</button></div><div id="inboxStatus" class="notice">Inbox দেখতে Supabase-এ লগইন করুন এবং Inbox migration চালু করুন।</div><div id="inboxList" class="section"><div class="feature">এখনো Inbox লোড হয়নি।</div></div></article>
 </section>
 
 <section class="page" id="ai"><article class="card"><h2>✧ AI Center</h2><p class="muted">বাংলা/ইংরেজি text assistant, voice assistant ও AI image search.</p><div class="feature-list">
@@ -319,7 +325,7 @@
 <script>
 const $=id=>document.getElementById(id);
 const pages=[...document.querySelectorAll('.page')];
-const titles={setup:'One-Click Setup',overview:'MASTER WORLD VIP Dashboard',account:'Registration & Login',members:'Member Hub',ai:'AI Center',facebook:'Facebook Center',growth:'Global Growth',admin:'Admin & Security',privacy:'Privacy & GDPR',updates:'Update Center',progress:'কাজের অগ্রগতি / Project Progress'};
+const titles={setup:'One-Click Setup',overview:'MASTER WORLD VIP Dashboard',account:'Registration & Login',members:'Member Hub',ai:'AI Center',facebook:'Facebook Center',growth:'Global Growth',admin:'Admin & Security',privacy:'Privacy & GDPR',updates:'Update Center',progress:'কাজের অগ্রগতি / Project Progress',inbox:'Unified Inbox'};
 function showPage(id){pages.forEach(p=>p.classList.toggle('active',p.id===id));document.querySelectorAll('[data-page]').forEach(b=>b.classList.toggle('active',b.dataset.page===id));$('pageTitle').textContent=titles[id]||titles.overview;window.scrollTo({top:0,behavior:'smooth'});}
 document.querySelectorAll('[data-page]').forEach(b=>b.addEventListener('click',()=>showPage(b.dataset.page)));
 document.querySelectorAll('[data-go]').forEach(b=>b.addEventListener('click',()=>showPage(b.dataset.go)));
@@ -508,6 +514,31 @@ async function sendGroupMessage(){
  if(error){say('communityStatus','Group message error: '+error.message);return;}
  $('groupMessageText').value='';loadGroupMessages();
 }
+
+async function loadInbox(){
+ if(!communityReady())return;
+ const host=$('inboxList');say('inboxStatus','Inbox লোড হচ্ছে…');host.replaceChildren();
+ const {data,error}=await client.rpc('get_my_inbox');
+ if(error){say('inboxStatus','Inbox লোড হয়নি: '+error.message+'। 20261120100000_inbox_push_foundation.sql migration চালানো হয়েছে কি না দেখুন।');return;}
+ if(!data?.length){say('inboxStatus','আপনার কোনো ব্যক্তিগত বা গ্রুপ কথোপকথন নেই।');return;}
+ say('inboxStatus',data.reduce((n,x)=>n+Number(x.unread_count||0),0)+'টি অপঠিত মেসেজ আছে।');
+ data.forEach(item=>{
+  const card=document.createElement('div');card.className='feature';
+  const title=document.createElement('strong');title.textContent=(item.thread_type==='group'?'👥 গ্রুপ · ':'✉ ব্যক্তিগত · ')+item.title;
+  const body=document.createElement('p');body.textContent=item.last_message||'এখনো কোনো বার্তা নেই।';
+  const meta=document.createElement('div');meta.className='muted small';meta.textContent=(item.last_message_at?new Date(item.last_message_at).toLocaleString():'নতুন কথোপকথন')+' · অপঠিত: '+Number(item.unread_count||0);
+  const open=document.createElement('button');open.type='button';open.className='btn secondary';open.textContent='কথোপকথন খুলুন';
+  open.onclick=async()=>{
+   const {error:readError}=await client.rpc('mark_my_inbox_read',{p_thread_type:item.thread_type,p_thread_id:item.thread_id});
+   if(readError){say('inboxStatus','পড়া হয়েছে চিহ্নিত করা যায়নি: '+readError.message);return;}
+   if(item.thread_type==='group'){$('activeGroupId').value=item.thread_id;await loadGroupMessages();}
+   else{$('activeConversation').value=item.thread_id;await loadDirectMessages();}
+   showPage('community');loadInbox();
+  };
+  card.append(title,body,meta,open);host.append(card);
+ });
+}
+
 async function loadCommunityNotifications(){
  if(!communityReady())return;
  const {data,error}=await client.from('notifications').select('id,title,body,category,read_at,created_at').eq('user_id',currentUser.id).order('created_at',{ascending:false}).limit(30);
@@ -548,6 +579,7 @@ $('createGroup').onclick=createCommunityGroup;
 $('loadGroups').onclick=loadCommunityGroups;
 $('sendGroupMessage').onclick=sendGroupMessage;
 $('loadNotifications').onclick=loadCommunityNotifications;
+$('refreshInbox').onclick=()=>loadInbox();
 $('loadMemberBroadcasts').onclick=loadMemberBroadcastInbox;
 
 $('fbSearch').onclick=()=>{const q=$('fbQuery').value.trim(),country=$('fbCountry').value;say('fbResult',(q?'অনুসন্ধানের বিষয়: '+q+'. ':'')+(country?'দেশ: '+country+'. ':'')+'বাস্তব ফলাফলের জন্য অনুমোদিত Meta API/data provider সংযুক্ত করতে হবে। এখনো কোনো অ্যাকাউন্ট অনুসন্ধান করা হয়নি।');};
@@ -784,6 +816,49 @@ $('applyAppUpdate').onclick=()=>{
  setUpdateStatus('আপডেট সক্রিয় হচ্ছে…');
 };
 
+
+
+function urlBase64ToUint8Array(value){
+ const padding='='.repeat((4-value.length%4)%4);
+ const base64=(value+padding).replace(/-/g,'+').replace(/_/g,'/');
+ const raw=atob(base64);return Uint8Array.from([...raw].map(ch=>ch.charCodeAt(0)));
+}
+function pushVapidKey(){return $('pushVapidPublicKey').value.trim()||localStorage.getItem('mwvip_push_vapid_public_key')||'';}
+async function enableDevicePush(){
+ if(!client||!currentUser){say('pushStatus','Push চালু করতে আগে লগইন করুন।');return;}
+ if(!('serviceWorker' in navigator)||!('PushManager' in window)){say('pushStatus','এই browser-এ Web Push সমর্থিত নয়। HTTPS-এ Chrome ব্যবহার করুন।');return;}
+ const vapid=pushVapidKey();if(!vapid){say('pushStatus','VAPID public key দিন। এটি ছাড়া subscription তৈরি করা যাবে না।');return;}
+ try{
+  localStorage.setItem('mwvip_push_vapid_public_key',vapid);
+  const permission=await Notification.requestPermission();
+  if(permission!=='granted'){say('pushStatus','Browser notification permission দেওয়া হয়নি।');return;}
+  const reg=await navigator.serviceWorker.ready;
+  let sub=await reg.pushManager.getSubscription();
+  if(!sub)sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:urlBase64ToUint8Array(vapid)});
+  const json=sub.toJSON();
+  if(!json.endpoint||!json.keys?.p256dh||!json.keys?.auth)throw new Error('Browser subscription data অসম্পূর্ণ।');
+  const {error}=await client.from('push_subscriptions').upsert({
+   user_id:currentUser.id,endpoint:json.endpoint,p256dh:json.keys.p256dh,
+   auth_secret:json.keys.auth,expiration_time:json.expirationTime||null
+  },{onConflict:'endpoint'});
+  if(error)throw error;
+  say('pushStatus','এই ডিভাইসের Push subscription সংরক্ষিত হয়েছে। Push পাঠাতে server-side sender/VAPID private key configure করা এখনো প্রয়োজন।');
+ }catch(error){say('pushStatus','Push setup হয়নি: '+(error.message||String(error)));}
+}
+async function disableDevicePush(){
+ if(!client||!currentUser){say('pushStatus','আগে লগইন করুন।');return;}
+ try{
+  const reg=await navigator.serviceWorker.ready;const sub=await reg.pushManager.getSubscription();
+  if(sub){
+   const {error}=await client.from('push_subscriptions').delete().eq('user_id',currentUser.id).eq('endpoint',sub.endpoint);
+   if(error)throw error;
+   await sub.unsubscribe();
+  }
+  say('pushStatus','এই ডিভাইসের Push subscription বন্ধ করা হয়েছে। Browser permission প্রয়োজনে device settings থেকে পরিবর্তন করুন।');
+ }catch(error){say('pushStatus','Push বন্ধ করা যায়নি: '+(error.message||String(error)));}
+}
+$('enablePushNotifications').onclick=enableDevicePush;
+$('disablePushNotifications').onclick=disableDevicePush;
 
 // Owner-controlled Admin & Security UI. All privileged checks run on Supabase.
 async function refreshAdminAccess(){
