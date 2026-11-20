@@ -291,11 +291,13 @@
 <div class="feature"><strong>Login / Registration</strong><span class="tag">কোড আছে</span><div class="status">Supabase Auth UI ও সংযোগ কোড আছে; বাস্তব signup/login/reset পরীক্ষা বাকি।</div></div>
 <div class="feature"><strong>Member Profile</strong><span class="tag">প্রাথমিক</span><div class="status">প্রোফাইল দেখানো/সংরক্ষণের কোড ও database foundation আছে; migration ও RLS পরীক্ষা বাকি।</div></div>
 <div class="feature"><strong>Friends ও Private Messaging</strong><span class="tag">প্রাথমিক কোড</span><div class="status">UI, SQL schema ও query আছে; migration apply, নিরাপত্তা ও end-to-end পরীক্ষা বাকি।</div></div>
+<div class="feature"><strong>Unified In-App Inbox</strong><span class="tag">কোড যুক্ত · পরীক্ষা বাকি</span><div class="status">Private ও group conversation এক তালিকায়, unread count এবং read marker UI/RPC যুক্ত; migration apply ও multi-user test বাকি।</div></div>
+<div class="feature"><strong>Push Notification Subscription</strong><span class="tag">প্রাথমিক কোড</span><div class="status">Explicit browser permission, device subscription storage এবং Service Worker notification display যুক্ত; VAPID sender/provider ও real-device delivery test বাকি।</div></div>
 <div class="feature"><strong>Group Chat</strong><span class="tag">প্রাথমিক কোড</span><div class="status">Group UI ও database foundation আছে; বাস্তব group/member/message পরীক্ষা বাকি।</div></div>
 <div class="feature"><strong>AI Assistant</strong><span class="tag">Backend ফাংশন আছে</span><div class="status">AI Edge Function আছে; provider secret, deploy, UI integration ও live test বাকি।</div></div>
 <div class="feature"><strong>Facebook Discovery</strong><span class="tag">পরিকল্পিত / UI</span><div class="status">Placeholder UI আছে; Meta অনুমোদন, API ও বৈধ data access বাকি।</div></div>
 <div class="feature"><strong>AI Active User Finder</strong><span class="tag">পরিকল্পিত</span><div class="status">AI-assisted ও manual workflow সম্পূর্ণ তৈরি/পরীক্ষিত নয়; consent ও Meta policy মেনে বাস্তবায়ন বাকি।</div></div>
-<div class="feature"><strong>Notifications</strong><span class="tag">প্রাথমিক</span><div class="status">Notification UI ও database foundation আছে; delivery provider, push setup ও পরীক্ষা বাকি।</div></div>
+<div class="feature"><strong>Notifications & Push</strong><span class="tag">UI + subscription foundation</span><div class="status">In-app notification UI, device push subscription ও Service Worker display handler যুক্ত; migration, VAPID sender/provider এবং real-device delivery test বাকি।</div></div>
 <div class="feature"><strong>Privacy ও Security</strong><span class="tag">Consent sync + request queue কোড যুক্ত</span><div class="status">নতুন privacy migration apply ও বাস্তব Supabase test, deletion fulfilment, policy, breach-response process এবং legal review বাকি।</div></div>
 <div class="feature"><strong>Referral ও Global Growth</strong><span class="tag">প্রাথমিক</span><div class="status">Referral schema/UI foundation আছে; reward rules, fraud controls ও server workflow বাকি।</div></div>
 <div class="feature"><strong>Admin System</strong><span class="tag">প্রাথমিক</span><div class="status">Roles/audit database foundation ও UI আছে; secure admin operations ও permission testing বাকি।</div></div>
@@ -310,7 +312,8 @@
 <li>Supabase-এর দুইটি SQL migration সঠিক ক্রমে apply করে database পরীক্ষা।</li>
 <li>Login, profile, friend request, private chat ও group chat end-to-end পরীক্ষা।</li>
 <li>AI provider secret যোগ করে Edge Function deploy ও পরীক্ষা।</li>
-<li>Notifications, privacy/security ও admin workflow সম্পন্ন করা।</li>
+<li>Unified Inbox ও Push migration apply; VAPID sender/provider configure করে Android-এ delivery/read/unread পরীক্ষা।</li>
+<li>Privacy/security ও admin workflow সম্পন্ন করা।</li>
 <li>PWA update এবং Android debug APK বাস্তব ডিভাইসে পরীক্ষা।</li>
 <li>তারপর production APK ও Google Play release প্রস্তুত করা।</li>
 </ol>
