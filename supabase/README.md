@@ -1,44 +1,46 @@
-# MASTER WORLD VIP — backend setup
+# MASTER WORLD VIP — Supabase backend setup
 
-This repository now contains a Supabase database migration and an authenticated AI Edge Function starter.
+This repository contains the database foundation, community, privacy, admin/broadcast and release metadata migrations, plus Edge Function starters.
 
-## 1. Database
-Open Supabase → SQL Editor → New query. Paste and run `supabase/migrations/202611180001_master_world_vip.sql`.
-This creates profiles, member roles, privacy consent, referrals, notifications, support tickets and audit log tables with RLS. New users receive a `member` role. Admin role grants are deliberately restricted to trusted project-owner operations.
+## 1. Apply database migrations in dependency order
 
-## 2. Update Center release metadata
+Run each SQL file once in Supabase → SQL Editor, in this exact order:
 
-Apply `supabase/migrations/20261119200000_update_releases.sql` after the foundation migration. It creates the `update_releases` table; app clients can read published release metadata only. Publishing a release remains a trusted Supabase SQL Editor operation. The `check-updates` Edge Function and `supabase/config.toml` setting (`verify_jwt = false`, with publishable-key validation inside the function) must be deployed together. A release record does not itself publish PWA files; GitHub Pages deployment and a waiting service worker are required before the app can show Allow Now.
+1. `supabase/migrations/202611180001_master_world_vip.sql` — base tables and helpers.
+2. `supabase/migrations/202611190001_global_community.sql` — profiles, friend requests, direct/group conversations and notifications.
+3. `supabase/migrations/202611190002_privacy_rights.sql` — privacy consent history and data-rights request queue.
+4. `supabase/migrations/20261119180000_admin_rbac_owner_control.sql` — owner/admin roles and audit log. Verify the Owner email in the final bootstrap statement before running.
+5. `supabase/migrations/20261119190000_member_broadcast.sql` — admin-to-all-member inbox broadcasts. Requires both the base notifications table and Admin RBAC.
+6. `supabase/migrations/20261119200000_update_releases.sql` — release metadata for Update Center.
 
-## 3. Global Community
-Apply `supabase/migrations/202611190001_global_community.sql` after the existing foundation migration. It adds discoverable member profiles, friend requests, direct conversations, private messages, public/private group foundations, group messages and in-app notifications with row-level security. Review and test in a staging Supabase project first. The browser Community screen uses these tables/RPCs; realtime and push delivery are not configured yet.
+Review and apply in a staging project first. The repository cannot confirm whether these migrations have already been applied to your live Supabase project.
 
+## 2. Update Center
 
-## 4. Admin roles and member broadcast
-Apply these migrations in order after the foundation migration:
-1. `supabase/migrations/20261119180000_admin_rbac_owner_control.sql` — before running it, confirm the owner email in its final bootstrap statement matches the verified owner account in Supabase Auth.
-2. `supabase/migrations/20261119190000_member_broadcast.sql` — creates the admin-only broadcast inbox and recipient delivery records.
+The app and Edge Function use version `3.3.0`. The app sends its own `current_version` to `check-updates`; the function validates that value and compares it with the newest published row in `update_releases`. The function reads `SUPABASE_URL` from the Supabase Edge runtime and uses the app's public publishable/anon API key to read published releases. It does not require an AI provider key or a service-role key.
 
-The Admin & Security screen includes a broadcast composer. Only users with `owner`, `super_admin`, or `admin` in `app_user_roles` can send; the server limits each sender to three broadcasts per hour. Broadcasts create in-app notifications/inbox records for all other registered users. This does not itself send OS push notifications; a push provider and device registration are separate work.
+Deploy the function after code changes:
 
-Test in staging: owner bootstrap, unauthorized member rejection, admin send, recipient visibility, read-state updates, delivery count, and rate-limit behavior. Do not claim broadcast is live until the migrations are applied to the target Supabase project and these tests pass.
+```sh
+supabase functions deploy check-updates --project-ref lztbbrzeuyjkuiyzrsxp
+```
 
-## 5. AI function
-Deploy `supabase/functions/ai-assistant/index.ts` as an Edge Function named `ai-assistant`. Add secrets in Supabase → Edge Functions → Secrets:
-- `AI_PROVIDER_API_KEY` (your provider key)
-- `AI_PROVIDER_URL` (optional; defaults to OpenAI-compatible chat completions endpoint)
-- `AI_MODEL` (optional; defaults to gpt-4o-mini)
+The Supabase Edge Function config keeps `verify_jwt = false`; the function validates the public API key itself. Only published release rows are exposed to app clients. Publishing metadata does not publish website files: deploy the PWA to GitHub Pages first, then publish the matching version row.
 
-The function requires a signed-in Supabase user. Never put provider keys or Supabase secret/service-role keys in browser code.
+Detailed checks: `supabase/UPDATE_SYSTEM_TESTS.md`.
 
-## 6. What still needs external configuration/integration
-- Apply the SQL migration in the Supabase project.
-- Deploy the Edge Function and supply a paid/authorized AI provider credential.
-- Facebook discovery requires a Meta app, approved permissions/access token and permitted Graph API use; this repo does not scrape accounts or access private data.
-- Email/push notifications need a delivery provider and verified sender/device setup.
-- Referral rewards/payments require reward rules, fraud controls and a trusted server-side qualification workflow.
-- Admin UI and admin operations need a verified owner account and server-side workflows.
-- Legal/privacy text needs jurisdiction-specific review. This is not a claim of GDPR certification.
-- Google Play release requires Android packaging, developer account, store listing and policy review.
+## 3. AI function
 
-Do not mark modules live until they have been configured and tested in the target Supabase project.
+Deploy `supabase/functions/ai-assistant/index.ts` as `ai-assistant`. Configure `AI_PROVIDER_API_KEY` and optional `AI_PROVIDER_URL` / `AI_MODEL` secrets only for the AI feature. Do not confuse AI provider secrets with the Update Center; update checking does not need an AI secret.
+
+Never put provider keys or Supabase secret/service-role keys in browser code.
+
+## 4. Remaining external integrations
+
+- Email/push delivery needs a provider, sender/device registration and permission tests.
+- Facebook discovery requires a Meta app, approved permissions and permitted Graph API use.
+- Referral rewards require trusted server-side qualification and fraud controls.
+- Legal/privacy text requires jurisdiction-specific review; this is not a claim of GDPR certification.
+- Google Play release requires a signed production Android App Bundle, developer account, store listing and policy review.
+
+Do not mark modules live until configured and tested in the target Supabase project and on real devices.
