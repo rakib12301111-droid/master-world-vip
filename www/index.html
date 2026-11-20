@@ -31,6 +31,7 @@
 <button data-page="members">♧ Member Hub</button>
 <button data-page="community">🌐 Community</button>
 <button data-page="inbox">✉ Inbox</button>
+<button data-page="global">🌍 Global News & Offline</button>
 <button data-page="ai">✧ AI Center</button>
 <button data-page="facebook">◎ Facebook Center</button>
 <button data-page="growth">↗ Global Growth</button>
@@ -169,6 +170,38 @@
 
 <section class="page" id="inbox">
 <article class="card"><h2>✉ Unified Inbox</h2><p class="muted">আপনার ব্যক্তিগত চ্যাট, গ্রুপ চ্যাট ও অপঠিত বার্তা এক জায়গায় দেখুন। কোনো কথোপকথন খুললে সেটি পড়া হয়েছে হিসেবে চিহ্নিত হবে।</p><div class="actions"><button class="btn" id="refreshInbox">Inbox রিফ্রেশ</button><button class="btn secondary" data-go="community">Community / নতুন Chat</button></div><div id="inboxStatus" class="notice">Inbox দেখতে Supabase-এ লগইন করুন এবং Inbox migration চালু করুন।</div><div id="inboxList" class="section"><div class="feature">এখনো Inbox লোড হয়নি।</div></div></article>
+</section>
+
+<section class="page" id="global">
+<article class="card">
+<h2>🌍 Global News — দেশভিত্তিক খবর</h2>
+<p class="muted">দেশ নির্বাচন করে Google News-এর সেই দেশের খবর খুলুন। খবর দেখতে ইন্টারনেট লাগবে; এই সংস্করণে সংবাদ API বা লাইভ headline feed যুক্ত নয়।</p>
+<div class="field"><label for="newsCountry">দেশ নির্বাচন</label><select id="newsCountry"><option value="BD|bn|BD:bn">বাংলাদেশ</option><option value="IN|bn|IN:bn">ভারত</option><option value="US|en|US:en">যুক্তরাষ্ট্র</option><option value="GB|en|GB:en">যুক্তরাজ্য</option><option value="SA|ar|SA:ar">সৌদি আরব</option><option value="AE|ar|AE:ar">সংযুক্ত আরব আমিরাত</option><option value="PK|ur|PK:ur">পাকিস্তান</option><option value="TR|tr|TR:tr">তুরস্ক</option><option value="MY|ms|MY:ms">মালয়েশিয়া</option><option value="ID|id|ID:id">ইন্দোনেশিয়া</option><option value="CA|en|CA:en">কানাডা</option><option value="AU|en|AU:en">অস্ট্রেলিয়া</option></select></div>
+<button class="btn" id="openCountryNews" type="button">এই দেশের সর্বশেষ খবর দেখুন</button>
+<div class="notice" id="newsStatus">দেশ নির্বাচন করে খবর খুলুন। এটি বাহ্যিক সংবাদ সেবা; অ্যাপ নিজে এখনো headline সংগ্রহ করছে না।</div>
+</article>
+<article class="card">
+<h2>📴 কম ইন্টারনেট ও Offline Draft</h2>
+<p class="muted">অ্যাপের খোলা অংশ, কিছু UI ও আগে cache হওয়া ফাইল offline-এ দেখা যেতে পারে। Private message, group message, broadcast পাঠানো বা গ্রহণের জন্য ইন্টারনেট এবং সার্ভার দরকার।</p>
+<div class="notice" id="networkStatus" role="status">নেটওয়ার্ক অবস্থা যাচাই হচ্ছে…</div>
+<div class="field"><label for="offlineDraft">ইন্টারনেট না থাকলে বার্তার খসড়া লিখুন</label><textarea id="offlineDraft" rows="3" placeholder="আপনার বার্তার খসড়া…"></textarea></div>
+<button class="btn secondary" id="saveOfflineDraft" type="button">এই ডিভাইসে খসড়া সংরক্ষণ</button>
+<button class="btn secondary" id="loadOfflineDraft" type="button">সংরক্ষিত খসড়া খুলুন</button>
+<div class="notice" id="draftStatus">খসড়া শুধু এই ডিভাইসে থাকবে; অন্য সদস্যের কাছে যাবে না।</div>
+</article>
+<article class="card">
+<h2>🎙 Voice Note — রেকর্ড ও শুনুন</h2>
+<p class="muted">মাইক্রোফোন অনুমতি দিলে ডিভাইসে ভয়েস রেকর্ড ও প্লেব্যাক করতে পারবেন। সার্ভারে Voice Note পাঠানো এখনো চালু নয়; Storage ও নিরাপদ upload সংযোগ বাকি।</p>
+<button class="btn" id="startVoiceRecord" type="button">রেকর্ড শুরু</button>
+<button class="btn secondary" id="stopVoiceRecord" type="button" disabled>রেকর্ড বন্ধ</button>
+<audio id="voicePlayback" controls hidden></audio>
+<div class="notice" id="voiceStatus">রেকর্ডিং শুরু করতে আপনার স্পষ্ট অনুমতি লাগবে।</div>
+</article>
+<article class="card">
+<h2>🛰 Satellite Connectivity</h2>
+<div class="notice">স্যাটেলাইট সংযোগ এখনো সক্রিয় নয়। সাধারণ Android অ্যাপ একা স্যাটেলাইটে যুক্ত হতে পারে না। ফোনে satellite hardware/সমর্থিত service, provider coverage, অনুমোদন ও চুক্তি প্রয়োজন। এগুলো ছাড়া offline-এ দেশ-বিদেশে message পৌঁছানোর দাবি করা যাবে না।</div>
+<p class="muted">ভবিষ্যৎ ধাপ: supported satellite provider / compatible Android hardware / emergency or messaging API যাচাই।</p>
+</article>
 </section>
 
 <section class="page" id="ai"><article class="card"><h2>✧ AI Center</h2><p class="muted">বাংলা/ইংরেজি text assistant, voice assistant ও AI image search.</p><div class="feature-list">
@@ -355,7 +388,7 @@
 <script>
 const $=id=>document.getElementById(id);
 const pages=[...document.querySelectorAll('.page')];
-const titles={setup:'One-Click Setup',overview:'MASTER WORLD VIP Dashboard',account:'Registration & Login',members:'Member Hub',ai:'AI Center',facebook:'Facebook Center',growth:'Global Growth',admin:'Admin & Security',privacy:'Privacy & GDPR',updates:'Update Center',progress:'কাজের অগ্রগতি / Project Progress',inbox:'Unified Inbox'};
+const titles={setup:'One-Click Setup',overview:'MASTER WORLD VIP Dashboard',account:'Registration & Login',members:'Member Hub',ai:'AI Center',facebook:'Facebook Center',growth:'Global Growth',admin:'Admin & Security',privacy:'Privacy & GDPR',updates:'Update Center',progress:'কাজের অগ্রগতি / Project Progress',inbox:'Unified Inbox',global:'Global News & Offline'};
 function showPage(id){pages.forEach(p=>p.classList.toggle('active',p.id===id));document.querySelectorAll('[data-page]').forEach(b=>b.classList.toggle('active',b.dataset.page===id));$('pageTitle').textContent=titles[id]||titles.overview;window.scrollTo({top:0,behavior:'smooth'});if(id==='inbox'&&typeof loadInbox==='function')loadInbox();}
 document.querySelectorAll('[data-page]').forEach(b=>b.addEventListener('click',()=>showPage(b.dataset.page)));
 document.querySelectorAll('[data-go]').forEach(b=>b.addEventListener('click',()=>showPage(b.dataset.go)));
@@ -1073,5 +1106,54 @@ $('loadAdminAudit').onclick=async()=>{
 };
 
 $('showSql').onclick=()=>{$('sqlBlock').classList.toggle('hidden');$('sqlBlock').textContent=sql;};
+
+/* Global news, local offline drafts, and on-device voice recorder. */
+function updateNetworkStatus(){
+ const el=$('networkStatus');if(!el)return;
+ el.textContent=navigator.onLine?'ইন্টারনেট সংযুক্ত। সার্ভার ফিচার ব্যবহারের জন্য লগইন ও backend-ও সচল থাকতে হবে।':'Offline: আগে cache হওয়া অ্যাপ অংশ দেখা যাবে; নতুন বার্তা/খবর পাঠানো বা গ্রহণ করা যাবে না।';
+}
+window.addEventListener('online',updateNetworkStatus);
+window.addEventListener('offline',updateNetworkStatus);
+$('openCountryNews').addEventListener('click',()=>{
+ const parts=$('newsCountry').value.split('|'),gl=parts[0],hl=parts[1],ceid=parts[2];
+ const url='https://news.google.com/topstories?hl='+encodeURIComponent(hl)+'&gl='+encodeURIComponent(gl)+'&ceid='+encodeURIComponent(ceid);
+ $('newsStatus').textContent='নির্বাচিত দেশের Google News খুলছে…';
+ window.open(url,'_blank','noopener,noreferrer');
+});
+$('saveOfflineDraft').addEventListener('click',()=>{
+ const value=$('offlineDraft').value;
+ try{localStorage.setItem('mwvip_offline_draft_v1',value);$('draftStatus').textContent='এই ডিভাইসে খসড়া সংরক্ষিত হয়েছে। এটি এখনো পাঠানো হয়নি।';}
+ catch(e){$('draftStatus').textContent='খসড়া সংরক্ষণ হয়নি: '+e.message;}
+});
+$('loadOfflineDraft').addEventListener('click',()=>{
+ try{$('offlineDraft').value=localStorage.getItem('mwvip_offline_draft_v1')||'';$('draftStatus').textContent='এই ডিভাইসের খসড়া দেখানো হয়েছে।';}
+ catch(e){$('draftStatus').textContent='খসড়া খোলা যায়নি: '+e.message;}
+});
+let mwvipRecorder=null,mwvipRecordChunks=[],mwvipVoiceStream=null,mwvipVoiceUrl=null;
+$('startVoiceRecord').addEventListener('click',async()=>{
+ try{
+  if(!navigator.mediaDevices?.getUserMedia||!window.MediaRecorder)throw new Error('এই browser-এ audio recording সমর্থিত নয়।');
+  mwvipVoiceStream=await navigator.mediaDevices.getUserMedia({audio:true});
+  mwvipRecordChunks=[];
+  mwvipRecorder=new MediaRecorder(mwvipVoiceStream);
+  mwvipRecorder.ondataavailable=e=>{if(e.data&&e.data.size)mwvipRecordChunks.push(e.data);};
+  mwvipRecorder.onstop=()=>{
+   const blob=new Blob(mwvipRecordChunks,{type:mwvipRecorder.mimeType||'audio/webm'});
+   if(mwvipVoiceUrl)URL.revokeObjectURL(mwvipVoiceUrl);
+   mwvipVoiceUrl=URL.createObjectURL(blob);
+   $('voicePlayback').src=mwvipVoiceUrl;$('voicePlayback').hidden=false;
+   $('voiceStatus').textContent='রেকর্ড সম্পন্ন। এই ডিভাইসে শুনতে পারবেন; অন্য সদস্যকে পাঠানো হয়নি।';
+   if(mwvipVoiceStream)mwvipVoiceStream.getTracks().forEach(t=>t.stop());
+   $('startVoiceRecord').disabled=false;$('stopVoiceRecord').disabled=true;
+  };
+  mwvipRecorder.start();$('startVoiceRecord').disabled=true;$('stopVoiceRecord').disabled=false;
+  $('voiceStatus').textContent='রেকর্ড হচ্ছে… বন্ধ চাপলে রেকর্ডিং শেষ হবে।';
+ }catch(e){$('voiceStatus').textContent='রেকর্ডিং শুরু হয়নি: '+(e.message||String(e));}
+});
+$('stopVoiceRecord').addEventListener('click',()=>{
+ if(mwvipRecorder&&mwvipRecorder.state!=='inactive')mwvipRecorder.stop();
+});
+updateNetworkStatus();
+
 </script>
 </body></html>
