@@ -6,6 +6,7 @@ on:
       - "supabase/migrations/**"
       - "scripts/verify-membership-helper-migration.py"
       - "scripts/verify-community-live-readiness.py"
+      - "scripts/verify-live-service-health.py"
       - "docs/COMMUNITY_LIVE_READINESS.md"
       - ".github/workflows/verify-supabase-migrations.yml"
   push:
@@ -33,3 +34,5 @@ jobs:
         run: python scripts/verify-membership-helper-migration.py
       - name: Verify community live readiness
         run: python scripts/verify-community-live-readiness.py
+      - name: Verify Owner-only live service health
+        run: python scripts/verify-live-service-health.py
