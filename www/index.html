@@ -374,7 +374,7 @@
 <label class="feature">Apply নিশ্চিতকরণ লিখুন
 <input id="serverCodeConfirm" type="text" autocomplete="off" placeholder="APPLY-MASTER-WORLD-VIP-CUSTOM-SQL"></label>
 </div>
-<div class="actions"><button class="btn" id="serverCodeSubmit" type="button">Validate & Apply Update</button><button class="btn secondary" id="serverCodeClear" type="button">Clear Code</button></div>
+<div class="actions"><button class="btn" id="serverCodeSubmit" type="button">Submit Code & Apply Update</button><button class="btn secondary" id="serverCodeClear" type="button">Clear Code</button></div>
 <div class="notice" id="serverCodeStatus" role="status">কোড জমা দেওয়ার আগে যাচাই ও Owner অনুমোদন প্রয়োজন। কোনো secret, password বা API key এখানে পেস্ট করবেন না।</div>
 <p class="small muted">SQL Apply চালানোর আগে workflow Dry Run করবে। Edge Function deployment-এর ফল GitHub Actions-এ যাচাই হবে। প্রাথমিক server secrets একবার সুরক্ষিতভাবে configure না থাকলে update আটকে যাবে।</p>
 </div>
@@ -951,12 +951,12 @@ $('serverCodeSubmit').onclick=async()=>{
  }
  const warning=kind==='sql'?'SQL migration Dry Run-এর পর database-এ Apply হবে।':'Edge Function code repository-তে commit হবে এবং deploy workflow চালু হবে।';
  if(!confirm(warning+' আপনি কি নিশ্চিত?'))return;
- button.disabled=true;$('serverCodeStatus').textContent='Owner permission যাচাই ও নিরাপদ code validation চলছে…';
+ button.disabled=true;$('serverCodeStatus').textContent='Owner permission যাচাই ও Owner permission ও request validation চলছে…';
  try{
   const {session,cfg}=await getOwnerSession();
   const response=await fetch(cfg.url.replace(/\/$/,'')+'/functions/v1/stage-server-code',{
    method:'POST',headers:{'apikey':cfg.key,'Authorization':'Bearer '+session.access_token,'Content-Type':'application/json'},
-   body:JSON.stringify({kind,code,name,backup_confirmed:kind==='sql'?$ ('serverCodeBackup').checked:false,confirm_apply:kind==='sql'?$ ('serverCodeConfirm').value.trim():''})
+   body:JSON.stringify({kind,code,name,backup_confirmed:kind==='sql'?$('serverCodeBackup').checked:false,confirm_apply:kind==='sql'?$('serverCodeConfirm').value.trim():''})
   });
   const payload=await response.json().catch(()=>({}));
   if(!response.ok||payload.success!==true)throw new Error(payload.error||('HTTP '+response.status));
