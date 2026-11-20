@@ -10,7 +10,10 @@ on:
       - "scripts/verify-global-communication.py"
       - "scripts/verify-emergency-games.py"
       - "scripts/verify-helpline-directory.py"
+      - "scripts/verify-crisis-alerts.py"
       - "www/data/helplines-BD.json"
+      - "www/index.html"
+      - "www/sw.js"
       - "docs/EMERGENCY_OFFLINE_SATELLITE_GAMES.md"
       - "docs/GLOBAL_COMMUNICATION_OFFLINE_NEWS_ROADMAP.md"
       - "docs/COMMUNITY_LIVE_READINESS.md"
@@ -51,3 +54,5 @@ jobs:
         run: python scripts/verify-emergency-games.py
       - name: Verify official helpline directory
         run: python scripts/verify-helpline-directory.py
+      - name: Verify global crisis news and alerts
+        run: python scripts/verify-crisis-alerts.py
