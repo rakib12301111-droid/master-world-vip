@@ -14,3 +14,5 @@ The repository workflow `.github/workflows/android-apk.yml` builds an installabl
 The generated APK is a debug build signed with the runner's debug key. It is suitable for direct installation/testing, not Play Store upload. A production release requires a separately managed signing key and a release build.
 
 The app is a WebView shell around the existing website. Backend services and website features remain subject to their own deployment/configuration status.
+
+Build requested through the repository update on 2026-11-20.
