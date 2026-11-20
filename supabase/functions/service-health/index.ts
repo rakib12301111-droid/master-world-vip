@@ -30,6 +30,9 @@ Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
   if (req.method !== "GET") return reply({ success: false, error: "Method not allowed" }, 405);
 
+  const authorization = req.headers.get("Authorization") || "";
+  if (!authorization.startsWith("Bearer ")) return reply({ success: false, error: "Owner login required" }, 401);
+
   const supabaseUrl = (Deno.env.get("SUPABASE_URL") || "").replace(/\/$/, "");
   const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
   const anonKey = Deno.env.get("SUPABASE_ANON_KEY") || "";
@@ -39,7 +42,22 @@ Deno.serve(async (req: Request) => {
   const vapidPrivate = Deno.env.get("VAPID_PRIVATE_KEY") || "";
   const vapidSubject = Deno.env.get("VAPID_SUBJECT") || "";
 
-  if (!supabaseUrl) return reply({ success: false, error: "Supabase URL is not configured" }, 503);
+  if (!supabaseUrl || !anonKey || !serviceRoleKey) return reply({ success: false, error: "Health service is not configured" }, 503);
+
+  const userResponse = await fetch(supabaseUrl + "/auth/v1/user", {
+    headers: { apikey: anonKey, Authorization: authorization }, cache: "no-store",
+  });
+  if (!userResponse.ok) return reply({ success: false, error: "Session invalid or expired" }, 401);
+  const user = await userResponse.json();
+  if (!user?.id) return reply({ success: false, error: "Authenticated user unavailable" }, 401);
+  const roleUrl = new URL(supabaseUrl + "/rest/v1/app_user_roles");
+  roleUrl.search = new URLSearchParams({ select: "role", user_id: "eq." + user.id, limit: "1" }).toString();
+  const roleResponse = await fetch(roleUrl, {
+    headers: { apikey: serviceRoleKey, Authorization: "Bearer " + serviceRoleKey }, cache: "no-store",
+  });
+  if (!roleResponse.ok) return reply({ success: false, error: "Owner role could not be verified" }, 503);
+  const roles = await roleResponse.json();
+  if (!Array.isArray(roles) || roles[0]?.role !== "owner") return reply({ success: false, error: "Owner access required" }, 403);
 
   const secrets = {
     supabaseAnonKey: !!anonKey,
@@ -70,7 +88,7 @@ Deno.serve(async (req: Request) => {
   }
 
   const missingTables = Object.entries(tables).filter(([, ok]) => !ok).map(([name]) => name);
-  const missingSecrets = Object.entries(secrets).filter(([, ok]) => !ok).map(([name]) => name);
+
   const schemaReady = missingTables.length === 0;
   const pushReady = secrets.pushWebhookSecret && secrets.vapidPublicKey &&
     secrets.vapidPrivateKey && secrets.vapidSubject && schemaReady;
