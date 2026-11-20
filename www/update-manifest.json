@@ -1,15 +1,15 @@
 {
   "schema_version": 1,
   "app": "MASTER WORLD VIP",
-  "updated_at": "2026-11-19",
+  "updated_at": "2026-11-20",
   "note": "Status describes repository implementation only. A feature is not live until its external setup and tests are verified.",
   "stages": [
     {
       "id": "release-center",
       "title": "Stage 0.4 — Version 3.3.0 Update Center",
       "status": "testing",
-      "summary": "Version 3.3.0 is aligned in PWA and check-updates function; release metadata migration and in-app Allow Now update flow are present in repository. Member Broadcast inbox is now connected in the Community UI.",
-      "requires": "Apply 20261119200000_update_releases.sql; deploy check-updates Edge Function with Supabase config; publish PWA build through GitHub Pages; verify a real waiting service worker and Allow Now reload on Android.",
+      "summary": "App and Edge Function now share a tested version-comparison module; the function validates the app-supplied current_version and reads the project URL from the Supabase Edge runtime. PWA waiting-worker prompt and user-approved activation are in the app.",
+      "requires": "Run Deno unit tests; deploy check-updates; apply 20261119200000_update_releases.sql; publish PWA through GitHub Pages; test update and no-update paths on Android.",
       "page": "updates"
     },
     {
@@ -17,7 +17,7 @@
       "title": "Stage 0.5 — Admin Member Broadcast",
       "status": "testing",
       "summary": "Owner/Super Admin/Admin-only broadcast UI, server-side permission check, in-app recipient inbox records and 3-per-hour rate limit added to repository.",
-      "requires": "Apply 20261119190000_member_broadcast.sql after base and Admin RBAC migrations; verify Owner bootstrap, admin send, member inbox/RLS and delivery counts in staging.",
+      "requires": "Apply base, Admin RBAC and broadcast migrations in order; verify owner bootstrap, admin send, member inbox/RLS and delivery counts in staging.",
       "page": "admin"
     },
     {
@@ -41,55 +41,55 @@
       "title": "Stage 2 — Supabase Auth ও Global Community",
       "status": "testing",
       "summary": "Auth, profile, member search, friend request, private chat and group chat frontend/SQL foundation in repository; live database application and end-to-end tests not verified.",
-      "requires": "প্রথমে base SQL, community SQL apply; Supabase Auth email settings ও end-to-end security tests",
+      "requires": "Apply base and community SQL; verify Auth settings and end-to-end security tests in target Supabase project.",
       "page": "account"
     },
     {
       "id": "privacy",
       "title": "Stage 3 — Privacy & Data Rights",
       "status": "testing",
-      "summary": "Consent sync, append-only consent event এবং access/correction/deletion request queue-এর code/migration যোগ হয়েছে।",
-      "requires": "Privacy migration apply, authenticated tests, deletion fulfilment workflow, policy ও legal review",
+      "summary": "Consent sync, append-only consent events and access/correction/deletion request queue are present in code/migrations.",
+      "requires": "Apply privacy migration, authenticated tests, deletion fulfilment workflow, policy and legal review.",
       "page": "privacy"
     },
     {
       "id": "ai",
       "title": "Stage 4 — AI Assistant ও Image Search",
       "status": "blocked",
-      "summary": "AI Edge Function foundation আছে; provider integration live নয়।",
-      "requires": "AI_PROVIDER_API_KEY secret, provider/model configuration, function deployment ও response/license tests",
+      "summary": "AI Edge Function foundation exists; provider integration is not verified live.",
+      "requires": "AI_PROVIDER_API_KEY secret, provider/model configuration, function deployment and response/license tests.",
       "page": "ai"
     },
     {
       "id": "facebook",
       "title": "Stage 5 — Facebook Discovery ও Active User Finder",
       "status": "blocked",
-      "summary": "বর্তমানে UI/plan; real discovery চালু নয়।",
-      "requires": "Meta app, approved permissions/data access, consent-first manual workflow ও policy review",
+      "summary": "Currently UI/plan; real discovery is not live.",
+      "requires": "Meta app, approved permissions/data access, consent-first manual workflow and policy review.",
       "page": "facebook"
     },
     {
       "id": "growth-admin",
       "title": "Stage 6 — Referral, Notifications ও Admin",
       "status": "testing",
-      "summary": "Owner-controlled Admin RBAC UI ও SQL migration repository-তে যোগ হয়েছে; Owner email bootstrap, migration apply ও security tests বাকি.",
-      "requires": "নিজের verified email দিয়ে Owner bootstrap, migration apply, RLS/RPC tests এবং device update verification",
+      "summary": "Owner-controlled Admin RBAC UI, notifications foundation and broadcast workflow exist in repository; migrations and device delivery tests remain.",
+      "requires": "Verify owner account, apply migrations, test RLS/RPC, configure push/email provider and verify on device.",
       "page": "admin"
     },
     {
       "id": "android",
       "title": "Stage 7 — Android APK",
       "status": "testing",
-      "summary": "Android WebView wrapper ও debug build workflow আছে; release artifact/install/signing verified নয়।",
-      "requires": "Debug build artifact, device test, protected release signing key ও release build",
+      "summary": "Android WebView wrapper and debug build workflow exist; production signing and physical-device test are not verified.",
+      "requires": "Install and test debug APK, configure protected release signing key and build release APK/AAB.",
       "page": "updates"
     },
     {
       "id": "play",
       "title": "Stage 8 — Google Play Store",
       "status": "planned",
-      "summary": "Google Play-এ প্রকাশিত নয়।",
-      "requires": "Developer account, signed AAB, store listing, privacy declarations, policy review ও Play approval",
+      "summary": "Not published on Google Play.",
+      "requires": "Developer account, signed AAB, store listing, privacy declarations, policy review and Play approval.",
       "page": "updates"
     }
   ]
