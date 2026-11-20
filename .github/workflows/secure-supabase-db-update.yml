@@ -1,0 +1,77 @@
+name: MASTER WORLD VIP - Secure Database Update
+
+on:
+  workflow_dispatch:
+    inputs:
+      apply_migrations:
+        description: "Apply pending Supabase migrations (false = dry run only)"
+        required: true
+        type: boolean
+        default: false
+      confirm_project:
+        description: "Type MASTER-WORLD-VIP to confirm the target project"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: master-world-vip-supabase-migrations
+  cancel-in-progress: false
+
+jobs:
+  database-update:
+    if: ${{ inputs.confirm_project == 'MASTER-WORLD-VIP' }}
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Validate required secrets
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+          SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
+        run: |
+          set -euo pipefail
+          test -n "$SUPABASE_ACCESS_TOKEN" || { echo "::error::Missing SUPABASE_ACCESS_TOKEN"; exit 1; }
+          test -n "$SUPABASE_DB_PASSWORD" || { echo "::error::Missing SUPABASE_DB_PASSWORD"; exit 1; }
+          test -n "$SUPABASE_PROJECT_REF" || { echo "::error::Missing SUPABASE_PROJECT_REF"; exit 1; }
+          if [ "$SUPABASE_PROJECT_REF" != "lztbbrzeuyjkuiyzrsxp" ]; then
+            echo "::error::Project ref does not match the approved MASTER WORLD VIP project."
+            exit 1
+          fi
+
+      - name: Setup Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Link approved Supabase project
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+          SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
+        run: supabase link --project-ref "$SUPABASE_PROJECT_REF" --password "$SUPABASE_DB_PASSWORD"
+
+      - name: Validate pending migrations (dry run)
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        run: supabase db push --dry-run
+
+      - name: Apply migrations only after explicit approval
+        if: ${{ inputs.apply_migrations == true }}
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        run: supabase db push
+
+      - name: Report result
+        if: always()
+        run: |
+          if [ "${{ inputs.apply_migrations }}" = "true" ]; then
+            echo "Migration apply was requested. Review the preceding db push result before declaring success."
+          else
+            echo "Dry-run only. No database schema changes were applied."
+          fi
