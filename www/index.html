@@ -1637,7 +1637,7 @@ async function loadFbFeedback(){
   const panel=$('fbAdminFeedbackPanel'),adminBox=$('fbAdminFeedbackList');
   if(panel)panel.hidden=!isAdmin;
   if(isAdmin&&adminBox){
-   const {data:pending,error:pendingError}=await client.from('facebook_setup_feedback').select('id,display_name,feedback_type,rating,message,created_at').in('status',['pending','published']).order('created_at',{ascending:false}).limit(100);
+   const {data:pending,error:pendingError}=await client.from('facebook_setup_feedback').select('id,display_name,feedback_type,rating,message,status,created_at').in('status',['pending','published']).order('created_at',{ascending:false}).limit(100);
    if(pendingError)throw pendingError;adminBox.innerHTML='';
    (pending||[]).forEach(item=>{
     const card=document.createElement('div');card.className='item section';
