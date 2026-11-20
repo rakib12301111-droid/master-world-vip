@@ -59,6 +59,7 @@ Deno.serve(async (req: Request) => {
       return reply({ success: false, error: "Apply requires the exact confirmation phrase and backup acknowledgement" }, 400);
     }
 
+    const requestId = crypto.randomUUID();
     const dispatchUrl = "https://api.github.com/repos/" + repository + "/actions/workflows/" + workflow + "/dispatches";
     const dispatch = await fetch(dispatchUrl, {
       method: "POST",
@@ -71,6 +72,7 @@ Deno.serve(async (req: Request) => {
       body: JSON.stringify({
         ref: "main",
         inputs: {
+          request_id: requestId,
           confirm_project: "MASTER-WORLD-VIP",
           apply_migrations: mode === "apply" ? "true" : "false",
         },
@@ -85,6 +87,7 @@ Deno.serve(async (req: Request) => {
       success: true,
       mode,
       status: "queued",
+      request_id: requestId,
       message: mode === "dry_run" ? "Dry Run queued. No database changes will be applied." : "Apply workflow queued after Owner confirmation and backup acknowledgement.",
       requested_by: user.email,
       workflow: workflow,
