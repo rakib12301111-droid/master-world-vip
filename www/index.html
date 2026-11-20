@@ -220,13 +220,13 @@
 <section class="page" id="emergency">
 <article class="card">
 <h2>☎️ Verified Emergency Helplines</h2>
-<p class="muted">দেশ নির্বাচন করে সরকারি/সেবাদাতার যাচাইকৃত নম্বর দেখুন। সর্বশেষ অনলাইন আপডেট থাকলে সেটি ডাউনলোড হবে; নেটওয়ার্ক না থাকলে সংরক্ষিত তালিকা দেখাবে। জরুরি অবস্থায় নম্বরের পাশে দেওয়া অফিসিয়াল উৎস মিলিয়ে নিন।</p>
+<p class="muted">বিশ্বের দেশ নির্বাচন করুন। যে দেশের নম্বর সরকারি উৎস দিয়ে যাচাই করা হয়েছে শুধু সেটিই দেখানো হবে; অন্য দেশের জন্য ভুল নম্বর বানিয়ে দেখানো হবে না। দেশের তালিকা অনলাইনে আপডেট ও অফলাইনে cache হবে।</p>
 <div class="field"><label for="helplineCountry">দেশ</label><select id="helplineCountry"><option value="BD">বাংলাদেশ</option><option value="US">United States</option><option value="GB">United Kingdom</option><option value="IN">India</option><option value="SA">Saudi Arabia</option><option value="AE">United Arab Emirates</option><option value="OTHER">অন্যান্য দেশ</option></select></div>
 <div class="field"><label for="helplineSearch">সেবা খুঁজুন</label><input id="helplineSearch" type="search" placeholder="Police, Fire, Ambulance, Electricity..."></div>
 <div class="actions"><button class="btn" id="refreshHelplines" type="button">↻ অনলাইন তালিকা আপডেট</button></div>
 <div class="notice" id="helplineUpdateStatus" aria-live="polite">সংরক্ষিত সরকারি উৎসের তালিকা প্রস্তুত হচ্ছে…</div>
 <div id="helplineList" class="stack" aria-live="polite"></div>
-<p class="muted">বিদেশি দেশের নম্বর এই সংস্করণে যাচাইকৃত ডেটা না থাকলে দেখানো হবে না। ভুল নম্বর দেখানোর চেয়ে সরকারি উৎস না পাওয়া জানানো নিরাপদ।</p>
+<p class="muted">বিশ্বের দেশগুলোর তালিকা অনলাইনে হালনাগাদ হবে। প্রতিটি দেশের নম্বর আলাদা সরকারি উৎস দিয়ে যাচাই না হওয়া পর্যন্ত কোনো নম্বর দেখানো হবে না।</p>
 </article>
 <article class="card">
 <h2>🚨 জরুরি নিরাপত্তা কেন্দ্র — Offline Guide</h2>
@@ -1164,6 +1164,39 @@ const crisisTerms={
  health:'(pandemic OR epidemic OR outbreak OR public health emergency)',
  security:'(terrorism OR terrorist attack OR mass shooting OR security emergency)'
 };
+/* Global ISO country directory: fetched from REST Countries and cached for offline selection.
+   Country list coverage does not imply verified emergency numbers or official alert feeds. */
+const MWVIP_COUNTRY_CACHE='mwvip_global_country_list_v1';
+async function loadGlobalCountryDirectory(){
+ const cached=(()=>{try{return JSON.parse(localStorage.getItem(MWVIP_COUNTRY_CACHE)||'[]')}catch(_e){return []}})();
+ const apply=(countries)=>{
+  if(!Array.isArray(countries)||!countries.length)return;
+  const sorted=countries.filter(x=>x&&x.cca2&&x.name&&x.name.common).sort((a,b)=>a.name.common.localeCompare(b.name.common));
+  const helpline=$('helplineCountry'),crisis=$('crisisCountry');
+  if(helpline){
+   const current=helpline.value||'BD';helpline.replaceChildren();
+   sorted.forEach(c=>{const o=document.createElement('option');o.value=c.cca2;o.textContent=c.name.common;helpline.append(o);});
+   const other=document.createElement('option');other.value='OTHER';other.textContent='অন্যান্য / তালিকায় নেই';helpline.append(other);
+   helpline.value=sorted.some(c=>c.cca2===current)?current:'BD';
+  }
+  if(crisis){
+   const current=crisis.value||'Bangladesh';crisis.replaceChildren();
+   sorted.forEach(c=>{const o=document.createElement('option');o.value=c.name.common;o.textContent=c.name.common;crisis.append(o);});
+   const world=document.createElement('option');world.value='Worldwide';world.textContent='বিশ্বজুড়ে';crisis.append(world);
+   crisis.value=sorted.some(c=>c.name.common===current)?current:'Bangladesh';
+  }
+ };
+ if(cached.length)apply(cached);
+ if(!navigator.onLine)return;
+ try{
+  const response=await fetch('https://restcountries.com/v3.1/all?fields=name,cca2',{cache:'no-store'});
+  if(!response.ok)throw new Error('Country list unavailable');
+  const countries=await response.json();
+  if(!Array.isArray(countries)||countries.length<190)throw new Error('Incomplete country list');
+  localStorage.setItem(MWVIP_COUNTRY_CACHE,JSON.stringify(countries));
+  apply(countries);
+ }catch(_error){if(!cached.length){const s=$('crisisStatus');if(s)s.textContent='বিশ্বের পূর্ণ দেশ-তালিকা আনতে ইন্টারনেট প্রয়োজন; পরে আবার চেষ্টা করুন।';}}
+}
 const crisisMessages={
  bn:{title:'MASTER WORLD VIP — গুরুত্বপূর্ণ সংবাদ',body:'নতুন সংকট-সম্পর্কিত সংবাদ পাওয়া গেছে। বিস্তারিত ও মূল উৎস যাচাই করুন।'},
  en:{title:'MASTER WORLD VIP — Important news',body:'New crisis-related news found. Check details and original sources.'},
@@ -1339,6 +1372,7 @@ $('helplineCountry').addEventListener('change',()=>{renderHelplines();refreshHel
 $('helplineSearch').addEventListener('input',renderHelplines);
 $('refreshHelplines').addEventListener('click',refreshHelplines);
 renderHelplines();
+loadGlobalCountryDirectory().then(()=>{renderHelplines();if(navigator.onLine)refreshHelplines();});
 if(navigator.onLine)refreshHelplines();
 
 /* Offline emergency reference and local games. */
