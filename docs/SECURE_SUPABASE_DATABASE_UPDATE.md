@@ -29,9 +29,15 @@ The workflow serializes deployments and refuses to run against a different proje
 - This workflow does not create a backup automatically. Take/verify a Supabase backup or point-in-time recovery availability before applying production migrations.
 - The browser Update Center must never receive the Supabase database password, personal access token, GitHub token, or service-role key.
 
+## Automatic Edge Function deployment through the update pipeline
+
+- The repository includes `.github/workflows/deploy-update-functions.yml`. After this PR is reviewed and merged, changes to either Update Center Edge Function or `supabase/config.toml` on `main` trigger deployment to the fixed approved project.
+- The workflow can also be started manually from GitHub Actions. It requires `SUPABASE_ACCESS_TOKEN` and `SUPABASE_PROJECT_REF` GitHub Actions secrets; the workflow rejects any project ref other than `lztbbrzeuyjkuiyzrsxp`.
+- Protect the GitHub `production` environment with required reviewers if you want an approval gate before any function deployment. Deployment is not considered complete until the workflow run succeeds and the functions are visible in Supabase.
+
 ## Connect the app Update Center (one-time server setup)
 
-1. Deploy the authenticated Edge Function from the repository: `supabase functions deploy dispatch-db-update --project-ref lztbbrzeuyjkuiyzrsxp`
+1. The new GitHub Actions deployment workflow deploys both authenticated Update Center Edge Functions after merge to `main`; alternatively use the documented Supabase CLI commands for a one-time manual bootstrap.
 2. In Supabase Edge Function secrets, set `GITHUB_ACTIONS_TOKEN` to a fine-grained GitHub token restricted to this repository with Actions: Read and write. Set `GITHUB_REPOSITORY` to `rakib12301111-droid/master-world-vip`.
 3. Supabase's standard `SUPABASE_URL`, `SUPABASE_ANON_KEY`, and `SUPABASE_SERVICE_ROLE_KEY` runtime secrets are used by the function. Never expose the service-role key in the app.
 4. Configure the GitHub Actions secrets listed above. Optionally protect the GitHub `production` environment with required reviewers.
