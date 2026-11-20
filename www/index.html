@@ -465,7 +465,7 @@
 <article class="card">
 <h2>🧾 Facebook Account Setup Assistance</h2>
 <p class="muted">নিজের বৈধ পরিচয়পত্র ও নিজের ফোন/ইমেইল ব্যবহার করে Facebook অ্যাকাউন্ট খোলার প্রক্রিয়ায় সহায়তা। অ্যাকাউন্টটি গ্রাহক নিজেই তৈরি ও নিয়ন্ত্রণ করবেন।</p>
-<div class="notice">আমরা কখনো Facebook পাসওয়ার্ড, OTP, লগইন কোড বা পরিচয়পত্রের ছবি সংগ্রহ করি না। গ্রাহক Facebook-এর অফিসিয়াল নির্দেশনা মেনে নিজে যাচাই করবেন। Facebook-এর নিয়ম ও যোগ্যতার শর্ত প্রযোজ্য।</div>
+<div class="notice">আপনার ব্যক্তিগত নিরাপত্তা ও গোপনীয়তা আমাদের কাছে গুরুত্বপূর্ণ। অ্যাকাউন্টটি আপনার নিজের পরিচয়, ফোন ও ইমেইল দিয়ে আপনি নিজেই তৈরি ও নিয়ন্ত্রণ করবেন। নিরাপত্তার জন্য আমরা Facebook পাসওয়ার্ড, OTP, লগইন কোড বা NID/লাইসেন্সের ছবি চাই না। পরিচয় যাচাই প্রয়োজন হলে Facebook-এর অফিসিয়াল পদ্ধতি ব্যবহার করুন।</div>
 <div class="feature-list">
 <label class="feature"><input type="radio" name="fbServicePackage" value="500" checked> <strong>৳ ৫০০</strong><div class="status">Basic setup assistance</div></label>
 <label class="feature"><input type="radio" name="fbServicePackage" value="750"> <strong>৳ ৭৫০</strong><div class="status">Standard setup assistance</div></label>
@@ -501,66 +501,24 @@
 <p class="muted small">শুধু অনুমোদিত Admin/Owner অর্ডারের অবস্থা পরিবর্তন করতে পারবেন।</p>
 <div id="fbAdminOrderList"></div>
 </article>
+<article class="card section">
+<h2>💬 গ্রাহকের মতামত ও অভিযোগ</h2>
+<p class="muted">সেবা ভালো লাগলে প্রশংসা লিখুন, সমস্যা হলে সেটিও নির্দ্বিধায় জানান। আমরা সব মতামত গুরুত্ব দিয়ে দেখব। প্রকাশের আগে স্প্যাম ও ব্যক্তিগত তথ্য যাচাই করা হবে; বৈধ অভিযোগ শুধু নেতিবাচক বলে মুছে ফেলা হবে না।</p>
+<div class="field"><label for="fbFeedbackName">প্রদর্শনের নাম</label><input id="fbFeedbackName" maxlength="60" placeholder="আপনার নাম বা পছন্দের নাম"></div>
+<div class="field"><label for="fbFeedbackType">মতামতের ধরন</label><select id="fbFeedbackType"><option value="review">প্রশংসা / রিভিউ</option><option value="complaint">অভিযোগ / সমস্যা</option><option value="suggestion">পরামর্শ</option></select></div>
+<div class="field"><label for="fbFeedbackRating">রেটিং</label><select id="fbFeedbackRating"><option value="5">৫ ⭐</option><option value="4">৪ ⭐</option><option value="3">৩ ⭐</option><option value="2">২ ⭐</option><option value="1">১ ⭐</option></select></div>
+<div class="field"><label for="fbFeedbackMessage">আপনার মন্তব্য</label><textarea id="fbFeedbackMessage" maxlength="1200" rows="4" placeholder="আপনার অভিজ্ঞতা বা সমস্যাটি লিখুন"></textarea></div>
+<label class="feature"><input type="checkbox" id="fbFeedbackConsent"> আমার মন্তব্য প্রকাশের জন্য জমা দিতে সম্মত। ফোন নম্বর, NID, পাসওয়ার্ড বা OTP লিখব না।</label>
+<button class="btn" id="submitFbFeedback" type="button">মন্তব্য জমা দিন</button>
+<div id="fbFeedbackStatus" class="notice">মন্তব্য জমা দিতে লগইন করুন।</div>
+<h3 class="section">সাম্প্রতিক প্রকাশিত মতামত</h3><div id="fbFeedbackList"><div class="notice">মতামত লোড হচ্ছে…</div></div>
+</article>
+<article class="card section" id="fbAdminFeedbackPanel" hidden><h2>🔐 Admin — মতামত পর্যালোচনা</h2><div id="fbAdminFeedbackList"></div></article>
 </section>
 
 <div class="footer">MASTER WORLD VIP · Integrated frontend + Supabase Auth starter · Not yet production-ready</div>
 </main></div>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">
-/* Facebook setup assistance orders — never collect credentials, OTPs or ID images. */
-const FB_SERVICE_PAYMENTS={nagad:'01609066610',bkash:'01811473756'};
-const FB_ORDER_STATUSES={pending_payment:'পেমেন্ট যাচাই বাকি',payment_review:'পেমেন্ট যাচাই চলছে',approved:'অনুমোদিত',in_progress:'কাজ চলছে',completed:'সম্পন্ন',rejected:'বাতিল'};
-function selectedFbPackage(){return document.querySelector('input[name="fbServicePackage"]:checked')?.value||'500';}
-function fbOrderNotice(message,ok=false){const el=$('fbOrderStatus');if(el){el.className='notice'+(ok?' success':'');el.textContent=message;}}
-function safeFbText(value){return String(value??'').replace(/[<>]/g,'');}
-async function loadFbOrders(){
- const box=$('fbOrderList'),adminBox=$('fbAdminOrderList');if(!box)return;
- if(!client||!currentUser){box.textContent='অর্ডার দেখতে আগে লগইন করুন।';return;}
- box.textContent='অর্ডার লোড হচ্ছে…';
- try{
-  const {data,error}=await client.from('facebook_setup_orders').select('id,package_price,customer_name,customer_phone,payment_method,transaction_id,status,created_at,updated_at').order('created_at',{ascending:false}).limit(100);
-  if(error)throw error;
-  box.innerHTML='';
-  if(!data?.length){box.textContent='এখনো কোনো অর্ডার নেই।';return;}
-  data.forEach(o=>{const card=document.createElement('div');card.className='item section';
-   const title=document.createElement('strong');title.textContent='৳ '+o.package_price+' · '+(FB_ORDER_STATUSES[o.status]||o.status);
-   const detail=document.createElement('p');detail.className='muted small';detail.textContent='অর্ডার: '+o.id+' · '+o.customer_name+' · '+o.customer_phone+' · '+String(o.payment_method).toUpperCase()+' · TrxID: '+o.transaction_id+' · '+new Date(o.created_at).toLocaleString('bn-BD');
-   card.append(title,detail);box.append(card);
-  });
-  const {data:roleData,error:roleError}=await client.rpc('get_my_admin_access');
-  const isAdmin=!roleError&&['owner','super_admin','admin'].includes(roleData);
-  $('fbAdminOrdersPanel').hidden=!isAdmin;
-  if(isAdmin&&adminBox){
-   adminBox.innerHTML='';
-   data.forEach(o=>{const card=document.createElement('div');card.className='item section';
-    const detail=document.createElement('p');detail.textContent=o.customer_name+' · '+o.customer_phone+' · ৳'+o.package_price+' · '+String(o.payment_method).toUpperCase()+' · '+o.transaction_id;
-    const select=document.createElement('select');select.setAttribute('aria-label','অর্ডারের অবস্থা');
-    Object.entries(FB_ORDER_STATUSES).forEach(([v,label])=>{const opt=document.createElement('option');opt.value=v;opt.textContent=label;opt.selected=o.status===v;select.append(opt);});
-    const save=document.createElement('button');save.className='btn secondary';save.type='button';save.textContent='অবস্থা সংরক্ষণ';
-    save.onclick=async()=>{save.disabled=true;const {error}=await client.from('facebook_setup_orders').update({status:select.value,updated_at:new Date().toISOString()}).eq('id',o.id);save.disabled=false;if(error){alert('আপডেট হয়নি: '+error.message);return;}await loadFbOrders();};
-    card.append(detail,select,save);adminBox.append(card);
-   });
-  }
- }catch(e){box.textContent='অর্ডার লোড হয়নি: '+(e.message||String(e))+' — Supabase migration প্রয়োগ হয়েছে কি না যাচাই করুন।';}
-}
-$('submitFbOrder')?.addEventListener('click',async()=>{
- if(!client||!currentUser){fbOrderNotice('অর্ডার জমা দিতে আগে Register/Login করুন।');return;}
- const name=$('fbOrderName').value.trim(),phone=$('fbOrderPhone').value.trim(),txn=$('fbTxnId').value.trim(),method=$('fbPayMethod').value,price=Number(selectedFbPackage());
- if(!name||!phone||!txn){fbOrderNotice('নাম, যোগাযোগ নম্বর ও পেমেন্টের Transaction ID পূরণ করুন।');return;}
- if(!/^[0-9+() -]{8,24}$/.test(phone)){fbOrderNotice('সঠিক যোগাযোগ নম্বর লিখুন।');return;}
- if(!['500','750','1000'].includes(String(price))){fbOrderNotice('প্যাকেজ নির্বাচন সঠিক নয়।');return;}
- if(!$('fbOrderConsent').checked){fbOrderNotice('নিজের অ্যাকাউন্ট নিজে নিয়ন্ত্রণের সম্মতি দিন।');return;}
- const btn=$('submitFbOrder');btn.disabled=true;
- try{
-  const {error}=await client.from('facebook_setup_orders').insert({user_id:currentUser.id,package_price:price,customer_name:name,customer_phone:phone,payment_method:method,transaction_id:txn,status:'payment_review'});
-  if(error)throw error;
-  fbOrderNotice('অর্ডার জমা হয়েছে। পেমেন্ট যাচাইয়ের পর অবস্থা আপডেট হবে।',true);
-  $('fbTxnId').value='';$('fbOrderConsent').checked=false;await loadFbOrders();
- }catch(e){fbOrderNotice('অর্ডার জমা হয়নি: '+(e.message||String(e))+'। প্রয়োজনীয় Supabase migration চালু আছে কি না দেখুন।');}
- finally{btn.disabled=false;}
-});
-$('refreshFbOrders')?.addEventListener('click',loadFbOrders);
-
-</script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 const $=id=>document.getElementById(id);
 const pages=[...document.querySelectorAll('.page')];
@@ -1602,6 +1560,95 @@ drawTicTacToe();
 let guessTarget=Math.floor(Math.random()*20)+1;
 $('submitGuess').addEventListener('click',()=>{const n=Number($('guessNumber').value);if(!Number.isInteger(n)||n<1||n>20){$('guessStatus').textContent='১ থেকে ২০-এর মধ্যে একটি পূর্ণ সংখ্যা দিন।';return;}if(n===guessTarget){$('guessStatus').textContent='অভিনন্দন! সঠিক সংখ্যা। নতুন খেলা শুরু করুন।';}else{$('guessStatus').textContent=n<guessTarget?'আরও বড় সংখ্যা চেষ্টা করুন।':'আরও ছোট সংখ্যা চেষ্টা করুন।';}});
 $('resetGuess').addEventListener('click',()=>{guessTarget=Math.floor(Math.random()*20)+1;$('guessNumber').value='';$('guessStatus').textContent='নতুন সংখ্যা তৈরি হয়েছে।';});
+
+/* Facebook setup assistance orders — never collect credentials, OTPs or ID images. */
+const FB_SERVICE_PAYMENTS={nagad:'01609066610',bkash:'01811473756'};
+const FB_ORDER_STATUSES={pending_payment:'পেমেন্ট যাচাই বাকি',payment_review:'পেমেন্ট যাচাই চলছে',approved:'অনুমোদিত',in_progress:'কাজ চলছে',completed:'সম্পন্ন',rejected:'বাতিল'};
+function selectedFbPackage(){return document.querySelector('input[name="fbServicePackage"]:checked')?.value||'500';}
+function fbOrderNotice(message,ok=false){const el=$('fbOrderStatus');if(el){el.className='notice'+(ok?' success':'');el.textContent=message;}}
+function safeFbText(value){return String(value??'').replace(/[<>]/g,'');}
+async function loadFbOrders(){
+ const box=$('fbOrderList'),adminBox=$('fbAdminOrderList');if(!box)return;
+ if(!client||!currentUser){box.textContent='অর্ডার দেখতে আগে লগইন করুন।';return;}
+ box.textContent='অর্ডার লোড হচ্ছে…';
+ try{
+  const {data,error}=await client.from('facebook_setup_orders').select('id,package_price,customer_name,customer_phone,payment_method,transaction_id,status,created_at,updated_at').order('created_at',{ascending:false}).limit(100);
+  if(error)throw error;
+  box.innerHTML='';
+  if(!data?.length){box.textContent='এখনো কোনো অর্ডার নেই।';return;}
+  data.forEach(o=>{const card=document.createElement('div');card.className='item section';
+   const title=document.createElement('strong');title.textContent='৳ '+o.package_price+' · '+(FB_ORDER_STATUSES[o.status]||o.status);
+   const detail=document.createElement('p');detail.className='muted small';detail.textContent='অর্ডার: '+o.id+' · '+o.customer_name+' · '+o.customer_phone+' · '+String(o.payment_method).toUpperCase()+' · TrxID: '+o.transaction_id+' · '+new Date(o.created_at).toLocaleString('bn-BD');
+   card.append(title,detail);box.append(card);
+  });
+  const {data:roleData,error:roleError}=await client.rpc('get_my_admin_access');
+  const isAdmin=!roleError&&['owner','super_admin','admin'].includes(roleData);
+  $('fbAdminOrdersPanel').hidden=!isAdmin;
+  if(isAdmin&&adminBox){
+   adminBox.innerHTML='';
+   data.forEach(o=>{const card=document.createElement('div');card.className='item section';
+    const detail=document.createElement('p');detail.textContent=o.customer_name+' · '+o.customer_phone+' · ৳'+o.package_price+' · '+String(o.payment_method).toUpperCase()+' · '+o.transaction_id;
+    const select=document.createElement('select');select.setAttribute('aria-label','অর্ডারের অবস্থা');
+    Object.entries(FB_ORDER_STATUSES).forEach(([v,label])=>{const opt=document.createElement('option');opt.value=v;opt.textContent=label;opt.selected=o.status===v;select.append(opt);});
+    const save=document.createElement('button');save.className='btn secondary';save.type='button';save.textContent='অবস্থা সংরক্ষণ';
+    save.onclick=async()=>{save.disabled=true;const {error}=await client.from('facebook_setup_orders').update({status:select.value,updated_at:new Date().toISOString()}).eq('id',o.id);save.disabled=false;if(error){alert('আপডেট হয়নি: '+error.message);return;}await loadFbOrders();};
+    card.append(detail,select,save);adminBox.append(card);
+   });
+  }
+ }catch(e){box.textContent='অর্ডার লোড হয়নি: '+(e.message||String(e))+' — Supabase migration প্রয়োগ হয়েছে কি না যাচাই করুন।';}
+}
+$('submitFbOrder')?.addEventListener('click',async()=>{
+ if(!client||!currentUser){fbOrderNotice('অর্ডার জমা দিতে আগে Register/Login করুন।');return;}
+ const name=$('fbOrderName').value.trim(),phone=$('fbOrderPhone').value.trim(),txn=$('fbTxnId').value.trim(),method=$('fbPayMethod').value,price=Number(selectedFbPackage());
+ if(!name||!phone||!txn){fbOrderNotice('নাম, যোগাযোগ নম্বর ও পেমেন্টের Transaction ID পূরণ করুন।');return;}
+ if(!/^[0-9+() -]{8,24}$/.test(phone)){fbOrderNotice('সঠিক যোগাযোগ নম্বর লিখুন।');return;}
+ if(!['500','750','1000'].includes(String(price))){fbOrderNotice('প্যাকেজ নির্বাচন সঠিক নয়।');return;}
+ if(!$('fbOrderConsent').checked){fbOrderNotice('নিজের অ্যাকাউন্ট নিজে নিয়ন্ত্রণের সম্মতি দিন।');return;}
+ const btn=$('submitFbOrder');btn.disabled=true;
+ try{
+  const {error}=await client.from('facebook_setup_orders').insert({user_id:currentUser.id,package_price:price,customer_name:name,customer_phone:phone,payment_method:method,transaction_id:txn,status:'payment_review'});
+  if(error)throw error;
+  fbOrderNotice('অর্ডার জমা হয়েছে। পেমেন্ট যাচাইয়ের পর অবস্থা আপডেট হবে।',true);
+  $('fbTxnId').value='';$('fbOrderConsent').checked=false;await loadFbOrders();
+ }catch(e){fbOrderNotice('অর্ডার জমা হয়নি: '+(e.message||String(e))+'। প্রয়োজনীয় Supabase migration চালু আছে কি না দেখুন।');}
+ finally{btn.disabled=false;}
+});
+$('refreshFbOrders')?.addEventListener('click',loadFbOrders);
+
+
+
+/* Public feedback is moderated; honest complaints remain allowed. */
+function feedbackStatus(message,ok=false){const el=$('fbFeedbackStatus');if(el){el.className='notice'+(ok?' success':'');el.textContent=message;}}
+async function loadFbFeedback(){
+ const box=$('fbFeedbackList');if(!box)return;box.textContent='মতামত লোড হচ্ছে…';
+ if(!client){box.textContent='Supabase সংযোগ প্রস্তুত নয়।';return;}
+ try{
+  const {data,error}=await client.from('facebook_setup_feedback').select('id,display_name,feedback_type,rating,message,created_at').eq('status','published').order('created_at',{ascending:false}).limit(50);
+  if(error)throw error;box.innerHTML='';
+  if(!data?.length){box.textContent='এখনো প্রকাশিত মতামত নেই।';return;}
+  data.forEach(item=>{const card=document.createElement('div');card.className='item section';
+   const h=document.createElement('strong');h.textContent=item.display_name+' · '+'⭐'.repeat(item.rating);
+   const p=document.createElement('p');p.textContent=item.message;
+   const meta=document.createElement('p');meta.className='muted small';meta.textContent=(item.feedback_type==='complaint'?'অভিযোগ':item.feedback_type==='suggestion'?'পরামর্শ':'রিভিউ')+' · '+new Date(item.created_at).toLocaleDateString('bn-BD');
+   card.append(h,p,meta);box.append(card);
+  });
+ }catch(e){box.textContent='মতামত লোড হয়নি: '+(e.message||String(e))+'। Database migration প্রয়োজন হতে পারে।';}
+}
+$('submitFbFeedback')?.addEventListener('click',async()=>{
+ if(!client||!currentUser){feedbackStatus('মন্তব্য জমা দিতে আগে লগইন করুন।');return;}
+ const name=$('fbFeedbackName').value.trim(),message=$('fbFeedbackMessage').value.trim(),type=$('fbFeedbackType').value,rating=Number($('fbFeedbackRating').value);
+ if(name.length<2||message.length<3){feedbackStatus('নাম ও মন্তব্য লিখুন।');return;}
+ if(!['review','complaint','suggestion'].includes(type)||rating<1||rating>5){feedbackStatus('সঠিক মতামত নির্বাচন করুন।');return;}
+ if(!$('fbFeedbackConsent').checked){feedbackStatus('মন্তব্য প্রকাশের সম্মতি দিন।');return;}
+ const btn=$('submitFbFeedback');btn.disabled=true;
+ try{
+  const {error}=await client.from('facebook_setup_feedback').insert({user_id:currentUser.id,display_name:name,feedback_type:type,rating,message,status:'pending'});
+  if(error)throw error;
+  feedbackStatus('মন্তব্য জমা হয়েছে। যাচাই শেষে প্রকাশ করা হবে।',true);
+  $('fbFeedbackMessage').value='';$('fbFeedbackConsent').checked=false;
+ }catch(e){feedbackStatus('মন্তব্য জমা হয়নি: '+(e.message||String(e))+'। Database migration প্রয়োজন হতে পারে.');}
+ finally{btn.disabled=false;}
+});
 
 </script>
 </body></html>
