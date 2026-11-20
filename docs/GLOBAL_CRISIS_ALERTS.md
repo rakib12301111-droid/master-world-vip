@@ -15,3 +15,7 @@
 - Browser notifications require HTTPS, supported browser, and explicit user permission.
 - True critical alerts require authoritative country-specific government feeds, backend verification/deduplication, translation review, Web Push/VAPID server configuration, and per-device opt-in.
 - Never present an unverified report as a confirmed war, attack, or evacuation order. Users should follow local authorities.
+
+
+## Push sender hardening
+The send-push Edge Function allows browser requests only from the production GitHub Pages origin and returns no-store responses. This CORS rule is defense-in-depth, not authentication: the webhook secret remains mandatory and must only exist in server-side Supabase secrets. The function is not live until deployed with its required secrets.
