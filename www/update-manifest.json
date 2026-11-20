@@ -21,6 +21,14 @@
       "page": "admin"
     },
     {
+      "id": "inbox-push",
+      "title": "Stage 0.6 — Unified Inbox & Push Notification Foundation",
+      "status": "testing",
+      "summary": "Unified Inbox UI, direct/group thread list, unread counters, read markers, explicit browser push permission and subscription storage, plus Service Worker push display/click handling added to repository.",
+      "requires": "Apply 20261120100000_inbox_push_foundation.sql after community migration; configure VAPID public/private keys and trusted push sender; test subscription, delivery, unsubscribe and Android browser behavior.",
+      "page": "inbox"
+    },
+    {
       "id": "one-click-setup",
       "title": "Stage 0 — One-Click Safe Setup",
       "status": "testing",
