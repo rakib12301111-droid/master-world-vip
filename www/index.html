@@ -252,6 +252,20 @@
 <div id="appUpdateStatus" class="notice" role="status">আপডেট পরীক্ষা করা হয়নি।</div>
 <div id="updateManifestStatus" class="muted small" role="status">Update plan লোড হচ্ছে…</div>
 </div>
+<div class="section item" id="oneClickUpdateSetup">
+<h3>⚡ Allow Now — One-Click Setup</h3>
+<p class="small muted">এই বাটন নিরাপদ স্থানীয় সেটআপ প্রয়োগ করবে, Supabase সংযোগ/Edge Function-এর প্রাথমিক অবস্থা পরীক্ষা করবে এবং বাকি অনুমোদিত কাজ দেখাবে। এটি কোনো গোপন Secret তৈরি বা database migration Apply করবে না।</p>
+<div class="actions">
+<button class="btn" id="allowNowUpdateSetup" type="button">Allow Now — Setup & Check</button>
+<button class="btn secondary" id="openGitHubSecretSettings" type="button">GitHub Secret Settings খুলুন</button>
+</div>
+<div id="oneClickUpdateSetupStatus" class="notice" role="status">Allow Now চাপলে নিরাপদ setup ও সংযোগ পরীক্ষা শুরু হবে।</div>
+<ul class="small muted">
+<li>GitHub Environment secrets-এর মান browser থেকে পড়া বা লেখা যাবে না।</li>
+<li>নিরাপত্তার জন্য SUPABASE_ACCESS_TOKEN ও SUPABASE_DB_PASSWORD GitHub-এর production Environment-এ যোগ করতে হবে। SUPABASE_PROJECT_REF হলো নির্দিষ্ট project reference।</li>
+<li>Secret যোগের পর Deploy workflow পুনরায় চালিয়ে ফলাফল যাচাই করা হবে।</li>
+</ul>
+</div>
 <div class="section item" id="databaseUpdatePanel">
 <h3>🔐 Secure Database Update (Owner only)</h3>
 <p class="small muted">এখান থেকে Supabase migration-এর Dry Run বা অনুমোদিত Apply অনুরোধ পাঠানো যাবে। সার্ভারে Owner role যাচাই হবে; গোপন key এই পেজে রাখা হবে না।</p>
@@ -827,6 +841,47 @@ $('dbApply').onclick=async()=>{
 $('dbCheckStatus').onclick=async()=>{const b=$('dbCheckStatus');b.disabled=true;$('dbUpdateStatus').textContent='GitHub Actions status যাচাই হচ্ছে…';try{await checkDatabaseUpdateStatus();}catch(e){$('dbUpdateStatus').textContent='Status পাওয়া যায়নি: '+(e.message||e);}finally{b.disabled=false;}};
 $('refreshUpdatePlan').onclick=()=>loadUpdatePlan();
 loadUpdatePlan();
+
+async function runOneClickUpdateSetup(){
+ const button=$('allowNowUpdateSetup'),status=$('oneClickUpdateSetupStatus');
+ button.disabled=true;
+ status.className='notice';
+ status.textContent='নিরাপদ local setup প্রয়োগ এবং Supabase সংযোগ পরীক্ষা হচ্ছে…';
+ const results=[];
+ try{
+  applySafeSetup();
+  results.push('নিরাপদ local preferences প্রয়োগ হয়েছে; optional analytics, external data collection, browser permission ও legal consent চালু করা হয়নি।');
+  const cfg=config();
+  if(!cfg.url||!cfg.key)results.push('Supabase Project URL/public key পাওয়া যায়নি। Account Setup-এ সংযোগ দিন।');
+  else{
+   results.push('Supabase project configuration এই ডিভাইসে পাওয়া গেছে।');
+   try{
+    const response=await fetch(cfg.url.replace(/\/$/,'')+'/functions/v1/dispatch-db-update',{
+     method:'OPTIONS',
+     headers:{'apikey':cfg.key,'Access-Control-Request-Method':'POST','Access-Control-Request-Headers':'authorization,apikey,content-type'}
+    });
+    if(response.ok)results.push('Secure Update Edge Function endpoint সাড়া দিয়েছে; authenticated Owner request এখনো আলাদাভাবে যাচাই করা হয়নি।');
+    else if(response.status===404)results.push('Secure Update Edge Function পাওয়া যায়নি (HTTP 404); deploy প্রয়োজন হতে পারে।');
+    else results.push('Edge Function preflight status: HTTP '+response.status+'; deploy/authentication অবস্থা নিশ্চিত নয়।');
+   }catch(error){results.push('Edge Function পরীক্ষা সম্পন্ন হয়নি: '+(error.message||String(error)));}
+  }
+  let session=null;
+  if(client){
+   try{const result=await client.auth.getSession();session=result.data?.session||null;}
+   catch(error){results.push('Login session পরীক্ষা ব্যর্থ: '+(error.message||String(error)));}
+  }
+  results.push(session?'Supabase login session পাওয়া গেছে: '+(session.user?.email||'authenticated user')+'.':'Supabase login session পাওয়া যায়নি; Owner-only update চালাতে Owner account-এ login করতে হবে।');
+  results.push('GitHub production Environment secrets browser থেকে নিরাপদে তৈরি/পড়া যায় না। SUPABASE_ACCESS_TOKEN ও SUPABASE_DB_PASSWORD এখনো GitHub-এর Environment Secrets অংশে যোগ করতে হবে; project ref হলো lztbbrzeuyjkuiyzrsxp।');
+  results.push('কোনো database migration Apply করা হয়নি এবং কোনো Secret value সংগ্রহ/সংরক্ষণ করা হয়নি।');
+  status.textContent=results.join(' ');
+  status.className='notice success';
+ }catch(error){
+  status.textContent='One-Click Setup সম্পন্ন হয়নি: '+(error.message||String(error));
+ }finally{button.disabled=false;}
+}
+$('allowNowUpdateSetup').addEventListener('click',runOneClickUpdateSetup);
+$('openGitHubSecretSettings').addEventListener('click',()=>window.open('https://github.com/rakib12301111-droid/master-world-vip/settings/environments','_blank','noopener,noreferrer'));
+
 async function requestUpdateStatus(){
  const cfg=config();
  const response=await fetch(updateCheckUrl(),{
