@@ -26,6 +26,12 @@ on:
       - "scripts/verify-community-live-readiness.py"
       - "scripts/verify-live-service-health.py"
       - "scripts/verify-global-communication.py"
+      - "scripts/verify-emergency-games.py"
+      - "scripts/verify-helpline-directory.py"
+      - "scripts/verify-crisis-alerts.py"
+      - "www/data/helplines-BD.json"
+      - "www/index.html"
+      - "www/sw.js"
       - ".github/workflows/verify-supabase-migrations.yml"
   workflow_dispatch:
 
