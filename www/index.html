@@ -1225,7 +1225,8 @@ $('enableCrisisNotice').addEventListener('click',async()=>{
  if(permission==='granted'){localStorage.setItem('mwvip_crisis_notice_optin','yes');$('crisisStatus').textContent='এই ডিভাইসের নোটিফিকেশন অনুমতি চালু হয়েছে। এই সংস্করণে নতুন সংবাদ এলে অ্যাপ খোলা থাকা অবস্থায় refresh করলে নোটিফিকেশন আসতে পারে; background push এখনো নয়.';}
  else{$('crisisStatus').textContent='নোটিফিকেশন অনুমতি দেওয়া হয়নি; অ্যাপের ভেতরে সংবাদ দেখতে পারবেন।';}
 });
-\n/* Global news, local offline drafts, and on-device voice recorder. */
+
+/* Global news, local offline drafts, and on-device voice recorder. */
 function updateNetworkStatus(){
  const el=$('networkStatus');if(!el)return;
  el.textContent=navigator.onLine?'ইন্টারনেট সংযুক্ত। সার্ভার ফিচার ব্যবহারের জন্য লগইন ও backend-ও সচল থাকতে হবে।':'Offline: আগে cache হওয়া অ্যাপ অংশ দেখা যাবে; নতুন বার্তা/খবর পাঠানো বা গ্রহণ করা যাবে না।';
