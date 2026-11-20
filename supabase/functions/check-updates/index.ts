@@ -16,15 +16,13 @@ function jsonResponse(data: unknown, status = 200) {
 }
 
 function isPublicApiKey(value: string): boolean {
-  // Supabase publishable keys are preferred. Legacy anon JWT keys remain supported.
   return /^sb_publishable_[A-Za-z0-9_-]+$/.test(value) ||
-    (/^eyJ[A-Za-z0-9_-]+\\.[A-Za-z0-9_-]+\\.[A-Za-z0-9_-]+$/.test(value));
+    /^eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/.test(value);
 }
 
 async function readCurrentVersion(req: Request): Promise<string> {
   const url = new URL(req.url);
   let candidate = url.searchParams.get("current_version");
-
   if (req.method === "POST") {
     let body: unknown;
     try {
@@ -38,7 +36,6 @@ async function readCurrentVersion(req: Request): Promise<string> {
       else throw new Error("current_version must be a string");
     }
   }
-
   const version = candidate?.trim() || FALLBACK_APP_VERSION;
   if (!parseVersion(version)) throw new Error("Invalid current_version format");
   return version;
@@ -48,7 +45,6 @@ Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { status: 200, headers: corsHeaders });
   }
-
   if (req.method !== "GET" && req.method !== "POST") {
     return jsonResponse({ success: false, error: "Method not allowed" }, 405);
   }
@@ -64,24 +60,21 @@ Deno.serve(async (req: Request) => {
   try {
     const currentVersion = await readCurrentVersion(req);
     const supabaseUrl = (Deno.env.get("SUPABASE_URL") || DEFAULT_SUPABASE_URL)
-      .replace(/\\/$/, "");
-
+      .replace(/\/$/, "");
     const query = new URLSearchParams({
       select: "version,release_notes",
       status: "eq.published",
       order: "published_at.desc.nullslast,created_at.desc",
       limit: "1",
     });
-
     const response = await fetch(
-      `${supabaseUrl}/rest/v1/update_releases?${query.toString()}`,
+      supabaseUrl + "/rest/v1/update_releases?" + query.toString(),
       {
         method: "GET",
         headers: { apikey: apiKey, Accept: "application/json" },
         cache: "no-store",
       },
     );
-
     if (!response.ok) {
       return jsonResponse({
         success: false,
@@ -94,7 +87,6 @@ Deno.serve(async (req: Request) => {
     if (!Array.isArray(releases)) {
       return jsonResponse({ success: false, error: "Invalid release response" }, 502);
     }
-
     if (releases.length === 0) {
       return jsonResponse({
         success: true,
@@ -109,7 +101,6 @@ Deno.serve(async (req: Request) => {
     if (typeof release.version !== "string" || !parseVersion(release.version)) {
       return jsonResponse({ success: false, error: "Invalid release version" }, 500);
     }
-
     return jsonResponse({
       success: true,
       current_version: currentVersion,
