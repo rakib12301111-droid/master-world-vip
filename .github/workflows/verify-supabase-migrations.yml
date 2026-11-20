@@ -5,6 +5,8 @@ on:
     paths:
       - "supabase/migrations/**"
       - "scripts/verify-membership-helper-migration.py"
+      - "scripts/verify-community-live-readiness.py"
+      - "docs/COMMUNITY_LIVE_READINESS.md"
       - ".github/workflows/verify-supabase-migrations.yml"
   push:
     branches: [main]
@@ -29,3 +31,5 @@ jobs:
           python-version: "3.x"
       - name: Verify membership helper migration
         run: python scripts/verify-membership-helper-migration.py
+      - name: Verify community live readiness
+        run: python scripts/verify-community-live-readiness.py
