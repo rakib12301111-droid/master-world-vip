@@ -1,0 +1,38 @@
+name: Check MASTER WORLD VIP update system
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'supabase/functions/check-updates/**'
+      - 'www/sw.js'
+      - 'www/update-manifest.json'
+      - 'www/index.html'
+      - '.github/workflows/check-update-system.yml'
+  pull_request:
+    paths:
+      - 'supabase/functions/check-updates/**'
+      - 'www/sw.js'
+      - 'www/update-manifest.json'
+      - 'www/index.html'
+      - '.github/workflows/check-update-system.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Deno
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - name: Format check
+        run: deno fmt --check supabase/functions/check-updates
+      - name: Lint
+        run: deno lint supabase/functions/check-updates
+      - name: Unit tests
+        run: deno test supabase/functions/check-updates/version.test.ts
