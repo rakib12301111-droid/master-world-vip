@@ -32,6 +32,8 @@
 <button data-page="community">🌐 Community</button>
 <button data-page="inbox">✉ Inbox</button>
 <button data-page="global">🌍 Global News & Offline</button>
+<button data-page="emergency">🚨 Emergency Offline</button>
+<button data-page="games">🎮 Games Center</button>
 <button data-page="ai">✧ AI Center</button>
 <button data-page="facebook">◎ Facebook Center</button>
 <button data-page="growth">↗ Global Growth</button>
@@ -202,6 +204,32 @@
 <div class="notice">স্যাটেলাইট সংযোগ এখনো সক্রিয় নয়। সাধারণ Android অ্যাপ একা স্যাটেলাইটে যুক্ত হতে পারে না। ফোনে satellite hardware/সমর্থিত service, provider coverage, অনুমোদন ও চুক্তি প্রয়োজন। এগুলো ছাড়া offline-এ দেশ-বিদেশে message পৌঁছানোর দাবি করা যাবে না।</div>
 <p class="muted">ভবিষ্যৎ ধাপ: supported satellite provider / compatible Android hardware / emergency or messaging API যাচাই।</p>
 </article>
+</section>
+
+<section class="page" id="emergency">
+<article class="card">
+<h2>🚨 জরুরি নিরাপত্তা কেন্দ্র — Offline Guide</h2>
+<p class="muted">এই নির্দেশনাগুলো অ্যাপের সঙ্গে লোড হলে ইন্টারনেট ছাড়াও পড়া ও ফোনের সমর্থিত ভয়েসে শোনা যাবে। এগুলো সাধারণ প্রস্তুতি-তথ্য; স্থানীয় কর্তৃপক্ষের নির্দেশ সর্বাগ্রে মানুন।</p>
+<div class="field"><label for="emergencyType">পরিস্থিতি নির্বাচন</label><select id="emergencyType"><option value="earthquake">ভূমিকম্প</option><option value="cyclone">ঘূর্ণিঝড় / জলোচ্ছ্বাস</option><option value="flood">বন্যা</option><option value="pandemic">মহামারি / সংক্রামক রোগ</option><option value="fire">আগুন</option><option value="network">নেটওয়ার্ক বিচ্ছিন্ন</option></select></div>
+<div class="notice" id="emergencyGuide" aria-live="polite"></div>
+<div class="actions"><button class="btn" id="speakEmergency" type="button">🔊 নির্দেশনা শুনুন</button><button class="btn secondary" id="stopEmergencySpeech" type="button">শোনা বন্ধ</button></div>
+<div class="actions"><button class="btn danger" id="localEmergencyAlarm" type="button">🔔 স্থানীয় অ্যালার্ম</button><button class="btn secondary" id="stopLocalAlarm" type="button">অ্যালার্ম বন্ধ</button></div>
+<div class="notice" id="emergencyStatus">অ্যালার্ম শুধু এই পেজ খোলা থাকা অবস্থায় ডিভাইসে বাজবে; এটি কর্তৃপক্ষকে খবর পাঠায় না।</div>
+</article>
+<article class="card">
+<h2>🧰 জরুরি প্রস্তুতি</h2>
+<ul><li>পানি, শুকনো খাবার, প্রয়োজনীয় ওষুধ, টর্চ, পাওয়ার ব্যাংক ও প্রাথমিক চিকিৎসার বাক্স রাখুন।</li><li>পরিবারের সঙ্গে নির্দিষ্ট মিলনস্থল ও যোগাযোগের বিকল্প ঠিক করুন।</li><li>জরুরি নম্বর কাগজে লিখে রাখুন; স্থানীয় জরুরি সেবা ও আশ্রয়কেন্দ্র আগে থেকে জেনে নিন।</li><li>গুজব নয়—সরকারি দুর্যোগ ব্যবস্থাপনা ও স্বাস্থ্য কর্তৃপক্ষের নির্দেশ অনুসরণ করুন।</li></ul>
+<p class="muted">Offline অবস্থায় নতুন সতর্কবার্তা বা ভূমিকম্পের লাইভ তথ্য পাওয়া সম্ভব নয়, যদি ফোনে কোনো কার্যকর নেটওয়ার্ক/রেডিও/স্যাটেলাইট সতর্কতা সেবা না থাকে।</p>
+</article>
+<article class="card"><h2>🛰 Satellite / Emergency Alert Status</h2><div class="notice">স্যাটেলাইট সংযোগ বা সরকারি Cell Broadcast / Wireless Emergency Alerts এই অ্যাপ থেকে তৈরি করা হয়নি। এগুলো ফোন, অপারেটর, দেশের সিস্টেম ও সেবাদাতার ওপর নির্ভরশীল। ফোনের নিজস্ব Emergency SOS ও সরকারি সতর্কতা সেটিংস চালু রাখুন।</div></article>
+</section>
+
+<section class="page" id="games">
+<article class="card"><h2>🎮 Offline Games</h2><p class="muted">এই গেমগুলো ফোনেই চলে; গেম খেলতে ইন্টারনেট লাগে না।</p>
+<h3>❎ Tic-Tac-Toe</h3><div class="game-grid" id="ticTacToeBoard" role="group" aria-label="Tic Tac Toe board"></div><div class="notice" id="ticTacToeStatus">X-এর পালা</div><button class="btn secondary" id="resetTicTacToe" type="button">নতুন খেলা</button>
+<div class="divider"></div><h3>🔢 Number Guess</h3><p>১ থেকে ২০-এর মধ্যে সংখ্যাটি অনুমান করুন।</p><div class="field"><label for="guessNumber">আপনার অনুমান</label><input id="guessNumber" type="number" min="1" max="20" inputmode="numeric"></div><button class="btn" id="submitGuess" type="button">অনুমান জমা দিন</button><button class="btn secondary" id="resetGuess" type="button">নতুন সংখ্যা</button><div class="notice" id="guessStatus">একটি সংখ্যা বেছে নিন।</div>
+</article>
+<article class="card"><h2>🌐 Online Games</h2><div class="notice">Online Multiplayer, বন্ধুদের সঙ্গে খেলা, Tournament, leaderboard ও game-room তৈরির জন্য backend, সদস্য অ্যাকাউন্ট, anti-cheat ও real-time service যুক্ত করা বাকি। এই সংস্করণে Online Game চালু নয়।</div></article>
 </section>
 
 <section class="page" id="ai"><article class="card"><h2>✧ AI Center</h2><p class="muted">বাংলা/ইংরেজি text assistant, voice assistant ও AI image search.</p><div class="feature-list">
@@ -388,7 +416,7 @@
 <script>
 const $=id=>document.getElementById(id);
 const pages=[...document.querySelectorAll('.page')];
-const titles={setup:'One-Click Setup',overview:'MASTER WORLD VIP Dashboard',account:'Registration & Login',members:'Member Hub',ai:'AI Center',facebook:'Facebook Center',growth:'Global Growth',admin:'Admin & Security',privacy:'Privacy & GDPR',updates:'Update Center',progress:'কাজের অগ্রগতি / Project Progress',inbox:'Unified Inbox',global:'Global News & Offline'};
+const titles={setup:'One-Click Setup',overview:'MASTER WORLD VIP Dashboard',account:'Registration & Login',members:'Member Hub',ai:'AI Center',facebook:'Facebook Center',growth:'Global Growth',admin:'Admin & Security',privacy:'Privacy & GDPR',updates:'Update Center',progress:'কাজের অগ্রগতি / Project Progress',inbox:'Unified Inbox',global:'Global News & Offline',emergency:'Emergency Offline Center',games:'Games Center'};
 function showPage(id){pages.forEach(p=>p.classList.toggle('active',p.id===id));document.querySelectorAll('[data-page]').forEach(b=>b.classList.toggle('active',b.dataset.page===id));$('pageTitle').textContent=titles[id]||titles.overview;window.scrollTo({top:0,behavior:'smooth'});if(id==='inbox'&&typeof loadInbox==='function')loadInbox();}
 document.querySelectorAll('[data-page]').forEach(b=>b.addEventListener('click',()=>showPage(b.dataset.page)));
 document.querySelectorAll('[data-go]').forEach(b=>b.addEventListener('click',()=>showPage(b.dataset.go)));
@@ -1154,6 +1182,64 @@ $('stopVoiceRecord').addEventListener('click',()=>{
  if(mwvipRecorder&&mwvipRecorder.state!=='inactive')mwvipRecorder.stop();
 });
 updateNetworkStatus();
+
+
+/* Offline emergency reference and local games. */
+const emergencyGuides={
+ earthquake:'ভূমিকম্প: নিচু হয়ে বসুন, মজবুত টেবিলের নিচে আশ্রয় নিন, মাথা ও ঘাড় ঢাকুন এবং ধরে থাকুন। জানালা, কাচ ও ভারী আসবাব থেকে দূরে থাকুন। কম্পন চলাকালে দৌড়ে বাইরে যাবেন না বা লিফট ব্যবহার করবেন না। কম্পন থামলে সিঁড়ি দিয়ে নিরাপদ খোলা জায়গায় যান; আফটারশকের জন্য প্রস্তুত থাকুন।',
+ cyclone:'ঘূর্ণিঝড়: সরকারি নির্দেশে দ্রুত নির্ধারিত আশ্রয়কেন্দ্রে যান। উপকূল, নদীর মোহনা ও নিচু এলাকা থেকে দূরে থাকুন। জানালা-দরজা বন্ধ করুন, বিদ্যুৎ ও গ্যাস নিরাপদে বন্ধ করুন যদি তা ঝুঁকিহীন হয়। জলোচ্ছ্বাসের পানি পার হওয়ার চেষ্টা করবেন না।',
+ flood:'বন্যা: উঁচু ও নিরাপদ স্থানে যান। বন্যার পানিতে হাঁটা বা গাড়ি চালানো এড়িয়ে চলুন; পানিতে বিদ্যুতের তার থাকতে পারে। পানীয় জল ফুটিয়ে বা নিরাপদভাবে জীবাণুমুক্ত করে পান করুন। বিদ্যুৎ সংযোগ ভেজা হাতে স্পর্শ করবেন না।',
+ pandemic:'মহামারি: অসুস্থ হলে অন্যদের থেকে দূরত্ব রাখুন, বায়ু চলাচল বাড়ান, প্রয়োজন অনুযায়ী মাস্ক ব্যবহার করুন এবং হাত পরিষ্কার রাখুন। স্থানীয় স্বাস্থ্য কর্তৃপক্ষের নির্দেশ ও টিকা-পরামর্শ অনুসরণ করুন। শ্বাসকষ্ট, অজ্ঞান হওয়া বা গুরুতর লক্ষণে জরুরি চিকিৎসা নিন।',
+ fire:'আগুন: দ্রুত নিরাপদ বহির্গমন পথ দিয়ে বেরিয়ে যান, ধোঁয়া থাকলে নিচু হয়ে চলুন। লিফট ব্যবহার করবেন না। নিরাপদ স্থানে গিয়ে স্থানীয় ফায়ার সার্ভিস/জরুরি নম্বরে কল করুন। আগুন নেভাতে গিয়ে নিজের জীবন ঝুঁকিতে ফেলবেন না; জ্বলন্ত ভবনে ফিরবেন না।',
+ network:'নেটওয়ার্ক বিচ্ছিন্ন: আগে সংরক্ষিত এই নির্দেশনা ও কাগজে লেখা জরুরি নম্বর ব্যবহার করুন। ফোনের চার্জ বাঁচাতে স্ক্রিনের উজ্জ্বলতা কমান। SMS/কল/ইন্টারনেট না চললে সংযোগ ফিরে আসা পর্যন্ত পূর্বনির্ধারিত নিরাপদ মিলনস্থলে যান। এই অ্যাপ অফলাইনে নতুন খবর বা দূরবর্তী বার্তা পাঠাতে পারে না।'
+};
+function showEmergencyGuide(){const guide=emergencyGuides[$('emergencyType').value];$('emergencyGuide').textContent=guide;return guide;}
+$('emergencyType').addEventListener('change',showEmergencyGuide);
+$('speakEmergency').addEventListener('click',()=>{
+ const text=showEmergencyGuide();
+ if(!('speechSynthesis'in window)||!('SpeechSynthesisUtterance'in window)){$('emergencyStatus').textContent='এই browser-এ Text-to-Speech নেই। ফোনের Accessibility/Text-to-Speech সেটিংস দেখুন।';return;}
+ window.speechSynthesis.cancel();
+ const utterance=new SpeechSynthesisUtterance(text);utterance.lang='bn-BD';
+ utterance.onstart=()=>{$('emergencyStatus').textContent='ফোনের উপলভ্য Bengali voice দিয়ে নির্দেশনা পড়া হচ্ছে। Offline voice পাওয়া যাবে কি না তা ফোনের installed voice-এর ওপর নির্ভর করে।';};
+ utterance.onerror=()=>{$('emergencyStatus').textContent='Voice চালু হয়নি। ফোনে Bengali Text-to-Speech voice ইনস্টল/ডাউনলোড আছে কি না দেখুন।';};
+ window.speechSynthesis.speak(utterance);
+});
+$('stopEmergencySpeech').addEventListener('click',()=>{if('speechSynthesis'in window)window.speechSynthesis.cancel();$('emergencyStatus').textContent='ভয়েস নির্দেশনা বন্ধ হয়েছে।';});
+let emergencyAlarmTimer=null,emergencyAlarmContext=null;
+$('localEmergencyAlarm').addEventListener('click',()=>{
+ try{
+  const AudioContext=window.AudioContext||window.webkitAudioContext;
+  if(!AudioContext)throw new Error('Audio alarm এই browser-এ সমর্থিত নয়।');
+  if(emergencyAlarmTimer)clearInterval(emergencyAlarmTimer);
+  emergencyAlarmContext=new AudioContext();
+  let count=0;
+  const beep=()=>{if(!emergencyAlarmContext||count++>=8){clearInterval(emergencyAlarmTimer);emergencyAlarmTimer=null;return;}
+   const osc=emergencyAlarmContext.createOscillator(),gain=emergencyAlarmContext.createGain();
+   osc.frequency.value=count%2?880:660;gain.gain.value=.12;osc.connect(gain);gain.connect(emergencyAlarmContext.destination);
+   osc.start();osc.stop(emergencyAlarmContext.currentTime+.28);
+  };
+  beep();emergencyAlarmTimer=setInterval(beep,650);
+  if(navigator.vibrate)navigator.vibrate([300,150,300,150,500]);
+  $('emergencyStatus').textContent='স্থানীয় অ্যালার্ম বাজছে। এটি কেবল এই ডিভাইসে; স্বয়ংক্রিয়ভাবে দুর্যোগ শনাক্ত বা কাউকে সতর্ক করে না।';
+ }catch(e){$('emergencyStatus').textContent='অ্যালার্ম চালু হয়নি: '+e.message;}
+});
+$('stopLocalAlarm').addEventListener('click',()=>{
+ if(emergencyAlarmTimer)clearInterval(emergencyAlarmTimer);emergencyAlarmTimer=null;
+ if(emergencyAlarmContext){emergencyAlarmContext.close();emergencyAlarmContext=null;}
+ if(navigator.vibrate)navigator.vibrate(0);
+ $('emergencyStatus').textContent='স্থানীয় অ্যালার্ম বন্ধ।';
+});
+showEmergencyGuide();
+let tttBoard=Array(9).fill(''),tttTurn='X',tttDone=false;
+function drawTicTacToe(){
+ const board=$('ticTacToeBoard');board.innerHTML='';
+ tttBoard.forEach((v,i)=>{const b=document.createElement('button');b.type='button';b.className='btn secondary';b.textContent=v||'·';b.setAttribute('aria-label','ঘর '+(i+1)+' '+(v||'খালি'));b.disabled=!!v||tttDone;b.addEventListener('click',()=>{tttBoard[i]=tttTurn;const wins=[[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];const win=wins.some(line=>line.every(n=>tttBoard[n]===tttTurn));if(win){tttDone=true;$('ticTacToeStatus').textContent=tttTurn+' জিতেছে!';}else if(tttBoard.every(Boolean)){tttDone=true;$('ticTacToeStatus').textContent='ড্র হয়েছে।';}else{tttTurn=tttTurn==='X'?'O':'X';$('ticTacToeStatus').textContent=tttTurn+'-এর পালা';}drawTicTacToe();});board.appendChild(b);});
+}
+$('resetTicTacToe').addEventListener('click',()=>{tttBoard=Array(9).fill('');tttTurn='X';tttDone=false;$('ticTacToeStatus').textContent='X-এর পালা';drawTicTacToe();});
+drawTicTacToe();
+let guessTarget=Math.floor(Math.random()*20)+1;
+$('submitGuess').addEventListener('click',()=>{const n=Number($('guessNumber').value);if(!Number.isInteger(n)||n<1||n>20){$('guessStatus').textContent='১ থেকে ২০-এর মধ্যে একটি পূর্ণ সংখ্যা দিন।';return;}if(n===guessTarget){$('guessStatus').textContent='অভিনন্দন! সঠিক সংখ্যা। নতুন খেলা শুরু করুন।';}else{$('guessStatus').textContent=n<guessTarget?'আরও বড় সংখ্যা চেষ্টা করুন।':'আরও ছোট সংখ্যা চেষ্টা করুন।';}});
+$('resetGuess').addEventListener('click',()=>{guessTarget=Math.floor(Math.random()*20)+1;$('guessNumber').value='';$('guessStatus').textContent='নতুন সংখ্যা তৈরি হয়েছে।';});
 
 </script>
 </body></html>
