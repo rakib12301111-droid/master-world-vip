@@ -7,10 +7,9 @@ export type ParsedVersion = {
 
 export function parseVersion(input: string): ParsedVersion | null {
   const match = input.trim().match(
-    /^v?(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-([0-9A-Za-z.-]+))?(?:\\+[0-9A-Za-z.-]+)?$/,
+    /^v?(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-([0-9A-Za-z.-]+))?(?:\+[0-9A-Za-z.-]+)?$/,
   );
   if (!match) return null;
-
   return {
     major: Number(match[1]),
     minor: Number(match[2]),
@@ -25,9 +24,8 @@ function comparePrerelease(a: string[], b: string[]): number {
     if (a[i] === undefined) return -1;
     if (b[i] === undefined) return 1;
     if (a[i] === b[i]) continue;
-
-    const aNumeric = /^\\d+$/.test(a[i]);
-    const bNumeric = /^\\d+$/.test(b[i]);
+    const aNumeric = /^\d+$/.test(a[i]);
+    const bNumeric = /^\d+$/.test(b[i]);
     if (aNumeric && bNumeric) {
       const an = Number(a[i]);
       const bn = Number(b[i]);
@@ -44,11 +42,9 @@ export function compareVersions(a: string, b: string): number {
   const va = parseVersion(a);
   const vb = parseVersion(b);
   if (!va || !vb) throw new Error("Invalid version format");
-
   for (const key of ["major", "minor", "patch"] as const) {
     if (va[key] !== vb[key]) return va[key] > vb[key] ? 1 : -1;
   }
-
   if (va.prerelease === null && vb.prerelease === null) return 0;
   if (va.prerelease === null) return 1;
   if (vb.prerelease === null) return -1;
