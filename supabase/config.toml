@@ -9,3 +9,6 @@ verify_jwt = true
 
 [functions.get-db-update-status]
 verify_jwt = true
+
+[functions.service-health]
+verify_jwt = true
