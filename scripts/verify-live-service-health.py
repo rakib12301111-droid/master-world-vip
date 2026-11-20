@@ -13,8 +13,16 @@ checks = {
     "health endpoint checks schema with service-role key only server-side": 'SUPABASE_SERVICE_ROLE_KEY' in health and 'serviceRoleKey' in health,
     "health endpoint never returns secret values": 'serviceRoleKey:' not in health and 'VAPID_PRIVATE_KEY:' not in health,
     "health endpoint is JWT protected in Supabase config": '[functions.service-health]' in config and 'verify_jwt = true' in config.split('[functions.service-health]',1)[1],
-    "production workflow deploys service-health": 'supabase functions deploy service-health ' in deploy,
-    "production workflow checks deployment token before deploy": 'Missing SUPABASE_ACCESS_TOKEN' in deploy,
+    "production workflow deploys service-health through its all-functions loop": (
+        'for function_dir in supabase/functions/*/' in deploy
+        and 'supabase functions deploy "$function_name" --project-ref "$SUPABASE_PROJECT_REF"' in deploy
+        and Path("supabase/functions/service-health/index.ts").is_file()
+    ),
+    "production workflow checks deployment token before deploy": (
+        'SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}' in deploy
+        and 'if [ -z "${SUPABASE_ACCESS_TOKEN:-}" ]; then' in deploy
+        and 'exit 1' in deploy
+    ),
     "Update Center provides Owner live backend check": 'ownerLiveHealthCheck' in ui and 'service-health' in ui and 'ownerLiveHealthStatus' in ui,
     "browser UI does not contain service-role or VAPID private secrets": 'SUPABASE_SERVICE_ROLE_KEY' not in ui and 'VAPID_PRIVATE_KEY' not in ui,
 }
