@@ -1,3 +1,4 @@
+import sodium from "npm:libsodium-wrappers-sumo@0.7.15";
 const corsHeaders = {
   "Access-Control-Allow-Origin": "https://rakib12301111-droid.github.io",
   "Access-Control-Allow-Headers": "authorization, apikey, content-type, x-client-info",
@@ -43,6 +44,48 @@ Deno.serve(async (req: Request) => {
 
     const body = await req.json().catch(() => null);
     const kind = body?.kind;
+
+    // Configure GitHub Actions secrets without storing credentials in the app or database.
+    if (kind === "configure_github_secrets") {
+      const accessToken = body?.supabase_access_token;
+      const dbPassword = body?.supabase_db_password;
+      if (typeof accessToken !== "string" || accessToken.length < 20 || accessToken.length > 4096 ||
+          typeof dbPassword !== "string" || dbPassword.length < 8 || dbPassword.length > 1024) {
+        return reply({ success: false, error: "দুটি credential-ই সঠিকভাবে দিন। কোনো credential এই সার্ভারে সংরক্ষণ করা হবে না।" }, 400);
+      }
+      await sodium.ready;
+      const keyResponse = await fetch("https://api.github.com/repos/" + repository + "/actions/secrets/public-key", {
+        headers: { Authorization: "Bearer " + githubToken, Accept: "application/vnd.github+json", "X-GitHub-Api-Version": "2022-11-28" },
+      });
+      if (!keyResponse.ok) {
+        console.error("GitHub secrets public-key request failed", keyResponse.status);
+        return reply({ success: false, error: "GitHub token-এ Actions Secrets Read permission নেই অথবা repository access পাওয়া যায়নি। Server GitHub token-এর Actions: Read and write permission দিন।" }, 502);
+      }
+      const publicKey = await keyResponse.json();
+      const putSecret = async (secretName: string, secretValue: string) => {
+        const encrypted = sodium.crypto_box_seal(
+          sodium.from_string(secretValue),
+          sodium.from_base64(publicKey.key, sodium.base64_variants.ORIGINAL),
+        );
+        const encryptedValue = sodium.to_base64(encrypted, sodium.base64_variants.ORIGINAL);
+        const response = await fetch("https://api.github.com/repos/" + repository + "/actions/secrets/" + secretName, {
+          method: "PUT",
+          headers: { Authorization: "Bearer " + githubToken, Accept: "application/vnd.github+json", "X-GitHub-Api-Version": "2022-11-28", "Content-Type": "application/json" },
+          body: JSON.stringify({ encrypted_value: encryptedValue, key_id: publicKey.key_id }),
+        });
+        if (response.status !== 201 && response.status !== 204) {
+          console.error("GitHub secret write failed", secretName, response.status);
+          throw new Error("GitHub Actions Secrets Write permission প্রয়োজন।");
+        }
+      };
+      try {
+        await putSecret("SUPABASE_ACCESS_TOKEN", accessToken);
+        await putSecret("SUPABASE_DB_PASSWORD", dbPassword);
+        return reply({ success: true, kind, status: "configured", message: "দুটি GitHub Actions Secret নিরাপদভাবে সেট হয়েছে। কোনো secret অ্যাপ, browser বা database-এ রাখা হয়নি।" });
+      } catch (_error) {
+        return reply({ success: false, error: "GitHub Secret সংরক্ষণ ব্যর্থ। Server GitHub token-এ Actions: Read and write permission আছে কি না যাচাই করুন।" }, 502);
+      }
+    }
     const code = body?.code;
     const name = body?.name;
     if (!["sql", "edge_function"].includes(kind)) return reply({ success: false, error: "Choose SQL or Edge Function code." }, 400);
