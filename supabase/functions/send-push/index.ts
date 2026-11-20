@@ -2,10 +2,11 @@ import webpush from "npm:web-push@3.6.7";
 import { createClient } from "npm:@supabase/supabase-js@2";
 
 const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Origin": "https://rakib12301111-droid.github.io",
   "Access-Control-Allow-Headers": "content-type, x-push-webhook-secret",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
   "Content-Type": "application/json; charset=utf-8",
+  "Cache-Control": "no-store",
 };
 
 function json(data: unknown, status = 200) {
