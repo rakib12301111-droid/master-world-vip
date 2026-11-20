@@ -1632,6 +1632,22 @@ async function loadFbFeedback(){
    const meta=document.createElement('p');meta.className='muted small';meta.textContent=(item.feedback_type==='complaint'?'অভিযোগ':item.feedback_type==='suggestion'?'পরামর্শ':'রিভিউ')+' · '+new Date(item.created_at).toLocaleDateString('bn-BD');
    card.append(h,p,meta);box.append(card);
   });
+  const {data:roleData,error:roleError}=await client.rpc('get_my_admin_access');
+  const isAdmin=!roleError&&['owner','super_admin','admin'].includes(roleData);
+  const panel=$('fbAdminFeedbackPanel'),adminBox=$('fbAdminFeedbackList');
+  if(panel)panel.hidden=!isAdmin;
+  if(isAdmin&&adminBox){
+   const {data:pending,error:pendingError}=await client.from('facebook_setup_feedback').select('id,display_name,feedback_type,rating,message,created_at').in('status',['pending','published']).order('created_at',{ascending:false}).limit(100);
+   if(pendingError)throw pendingError;adminBox.innerHTML='';
+   (pending||[]).forEach(item=>{
+    const card=document.createElement('div');card.className='item section';
+    const p=document.createElement('p');p.textContent=item.display_name+' · '+item.feedback_type+' · '+item.rating+'⭐ · '+item.message;
+    const select=document.createElement('select');['pending','published','rejected'].forEach(v=>{const op=document.createElement('option');op.value=v;op.textContent=v==='pending'?'পর্যালোচনায়':v==='published'?'প্রকাশিত':'প্রকাশ নয়';op.selected=item.status===v;select.append(op);});
+    const save=document.createElement('button');save.className='btn secondary';save.type='button';save.textContent='সিদ্ধান্ত সংরক্ষণ';
+    save.onclick=async()=>{save.disabled=true;const {error}=await client.from('facebook_setup_feedback').update({status:select.value,reviewed_at:new Date().toISOString(),reviewed_by:currentUser.id}).eq('id',item.id);save.disabled=false;if(error){alert('সংরক্ষণ হয়নি: '+error.message);return;}await loadFbFeedback();};
+    card.append(p,select,save);adminBox.append(card);
+   });
+  }
  }catch(e){box.textContent='মতামত লোড হয়নি: '+(e.message||String(e))+'। Database migration প্রয়োজন হতে পারে।';}
 }
 $('submitFbFeedback')?.addEventListener('click',async()=>{
