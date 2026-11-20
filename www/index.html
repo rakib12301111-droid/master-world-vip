@@ -182,6 +182,17 @@
 <button class="btn" id="openCountryNews" type="button">এই দেশের সর্বশেষ খবর দেখুন</button>
 <div class="notice" id="newsStatus">দেশ নির্বাচন করে খবর খুলুন। এটি বাহ্যিক সংবাদ সেবা; অ্যাপ নিজে এখনো headline সংগ্রহ করছে না।</div>
 </article>
+<article class="card" id="crisisAlerts">
+<h2>🛡️ Global Crisis & Safety Alerts</h2>
+<p class="muted">যুদ্ধ, সংঘর্ষ, সন্ত্রাস, ক্ষেপণাস্ত্র, ভূমিকম্প, সুনামি, ঘূর্ণিঝড়, বন্যা, মহামারি ও বড় দুর্ঘটনা সম্পর্কিত সাম্প্রতিক সংবাদ প্রতিবেদন। এগুলো সংবাদ-সংকেত—সরকারি জরুরি নির্দেশ বা নিশ্চিত বিপদ সতর্কতা নয়।</p>
+<div class="field"><label for="crisisCountry">আপনার দেশ / সংবাদ অঞ্চল</label><select id="crisisCountry"><option value="Bangladesh">বাংলাদেশ</option><option value="India">ভারত</option><option value="United States">যুক্তরাষ্ট্র</option><option value="United Kingdom">যুক্তরাজ্য</option><option value="Saudi Arabia">সৌদি আরব</option><option value="United Arab Emirates">সংযুক্ত আরব আমিরাত</option><option value="Pakistan">পাকিস্তান</option><option value="Turkey">তুরস্ক</option><option value="Malaysia">মালয়েশিয়া</option><option value="Indonesia">ইন্দোনেশিয়া</option><option value="Worldwide">বিশ্বজুড়ে</option></select></div>
+<div class="field"><label for="crisisLanguage">নোটিফিকেশনের ভাষা</label><select id="crisisLanguage"><option value="bn">বাংলা</option><option value="en">English</option><option value="ar">العربية</option><option value="ur">اردو</option></select></div>
+<div class="field"><label><input type="checkbox" id="crisisWar" checked> যুদ্ধ / সশস্ত্র সংঘর্ষ / সীমান্ত উত্তেজনা</label><label><input type="checkbox" id="crisisDisaster" checked> ভূমিকম্প / সুনামি / ঘূর্ণিঝড় / বন্যা</label><label><input type="checkbox" id="crisisHealth" checked> মহামারি / স্বাস্থ্য জরুরি অবস্থা</label><label><input type="checkbox" id="crisisSecurity" checked> সন্ত্রাস / বড় নিরাপত্তা ঘটনা</label></div>
+<div class="actions"><button class="btn" id="refreshCrisis">🔄 সর্বশেষ সংকট সংবাদ খুঁজুন</button><button class="btn secondary" id="enableCrisisNotice">🔔 এই ডিভাইসে সতর্কতা চালু</button></div>
+<div class="notice" id="crisisStatus" role="status">সংবাদ খুঁজতে ইন্টারনেট লাগবে। নোটিফিকেশন চালু হবে শুধু আপনার অনুমতিতে।</div>
+<div id="crisisFeed" class="stack"></div>
+<div class="feature"><strong>সতর্কতা ও নিরাপত্তা</strong><p class="muted small">অ্যাপ বন্ধ থাকলে স্বয়ংক্রিয় Push পাঠানো এখনো চালু নয়। সরকারি সতর্কবার্তার API, সার্ভার Push, অনুবাদ যাচাই ও প্রতিটি দেশের কর্তৃপক্ষের সংযোগ পরবর্তী কাজ। জরুরি অবস্থায় স্থানীয় সরকারি কর্তৃপক্ষের নির্দেশ অনুসরণ করুন।</p></div>
+</article>
 <article class="card">
 <h2>📴 কম ইন্টারনেট ও Offline Draft</h2>
 <p class="muted">অ্যাপের খোলা অংশ, কিছু UI ও আগে cache হওয়া ফাইল offline-এ দেখা যেতে পারে। Private message, group message, broadcast পাঠানো বা গ্রহণের জন্য ইন্টারনেট এবং সার্ভার দরকার।</p>
