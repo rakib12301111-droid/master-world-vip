@@ -892,7 +892,7 @@ async function runOwnerLiveHealthCheck(){
   const {data,error}=await client.auth.getSession();
   if(error||!data?.session)throw new Error('Login session পাওয়া যায়নি। আবার লগইন করুন।');
   const cfg=config();
-  const response=await fetch(cfg.url.replace(/\\/$/, '')+'/functions/v1/service-health',{
+  const response=await fetch(cfg.url.replace(/\/$/, '')+'/functions/v1/service-health',{
    method:'GET',headers:{apikey:cfg.key,Authorization:'Bearer '+data.session.access_token},cache:'no-store'
   });
   const payload=await response.json().catch(()=>({}));
