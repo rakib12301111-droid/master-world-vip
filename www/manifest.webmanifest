@@ -1,15 +1,15 @@
 {
   "id": "./",
   "name": "MASTER WORLD VIP",
-  "short_name": "MASTER WORLD",
-  "description": "Global AI-powered digital platform",
+  "short_name": "MW VIP",
+  "description": "MASTER WORLD VIP — premium global community platform",
   "lang": "bn",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait-primary",
-  "background_color": "#0b1220",
-  "theme_color": "#0b1220",
+  "background_color": "#05070b",
+  "theme_color": "#05070b",
   "icons": [
     {
       "src": "./icons/icon-192.svg",
