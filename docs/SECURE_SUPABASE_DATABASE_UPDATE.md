@@ -27,4 +27,16 @@ The workflow serializes deployments and refuses to run against a different proje
 - The owner bootstrap migration grants owner to the verified email hardcoded in `20261119180000_admin_rbac_owner_control.sql`. Confirm that email before applying.
 - `supabase db push` applies all pending migrations in timestamp order, not only the owner migration. Review the dry-run output first.
 - This workflow does not create a backup automatically. Take/verify a Supabase backup or point-in-time recovery availability before applying production migrations.
-- The browser Update Center must never receive the Supabase database password, personal access token, or service-role key.
+- The browser Update Center must never receive the Supabase database password, personal access token, GitHub token, or service-role key.
+
+## Connect the app Update Center (one-time server setup)
+
+1. Deploy the authenticated Edge Function from the repository: `supabase functions deploy dispatch-db-update --project-ref lztbbrzeuyjkuiyzrsxp`
+2. In Supabase Edge Function secrets, set `GITHUB_ACTIONS_TOKEN` to a fine-grained GitHub token restricted to this repository with Actions: Read and write. Set `GITHUB_REPOSITORY` to `rakib12301111-droid/master-world-vip`.
+3. Supabase's standard `SUPABASE_URL`, `SUPABASE_ANON_KEY`, and `SUPABASE_SERVICE_ROLE_KEY` runtime secrets are used by the function. Never expose the service-role key in the app.
+4. Configure the GitHub Actions secrets listed above. Optionally protect the GitHub `production` environment with required reviewers.
+5. The first Owner/RBAC migration is a bootstrap dependency: before the app can authorize Owner requests, run the workflow once from GitHub Actions after the dry run and backup review. It creates `app_user_roles` and assigns Owner to the exact verified email in that migration. The user must already exist in Supabase Auth.
+6. After the bootstrap migration is successfully applied, the app Update Center can request Dry Run and Apply. The Edge Function validates the current Supabase access token, checks `app_user_roles.role = owner`, and only then dispatches the workflow.
+7. Deploy the frontend branch to the hosting environment only after review/merge. A queued response means the workflow was requested, not that the migration succeeded. Verify the Actions run and database afterward.
+
+The Update Center Apply action deliberately requires an explicit confirmation phrase and a backup acknowledgement. The workflow applies all pending migrations in timestamp order, so always inspect the Dry Run output first.
