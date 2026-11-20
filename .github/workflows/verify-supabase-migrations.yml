@@ -12,6 +12,8 @@ on:
       - "scripts/verify-helpline-directory.py"
       - "scripts/verify-crisis-alerts.py"
       - "scripts/verify-global-country-directory.py"
+      - "scripts/verify-push-sender.py"
+      - "supabase/functions/send-push/index.ts"
       - "www/data/helplines-BD.json"
       - "www/index.html"
       - "www/sw.js"
@@ -65,3 +67,5 @@ jobs:
         run: python scripts/verify-crisis-alerts.py
       - name: Verify all-country directory
         run: python scripts/verify-global-country-directory.py
+      - name: Verify push sender security
+        run: python scripts/verify-push-sender.py
