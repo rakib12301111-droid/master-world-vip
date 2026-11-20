@@ -4,3 +4,5 @@ verify_jwt = false
 [functions.send-push]
 verify_jwt = false
 
+[functions.dispatch-db-update]
+verify_jwt = true
