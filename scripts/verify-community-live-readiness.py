@@ -105,6 +105,8 @@ checks = {
         and "ROLLBACK;" in rls_sql
         and "B can read A private conversation" in rls_sql
         and "A cannot read own conversation" in rls_sql
+        and "B can read A verification request" in rls_sql
+        and "A cannot read own verification request" in rls_sql
     ),
     "verification helpdesk is private, role-gated, rate-limited and audited": (
         "public.is_helpdesk_staff()" in helpdesk_sql
