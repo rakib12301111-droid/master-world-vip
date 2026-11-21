@@ -31,6 +31,7 @@
 <button data-page="members">♧ Member Hub</button>
 <button data-page="community">🌐 Community</button>
 <button data-page="inbox">✉ Inbox</button>
+<button data-page="verification">🛡 Member Verification & Helpdesk</button>
 <button data-page="global">🌍 Global News & Offline</button>
 <button data-page="emergency">🚨 Emergency & Helplines</button>
 <button data-page="games">🎮 Games Center</button>
@@ -173,6 +174,18 @@
 
 <section class="page" id="inbox">
 <article class="card"><h2>✉ Unified Inbox</h2><p class="muted">আপনার ব্যক্তিগত চ্যাট, গ্রুপ চ্যাট ও অপঠিত বার্তা এক জায়গায় দেখুন। কোনো কথোপকথন খুললে সেটি পড়া হয়েছে হিসেবে চিহ্নিত হবে।</p><div class="actions"><button class="btn" id="refreshInbox">Inbox রিফ্রেশ</button><button class="btn secondary" data-go="community">Community / নতুন Chat</button></div><div id="inboxStatus" class="notice">Inbox দেখতে Supabase-এ লগইন করুন এবং Inbox migration চালু করুন।</div><div id="inboxList" class="section"><div class="feature">এখনো Inbox লোড হয়নি।</div></div></article>
+</section>
+
+<section class="page" id="verification">
+<article class="card">
+<h2>🛡 Member Verification & Private Helpdesk</h2>
+<p class="muted">শুধু প্রয়োজনীয় সদস্যপদ/পরিচয় ব্যাখ্যা লিখুন। Facebook password, OTP, login code বা সরকারি পরিচয়পত্রের ছবি এখানে দেবেন না।</p>
+<div class="field"><label for="verificationNote">আপনার অনুরোধের সংক্ষিপ্ত বিবরণ</label><textarea id="verificationNote" rows="4" maxlength="2000" placeholder="কেন verification বা admin সহায়তা প্রয়োজন, সংক্ষেপে লিখুন (১০–২০০০ অক্ষর)।"></textarea></div>
+<button class="btn" id="submitVerificationRequest" type="button">ব্যক্তিগত অনুরোধ জমা দিন</button>
+<div id="verificationStatus" class="notice">অনুরোধ জমা দিতে লগইন করুন।</div>
+<div class="actions"><button class="btn secondary" id="refreshVerificationRequests" type="button">আমার অনুরোধ / Helpdesk Queue রিফ্রেশ</button></div>
+<div id="verificationRequestList" class="section"><div class="feature">এখনো কোনো অনুরোধ লোড হয়নি।</div></div>
+</article>
 </section>
 
 <section class="page" id="global">
@@ -538,8 +551,8 @@
 <script>
 const $=id=>document.getElementById(id);
 const pages=[...document.querySelectorAll('.page')];
-const titles={setup:'One-Click Setup',overview:'MASTER WORLD VIP Dashboard',account:'Registration & Login',members:'Member Hub',ai:'AI Center',facebook:'Facebook Center',growth:'Global Growth',admin:'Admin & Security',privacy:'Privacy & GDPR',updates:'Update Center',progress:'কাজের অগ্রগতি / Project Progress',fbService:'Facebook Setup Service',inbox:'Unified Inbox',global:'Global News & Offline',emergency:'Emergency Offline Center',games:'Games Center'};
-function showPage(id){pages.forEach(p=>p.classList.toggle('active',p.id===id));document.querySelectorAll('[data-page]').forEach(b=>b.classList.toggle('active',b.dataset.page===id));$('pageTitle').textContent=titles[id]||titles.overview;window.scrollTo({top:0,behavior:'smooth'});if(id==='inbox'&&typeof loadInbox==='function')loadInbox();if(id==='fbService'&&typeof loadFbOrders==='function'){loadFbOrders();loadFbFeedback();}}
+const titles={setup:'One-Click Setup',overview:'MASTER WORLD VIP Dashboard',account:'Registration & Login',members:'Member Hub',ai:'AI Center',facebook:'Facebook Center',growth:'Global Growth',admin:'Admin & Security',privacy:'Privacy & GDPR',updates:'Update Center',progress:'কাজের অগ্রগতি / Project Progress',fbService:'Facebook Setup Service',inbox:'Unified Inbox',verification:'Member Verification & Helpdesk',global:'Global News & Offline',emergency:'Emergency Offline Center',games:'Games Center'};
+function showPage(id){pages.forEach(p=>p.classList.toggle('active',p.id===id));document.querySelectorAll('[data-page]').forEach(b=>b.classList.toggle('active',b.dataset.page===id));$('pageTitle').textContent=titles[id]||titles.overview;window.scrollTo({top:0,behavior:'smooth'});if(id==='inbox'&&typeof loadInbox==='function')loadInbox();if(id==='verification'&&typeof loadVerificationRequests==='function')loadVerificationRequests();if(id==='fbService'&&typeof loadFbOrders==='function'){loadFbOrders();loadFbFeedback();}}
 document.querySelectorAll('[data-page]').forEach(b=>b.addEventListener('click',()=>showPage(b.dataset.page)));
 document.querySelectorAll('[data-go]').forEach(b=>b.addEventListener('click',()=>showPage(b.dataset.go)));
 function readSetupPrefs(){try{return JSON.parse(localStorage.getItem('mwvip_setup_preferences')||'{}')}catch(e){return {}}}
@@ -594,7 +607,7 @@ async function connect(){
   setStatus(currentUser?'সংযুক্ত এবং লগইন আছে: '+currentUser.email:'Supabase সংযুক্ত হয়েছে। এখন Register অথবা Login করুন।');
   $('dashAuth').textContent=currentUser?'Logged in':'Connected';
   if(currentUser)await loadProfile();
-  client.auth.onAuthStateChange((_event,session)=>{currentUser=session?.user||null;$('dashAuth').textContent=currentUser?'Logged in':'Connected';if(currentUser){$('memberstatus').textContent='লগইন আছে: '+currentUser.email;setTimeout(()=>{loadProfile();loadPrivacyRequests();},0)}else{$('memberstatus').textContent='লগইন করুন।';$('profileResult').textContent='লগইন করা নেই।';$('privacyRequestList').textContent='অনুরোধ দেখতে লগইন করুন।'}});
+  client.auth.onAuthStateChange((_event,session)=>{currentUser=session?.user||null;$('dashAuth').textContent=currentUser?'Logged in':'Connected';if(currentUser){$('memberstatus').textContent='লগইন আছে: '+currentUser.email;setTimeout(()=>{loadProfile();loadPrivacyRequests();if(typeof loadVerificationRequests==='function')loadVerificationRequests();},0)}else{$('memberstatus').textContent='লগইন করুন।';$('profileResult').textContent='লগইন করা নেই।';$('privacyRequestList').textContent='অনুরোধ দেখতে লগইন করুন।'}});
  }catch(e){client=null;setStatus('সংযোগে সমস্যা: '+e.message)}
 }
 $('connect').onclick=connect;
@@ -649,7 +662,7 @@ function safeText(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<
 async function searchCommunityMembers(){
  if(!communityReady())return;
  const q=$('memberSearch').value.trim();if(q.length<2){say('memberSearchResults','কমপক্ষে ২ অক্ষর লিখুন।');return;}
- const {data,error}=await client.from('profiles').select('id,display_name,username,country,bio').eq('is_discoverable',true).or('display_name.ilike.%'+q+'%,username.ilike.%'+q+'%').limit(20);
+ const {data,error}=await client.rpc('search_discoverable_profiles',{p_search:q,p_limit:20});
  if(error){say('memberSearchResults','Member search error: '+error.message+' — Global Community SQL migration চালানো হয়েছে কি?');return;}
  if(!data?.length){say('memberSearchResults','কোনো discoverable member পাওয়া যায়নি।');return;}
  $('memberSearchResults').innerHTML=data.map(p=>'<div class="feature"><b>'+safeText(p.display_name||'Member')+'</b> · @'+safeText(p.username||'—')+'<br><span class="muted">'+safeText(p.country||'')+'</span><br><small>User ID: '+safeText(p.id)+'</small><br><button class="btn secondary" data-friend="'+safeText(p.id)+'">বন্ধুত্বের অনুরোধ</button></div>').join('');
@@ -728,6 +741,82 @@ async function sendGroupMessage(){
  $('groupMessageText').value='';loadGroupMessages();
 }
 
+async function loadVerificationMessages(requestId,host){
+ host.textContent='বার্তা লোড হচ্ছে…';
+ const {data,error}=await client.from('verification_request_messages')
+  .select('id,sender_id,body,created_at').eq('request_id',requestId)
+  .order('created_at',{ascending:true}).limit(100);
+ if(error){host.textContent='বার্তা লোড হয়নি: '+error.message;return;}
+ host.replaceChildren();
+ (data||[]).forEach(m=>{
+  const item=document.createElement('div');item.className='feature';
+  const body=document.createElement('p');body.textContent=m.body;
+  const meta=document.createElement('small');meta.className='muted';
+  meta.textContent=(m.sender_id===currentUser.id?'আপনি':'সদস্য / Helpdesk')+' · '+new Date(m.created_at).toLocaleString();
+  item.append(body,meta);host.append(item);
+ });
+ if(!host.children.length)host.textContent='এখনো কোনো বার্তা নেই।';
+}
+async function loadVerificationRequests(){
+ if(!client||!currentUser){say('verificationStatus','ব্যবহার করতে আগে Supabase-এ লগইন করুন।');$('verificationRequestList').textContent='লগইন প্রয়োজন।';return;}
+ const host=$('verificationRequestList');host.textContent='অনুরোধ লোড হচ্ছে…';
+ const {data:staff,error:staffError}=await client.rpc('is_helpdesk_staff');
+ if(staffError){say('verificationStatus','Helpdesk backend এখনো প্রস্তুত নয়: '+staffError.message+'। নতুন migration apply হয়েছে কি না দেখুন।');host.textContent='Migration ও RLS যাচাই বাকি।';return;}
+ const {data,error}=await client.from('member_verification_requests')
+  .select('id,user_id,request_note,status,staff_note,reviewed_at,created_at')
+  .order('created_at',{ascending:false}).limit(50);
+ if(error){say('verificationStatus','অনুরোধ লোড হয়নি: '+error.message);return;}
+ say('verificationStatus',staff?'আপনি অনুমোদিত Helpdesk staff — সদস্যদের অনুরোধ দেখতে ও পর্যালোচনা করতে পারবেন।':'আপনার অনুরোধগুলো শুধু আপনি এবং অনুমোদিত Helpdesk staff দেখতে পারবেন।');
+ host.replaceChildren();
+ (data||[]).forEach(r=>{
+  const card=document.createElement('article');card.className='feature';
+  const title=document.createElement('strong');title.textContent='Status: '+r.status+' · '+new Date(r.created_at).toLocaleString();
+  const note=document.createElement('p');note.textContent=r.request_note;
+  card.append(title,note);
+  if(staff){const owner=document.createElement('small');owner.className='muted';owner.textContent='Member ID: '+r.user_id;card.append(owner);}
+  if(r.staff_note){const sn=document.createElement('p');sn.textContent='Helpdesk note: '+r.staff_note;card.append(sn);}
+  const thread=document.createElement('div');thread.className='section small';card.append(thread);
+  const refresh=document.createElement('button');refresh.type='button';refresh.className='btn secondary';refresh.textContent='বার্তা দেখুন';refresh.onclick=()=>loadVerificationMessages(r.id,thread);card.append(refresh);
+  if(r.status!=='approved'&&r.status!=='rejected'){
+   const reply=document.createElement('textarea');reply.rows=2;reply.maxLength=2000;reply.placeholder='ব্যক্তিগত বার্তা লিখুন…';card.append(reply);
+   const send=document.createElement('button');send.type='button';send.className='btn';send.textContent='বার্তা পাঠান';send.onclick=async()=>{
+    send.disabled=true;
+    const {error:sendError}=await client.rpc('send_verification_message',{p_request_id:r.id,p_body:reply.value});
+    send.disabled=false;
+    if(sendError){say('verificationStatus','বার্তা পাঠানো যায়নি: '+sendError.message);return;}
+    reply.value='';await loadVerificationMessages(r.id,thread);say('verificationStatus','ব্যক্তিগত বার্তা পাঠানো হয়েছে।');
+   };card.append(send);
+  }
+  if(staff&&r.status!=='approved'&&r.status!=='rejected'){
+   const staffNote=document.createElement('textarea');staffNote.rows=2;staffNote.maxLength=2000;staffNote.placeholder='সদস্যকে জানাতে staff note (ঐচ্ছিক)…';card.append(staffNote);
+   const actions=document.createElement('div');actions.className='actions';
+   [['needs_info','আরও তথ্য চান'],['approved','অনুমোদন'],['rejected','প্রত্যাখ্যান']].forEach(([status,label])=>{
+    const button=document.createElement('button');button.type='button';button.className='btn secondary';button.textContent=label;
+    button.onclick=async()=>{
+     button.disabled=true;
+     const {error:reviewError}=await client.rpc('review_verification_request',{p_request_id:r.id,p_status:status,p_staff_note:staffNote.value});
+     button.disabled=false;
+     if(reviewError){say('verificationStatus','পর্যালোচনা ব্যর্থ: '+reviewError.message);return;}
+     say('verificationStatus','অনুরোধের অবস্থা আপডেট হয়েছে।');loadVerificationRequests();
+    };actions.append(button);
+   });card.append(actions);
+  }
+  host.append(card);
+ });
+ if(!host.children.length)host.textContent=staff?'এখনো কোনো সদস্যের অনুরোধ নেই।':'আপনার কোনো verification request নেই।';
+}
+$('submitVerificationRequest').onclick=async()=>{
+ if(!client||!currentUser){say('verificationStatus','অনুরোধ জমা দিতে আগে লগইন করুন।');return;}
+ const note=$('verificationNote').value.trim();
+ if(note.length<10||note.length>2000){say('verificationStatus','১০ থেকে ২০০০ অক্ষরের মধ্যে সংক্ষিপ্ত বিবরণ লিখুন।');return;}
+ const button=$('submitVerificationRequest');button.disabled=true;say('verificationStatus','ব্যক্তিগত অনুরোধ জমা হচ্ছে…');
+ const {data,error}=await client.rpc('submit_my_verification_request',{p_request_note:note});
+ button.disabled=false;
+ if(error){say('verificationStatus','অনুরোধ জমা হয়নি: '+error.message);return;}
+ $('verificationNote').value='';say('verificationStatus','অনুরোধ জমা হয়েছে। Request ID: '+data);await loadVerificationRequests();
+};
+$('refreshVerificationRequests').onclick=loadVerificationRequests;
+
 async function loadInbox(){
  if(!communityReady())return;
  const host=$('inboxList');say('inboxStatus','Inbox লোড হচ্ছে…');host.replaceChildren();
@@ -793,6 +882,7 @@ $('loadGroups').onclick=loadCommunityGroups;
 $('sendGroupMessage').onclick=sendGroupMessage;
 $('loadNotifications').onclick=loadCommunityNotifications;
 $('refreshInbox').onclick=()=>loadInbox();
+$('refreshVerificationRequests').onclick=loadVerificationRequests;
 $('loadMemberBroadcasts').onclick=loadMemberBroadcastInbox;
 
 $('fbSearch').onclick=()=>{const q=$('fbQuery').value.trim(),country=$('fbCountry').value;say('fbResult',(q?'অনুসন্ধানের বিষয়: '+q+'. ':'')+(country?'দেশ: '+country+'. ':'')+'বাস্তব ফলাফলের জন্য অনুমোদিত Meta API/data provider সংযুক্ত করতে হবে। এখনো কোনো অ্যাকাউন্ট অনুসন্ধান করা হয়নি।');};
