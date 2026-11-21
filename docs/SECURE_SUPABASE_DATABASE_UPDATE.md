@@ -52,3 +52,26 @@ The Update Center Apply action deliberately requires an explicit confirmation ph
 ## Profile discovery privacy hardening
 
 The additive migration `20261121100000_profiles_discovery_privacy_hardening.sql` removes the broad discoverable-profile SELECT policy. PostgreSQL permissive policies are combined with OR, so leaving that policy beside the own/admin policy could expose full profile rows. The migration restores own/admin-only direct table access and provides `search_discoverable_profiles`, which returns only explicitly selected public fields. It is included in the guarded migration preflight list. Review and apply it only through the same dry-run, backup and explicit approval process.
+
+
+## Production migration, query-plan and two-member RLS verification
+
+The production migration workflow now requires two explicit inputs: `apply_migrations=yes` and `confirm_recoverable_backup=yes`. It captures a schema-only snapshot artifact before applying migrations. This schema snapshot is **not** a full data backup; create and verify a recoverable Supabase database backup separately before confirming the input.
+
+### Required repository Actions secrets
+
+- `SUPABASE_ACCESS_TOKEN`
+- `SUPABASE_DB_PASSWORD`
+- `RLS_TEST_MEMBER_A_UUID`: UUID of an existing ordinary member account
+- `RLS_TEST_MEMBER_B_UUID`: UUID of a different existing ordinary member account
+
+Never use an owner/admin account for either RLS test identity. Never paste credentials or UUIDs into chat or commit them into the repository.
+
+### Run sequence
+
+1. Run **MASTER WORLD VIP - Safe Supabase Migration Deploy** with `apply_migrations=no` and review the dry-run.
+2. Verify a current, restorable full database backup in Supabase. Then run with `apply_migrations=yes` and `confirm_recoverable_backup=yes`.
+3. Run **MASTER WORLD VIP - Read-only Supabase Index and RLS Audit**. It checks expected index presence, structurally equivalent duplicate indexes, RLS state and policy definitions, admin-table grants, and EXPLAIN ANALYZE BUFFERS plans using the configured Member A activity.
+4. Run **MASTER WORLD VIP - Two Member RLS Integration Test**. It inserts temporary direct-message, private-group, support-ticket and notification fixtures inside a transaction, switches authenticated JWT identities between the two ordinary members, asserts own-versus-other access and admin-table denial, then rolls back all fixtures.
+
+The two-member test is destructive only within its own transaction and ends with ROLLBACK. Do not remove the rollback. A workflow success is the required evidence; do not mark live database migration, index health, query-plan improvement or RLS as verified until the corresponding run completes and its output has been reviewed. EXPLAIN plans are measurements, not an automatic pass/fail performance threshold; compare actual plan nodes, execution time and buffers against a saved baseline.
