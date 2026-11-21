@@ -24,7 +24,7 @@ migration_block = (
     else ""
 )
 workflow_migrations = sorted(
-    re.findall(r"\b[0-9]{14}_[A-Za-z0-9_-]+\.sql\b", migration_block)
+    re.findall(r"\b[0-9]{12,14}_[A-Za-z0-9_-]+\.sql\b", migration_block)
 )
 repository_migrations = sorted(p.name for p in migration_files)
 required_migrations = [
