@@ -50,9 +50,10 @@ WHERE NOT EXISTS (
 -- Older Auth accounts may predate the profile-creation trigger; create only
 -- a minimal missing test profile so the own-profile assertion is deterministic.
 INSERT INTO public.profiles(id,display_name)
-SELECT :'member_a'::uuid,'MWVIP RLS test member'
+SELECT v.user_id,'MWVIP RLS test member'
+FROM (VALUES (:'member_a'::uuid), (:'member_b'::uuid)) AS v(user_id)
 WHERE NOT EXISTS (
-  SELECT 1 FROM public.profiles p WHERE p.id=:'member_a'::uuid
+  SELECT 1 FROM public.profiles p WHERE p.id=v.user_id
 );
 
 -- Fixture IDs are transaction-local constants; rollback removes every inserted row.
@@ -65,7 +66,12 @@ SELECT
   gen_random_uuid() AS broadcast_id,
   gen_random_uuid() AS support_ticket_id,
   gen_random_uuid() AS notification_id,
-  gen_random_uuid() AS verification_request_id;
+  gen_random_uuid() AS verification_request_id,
+  gen_random_uuid() AS b_conversation_id,
+  gen_random_uuid() AS b_private_group_id,
+  gen_random_uuid() AS b_support_ticket_id,
+  gen_random_uuid() AS b_notification_id,
+  gen_random_uuid() AS b_verification_request_id;
 GRANT SELECT ON mwvip_rls_fixture TO authenticated;
 
 INSERT INTO public.conversations(id,kind,created_by)
@@ -94,6 +100,30 @@ SELECT verification_request_id,member_a,'Temporary private helpdesk message' FRO
 INSERT INTO public.verification_request_events(request_id,actor_id,event_type,new_status)
 SELECT verification_request_id,member_a,'submitted','pending' FROM mwvip_rls_fixture;
 
+-- Symmetric fixtures owned by Member B; Member A must not read these either.
+INSERT INTO public.conversations(id,kind,created_by)
+SELECT b_conversation_id,'direct',member_b FROM mwvip_rls_fixture;
+INSERT INTO public.conversation_members(conversation_id,user_id)
+SELECT b_conversation_id,member_b FROM mwvip_rls_fixture;
+INSERT INTO public.messages(conversation_id,sender_id,body)
+SELECT b_conversation_id,member_b,'MWVIP RLS integration fixture B' FROM mwvip_rls_fixture;
+INSERT INTO public.community_groups(id,name,description,is_private,owner_id)
+SELECT b_private_group_id,'MWVIP RLS TEST B','Temporary RLS fixture',true,member_b FROM mwvip_rls_fixture;
+INSERT INTO public.group_members(group_id,user_id,role)
+SELECT b_private_group_id,member_b,'owner' FROM mwvip_rls_fixture;
+INSERT INTO public.group_messages(group_id,sender_id,body)
+SELECT b_private_group_id,member_b,'MWVIP private group fixture B' FROM mwvip_rls_fixture;
+INSERT INTO public.support_tickets(id,user_id,subject,message)
+SELECT b_support_ticket_id,member_b,'MWVIP RLS fixture B','Temporary test ticket B' FROM mwvip_rls_fixture;
+INSERT INTO public.notifications(id,user_id,title,body,category)
+SELECT b_notification_id,member_b,'MWVIP RLS fixture B','Temporary test notification B','test' FROM mwvip_rls_fixture;
+INSERT INTO public.member_verification_requests(id,user_id,request_note)
+SELECT b_verification_request_id,member_b,'Temporary private verification request fixture B' FROM mwvip_rls_fixture;
+INSERT INTO public.verification_request_messages(request_id,sender_id,body)
+SELECT b_verification_request_id,member_b,'Temporary private helpdesk message B' FROM mwvip_rls_fixture;
+INSERT INTO public.verification_request_events(request_id,actor_id,event_type,new_status)
+SELECT b_verification_request_id,member_b,'submitted','pending' FROM mwvip_rls_fixture;
+
 -- Member B: cannot see A's direct conversation, message, private group, group roster/posts,
 -- support ticket, notification, admin role table or audit log.
 SELECT set_config('request.jwt.claim.sub',(SELECT member_b::text FROM mwvip_rls_fixture),true);
@@ -102,6 +132,16 @@ DO $$
 DECLARE f record;
 BEGIN
   SELECT * INTO f FROM mwvip_rls_fixture;
+  IF NOT EXISTS (SELECT 1 FROM public.profiles WHERE id=f.member_b) THEN RAISE EXCEPTION 'FAIL: B cannot read own profile'; END IF;
+  IF NOT EXISTS (SELECT 1 FROM public.conversations WHERE id=f.b_conversation_id) THEN RAISE EXCEPTION 'FAIL: B cannot read own conversation'; END IF;
+  IF NOT EXISTS (SELECT 1 FROM public.messages WHERE conversation_id=f.b_conversation_id) THEN RAISE EXCEPTION 'FAIL: B cannot read own message'; END IF;
+  IF NOT EXISTS (SELECT 1 FROM public.community_groups WHERE id=f.b_private_group_id) THEN RAISE EXCEPTION 'FAIL: B cannot read own private group'; END IF;
+  IF NOT EXISTS (SELECT 1 FROM public.group_messages WHERE group_id=f.b_private_group_id) THEN RAISE EXCEPTION 'FAIL: B cannot read own group post'; END IF;
+  IF NOT EXISTS (SELECT 1 FROM public.support_tickets WHERE id=f.b_support_ticket_id) THEN RAISE EXCEPTION 'FAIL: B cannot read own support ticket'; END IF;
+  IF NOT EXISTS (SELECT 1 FROM public.notifications WHERE id=f.b_notification_id) THEN RAISE EXCEPTION 'FAIL: B cannot read own notification'; END IF;
+  IF NOT EXISTS (SELECT 1 FROM public.member_verification_requests WHERE id=f.b_verification_request_id) THEN RAISE EXCEPTION 'FAIL: B cannot read own verification request'; END IF;
+  IF NOT EXISTS (SELECT 1 FROM public.verification_request_messages WHERE request_id=f.b_verification_request_id) THEN RAISE EXCEPTION 'FAIL: B cannot read own helpdesk messages'; END IF;
+  IF NOT EXISTS (SELECT 1 FROM public.verification_request_events WHERE request_id=f.b_verification_request_id) THEN RAISE EXCEPTION 'FAIL: B cannot read own helpdesk audit history'; END IF;
   IF EXISTS (SELECT 1 FROM public.profiles WHERE id=f.member_a) THEN RAISE EXCEPTION 'FAIL: B can read A full/private profile row'; END IF;
   IF EXISTS (SELECT 1 FROM public.user_roles WHERE user_id=f.member_a) THEN RAISE EXCEPTION 'FAIL: B can read A role assignment'; END IF;
   IF EXISTS (SELECT 1 FROM public.conversations WHERE id=f.conversation_id) THEN RAISE EXCEPTION 'FAIL: B can read A private conversation'; END IF;
@@ -126,6 +166,17 @@ DO $$
 DECLARE f record;
 BEGIN
   SELECT * INTO f FROM mwvip_rls_fixture;
+  IF EXISTS (SELECT 1 FROM public.profiles WHERE id=f.member_b) THEN RAISE EXCEPTION 'FAIL: A can read B full/private profile row'; END IF;
+  IF EXISTS (SELECT 1 FROM public.conversations WHERE id=f.b_conversation_id) THEN RAISE EXCEPTION 'FAIL: A can read B private conversation'; END IF;
+  IF EXISTS (SELECT 1 FROM public.messages WHERE conversation_id=f.b_conversation_id) THEN RAISE EXCEPTION 'FAIL: A can read B private messages'; END IF;
+  IF EXISTS (SELECT 1 FROM public.community_groups WHERE id=f.b_private_group_id) THEN RAISE EXCEPTION 'FAIL: A can read B private group'; END IF;
+  IF EXISTS (SELECT 1 FROM public.group_members WHERE group_id=f.b_private_group_id) THEN RAISE EXCEPTION 'FAIL: A can read B private group roster'; END IF;
+  IF EXISTS (SELECT 1 FROM public.group_messages WHERE group_id=f.b_private_group_id) THEN RAISE EXCEPTION 'FAIL: A can read B private group posts'; END IF;
+  IF EXISTS (SELECT 1 FROM public.support_tickets WHERE id=f.b_support_ticket_id) THEN RAISE EXCEPTION 'FAIL: A can read B support ticket'; END IF;
+  IF EXISTS (SELECT 1 FROM public.notifications WHERE id=f.b_notification_id) THEN RAISE EXCEPTION 'FAIL: A can read B notification'; END IF;
+  IF EXISTS (SELECT 1 FROM public.member_verification_requests WHERE id=f.b_verification_request_id) THEN RAISE EXCEPTION 'FAIL: A can read B verification request'; END IF;
+  IF EXISTS (SELECT 1 FROM public.verification_request_messages WHERE request_id=f.b_verification_request_id) THEN RAISE EXCEPTION 'FAIL: A can read B helpdesk messages'; END IF;
+  IF EXISTS (SELECT 1 FROM public.verification_request_events WHERE request_id=f.b_verification_request_id) THEN RAISE EXCEPTION 'FAIL: A can read B helpdesk audit history'; END IF;
   IF NOT EXISTS (SELECT 1 FROM public.profiles WHERE id=f.member_a) THEN RAISE EXCEPTION 'FAIL: A cannot read own profile'; END IF;
   IF NOT EXISTS (SELECT 1 FROM public.user_roles WHERE user_id=f.member_a) THEN RAISE EXCEPTION 'FAIL: A cannot read own role assignment'; END IF;
   IF NOT EXISTS (SELECT 1 FROM public.conversations WHERE id=f.conversation_id) THEN RAISE EXCEPTION 'FAIL: A cannot read own conversation'; END IF;
