@@ -48,6 +48,7 @@ Run the Update Center Dry Run first and inspect its complete output. The expecte
 6. `20261119200000_update_releases.sql`
 7. `20261120100000_inbox_push_foundation.sql`
 8. `20261120150000_membership_helper_hardening.sql`
+9. `20261121100000_profiles_discovery_privacy_hardening.sql`
 
 Do not apply until the target project and a recent recoverable backup are confirmed. The Owner bootstrap statement is in migration 4 and is email-specific; verify that the matching auth user exists before applying. Never assume that a matching email query alone proves the role has been granted.
 
@@ -94,3 +95,8 @@ Use two accounts controlled by the project owner. Do not use strangers' accounts
 ## What automation can and cannot prove
 
 GitHub CI can validate repository structure and static safety checks. It cannot prove two-user message delivery, actual push delivery, Owner role assignment, Supabase schema state, or Android installation without configured server credentials and real test accounts. Record each acceptance test as PASS only after observing it on the live project.
+
+
+## Profile discovery privacy correction
+
+The new migration removes the broad discoverable-profile table SELECT policy because permissive PostgreSQL policies combine with OR. It retains direct profile reads for the profile owner/admin and exposes a separate authenticated RPC returning only public discovery fields. Do not mark this protection live until the migration is applied and two-account RLS tests pass.
