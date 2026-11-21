@@ -14,13 +14,13 @@ Never put these values in frontend code, SQL snippets, commits, or chat.
 
 ## Run
 
-1. Open Actions → MASTER WORLD VIP - Secure Database Update → Run workflow.
-2. Enter `MASTER-WORLD-VIP` in the confirmation field.
-3. First run with Apply migrations = false. This performs a dry run only.
-4. Review the migration plan and backup status.
-5. Only after confirming the target project and backup, run again with Apply migrations = true.
+1. Open Actions → **MASTER WORLD VIP - Safe Supabase Migration Deploy** → Run workflow.
+2. First run with `apply_migrations=no`. Review the dry-run output and confirm that the target is the approved project.
+3. Separately verify that a current, restorable full Supabase database backup exists.
+4. Only after that backup check, run again with `apply_migrations=yes` and `confirm_recoverable_backup=yes`.
+5. Review the complete run, including the pre-migration schema snapshot artifact and the migration push result.
 
-The workflow serializes deployments and refuses to run against a different project ref. A successful workflow is evidence that the CLI applied pending migrations; verify the resulting tables and role in Supabase before announcing the feature live.
+The workflow serializes deployments and pins the approved project ref. The schema-only artifact is a structural snapshot, **not** a recoverable data backup. A successful CLI push is not by itself proof that every application feature is live; verify the resulting schema, policies, functions and app behavior before announcing release readiness.
 
 ## Important
 
