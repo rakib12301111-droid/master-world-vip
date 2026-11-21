@@ -1,3 +1,4 @@
+import { isPublicApiKey } from "./api-key.ts";
 import { compareVersions, parseVersion } from "./version.ts";
 
 const FALLBACK_APP_VERSION = "3.3.0";
@@ -13,11 +14,6 @@ const corsHeaders = {
 
 function jsonResponse(data: unknown, status = 200) {
   return new Response(JSON.stringify(data), { status, headers: corsHeaders });
-}
-
-function isPublicApiKey(value: string): boolean {
-  return /^sb_publishable_[A-Za-z0-9_-]+$/.test(value) ||
-    /^eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/.test(value);
 }
 
 async function readCurrentVersion(req: Request): Promise<string> {
