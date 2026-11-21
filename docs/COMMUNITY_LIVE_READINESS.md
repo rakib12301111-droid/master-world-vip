@@ -11,7 +11,7 @@ The production workflow deploys:
 - `get-db-update-status`
 - `send-push`
 
-Required GitHub Environment `production` secrets:
+Required repository-level GitHub Actions secrets:
 - `SUPABASE_ACCESS_TOKEN`
 - `SUPABASE_PROJECT_REF` (must be `lztbbrzeuyjkuiyzrsxp`)
 
