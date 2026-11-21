@@ -407,7 +407,9 @@
 <h3>🔐 Secure Database Update (Owner only)</h3>
 <p class="small muted">এখান থেকে Supabase migration-এর Dry Run বা অনুমোদিত Apply অনুরোধ পাঠানো যাবে। সার্ভারে Owner role যাচাই হবে; গোপন key এই পেজে রাখা হবে না।</p>
 <div class="actions"><button class="btn secondary" id="dbDryRun" type="button">১) Dry Run চালান</button></div>
-<label class="feature"><input type="checkbox" id="dbBackupConfirmed"> Supabase backup / recovery readiness যাচাই করেছি</label>
+<label class="feature"><input type="checkbox" id="dbBackupConfirmed"> Supabase-এর বর্তমান recoverable backup আছে এবং যাচাই করেছি</label>
+<label class="feature"><input type="checkbox" id="dbRestoreTested"> Backup restore procedure সফলভাবে পরীক্ষা করেছি</label>
+<div class="field"><label for="dbBackupReference">Backup Reference (কোনো password বা signed URL নয়)</label><input id="dbBackupReference" type="text" maxlength="120" autocomplete="off" placeholder="যেমন Supabase backup ID / record reference"></div>
 <label class="feature">Apply নিশ্চিতকরণ লিখুন: <input id="dbApplyPhrase" type="text" autocomplete="off" placeholder="APPLY-MASTER-WORLD-VIP-MIGRATIONS"></label>
 <div class="actions"><button class="btn" id="dbApply" type="button">২) অনুমোদন দিয়ে Migration Apply</button><button class="btn secondary" id="dbCheckStatus" type="button">৩) Update Status দেখুন</button></div>
 <div id="dbUpdateStatus" class="notice" role="status">শুধু Owner লগইন করলে এই সুবিধা কাজ করবে। প্রথমে Dry Run করুন। Apply সব pending migration চালাতে পারে।</div>
@@ -1101,7 +1103,9 @@ async function requestDatabaseMigration(mode){
   body:JSON.stringify({
    mode,
    confirm_apply:$('dbApplyPhrase').value.trim(),
-   backup_confirmed:$('dbBackupConfirmed').checked
+   backup_confirmed:$('dbBackupConfirmed').checked,
+   restore_tested:$('dbRestoreTested').checked,
+   backup_reference:$('dbBackupReference').value.trim()
   })
  });
  const payload=await response.json().catch(()=>({}));
@@ -1137,8 +1141,8 @@ $('dbDryRun').onclick=async()=>{
  finally{b.disabled=false;}
 };
 $('dbApply').onclick=async()=>{
- if(!$('dbBackupConfirmed').checked||$('dbApplyPhrase').value.trim()!=='APPLY-MASTER-WORLD-VIP-MIGRATIONS'){
-  $('dbUpdateStatus').textContent='Apply করতে backup checkbox এবং সঠিক confirmation phrase—দুটিই প্রয়োজন।';return;
+ if(!$('dbBackupConfirmed').checked||!$('dbRestoreTested').checked||$('dbBackupReference').value.trim().length<3||$('dbApplyPhrase').value.trim()!=='APPLY-MASTER-WORLD-VIP-MIGRATIONS'){
+  $('dbUpdateStatus').textContent='Apply করতে recoverable backup, restore test, backup reference এবং সঠিক confirmation phrase—সবগুলো প্রয়োজন।';return;
  }
  if(!confirm('সব pending database migration চালানোর অনুরোধ পাঠাবেন? আগে Dry Run ও backup যাচাই করেছেন?'))return;
  const b=$('dbApply');b.disabled=true;

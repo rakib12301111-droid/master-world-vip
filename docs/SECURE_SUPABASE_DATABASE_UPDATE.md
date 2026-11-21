@@ -12,15 +12,16 @@ In GitHub repository Settings → Secrets and variables → Actions, add:
 
 Never put these values in frontend code, SQL snippets, commits, or chat.
 
-## Run
+## Run — guarded Owner workflow
 
-1. Open Actions → **MASTER WORLD VIP - Safe Supabase Migration Deploy** → Run workflow.
-2. First run with `apply_migrations=no`. Review the dry-run output and confirm that the target is the approved project.
-3. Separately verify that a current, restorable full Supabase database backup exists.
-4. Only after that backup check, run again with `apply_migrations=yes` and `confirm_recoverable_backup=yes`.
-5. Review the complete run, including the pre-migration schema snapshot artifact and the migration push result.
+1. Open Actions → **MASTER WORLD VIP - Secure Database Update** → Run workflow.
+2. First run with `apply_migrations=false` (the default). This validates repository secrets, checks required migration files, links only the pinned project `lztbbrzeuyjkuiyzrsxp`, and runs `supabase db push --dry-run`. No database changes are applied.
+3. Review the entire Dry Run log and verify the target project and pending migration list.
+4. Separately create or verify a current, recoverable full Supabase backup. Confirm that the restore procedure has actually been tested. A schema-only snapshot is not a full backup.
+5. Only after those checks, request Apply with `apply_migrations=true`, `backup_confirmed=true`, `restore_tested=true`, a non-secret backup ID/reference, and the exact phrase `APPLY-MASTER-WORLD-VIP-MIGRATIONS`.
+6. Review the full Actions run and verify the resulting schema, RLS policies, functions and application behavior. A queued request is not a successful migration.
 
-The workflow serializes deployments and pins the approved project ref. The schema-only artifact is a structural snapshot, **not** a recoverable data backup. A successful CLI push is not by itself proof that every application feature is live; verify the resulting schema, policies, functions and app behavior before announcing release readiness.
+The workflow has no GitHub production Environment binding, so repository-level Actions secrets are read directly and cannot be shadowed by same-named Environment secrets. It serializes runs, pins the approved project, re-runs Dry Run before every Apply, checks required migration files and blocks Apply unless every explicit approval gate passes. The backup reference must be a non-secret identifier, not a URL or credential. The workflow does not create the full database backup for you.
 
 ## Important
 
@@ -80,3 +81,10 @@ The two-member test is destructive only within its own transaction and ends with
 ## Additional group RLS recursion correction (2026-11-21)
 
 The two-member test review identified a policy dependency cycle: the community-group read policy queried `group_members`, while the group-roster policy queried `community_groups`. The additive migration `20261121120000_group_rls_recursion_fix.sql` replaces those checks with caller-scoped SECURITY DEFINER helpers using a fixed empty search path. It is included in the production migration preflight list. Apply only after the standard dry-run and recoverable-backup gate, then rerun the read-only audit and two-member integration test.
+
+
+## Owner Update Center safety gates (2026-11-21)
+
+The Owner Update Center sends the backup confirmation, restore-test confirmation, non-secret backup reference and exact Apply phrase to the server-side dispatch function. The Edge Function verifies the authenticated session and `app_user_roles.role = owner` before dispatching the workflow. The workflow independently validates those inputs and repeats the migration Dry Run before it can apply anything. Never tick the backup or restore-test boxes unless those checks were genuinely completed.
+
+The first deployment still requires a trusted operator to deploy the Edge Functions and configure secrets outside the browser. Set `GITHUB_ACTIONS_TOKEN` as a Supabase Edge Function secret with access restricted to this repository and the minimum required GitHub permissions (Actions read/write for workflow dispatch/status; Actions secrets read/write only if using the Owner secret-setup function). Set `GITHUB_REPOSITORY=rakib12301111-droid/master-world-vip`. The repository Actions secrets `SUPABASE_ACCESS_TOKEN` and `SUPABASE_DB_PASSWORD` must be configured separately. A successful GitHub Pages build does not prove Edge Function deployment or database connectivity.
