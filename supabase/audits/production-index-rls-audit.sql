@@ -49,7 +49,8 @@ WITH expected(table_name) AS (
          ('privacy_consents'),('referrals'),('notifications'),
          ('support_tickets'),('audit_logs'),('privacy_consent_events'),
          ('account_data_requests'),('push_subscriptions'),
-         ('member_broadcasts'),('member_broadcast_deliveries')
+         ('member_broadcasts'),('member_broadcast_deliveries'),
+         ('member_verification_requests'),('verification_request_messages'),('verification_request_events')
 )
 SELECT e.table_name,
        CASE WHEN c.oid IS NULL THEN 'MISSING TABLE'
@@ -149,7 +150,8 @@ BEGIN
     ('privacy_consents'),('referrals'),('notifications'),
     ('support_tickets'),('audit_logs'),('privacy_consent_events'),
     ('account_data_requests'),('push_subscriptions'),
-    ('member_broadcasts'),('member_broadcast_deliveries')
+    ('member_broadcasts'),('member_broadcast_deliveries'),
+    ('member_verification_requests'),('verification_request_messages'),('verification_request_events')
   ) AS e(table_name)
   LEFT JOIN pg_class c
     ON c.relname=e.table_name
