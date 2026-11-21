@@ -11,6 +11,8 @@ on:
       - ".github/workflows/audit-supabase-indexes-rls.yml"
       - ".github/workflows/test-two-member-rls.yml"
       - "supabase/audits/**"
+      - "android-app/**"
+      - ".github/workflows/android-release.yml"
       - "scripts/verify-live-service-health.py"
       - "scripts/verify-global-communication.py"
       - "scripts/verify-emergency-games.py"
