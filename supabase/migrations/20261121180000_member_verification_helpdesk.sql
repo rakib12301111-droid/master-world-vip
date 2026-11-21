@@ -176,6 +176,16 @@ begin
 
   insert into public.verification_request_events(request_id,actor_id,event_type)
   values(p_request_id,v_user,'message_sent');
+
+  if v_user = v_owner then
+    insert into public.notifications(user_id,title,body,category)
+    select r.user_id,'নতুন Helpdesk বার্তা','একটি ব্যক্তিগত verification request-এ নতুন বার্তা এসেছে।','verification'
+    from public.app_user_roles r
+    where r.role in ('owner','super_admin','admin','moderator') and r.user_id <> v_user;
+  else
+    insert into public.notifications(user_id,title,body,category)
+    values(v_owner,'Helpdesk থেকে নতুন বার্তা','আপনার verification request-এ নতুন ব্যক্তিগত বার্তা এসেছে।','verification');
+  end if;
   return v_message_id;
 end;
 $$;
@@ -226,6 +236,12 @@ begin
   select v_actor,r.user_id,'verification_request_reviewed',
     jsonb_build_object('request_id',p_request_id,'old_status',v_old_status,
       'new_status',p_status)
+  from public.member_verification_requests r
+  where r.id=p_request_id;
+  insert into public.notifications(user_id,title,body,category)
+  select r.user_id,'Verification status updated',
+    'Your private verification request status is now: ' || p_status || '.',
+    'verification'
   from public.member_verification_requests r
   where r.id=p_request_id;
   return true;
