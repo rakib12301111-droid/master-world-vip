@@ -36,7 +36,7 @@ This repository contains the database foundation, community, privacy, admin/broa
 
 - In **Project Settings → API**, copy the Project URL and the **Publishable key** (`sb_publishable_...`) or the legacy **anon public JWT**.
 - In MASTER WORLD VIP → Account setup, enter those two public values and press **Connect Supabase**.
-- The browser rejects `sb_secret_...` keys and JWTs whose role is not `anon`. Never paste a `service_role` or secret key into the website, HTML, JavaScript, chat, or public repository.
+- The browser and `check-updates` Edge Function reject `sb_secret_...` keys and legacy JWTs unless their decoded role is exactly `anon`. Never paste a `service_role` or secret key into the website, HTML, JavaScript, chat, or public repository.
 - In Supabase Authentication settings, configure the allowed Site URL and Redirect URLs for your deployed website. Configure email confirmation and an email provider as required.
 - Create a test account, complete email confirmation if enabled, log in, then open Member Hub and save/load your profile. Repeat with a second test account to check user isolation.
 - A successful browser connection does not prove that all database migrations, RLS policies, email delivery, or production security have been verified.
@@ -57,7 +57,13 @@ Detailed checks: `supabase/UPDATE_SYSTEM_TESTS.md`.
 
 ## 3. AI function
 
-Deploy `supabase/functions/ai-assistant/index.ts` as `ai-assistant`. Configure `AI_PROVIDER_API_KEY` and optional `AI_PROVIDER_URL` / `AI_MODEL` secrets only for the AI feature. Do not confuse AI provider secrets with the Update Center; update checking does not need an AI secret.
+Deploy `supabase/functions/ai-assistant/index.ts` as `ai-assistant`:
+
+```sh
+supabase functions deploy ai-assistant --project-ref lztbbrzeuyjkuiyzrsxp
+```
+
+The function requires a valid signed-in user JWT (`verify_jwt = true`). Configure `AI_PROVIDER_API_KEY` and optional `AI_PROVIDER_URL` / `AI_MODEL` secrets only for the AI feature. Do not confuse AI provider secrets with the Update Center; update checking does not need an AI secret.
 
 Never put provider keys or Supabase secret/service-role keys in browser code.
 
@@ -95,5 +101,3 @@ Before enabling for members, test with two consenting accounts and a test device
 ## 7. Android WebView limitation
 
 The current APK is a WebView shell. Web Push through a browser Service Worker is not guaranteed to work inside Android WebView, and this project has not yet added Firebase Cloud Messaging (FCM) native integration. Validate push in Chrome/PWA separately; native Android push requires FCM registration, a secure device-token table and a trusted FCM sender before claiming APK push support.
-
-16. `supabase/migrations/20261121180000_member_verification_helpdesk.sql` — private verification/helpdesk requests, message thread, staff review RPC and append-only activity events.
