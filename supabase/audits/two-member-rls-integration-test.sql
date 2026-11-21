@@ -13,20 +13,22 @@
 
 BEGIN;
 SET LOCAL row_security = on;
+SELECT set_config('mwvip.test_member_a', :'member_a', true);
+SELECT set_config('mwvip.test_member_b', :'member_b', true);
 
-DO $$
+DO $
+DECLARE a uuid := current_setting('mwvip.test_member_a')::uuid;
+DECLARE b uuid := current_setting('mwvip.test_member_b')::uuid;
 BEGIN
-  IF :'member_a'::uuid = :'member_b'::uuid THEN
-    RAISE EXCEPTION 'RLS test requires two different member accounts';
-  END IF;
-  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE id=:'member_a'::uuid)
-     OR NOT EXISTS (SELECT 1 FROM auth.users WHERE id=:'member_b'::uuid) THEN
+  IF a = b THEN RAISE EXCEPTION 'RLS test requires two different member accounts'; END IF;
+  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE id=a)
+     OR NOT EXISTS (SELECT 1 FROM auth.users WHERE id=b) THEN
     RAISE EXCEPTION 'Both test accounts must exist in auth.users';
   END IF;
-  IF EXISTS (SELECT 1 FROM public.app_user_roles WHERE user_id IN (:'member_a'::uuid,:'member_b'::uuid) AND role IN ('owner','super_admin','admin')) THEN
+  IF EXISTS (SELECT 1 FROM public.app_user_roles WHERE user_id IN (a,b) AND role IN ('owner','super_admin','admin')) THEN
     RAISE EXCEPTION 'Use ordinary member accounts, not admin accounts';
   END IF;
-END $$;
+END $;
 
 -- Fixture IDs are transaction-local constants; rollback removes every inserted row.
 CREATE TEMP TABLE mwvip_rls_fixture AS
