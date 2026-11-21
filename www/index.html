@@ -140,7 +140,18 @@
 </div>
 <div class="notice">নিরাপত্তা: কেবল publishable / anon public key গ্রহণ করা হবে। sb_secret_... বা JWT role=service_role key প্রত্যাখ্যান করা হবে। service_role/secret key কখনো ওয়েবসাইটে দেবেন না।</div>
 </article>
-<article class="card" id="account-connect"><h2>🔐 Registration & Login</h2><p class="muted">Supabase Authentication — public key দিয়ে browser connection.</p>
+<article class="card" id="authNextSteps">
+<h2>🧭 এখন কী করবেন — সহজ নির্দেশনা</h2>
+<div class="notice success">আপনার স্ক্রিনে “Supabase সংযুক্ত হয়েছে” দেখালে Project URL ও Public/Anon Key দিয়ে browser connection তৈরি হয়েছে। এবার নিচের ধাপগুলো অনুসরণ করুন।</div>
+<div class="feature-list">
+<div class="feature"><strong>১ — Database SQL যাচাই</strong><p class="muted small">Supabase Dashboard → SQL Editor খুলে repository-র migration README অনুযায়ী প্রয়োজনীয় SQL একে একে চালাতে হবে। আগে database backup ও restore পরীক্ষা করুন; Owner email যাচাই ছাড়া Admin migration চালাবেন না।</p><a class="btn secondary" href="https://github.com/rakib12301111-droid/master-world-vip/blob/main/supabase/README.md" target="_blank" rel="noopener noreferrer">Migration Guide খুলুন ↗</a></div>
+<div class="feature"><strong>২ — Email Auth সেটিংস</strong><p class="muted small">Supabase → Authentication → URL Configuration-এ Site URL হিসেবে এই app-এর GitHub Pages URL এবং Redirect URLs-এ একই origin যোগ করুন। Authentication → Providers → Email-এ Email provider চালু আছে কি না দেখুন।</p><a class="btn secondary" href="https://supabase.com/dashboard/project/lztbbrzeuyjkuiyzrsxp/auth/url-configuration" target="_blank" rel="noopener noreferrer">Auth URL Settings ↗</a></div>
+<div class="feature"><strong>৩ — নতুন অ্যাকাউন্ট তৈরি</strong><p class="muted small">নিচের “নতুন অ্যাকাউন্ট” অংশে আপনার নাম, নিজের ইমেইল এবং কমপক্ষে ৮ অক্ষরের শক্তিশালী পাসওয়ার্ড লিখে Create account চাপুন। Password বা OTP কাউকে দেবেন না।</p></div>
+<div class="feature"><strong>৪ — Email নিশ্চিত করে Login</strong><p class="muted small">Email confirmation চালু থাকলে Inbox/Spam-এ Supabase-এর ইমেইল খুলে Confirm করুন। তারপর “আগের অ্যাকাউন্টে প্রবেশ” অংশে একই ইমেইল ও পাসওয়ার্ড দিয়ে Login করুন।</p></div>
+<div class="feature"><strong>৫ — Member Hub পরীক্ষা</strong><p class="muted small">Login সফল হলে Member Hub খুলে নিজের Display name ও Country দিয়ে Save my profile চাপুন। এতে profile table ও policy ঠিকভাবে কাজ করছে কি না পরীক্ষা হবে।</p><button class="btn secondary" type="button" data-go="members">Member Hub খুলুন</button></div>
+</div>
+<div class="notice">গুরুত্বপূর্ণ: “Supabase connected” একা Registration/Login, SQL migration, RLS security বা production readiness নিশ্চিত করে না।</div>
+</article><article class="card" id="account-connect"><h2>🔐 Registration & Login</h2><p class="muted">Supabase Authentication — public key দিয়ে browser connection.</p>
 <div class="notice">Supabase Dashboard → Project Settings → API থেকে Project URL ও Publishable key (বা legacy anon key) নিন। এখানে secret/service_role key দিলে সংযোগ প্রত্যাখ্যান করা হবে।</div>
 <div class="field"><label for="sburl">Supabase Project URL</label><input id="sburl" type="url" placeholder="https://your-project.supabase.co" autocomplete="url"></div>
 <div class="field"><label for="sbkey">Publishable / anon public key</label><input id="sbkey" type="password" placeholder="sb_publishable_... অথবা anon public key" autocomplete="off"></div>
