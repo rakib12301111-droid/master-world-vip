@@ -38,11 +38,53 @@
  const main=document.querySelector('main.main');
  if(main&&!document.getElementById('security')){
   const page=document.createElement('section');page.className='page';page.id='security';
-  page.innerHTML='<article class="card"><div class="vip-hero-card vip-gold"><div class="vip-heading"><span class="vip-icon">🔐</span><span>SECURITY CENTER</span></div><p class="vip-muted">Protect your account · Secure authentication · Device sessions</p></div><div class="vip-grid"><div class="vip-tile"><b>🔑 Two-Factor Authentication</b><span class="vip-muted" id="vipMfaState">Checking account factors…</span><div id="vipMfaFactors"></div><button class="vip-action" id="vipMfaEnroll">Set up authenticator</button></div><div class="vip-tile"><b>📱 Active Session Control</b><span class="vip-muted">Sign out this account from all sessions, including other devices.</span><button class="vip-action secondary" id="vipGlobalSignout">Sign out all devices</button></div><div class="vip-tile"><b>🕘 Login & Device History</b><span class="vip-muted">Detailed history needs a server-side security event pipeline; it is not fabricated in this screen.</span></div><div class="vip-tile"><b>🚨 Security Alerts</b><span class="vip-muted">Keep your email secure and review Supabase authentication notices.</span></div></div><div class="vip-tile"><b>Authenticator setup</b><p class="vip-muted">Use an authenticator app. Scan the QR code and enter its current 6-digit code to verify. Never share this code with anyone.</p><div id="vipMfaEnrollArea"></div><div id="vipMfaStatus" class="vip-status" role="status">Log in to manage two-factor authentication.</div></div><div class="vip-status">Security note: Two-factor authentication requires Supabase Auth MFA support and a logged-in account. Device history, trusted-device registry and suspicious-login detection require additional backend tables/functions and are not marked active until deployed and tested.</div></article>';
+  page.innerHTML='<article class="card"><div class="vip-hero-card vip-gold"><div class="vip-heading"><span class="vip-icon">🔐</span><span>SECURITY CENTER</span></div><p class="vip-muted">Protect your account · Secure authentication · Device sessions</p></div><div class="vip-grid"><div class="vip-tile"><b>🔑 Two-Factor Authentication</b><span class="vip-muted" id="vipMfaState">Checking account factors…</span><div id="vipMfaFactors"></div><button class="vip-action" id="vipMfaEnroll">Set up authenticator</button></div><div class="vip-tile"><b>📱 Active Session Control</b><span class="vip-muted">Sign out this account from all sessions, including other devices.</span><button class="vip-action secondary" id="vipGlobalSignout">Sign out all devices</button></div><div class="vip-tile"><b>📲 Trusted Devices</b><span class="vip-muted">Register this browser and manage devices you have marked trusted.</span><button class="vip-action" id="vipRegisterDevice">Trust this device</button><div id="vipDevicesList" class="vip-status">Log in to view devices.</div></div><div class="vip-tile"><b>🕘 Login History</b><span class="vip-muted">Recent sign-ins observed by this app.</span><button class="vip-action secondary" id="vipRefreshHistory">Refresh history</button><div id="vipLoginHistory" class="vip-status">Log in to view history.</div></div><div class="vip-tile"><b>🚨 Security Alerts</b><span class="vip-muted">Keep your email secure and review Supabase authentication notices.</span></div></div><div class="vip-tile"><b>Authenticator setup</b><p class="vip-muted">Use an authenticator app. Scan the QR code and enter its current 6-digit code to verify. Never share this code with anyone.</p><div id="vipMfaEnrollArea"></div><div id="vipMfaStatus" class="vip-status" role="status">Log in to manage two-factor authentication.</div></div><div class="vip-status">Security note: Two-factor authentication requires Supabase Auth MFA support and a logged-in account. Device history, trusted-device registry and suspicious-login detection require additional backend tables/functions and are not marked active until deployed and tested.</div></article>';
   main.append(page);
  }
  const $=id=>document.getElementById(id);\n const getClient=()=>window.mwvipGetClient?.()||null;\n const getUser=()=>window.mwvipGetUser?.()||null;
  const status=(s)=>{if($('vipMfaStatus'))$('vipMfaStatus').textContent=s;};
+ 
+ const deviceKey=()=>{
+  let key=localStorage.getItem('mwvip_device_key');
+  if(!key){key=(crypto.randomUUID?crypto.randomUUID():('mwvip-'+Date.now()+'-'+Math.random().toString(36).slice(2)));localStorage.setItem('mwvip_device_key',key);}
+  return key;
+ };
+ const deviceInfo=()=>({device_key:deviceKey(),device_name:/Android/i.test(navigator.userAgent)?'Android device':/iPhone|iPad/i.test(navigator.userAgent)?'iPhone/iPad':'Web browser',platform:navigator.platform||'Web',user_agent:navigator.userAgent});
+ async function registerTrustedDevice(){
+  const cl=getClient(),u=getUser();if(!cl||!u){$('vipDevicesList').textContent='আগে লগইন করুন।';return;}
+  const d=deviceInfo();
+  const {error}=await cl.from('trusted_devices').upsert({user_id:u.id,...d,last_seen_at:new Date().toISOString(),revoked_at:null},{onConflict:'user_id,device_key'});
+  if(error)throw error;
+  await loadTrustedDevices();
+ }
+ async function loadTrustedDevices(){
+  const cl=getClient(),u=getUser();if(!cl||!u){$('vipDevicesList').textContent='লগইন করুন।';return;}
+  const {data,error}=await cl.from('trusted_devices').select('id,device_key,device_name,platform,first_seen_at,last_seen_at,revoked_at').eq('user_id',u.id).is('revoked_at',null).order('last_seen_at',{ascending:false}).limit(20);
+  if(error)throw error;
+  const root=$('vipDevicesList');root.replaceChildren();
+  if(!data?.length){root.textContent='কোনো trusted device নেই। এই ডিভাইসটি যোগ করতে Trust this device চাপুন।';return;}
+  data.forEach(d=>{const row=document.createElement('div');row.style.cssText='display:flex;gap:8px;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid #383838';
+   const label=document.createElement('span');label.textContent=d.device_name+' · '+d.platform+(d.device_key===deviceKey()?' · This device':'');row.append(label);
+   const btn=document.createElement('button');btn.className='vip-action secondary';btn.textContent='Remove';btn.addEventListener('click',async()=>{if(!confirm('এই trusted device সরাবেন?'))return;const {error:e}=await cl.from('trusted_devices').update({revoked_at:new Date().toISOString()}).eq('id',d.id).eq('user_id',u.id);if(e){root.textContent='সরানো যায়নি: '+e.message;return;}await loadTrustedDevices();});row.append(btn);root.append(row);
+  });
+ }
+ async function recordLogin(eventType){
+  const cl=getClient(),u=getUser();if(!cl||!u)return;
+  const d=deviceInfo();const {error}=await cl.from('login_history').insert({user_id:u.id,...d,event_type:eventType});
+  if(error)console.warn('Login history record failed:',error.message);
+ }
+ async function loadLoginHistory(){
+  const cl=getClient(),u=getUser();if(!cl||!u){$('vipLoginHistory').textContent='লগইন করুন।';return;}
+  const {data,error}=await cl.from('login_history').select('id,device_name,platform,event_type,occurred_at').eq('user_id',u.id).order('occurred_at',{ascending:false}).limit(30);
+  if(error)throw error;
+  const root=$('vipLoginHistory');root.replaceChildren();
+  if(!data?.length){root.textContent='এখনো কোনো লগইন রেকর্ড নেই।';return;}
+  data.forEach(item=>{const row=document.createElement('div');row.style.cssText='padding:7px 0;border-bottom:1px solid #383838';const date=new Date(item.occurred_at).toLocaleString();row.textContent=date+' · '+item.event_type+' · '+item.device_name+' ('+item.platform+')';root.append(row);});
+ }
+ async function refreshDevicePanels(){
+  try{await Promise.all([loadTrustedDevices(),loadLoginHistory()]);}
+  catch(e){if($('vipDevicesList'))$('vipDevicesList').textContent='ডেটাবেস প্রস্তুত হয়নি বা অনুমতি নেই: '+e.message;if($('vipLoginHistory'))$('vipLoginHistory').textContent='ডেটাবেস প্রস্তুত হয়নি বা অনুমতি নেই: '+e.message;}
+ }
  async function refreshFactors(){
   if(!getClient()||!getUser()){if($('vipMfaState'))$('vipMfaState').textContent='Log in to check MFA status.';return;}
   try{
@@ -72,6 +114,8 @@
     status('QR scan করুন, তারপর authenticator-এর ৬ সংখ্যার কোড দিন।');
    }catch(err){status('MFA setup করা যায়নি: '+err.message);}
   }
+  if(e.target?.id==='vipRegisterDevice'){try{status('এই ডিভাইস trusted করা হচ্ছে…');await registerTrustedDevice();status('এই ডিভাইস trusted list-এ যুক্ত হয়েছে।');}catch(err){status('ডিভাইস যুক্ত হয়নি: '+err.message+'। Supabase migration প্রয়োগ হয়েছে কি না দেখুন।');}}
+  if(e.target?.id==='vipRefreshHistory'){await refreshDevicePanels();}
   if(e.target?.id==='vipGlobalSignout'){
    if(!getClient()||!getUser()){status('আগে লগইন করুন।');return;}
    if(!confirm('সব ডিভাইস থেকে সাইন আউট করবেন? আপনাকেও আবার লগইন করতে হবে।'))return;
@@ -80,6 +124,14 @@
    catch(err){status('সব session বন্ধ হয়নি: '+err.message);}
   }
  });
+ let observedAuthClient=null;
+ function attachSecurityAuthListener(){
+  const cl=getClient();if(!cl||cl===observedAuthClient)return;observedAuthClient=cl;
+  cl.auth.onAuthStateChange((event,session)=>{
+   if(event==='SIGNED_IN'&&session?.user){setTimeout(async()=>{try{await recordLogin('sign_in');await registerTrustedDevice();await refreshDevicePanels();}catch(err){console.warn('Security device tracking:',err.message);}},0);}
+   if(event==='SIGNED_OUT'){if($('vipDevicesList'))$('vipDevicesList').textContent='লগইন করুন।';if($('vipLoginHistory'))$('vipLoginHistory').textContent='লগইন করুন।';}
+  });
+ }
  const oldConnect=document.getElementById('connect');
  if(oldConnect)oldConnect.addEventListener('click',()=>setTimeout(refreshFactors,1200));
  const oldLogin=document.getElementById('login');
@@ -87,6 +139,6 @@
  const oldSignup=document.getElementById('signup');
  if(oldSignup)oldSignup.addEventListener('click',()=>setTimeout(refreshFactors,1500));
  const oldPageHandler=window.showPage;
- window.showPage=(id)=>{if(typeof oldPageHandler==='function')oldPageHandler(id);else{document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active',p.id===id));}if(id==='security')refreshFactors();};
- setTimeout(()=>{if(document.getElementById('security'))refreshFactors();},900);
+ window.showPage=(id)=>{if(typeof oldPageHandler==='function')oldPageHandler(id);else{document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active',p.id===id));}if(id==='security'){refreshFactors();refreshDevicePanels();attachSecurityAuthListener();}};
+ setTimeout(()=>{attachSecurityAuthListener();if(document.getElementById('security')){refreshFactors();refreshDevicePanels();}},900);
 })();
