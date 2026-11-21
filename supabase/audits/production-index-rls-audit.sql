@@ -8,7 +8,9 @@ WITH expected(index_name, table_name) AS (
     ('messages_conversation_created_idx','messages'),
     ('group_messages_group_created_idx','group_messages'),
     ('friend_requests_addressee_status_idx','friend_requests'),
-    ('profiles_username_lower_uidx','profiles')
+    ('profiles_username_lower_uidx','profiles'),
+    ('member_verification_requests_user_created_idx','member_verification_requests'),
+    ('verification_request_messages_request_created_idx','verification_request_messages')
 )
 SELECT e.index_name, e.table_name,
        CASE WHEN i.indexname IS NULL THEN 'MISSING' ELSE 'PRESENT' END AS status,
@@ -74,7 +76,8 @@ WHERE schemaname='public'
     'group_messages','app_user_roles','admin_audit_logs','update_releases',
     'user_roles','privacy_consents','referrals','notifications','support_tickets','audit_logs',
     'privacy_consent_events','account_data_requests','push_subscriptions',
-    'member_broadcasts','member_broadcast_deliveries')
+    'member_broadcasts','member_broadcast_deliveries',
+    'member_verification_requests','verification_request_messages','verification_request_events')
 ORDER BY tablename,policyname;
 
 \echo '=== Unsafe broad profile-discovery policy must be absent ==='
@@ -130,7 +133,9 @@ BEGIN
     ('messages_conversation_created_idx'),
     ('group_messages_group_created_idx'),
     ('friend_requests_addressee_status_idx'),
-    ('profiles_username_lower_uidx')
+    ('profiles_username_lower_uidx'),
+    ('member_verification_requests_user_created_idx'),
+    ('verification_request_messages_request_created_idx')
   ) AS e(index_name)
   WHERE NOT EXISTS (
     SELECT 1 FROM pg_indexes i
@@ -168,6 +173,22 @@ BEGIN
     AND policyname='discoverable profiles visible to members';
   IF broad_profile_policies > 0 THEN
     RAISE EXCEPTION 'FAIL: unsafe broad discoverable-profile policy is present';
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies
+    WHERE schemaname='public' AND tablename='member_verification_requests'
+      AND policyname='members and helpdesk read own verification requests'
+  ) OR NOT EXISTS (
+    SELECT 1 FROM pg_policies
+    WHERE schemaname='public' AND tablename='verification_request_messages'
+      AND policyname='members and helpdesk read verification messages'
+  ) OR NOT EXISTS (
+    SELECT 1 FROM pg_policies
+    WHERE schemaname='public' AND tablename='verification_request_events'
+      AND policyname='members and helpdesk read verification events'
+  ) THEN
+    RAISE EXCEPTION 'FAIL: private verification/helpdesk RLS policies are missing';
   END IF;
 
   roles_readable := has_table_privilege('authenticated','public.app_user_roles','SELECT');
