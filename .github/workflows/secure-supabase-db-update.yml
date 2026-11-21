@@ -73,6 +73,7 @@ jobs:
         run: |
           set -euo pipefail
           test -n "${SUPABASE_ACCESS_TOKEN:-}" || { echo "::error::Missing repository Actions secret SUPABASE_ACCESS_TOKEN."; exit 1; }
+          [[ "$SUPABASE_ACCESS_TOKEN" =~ ^sbp_[A-Za-z0-9]+$ ]] || { echo "::error::SUPABASE_ACCESS_TOKEN must be a Supabase Personal Access Token beginning with sbp_; do not use a project API key."; exit 1; }
           test -n "${SUPABASE_DB_PASSWORD:-}" || { echo "::error::Missing repository Actions secret SUPABASE_DB_PASSWORD."; exit 1; }
           test "$SUPABASE_PROJECT_REF" = "lztbbrzeuyjkuiyzrsxp" || { echo "::error::Unexpected Supabase project."; exit 1; }
           echo "Required credentials are present; secret values are never printed."
