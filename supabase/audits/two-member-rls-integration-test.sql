@@ -16,7 +16,7 @@ SET LOCAL row_security = on;
 SELECT set_config('mwvip.test_member_a', :'member_a', true);
 SELECT set_config('mwvip.test_member_b', :'member_b', true);
 
-DO $
+DO $mwvip_check$
 DECLARE a uuid := current_setting('mwvip.test_member_a')::uuid;
 DECLARE b uuid := current_setting('mwvip.test_member_b')::uuid;
 BEGIN
@@ -28,7 +28,7 @@ BEGIN
   IF EXISTS (SELECT 1 FROM public.app_user_roles WHERE user_id IN (a,b) AND role IN ('owner','super_admin','admin')) THEN
     RAISE EXCEPTION 'Use ordinary member accounts, not admin accounts';
   END IF;
-END $;
+END $mwvip_check$;
 
 -- Fixture IDs are transaction-local constants; rollback removes every inserted row.
 CREATE TEMP TABLE mwvip_rls_fixture AS
