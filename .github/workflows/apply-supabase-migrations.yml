@@ -94,7 +94,7 @@ jobs:
           SUPABASE_PROJECT_REF: lztbbrzeuyjkuiyzrsxp
         run: |
           set -euo pipefail
-          supabase db push --db-url "$SUPABASE_DB_URL" --dry-run
+          supabase db push --dry-run --remote="$SUPABASE_DB_URL"
 
       - name: Require backup confirmation before production changes
         if: inputs.apply_migrations == 'yes'
@@ -132,7 +132,7 @@ jobs:
           SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
         run: |
           set -euo pipefail
-          supabase db push --db-url "$SUPABASE_DB_URL"
+          supabase db push --remote="$SUPABASE_DB_URL"
           echo "Supabase CLI completed the pending migration push."
 
       - name: Report preview-only run
