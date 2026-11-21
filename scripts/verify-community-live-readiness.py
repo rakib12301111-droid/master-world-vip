@@ -128,6 +128,8 @@ checks = {
         and "status in ('pending','needs_info','approved','rejected')" in helpdesk_sql
         and "member_verification_one_active_per_user_uidx" in helpdesk_sql
         and ">= 20" in helpdesk_sql
+        and ">= 3" in helpdesk_sql
+        and "24 hours" in helpdesk_sql
         and "verification_request_events" in helpdesk_sql
         and "review_verification_request" in helpdesk_sql
         and "insert into public.notifications" in helpdesk_sql
