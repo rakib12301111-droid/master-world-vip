@@ -35,7 +35,17 @@ Deno.serve(async (req) => {
     .select("id,order_id,tran_id,amount,currency,status")
     .eq("tran_id", tranId).maybeSingle();
   if (error || !attempt) return reply("Unknown transaction", 404);
-  if (attempt.status === "paid") return reply("Already verified");
+  if (attempt.status === "paid") {
+    // Idempotent recovery if the attempt was saved but the order update previously failed.
+    const { error: reconcileError } = await admin.from("facebook_setup_orders")
+      .update({ payment_status: "paid", paid_at: new Date().toISOString(), payment_provider: "sslcommerz" })
+      .eq("id", attempt.order_id).eq("payment_status", "pending");
+    if (reconcileError) {
+      console.error("paid_attempt_reconciliation_failed", tranId, reconcileError.message);
+      return reply("Payment verified; order reconciliation is pending", 500);
+    }
+    return reply("Already verified");
+  }
 
   const base = mode === "live" ? "https://securepay.sslcommerz.com" : "https://sandbox.sslcommerz.com";
   const validationUrl = new URL(`${base}/validator/api/validationserverAPI.php`);
