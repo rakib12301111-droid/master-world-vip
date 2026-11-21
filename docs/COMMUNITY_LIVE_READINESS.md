@@ -48,6 +48,7 @@ Run the Update Center Dry Run first and inspect its complete output. The expecte
 7. `20261120100000_inbox_push_foundation.sql`
 8. `20261120150000_membership_helper_hardening.sql`
 9. `20261121100000_profiles_discovery_privacy_hardening.sql`
+10. `20261121120000_group_rls_recursion_fix.sql`
 
 Do not apply until the target project and a recent recoverable backup are confirmed. The Owner bootstrap statement is in migration 4 and is email-specific; verify that the matching auth user exists before applying. Never assume that a matching email query alone proves the role has been granted.
 
@@ -100,6 +101,10 @@ GitHub CI can validate repository structure and static safety checks. It cannot 
 
 The new migration removes the broad discoverable-profile table SELECT policy because permissive PostgreSQL policies combine with OR. It retains direct profile reads for the profile owner/admin and exposes a separate authenticated RPC returning only public discovery fields. Do not mark this protection live until the migration is applied and two-account RLS tests pass.
 
+
+## Group RLS recursion correction
+
+The migration `20261121120000_group_rls_recursion_fix.sql` adds a narrowly scoped SECURITY DEFINER membership helper with a fixed search path and updates group policies to avoid recursive RLS evaluation. It is included in the guarded migration workflow. Do not mark the correction live until the migration has been applied and the two-member group access tests pass.
 
 ## Read-only production index and RLS audit
 
