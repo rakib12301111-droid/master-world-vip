@@ -17,8 +17,9 @@ SELECT set_config('mwvip.test_member_a', :'member_a', true);
 SELECT set_config('mwvip.test_member_b', :'member_b', true);
 
 DO $mwvip_check$
-DECLARE a uuid := current_setting('mwvip.test_member_a')::uuid;
-DECLARE b uuid := current_setting('mwvip.test_member_b')::uuid;
+DECLARE
+  a uuid := current_setting('mwvip.test_member_a')::uuid;
+  b uuid := current_setting('mwvip.test_member_b')::uuid;
 BEGIN
   IF a = b THEN RAISE EXCEPTION 'RLS test requires two different member accounts'; END IF;
   IF NOT EXISTS (SELECT 1 FROM auth.users WHERE id=a)
