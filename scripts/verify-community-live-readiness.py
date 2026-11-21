@@ -24,6 +24,7 @@ rls_sql = Path("supabase/audits/two-member-rls-integration-test.sql").read_text(
 android_gradle = Path("android-app/app/build.gradle").read_text(encoding="utf-8")
 android_release_workflow = Path(".github/workflows/android-release.yml").read_text(encoding="utf-8")
 helpdesk_sql = Path("supabase/migrations/20261121180000_member_verification_helpdesk.sql").read_text(encoding="utf-8")
+location_sql = Path("supabase/migrations/20261121190000_member_live_location.sql").read_text(encoding="utf-8")
 migration_block_start = migration_workflow.find("for migration in ")
 migration_block_end = migration_workflow.find("; do", migration_block_start)
 migration_block = (
@@ -43,6 +44,7 @@ required_migrations = [
     "20261121160000_trusted_devices_login_history.sql",
     "20261121170000_group_rls_recursion_fix.sql",
     "20261121180000_member_verification_helpdesk.sql",
+    "20261121190000_member_live_location.sql",
 ]
 checks = {
     "Supabase migration versions are unique": migration_version_unique,
@@ -132,6 +134,18 @@ checks = {
         and "search_discoverable_profiles" in ui
         and "password" in ui.lower()
         and "OTP" in ui
+    ),
+    "live location lookup is verified-phone-only, consent-based, stale-safe, rate-limited and RPC-only": (
+        "phone_confirmed_at is not null" in location_sql
+        and "sharing_enabled=true" in location_sql
+        and "now()-interval '2 minutes'" in location_sql
+        and ">=10" in location_sql
+        and "revoke all on public.member_location_shares from anon, authenticated" in location_sql
+        and "set_my_location_sharing" in ui
+        and "update_my_live_location" in ui
+        and "lookup_member_location_by_phone" in ui
+        and "locationShareConsent" in ui
+        and "openstreetmap.org" in ui
     ),
     "verification helpdesk is private, role-gated, rate-limited and audited": (
         "public.is_helpdesk_staff()" in helpdesk_sql
