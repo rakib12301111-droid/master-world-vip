@@ -64,7 +64,12 @@ jobs:
             20261120100000_inbox_push_foundation.sql \
             20261120150000_membership_helper_hardening.sql \
             20261121100000_profiles_discovery_privacy_hardening.sql \
-            20261121120000_group_rls_recursion_fix.sql; do
+            20261121120000_facebook_setup_orders.sql \
+            20261121130000_facebook_setup_feedback.sql \
+            20261121140000_verified_payment_state.sql \
+            20261121150000_sslcommerz_checkout_enable.sql \
+            20261121160000_trusted_devices_login_history.sql \
+            20261121170000_group_rls_recursion_fix.sql; do
             test -f "supabase/migrations/$migration" || { echo "::error::Missing required migration: $migration"; exit 1; }
           done
 
