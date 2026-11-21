@@ -108,6 +108,15 @@ checks = {
         and "B can read A verification request" in rls_sql
         and "A cannot read own verification request" in rls_sql
     ),
+    "verification helpdesk UI uses secure RPCs and does not request identity secrets": (
+        'id="verification"' in ui
+        and "submit_my_verification_request" in ui
+        and "send_verification_message" in ui
+        and "review_verification_request" in ui
+        and "search_discoverable_profiles" in ui
+        and "password" in ui.lower()
+        and "OTP" in ui
+    ),
     "verification helpdesk is private, role-gated, rate-limited and audited": (
         "public.is_helpdesk_staff()" in helpdesk_sql
         and "status in ('pending','needs_info','approved','rejected')" in helpdesk_sql
