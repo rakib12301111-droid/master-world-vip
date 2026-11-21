@@ -95,7 +95,7 @@ LIMIT 20;
 EXPLAIN (ANALYZE, BUFFERS, VERBOSE)
 SELECT id,conversation_id,sender_id,created_at
 FROM public.messages
-WHERE conversation_id='00000000-0000-0000-0000-000000000000'::uuid
+WHERE conversation_id IN (SELECT conversation_id FROM public.conversation_members WHERE user_id=:'member_a'::uuid)
 ORDER BY created_at DESC
 LIMIT 50;
 
@@ -103,7 +103,7 @@ LIMIT 50;
 EXPLAIN (ANALYZE, BUFFERS, VERBOSE)
 SELECT id,group_id,sender_id,created_at
 FROM public.group_messages
-WHERE group_id='00000000-0000-0000-0000-000000000000'::uuid
+WHERE group_id IN (SELECT group_id FROM public.group_members WHERE user_id=:'member_a'::uuid)
 ORDER BY created_at DESC
 LIMIT 50;
 
