@@ -2,7 +2,7 @@
   "schema_version": 1,
   "app": "MASTER WORLD VIP",
   "updated_at": "2026-11-21",
-  "note": "Status describes repository implementation only. A feature is not live until its external setup and tests are verified. PWA service-worker cache v21 and offline core asset coverage are now in the repository; deployment and Android-device verification remain required.",
+  "note": "Status describes repository implementation only. A feature is not live until its external setup and tests are verified. One-Click Setup preferences now sync with a dedicated Workspace Settings page and Dashboard status card; preferences remain local to this browser/device. Deployment and Android-device verification remain required.",
   "stages": [
     {
       "id": "release-center",
@@ -32,8 +32,8 @@
       "id": "one-click-setup",
       "title": "Stage 0 — One-Click Safe Setup",
       "status": "testing",
-      "summary": "Consent-first local preferences, Yes/Review/Later flow added; optional analytics and sensitive permissions remain off unless separately approved.",
-      "requires": "Android/browser device test and review/edit persistence verification",
+      "summary": "Consent-first local preferences, Yes/Review/Later flow, Dashboard status card, and a dedicated Workspace Settings page are connected. Settings can be reviewed/edited and saved to the same local preference store; optional analytics collection, OS/browser permissions, external account connections and legal consent remain off.",
+      "requires": "Verify Pages deployment; test Yes, Review/Edit, Settings save/reload, Dashboard status and persistence on Android/browser. Confirm language/theme preferences are represented correctly across the full UI before marking complete.",
       "page": "setup"
     },
     {
