@@ -20,6 +20,7 @@ audit_workflow = Path(".github/workflows/audit-supabase-indexes-rls.yml").read_t
 rls_workflow = Path(".github/workflows/test-two-member-rls.yml").read_text(encoding="utf-8")
 audit_sql = Path("supabase/audits/production-index-rls-audit.sql").read_text(encoding="utf-8")
 rls_sql = Path("supabase/audits/two-member-rls-integration-test.sql").read_text(encoding="utf-8")
+helpdesk_sql = Path("supabase/migrations/20261121180000_member_verification_helpdesk.sql").read_text(encoding="utf-8")
 migration_block_start = migration_workflow.find("for migration in ")
 migration_block_end = migration_workflow.find("; do", migration_block_start)
 migration_block = (
@@ -38,6 +39,7 @@ required_migrations = [
     "20261121150000_sslcommerz_checkout_enable.sql",
     "20261121160000_trusted_devices_login_history.sql",
     "20261121170000_group_rls_recursion_fix.sql",
+    "20261121180000_member_verification_helpdesk.sql",
 ]
 checks = {
     "Supabase migration versions are unique": migration_version_unique,
@@ -103,6 +105,15 @@ checks = {
         and "ROLLBACK;" in rls_sql
         and "B can read A private conversation" in rls_sql
         and "A cannot read own conversation" in rls_sql
+    ),
+    "verification helpdesk is private, role-gated, rate-limited and audited": (
+        "public.is_helpdesk_staff()" in helpdesk_sql
+        and "status in ('pending','needs_info','approved','rejected')" in helpdesk_sql
+        and "member_verification_one_active_per_user_uidx" in helpdesk_sql
+        and ">= 20" in helpdesk_sql
+        and "verification_request_events" in helpdesk_sql
+        and "review_verification_request" in helpdesk_sql
+        and "government IDs, passwords, OTPs or login codes" in helpdesk_sql
     ),
     "live acceptance guide exists": Path("docs/COMMUNITY_LIVE_READINESS.md").exists(),
 }
