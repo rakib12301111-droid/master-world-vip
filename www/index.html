@@ -30,6 +30,7 @@
 <button data-page="account">♙ Register / Login</button>
 <button data-page="members">♧ Member Hub</button>
 <button data-page="community">🌐 Community</button>
+<button data-page="location">📍 Live Location Map</button>
 <button data-page="inbox">✉ Inbox</button>
 <button data-page="verification">🛡 Member Verification & Helpdesk</button>
 <button data-page="global">🌍 Global News & Offline</button>
@@ -173,6 +174,37 @@
 </article>
 </section>
 
+
+<section class="page" id="location">
+<article class="card">
+<h2>📍 Live Number Location Map</h2>
+<p class="muted">শুধু verified phone number এবং সদস্যের চালু করা GPS sharing থাকলে লাইভ অবস্থান দেখা যাবে। SIM চালু থাকলেই GPS অবস্থান পাওয়া যায় না।</p>
+<div class="notice">আপনার GPS চালু হবে কেবল আপনি নিজে অনুমতি দিলে। Sharing বন্ধ করলে coordinates মুছে যাবে। ২ মিনিটের বেশি নতুন GPS update না এলে OFFLINE দেখাবে।</div>
+<div class="section item">
+<h3>১. নিজের ফোন নম্বর যাচাই করুন</h3>
+<p class="muted small">Supabase Auth-এ SMS OTP দিয়ে verify করুন। উদাহরণ: +8801XXXXXXXXX। SMS provider চালু থাকতে হবে।</p>
+<div class="field"><label for="locationPhoneNumber">আপনার ফোন নম্বর</label><input id="locationPhoneNumber" type="tel" autocomplete="tel" placeholder="+8801XXXXXXXXX"></div>
+<div class="actions"><button class="btn secondary" id="sendLocationPhoneOtp" type="button">SMS OTP পাঠান</button></div>
+<div class="field"><label for="locationPhoneOtp">SMS OTP</label><input id="locationPhoneOtp" inputmode="numeric" autocomplete="one-time-code" maxlength="10" placeholder="OTP লিখুন"></div>
+<button class="btn secondary" id="verifyLocationPhoneOtp" type="button">ফোন নম্বর যাচাই করুন</button>
+<div id="locationPhoneStatus" class="notice" role="status">ফোন নম্বর যাচাই করা হয়নি।</div>
+</div>
+<div class="section item">
+<h3>২. নিজের লাইভ লোকেশন শেয়ার করুন</h3>
+<label class="feature"><input type="checkbox" id="locationShareConsent"> আমি বুঝেছি যে অনুমোদিত সদস্যরা আমার নম্বর দিয়ে খুঁজে লাইভ GPS দেখতে পারবেন। আমি যেকোনো সময় বন্ধ করতে পারব।</label>
+<div class="actions"><button class="btn" id="startLocationSharing" type="button">GPS অনুমতি দিয়ে Live Sharing চালু করুন</button><button class="btn danger" id="stopLocationSharing" type="button">লোকেশন শেয়ারিং বন্ধ করুন</button></div>
+<div id="myLocationStatus" class="notice" role="status">লোকেশন শেয়ারিং বন্ধ আছে।</div>
+</div>
+<div class="section item">
+<h3>৩. সদস্যের নম্বর দিয়ে খুঁজুন</h3>
+<p class="muted small">শুধু verified phone এবং sharing চালু থাকা সদস্যের তাজা GPS দেখা যাবে। OFFLINE হলে coordinates দেখানো হবে না। প্রতি মিনিটে সর্বোচ্চ ১০টি সার্চ।</p>
+<div class="field"><label for="lookupLocationPhone">সদস্যের verified মোবাইল নম্বর</label><input id="lookupLocationPhone" type="tel" autocomplete="off" placeholder="+8801XXXXXXXXX"></div>
+<button class="btn" id="lookupMemberLocation" type="button">ম্যাপে লোকেশন খুঁজুন</button>
+<div id="locationLookupStatus" class="notice" role="status">এখনো কোনো অনুসন্ধান করা হয়নি।</div>
+<div id="locationDetails" class="section"></div><div id="locationMap" class="section"></div>
+</div>
+</article>
+</section>
 <section class="page" id="inbox">
 <article class="card"><h2>✉ Unified Inbox</h2><p class="muted">আপনার ব্যক্তিগত চ্যাট, গ্রুপ চ্যাট ও অপঠিত বার্তা এক জায়গায় দেখুন। কোনো কথোপকথন খুললে সেটি পড়া হয়েছে হিসেবে চিহ্নিত হবে।</p><div class="actions"><button class="btn" id="refreshInbox">Inbox রিফ্রেশ</button><button class="btn secondary" data-go="community">Community / নতুন Chat</button></div><div id="inboxStatus" class="notice">Inbox দেখতে Supabase-এ লগইন করুন এবং Inbox migration চালু করুন।</div><div id="inboxList" class="section"><div class="feature">এখনো Inbox লোড হয়নি।</div></div></article>
 </section>
@@ -1811,6 +1843,102 @@ $('submitFbFeedback')?.addEventListener('click',async()=>{
   $('fbFeedbackMessage').value='';$('fbFeedbackConsent').checked=false;
  }catch(e){feedbackStatus('মন্তব্য জমা হয়নি: '+(e.message||String(e))+'। Database migration প্রয়োজন হতে পারে.');}
  finally{btn.disabled=false;}
+});
+
+
+let liveLocationWatchId=null,liveLocationLastSentAt=0,liveLocationBusy=false;
+function locationReady(){if(!client||!currentUser){say('myLocationStatus','লোকেশন ফিচার ব্যবহারের আগে লগইন করুন।');return false;}return true;}
+function stopLocationWatch(){if(liveLocationWatchId!==null&&navigator.geolocation){navigator.geolocation.clearWatch(liveLocationWatchId);liveLocationWatchId=null;}}
+async function stopMyLocationSharing(showMessage=true){
+ stopLocationWatch();
+ if(client&&currentUser){const {error}=await client.rpc('set_my_location_sharing',{p_enabled:false});if(error){if(showMessage)say('myLocationStatus','Sharing বন্ধের server update ব্যর্থ: '+error.message);return;}}
+ if(showMessage)say('myLocationStatus','লোকেশন শেয়ারিং বন্ধ। সংরক্ষিত coordinates মুছে দেওয়া হয়েছে।');
+}
+$('sendLocationPhoneOtp')?.addEventListener('click',async()=>{
+ if(!client||!currentUser){say('locationPhoneStatus','আগে লগইন করুন।');return;}
+ const phone=$('locationPhoneNumber').value.trim();
+ if(!/^\+[1-9][0-9]{7,14}$/.test(phone)){say('locationPhoneStatus','দেশের কোডসহ সঠিক নম্বর লিখুন, যেমন +8801XXXXXXXXX।');return;}
+ say('locationPhoneStatus','SMS OTP পাঠানো হচ্ছে…');
+ const {error}=await client.auth.updateUser({phone});
+ say('locationPhoneStatus',error?'OTP পাঠানো যায়নি: '+error.message:'SMS OTP পাঠানো হয়েছে। Supabase SMS provider পরীক্ষা করুন।');
+});
+$('verifyLocationPhoneOtp')?.addEventListener('click',async()=>{
+ if(!client||!currentUser){say('locationPhoneStatus','আগে লগইন করুন।');return;}
+ const phone=$('locationPhoneNumber').value.trim(),token=$('locationPhoneOtp').value.trim();
+ if(!phone||!token){say('locationPhoneStatus','ফোন নম্বর ও SMS OTP দিন।');return;}
+ const {data,error}=await client.auth.verifyOtp({phone,token,type:'phone_change'});
+ if(error){say('locationPhoneStatus','নম্বর যাচাই হয়নি: '+error.message);return;}
+ currentUser=data.user||currentUser;
+ say('locationPhoneStatus','ফোন নম্বর verified হয়েছে: '+safeText(currentUser.phone||phone));
+});
+$('startLocationSharing')?.addEventListener('click',async()=>{
+ if(!locationReady())return;
+ if(!$('locationShareConsent').checked){say('myLocationStatus','আগে লোকেশন শেয়ারের সম্মতি checkbox নির্বাচন করুন।');return;}
+ if(!currentUser.phone||!currentUser.phone_confirmed_at){say('myLocationStatus','আগে SMS OTP দিয়ে ফোন নম্বর verify করুন।');return;}
+ if(!navigator.geolocation){say('myLocationStatus','এই browser-এ GPS support নেই।');return;}
+ if(!window.isSecureContext){say('myLocationStatus','GPS ব্যবহারের জন্য HTTPS website প্রয়োজন।');return;}
+ const {error}=await client.rpc('set_my_location_sharing',{p_enabled:true});
+ if(error){say('myLocationStatus','Sharing চালু হয়নি: '+error.message+'। Location SQL migration apply হয়েছে কি?');return;}
+ say('myLocationStatus','GPS permission চাওয়া হচ্ছে…');
+ stopLocationWatch();
+ liveLocationWatchId=navigator.geolocation.watchPosition(async position=>{
+  if(liveLocationBusy||Date.now()-liveLocationLastSentAt<15000)return;
+  liveLocationBusy=true;
+  const {latitude,longitude,accuracy}=position.coords;
+  const {error:updateError}=await client.rpc('update_my_live_location',{p_latitude:latitude,p_longitude:longitude,p_accuracy_m:Math.round(accuracy||0)});
+  liveLocationBusy=false;
+  if(updateError){say('myLocationStatus','GPS update ব্যর্থ: '+updateError.message);stopLocationWatch();return;}
+  liveLocationLastSentAt=Date.now();
+  say('myLocationStatus','LIVE GPS sharing চালু আছে · Accuracy প্রায় '+Math.round(accuracy||0)+' মিটার · update প্রতি ১৫ সেকেন্ডে।');
+ },error=>{
+  say('myLocationStatus','GPS পাওয়া যায়নি: '+error.message+'। Browser location permission ও device GPS পরীক্ষা করুন।');
+  stopLocationWatch();
+  client.rpc('set_my_location_sharing',{p_enabled:false}).catch(()=>{});
+ },{enableHighAccuracy:true,maximumAge:5000,timeout:20000});
+});
+$('stopLocationSharing')?.addEventListener('click',()=>stopMyLocationSharing(true));
+document.addEventListener('visibilitychange',()=>{
+ if(document.hidden&&liveLocationWatchId!==null)stopMyLocationSharing(false).catch(()=>{});
+});
+function buildLocationMap(lat,lon){
+ const delta=0.008,bbox=[lon-delta,lat-delta,lon+delta,lat+delta].join('%2C');
+ const src='https://www.openstreetmap.org/export/embed.html?bbox='+bbox+'&layer=mapnik&marker='+encodeURIComponent(lat+','+lon);
+ const link='https://www.openstreetmap.org/?mlat='+encodeURIComponent(lat)+'&mlon='+encodeURIComponent(lon)+'#map=16/'+encodeURIComponent(lat)+'/'+encodeURIComponent(lon);
+ $('locationMap').innerHTML='<iframe title="Member live location map" loading="lazy" referrerpolicy="no-referrer" style="width:100%;height:340px;border:1px solid #725523;border-radius:12px;background:#111" src="'+src+'"></iframe><p><a class="btn secondary" target="_blank" rel="noopener noreferrer" href="'+link+'">বড় ম্যাপে খুলুন</a></p>';
+}
+async function reverseLocationName(lat,lon){
+ try{
+  const url='https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat='+encodeURIComponent(lat)+'&lon='+encodeURIComponent(lon)+'&zoom=18&addressdetails=1';
+  const response=await fetch(url,{headers:{Accept:'application/json'}});
+  if(!response.ok)throw new Error('Geocoding service unavailable');
+  const data=await response.json(),a=data.address||{};
+  return [a.road||a.pedestrian||a.path,a.neighbourhood||a.suburb||a.quarter,a.city||a.town||a.village||a.county,a.state,a.country].filter(Boolean).join(', ')||data.display_name||'ঠিকানা পাওয়া যায়নি';
+ }catch(_e){return 'ঠিকানা পেতে সমস্যা হয়েছে; ম্যাপে GPS পিন দেখুন।';}
+}
+$('lookupMemberLocation')?.addEventListener('click',async()=>{
+ if(!client||!currentUser){say('locationLookupStatus','সার্চ করতে আগে লগইন করুন।');return;}
+ const phone=$('lookupLocationPhone').value.trim();
+ if(!/^\+?[0-9()\-\s]{8,22}$/.test(phone)){say('locationLookupStatus','সঠিক আন্তর্জাতিক ফোন নম্বর লিখুন।');return;}
+ $('locationDetails').textContent='';$('locationMap').textContent='';
+ say('locationLookupStatus','নম্বর যাচাই ও লোকেশন খোঁজা হচ্ছে…');
+ const {data,error}=await client.rpc('lookup_member_location_by_phone',{p_phone:phone});
+ if(error){say('locationLookupStatus','অনুসন্ধান ব্যর্থ: '+error.message);return;}
+ if(!data?.length){say('locationLookupStatus','এই নম্বরের verified MASTER WORLD VIP সদস্য পাওয়া যায়নি।');return;}
+ const member=data[0];
+ if(member.status!=='online'||member.latitude==null||member.longitude==null){
+  say('locationLookupStatus','● OFFLINE — GPS sharing বন্ধ, অথবা গত ২ মিনিটে নতুন GPS update নেই। কোনো location প্রকাশ করা হয়নি।');
+  $('locationDetails').textContent='সদস্য: '+(member.display_name||'Member')+(member.updated_at?' · সর্বশেষ GPS update: '+new Date(member.updated_at).toLocaleString():'');
+  return;
+ }
+ say('locationLookupStatus','● ONLINE — লাইভ GPS অবস্থান পাওয়া গেছে।');
+ const address=await reverseLocationName(member.latitude,member.longitude);
+ const details=document.createElement('div');details.className='feature';
+ const title=document.createElement('strong');title.textContent=member.display_name||'Member';
+ const place=document.createElement('p');place.textContent='জায়গা: '+address;
+ const coords=document.createElement('p');coords.textContent='GPS: '+Number(member.latitude).toFixed(5)+', '+Number(member.longitude).toFixed(5);
+ const meta=document.createElement('p');meta.className='muted small';meta.textContent='Accuracy: '+(member.accuracy_m==null?'—':Math.round(member.accuracy_m)+' মিটার')+' · Updated: '+new Date(member.updated_at).toLocaleString();
+ details.append(title,place,coords,meta);$('locationDetails').append(details);
+ buildLocationMap(Number(member.latitude),Number(member.longitude));
 });
 
 window.mwvipGetClient=()=>client;
