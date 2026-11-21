@@ -54,7 +54,7 @@ jobs:
             20261119190000_member_broadcast.sql \
             20261119200000_update_releases.sql \
             20261120100000_inbox_push_foundation.sql \
-            20261120150000_membership_helper_hardening.sql \\
+            20261120150000_membership_helper_hardening.sql \
             20261121100000_profiles_discovery_privacy_hardening.sql; do
             test -f "supabase/migrations/$migration" || { echo "::error::Missing required migration: $migration"; exit 1; }
           done
