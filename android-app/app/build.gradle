@@ -3,6 +3,30 @@ plugins {
 }
 
 def releaseKeystorePath = System.getenv("ANDROID_KEYSTORE_PATH")
+def releaseBuildRequested = gradle.startParameter.taskNames.any {
+    it.toLowerCase().contains("release")
+}
+
+if (releaseBuildRequested) {
+    def requiredSigningVariables = [
+        "ANDROID_KEYSTORE_PATH",
+        "ANDROID_KEYSTORE_PASSWORD",
+        "ANDROID_KEY_ALIAS",
+        "ANDROID_KEY_PASSWORD"
+    ]
+    def missingSigningVariables = requiredSigningVariables.findAll {
+        !System.getenv(it)?.trim()
+    }
+    if (!missingSigningVariables.isEmpty()) {
+        throw new GradleException(
+            "Refusing to configure a release build without signing configuration. Missing: " +
+            missingSigningVariables.join(", ")
+        )
+    }
+    if (!file(releaseKeystorePath).isFile()) {
+        throw new GradleException("Refusing to build release APK: configured Android keystore file does not exist.")
+    }
+}
 
 android {
     namespace 'com.masterworldvip.app'
@@ -30,6 +54,7 @@ android {
 
     defaultConfig {
         applicationId 'com.masterworldvip.app'
+        compileSdk 35
         minSdk 23
         targetSdk 35
         versionCode 1
