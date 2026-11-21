@@ -117,8 +117,19 @@
 </div></section>
 
 <section class="page" id="account">
-<article class="card"><h2>🔐 Registration & Login</h2><p class="muted">Supabase Authentication — public key দিয়ে browser connection.</p>
-<div class="notice">Supabase Dashboard → Project Settings → API থেকে Project URL ও Publishable key (বা legacy anon key) নিন। Secret/service_role key দেবেন না।</div>
+<article class="card"><h2>🚀 Supabase Project Setup Wizard</h2>
+<p class="muted">ধাপে ধাপে Supabase তৈরি, SQL migration চালানো, নিরাপদ public key দিয়ে সংযোগ এবং Registration/Login পরীক্ষা করুন।</p>
+<div class="notice">এটি setup guide। এই ওয়েবসাইট আপনার Supabase database-এ নিজে থেকে SQL চালায় না। প্রতিটি SQL migration review করে আপনার নির্দিষ্ট project-এর SQL Editor-এ নিজে Run করুন।</div>
+<div class="feature-list">
+<div class="feature"><strong>ধাপ ১ — Supabase Project তৈরি</strong><p class="muted small">Supabase-এ নতুন project তৈরি করুন, database password নিরাপদে রাখুন এবং project প্রস্তুত হওয়া পর্যন্ত অপেক্ষা করুন।</p><a class="btn secondary" href="https://supabase.com/dashboard/projects" target="_blank" rel="noopener noreferrer">Supabase Projects খুলুন ↗</a></div>
+<div class="feature"><strong>ধাপ ২ — SQL migrations চালান</strong><p class="muted small">প্রথমে base migration, তারপর dependency order অনুযায়ী বাকি migration একে একে চালান। Admin migration-এর Owner email আগে যাচাই করুন।</p><a class="btn secondary" href="https://github.com/rakib12301111-droid/master-world-vip/tree/main/supabase/migrations" target="_blank" rel="noopener noreferrer">SQL migration ফাইল দেখুন ↗</a> <a class="btn secondary" href="https://supabase.com/dashboard/project/lztbbrzeuyjkuiyzrsxp/sql/new" target="_blank" rel="noopener noreferrer">SQL Editor ↗</a></div>
+<div class="feature"><strong>ধাপ ৩ — Project URL ও Public Key</strong><p class="muted small">Project Settings → API থেকে Project URL এবং Publishable key (sb_publishable_...) অথবা legacy anon public JWT নিন।</p><button class="btn secondary" data-go="account-connect" type="button">Connection fields-এ যান</button></div>
+<div class="feature"><strong>ধাপ ৪ — Registration / Login পরীক্ষা</strong><p class="muted small">প্রথমে Connect Supabase, তারপর নতুন account তৈরি করুন। Email confirmation চালু থাকলে inbox/spam থেকে যাচাই করে Login করুন।</p><span class="status">Auth test-এর পরে Member Hub-এ নিজের profile load করুন।</span></div>
+</div>
+<div class="notice">নিরাপত্তা: কেবল publishable / anon public key গ্রহণ করা হবে। sb_secret_... বা JWT role=service_role key প্রত্যাখ্যান করা হবে। service_role/secret key কখনো ওয়েবসাইটে দেবেন না।</div>
+</article>
+<article class="card" id="account-connect"><h2>🔐 Registration & Login</h2><p class="muted">Supabase Authentication — public key দিয়ে browser connection.</p>
+<div class="notice">Supabase Dashboard → Project Settings → API থেকে Project URL ও Publishable key (বা legacy anon key) নিন। এখানে secret/service_role key দিলে সংযোগ প্রত্যাখ্যান করা হবে।</div>
 <div class="field"><label for="sburl">Supabase Project URL</label><input id="sburl" type="url" placeholder="https://your-project.supabase.co" autocomplete="url"></div>
 <div class="field"><label for="sbkey">Publishable / anon public key</label><input id="sbkey" type="password" placeholder="sb_publishable_... অথবা anon public key" autocomplete="off"></div>
 <div class="actions"><button class="btn" id="connect">Connect Supabase</button><button class="btn secondary" id="disconnect">Disconnect on this device</button></div>
@@ -675,10 +686,24 @@ const SUPABASE_PROJECT_URL='https://lztbbrzeuyjkuiyzrsxp.supabase.co';
 const SUPABASE_PUBLISHABLE_KEY='sb_publishable_r6Qq3bM6nSgbqvKTYQZdUQ_ux2kUc8r';
 function config(){try{const saved=JSON.parse(localStorage.getItem('mwvip_supabase_config')||'{}');return {url:saved.url||SUPABASE_PROJECT_URL,key:saved.key||SUPABASE_PUBLISHABLE_KEY}}catch(e){return {url:SUPABASE_PROJECT_URL,key:SUPABASE_PUBLISHABLE_KEY}}}
 function setStatus(msg){say('authstatus',msg);}
+function isPublicSupabaseKey(key){
+ if(typeof key!=='string'||!key.trim())return false;
+ const value=key.trim();
+ if(value.startsWith('sb_publishable_'))return true;
+ if(value.startsWith('sb_secret_'))return false;
+ const parts=value.split('.');
+ if(parts.length!==3)return false;
+ try{
+  const payload=parts[1].replace(/-/g,'+').replace(/_/g,'/');
+  const decoded=JSON.parse(atob(payload.padEnd(Math.ceil(payload.length/4)*4,'=')));
+  return decoded.role==='anon';
+ }catch(e){return false;}
+}
 async function connect(){
  const url=$('sburl').value.trim(),key=$('sbkey').value.trim();
  if(!url||!key){setStatus('Project URL এবং public key দিন।');return}
  if(!/^https:\/\/[a-zA-Z0-9.-]+$/.test(url)){setStatus('Supabase Project URL সঠিক নয়।');return}
+ if(!isPublicSupabaseKey(key)){setStatus('এই key গ্রহণ করা হয়নি। শুধু sb_publishable_... অথবা legacy anon public key ব্যবহার করুন। service_role / sb_secret key কখনো দেবেন না।');return}
  if(!window.supabase){setStatus('Supabase SDK লোড হয়নি। ইন্টারনেট সংযোগ পরীক্ষা করুন।');return}
  try{
   client=window.supabase.createClient(url,key,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
