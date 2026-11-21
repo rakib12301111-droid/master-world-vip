@@ -2,21 +2,44 @@
 
 This repository contains the database foundation, community, privacy, admin/broadcast and release metadata migrations, plus Edge Function starters.
 
-## 1. Apply database migrations in dependency order
+## 1. Supabase project and database setup
 
-Run each SQL file once in Supabase → SQL Editor, in this exact order:
+1. Open [Supabase Projects](https://supabase.com/dashboard/projects). Use the existing project `lztbbrzeuyjkuiyzrsxp` or create a new project if you do not have one. Wait until its database is ready.
+2. Open that project's **SQL Editor**. For the existing project, use [this SQL Editor link](https://supabase.com/dashboard/project/lztbbrzeuyjkuiyzrsxp/sql/new). If you created a different project, open SQL Editor from that project's dashboard instead.
+3. Review and run the migration files below **one at a time and in this exact dependency order**. Do not paste all files together. Back up an existing production database and test restore before applying changes. If a migration fails, stop and resolve it before running later migrations.
+4. Before running `20261119180000_admin_rbac_owner_control.sql`, verify that the owner email in its final bootstrap statement is the verified email of the intended Supabase Auth account. The current file contains `rakib12301111@gmail.com`; change it if that is not the correct owner account. Do not grant Owner to an unverified account.
+5. After migrations, use the read-only smoke checks in `UPDATE_SYSTEM_TESTS.md` and test with at least two separate accounts where applicable.
 
-1. `supabase/migrations/202611180001_master_world_vip.sql` — base tables and helpers.
-2. `supabase/migrations/202611190001_global_community.sql` — profiles, friend requests, direct/group conversations and notifications.
-3. `supabase/migrations/202611190002_privacy_rights.sql` — privacy consent history and data-rights request queue.
-4. `supabase/migrations/20261119180000_admin_rbac_owner_control.sql` — owner/admin roles and audit log. Verify the Owner email in the final bootstrap statement before running.
-5. `supabase/migrations/20261119190000_member_broadcast.sql` — admin-to-all-member inbox broadcasts. Requires both the base notifications table and Admin RBAC.
-6. `supabase/migrations/20261119200000_update_releases.sql` — release metadata for Update Center.
-7. `supabase/migrations/20261120100000_inbox_push_foundation.sql` — unified inbox, unread/read markers and per-device Web Push subscription storage. Requires the global community migration first.
-8. `supabase/migrations/20261121120000_facebook_setup_orders.sql` — Facebook setup assistance order records, customer-only order visibility and Admin/Owner review. Requires the base and Admin RBAC migrations.
-9. `supabase/migrations/20261121160000_trusted_devices_login_history.sql` — RLS-protected trusted-device registry and app-observed login history. Requires authenticated Supabase users.
+### Full migration order
 
-Review and apply in a staging project first. The repository cannot confirm whether these migrations have already been applied to your live Supabase project.
+1. `202611180001_master_world_vip.sql` — base tables, profile bootstrap, role helper and initial RLS.
+2. `202611190001_global_community.sql` — member profiles/discovery, friend requests, direct/group chat and notifications.
+3. `202611190002_privacy_rights.sql` — privacy consent history and data-rights request queue.
+4. `20261119180000_admin_rbac_owner_control.sql` — Owner/Admin RBAC and audit controls. **Verify the Owner email before running.**
+5. `20261119190000_member_broadcast.sql` — authorized member broadcast; requires Admin RBAC.
+6. `20261119200000_update_releases.sql` — Update Center release metadata.
+7. `20261120100000_inbox_push_foundation.sql` — unified inbox, read markers and push subscription storage.
+8. `20261120150000_membership_helper_hardening.sql` — caller-scoped membership helpers and RLS hardening.
+9. `20261121100000_profiles_discovery_privacy_hardening.sql` — restrict profile table access and expose only approved discoverable fields.
+10. `20261121120000_facebook_setup_orders.sql` — Facebook setup service order records.
+11. `20261121130000_facebook_setup_feedback.sql` — customer feedback records and related access controls.
+12. `20261121140000_verified_payment_state.sql` — verified payment-state handling.
+13. `20261121150000_sslcommerz_checkout_enable.sql` — checkout enablement foundation; live checkout still needs valid provider credentials and server configuration.
+14. `20261121160000_trusted_devices_login_history.sql` — user-scoped trusted-device and login-history records.
+15. `20261121170000_group_rls_recursion_fix.sql` — group membership RLS recursion fix.
+16. `20261121180000_member_verification_helpdesk.sql` — private member verification/helpdesk requests and staff workflow.
+17. `20261121190000_member_live_location.sql` — consent-based live location sharing and lookup foundation.
+
+**Important:** Repository files and this checklist do not prove that any migration has been applied to your Supabase project. SQL is not run by the website automatically. Keep a record of each successfully applied migration. Do not rerun a migration blindly if the project already has part or all of its schema; inspect the database first.
+
+### Browser connection and Auth test
+
+- In **Project Settings → API**, copy the Project URL and the **Publishable key** (`sb_publishable_...`) or the legacy **anon public JWT**.
+- In MASTER WORLD VIP → Account setup, enter those two public values and press **Connect Supabase**.
+- The browser rejects `sb_secret_...` keys and JWTs whose role is not `anon`. Never paste a `service_role` or secret key into the website, HTML, JavaScript, chat, or public repository.
+- In Supabase Authentication settings, configure the allowed Site URL and Redirect URLs for your deployed website. Configure email confirmation and an email provider as required.
+- Create a test account, complete email confirmation if enabled, log in, then open Member Hub and save/load your profile. Repeat with a second test account to check user isolation.
+- A successful browser connection does not prove that all database migrations, RLS policies, email delivery, or production security have been verified.
 
 ## 2. Update Center
 
