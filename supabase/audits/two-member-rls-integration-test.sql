@@ -31,14 +31,22 @@ BEGIN
   END IF;
 END $mwvip_check$;
 
--- Ensure both fixtures have the ordinary member role row expected by this schema.
--- These rows are temporary and are removed by the final ROLLBACK.
+-- Ensure both test identities have the ordinary member role and a profile row.
+-- Any newly inserted rows are temporary and are removed by the final ROLLBACK.
 INSERT INTO public.user_roles(user_id,role)
 SELECT v.user_id,'member'
 FROM (VALUES (:'member_a'::uuid), (:'member_b'::uuid)) AS v(user_id)
 WHERE NOT EXISTS (
   SELECT 1 FROM public.user_roles r
   WHERE r.user_id=v.user_id AND r.role='member'
+);
+
+-- Older Auth accounts may predate the profile-creation trigger; create only
+-- a minimal missing test profile so the own-profile assertion is deterministic.
+INSERT INTO public.profiles(id,display_name)
+SELECT :'member_a'::uuid,'MWVIP RLS test member'
+WHERE NOT EXISTS (
+  SELECT 1 FROM public.profiles p WHERE p.id=:'member_a'::uuid
 );
 
 -- Fixture IDs are transaction-local constants; rollback removes every inserted row.
@@ -107,6 +115,7 @@ BEGIN
   IF NOT EXISTS (SELECT 1 FROM public.conversations WHERE id=f.conversation_id) THEN RAISE EXCEPTION 'FAIL: A cannot read own conversation'; END IF;
   IF NOT EXISTS (SELECT 1 FROM public.messages WHERE conversation_id=f.conversation_id) THEN RAISE EXCEPTION 'FAIL: A cannot read own message'; END IF;
   IF NOT EXISTS (SELECT 1 FROM public.community_groups WHERE id=f.private_group_id) THEN RAISE EXCEPTION 'FAIL: A cannot read own private group'; END IF;
+  IF NOT EXISTS (SELECT 1 FROM public.group_members WHERE group_id=f.private_group_id AND user_id=f.member_a) THEN RAISE EXCEPTION 'FAIL: A cannot read own group roster entry'; END IF;
   IF NOT EXISTS (SELECT 1 FROM public.group_messages WHERE group_id=f.private_group_id) THEN RAISE EXCEPTION 'FAIL: A cannot read own private group post'; END IF;
   IF NOT EXISTS (SELECT 1 FROM public.support_tickets WHERE id=f.support_ticket_id) THEN RAISE EXCEPTION 'FAIL: A cannot read own support ticket'; END IF;
   IF NOT EXISTS (SELECT 1 FROM public.notifications WHERE id=f.notification_id) THEN RAISE EXCEPTION 'FAIL: A cannot read own notification'; END IF;
