@@ -120,6 +120,12 @@ begin
   ) then
     raise exception 'You already have an active verification request';
   end if;
+  if (
+    select count(*) from public.member_verification_requests r
+    where r.user_id=v_user and r.created_at > now() - interval '24 hours'
+  ) >= 3 then
+    raise exception 'Verification request rate limit reached; try again later';
+  end if;
 
   insert into public.member_verification_requests(user_id,request_note)
   values(v_user,v_note)
