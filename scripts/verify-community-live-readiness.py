@@ -11,7 +11,22 @@ workflow = Path(".github/workflows/deploy-update-functions.yml").read_text(encod
 config = Path("supabase/config.toml").read_text(encoding="utf-8")
 ui = Path("www/index.html").read_text(encoding="utf-8")
 push = Path("supabase/functions/send-push/index.ts").read_text(encoding="utf-8")
+migration_files = sorted(Path("supabase/migrations").glob("*.sql"))
+migration_versions = [p.name.split("_", 1)[0] for p in migration_files]
+migration_version_unique = len(migration_versions) == len(set(migration_versions))
+required_migrations = [
+    "20261121120000_facebook_setup_orders.sql",
+    "20261121130000_facebook_setup_feedback.sql",
+    "20261121140000_verified_payment_state.sql",
+    "20261121150000_sslcommerz_checkout_enable.sql",
+    "20261121160000_trusted_devices_login_history.sql",
+    "20261121170000_group_rls_recursion_fix.sql",
+]
 checks = {
+    "Supabase migration versions are unique": migration_version_unique,
+    "all latest database migrations are present": all(
+        Path("supabase/migrations", name).exists() for name in required_migrations
+    ),
     "all Edge Functions are deployed by production workflow": (
         'for function_dir in supabase/functions/*/' in workflow
         and 'supabase functions deploy "$function_name" --project-ref "$SUPABASE_PROJECT_REF"' in workflow
