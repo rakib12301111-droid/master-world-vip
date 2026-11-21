@@ -77,6 +77,12 @@ Deno.serve(async (req) => {
       return reply("Payment is valid but held for risk review; it is not marked paid", 202);
     }
 
+    // Sandbox is test-only. Even a VALID sandbox response must never mark a customer order as paid.
+    if (mode !== "live") {
+      console.info("sandbox_payment_validated_not_paid", tranId);
+      return reply("Sandbox validation succeeded. This is a test only; no payment is marked paid.");
+    }
+
     const now = new Date().toISOString();
     const { data: changed, error: updateAttemptError } = await admin.from("facebook_setup_payment_attempts")
       .update({ status: "paid", val_id: valId, verified_at: now, updated_at: now })
