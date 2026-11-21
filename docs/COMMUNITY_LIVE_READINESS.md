@@ -2,7 +2,11 @@
 
 This checklist distinguishes repository code from verified live services. A green GitHub Pages deployment does not prove that Supabase migrations or Edge Functions have been deployed.
 
-## Database migrations via guarded GitHub Actions workflow\n\nThe repository now includes `.github/workflows/apply-supabase-migrations.yml`. Run it manually from GitHub Actions. It defaults to preview-only (`apply_migrations=no`); applying changes requires explicitly selecting `yes`. It is pinned to project ref `lztbbrzeuyjkuiyzrsxp` and requires repository Actions secrets `SUPABASE_ACCESS_TOKEN` and `SUPABASE_DB_PASSWORD`. The project ref is hard-coded as a reviewed, fixed target in this workflow; it is not a third secret. Review the dry-run output and confirm a recoverable backup before selecting `yes`. A successful workflow run proves only that the CLI migration command completed; still verify the resulting schema and run the two-account acceptance tests below.\n\n## Edge Functions deployed by GitHub Actions
+## Database migrations via guarded GitHub Actions workflow
+
+The repository now includes `.github/workflows/apply-supabase-migrations.yml`. Run it manually from GitHub Actions. It defaults to preview-only (`apply_migrations=no`); applying changes requires explicitly selecting `yes`. It is pinned to project ref `lztbbrzeuyjkuiyzrsxp` and requires repository Actions secrets `SUPABASE_ACCESS_TOKEN` and `SUPABASE_DB_PASSWORD`. The project ref is hard-coded as a reviewed, fixed target in this workflow; it is not a third secret. Review the dry-run output and confirm a recoverable backup before selecting `yes`. A successful workflow run proves only that the CLI migration command completed; still verify the resulting schema and run the two-account acceptance tests below.
+
+## Edge Functions deployed by GitHub Actions
 
 The production workflow deploys:
 - `ai-assistant`
@@ -135,3 +139,55 @@ The additive migration `20261121180000_member_verification_helpdesk.sql` adds a 
 
 The UI uses the RPCs `submit_my_verification_request`, `send_verification_message` and `review_verification_request`. Do not mark the feature live until this sequence passes against the production project.
 
+
+
+## Four controlled workflows — no public app release
+
+These four workflows are the only current operational focus. Updating workflow files or storing a build artifact in GitHub Actions does not publish an app to users.
+
+### 1. Supabase Production Migration
+
+Workflow: `.github/workflows/apply-supabase-migrations.yml`
+
+Required GitHub Actions secrets:
+- `SUPABASE_ACCESS_TOKEN`
+- `SUPABASE_DB_PASSWORD`
+
+The workflow is pinned to project `lztbbrzeuyjkuiyzrsxp`, defaults to dry-run, and requires both explicit apply confirmation and recoverable-backup confirmation. The generated pre-migration artifact is a **schema-only snapshot**, not a full database backup and not a substitute for a tested, restorable backup. Do not choose `apply_migrations=yes` until a separate full backup is confirmed restorable.
+
+### 2. Live RLS Audit
+
+Workflow: `.github/workflows/audit-supabase-indexes-rls.yml`
+
+Required GitHub Actions secrets:
+- `SUPABASE_DB_PASSWORD`
+- `RLS_TEST_MEMBER_A_UUID`
+
+This is a read-only audit. It does not migrate or modify the database.
+
+### 3. Two Member Live Test
+
+Workflow: `.github/workflows/test-two-member-rls.yml`
+
+Required GitHub Actions secrets:
+- `SUPABASE_DB_PASSWORD`
+- `RLS_TEST_MEMBER_A_UUID`
+- `RLS_TEST_MEMBER_B_UUID`
+
+Use two distinct, existing ordinary member accounts. Do not use owner/admin/moderator accounts. The SQL test uses a transaction and rolls back its temporary fixtures.
+
+### 4. Signed Release APK
+
+Workflow: `.github/workflows/android-release.yml`
+
+Required GitHub Actions secrets:
+- `ANDROID_KEYSTORE_BASE64`
+- `ANDROID_KEYSTORE_PASSWORD`
+- `ANDROID_KEY_ALIAS`
+- `ANDROID_KEY_PASSWORD`
+
+The workflow verifies the restored signing key and APK signature, then stores the APK and SHA-256 checksum as a private workflow artifact. It does not create a GitHub Release, publish to Google Play, or upload the APK to a public download page. Keep the long-term signing keystore backed up securely.
+
+### Secret handling and release boundary
+
+Add secrets directly in GitHub → Settings → Secrets and variables → Actions. Never paste passwords, tokens, keystore contents, or member UUIDs into ChatGPT, source files, logs, or public issues. A workflow is marked Live/PASS only after its corresponding real run completes successfully and its result is reviewed. Static CI success alone is not a live result.
