@@ -82,6 +82,30 @@ jobs:
         with:
           version: latest
 
+      - name: Verify required migration files
+        run: |
+          set -euo pipefail
+          for migration in \
+            202611180001_master_world_vip.sql \
+            202611190001_global_community.sql \
+            202611190002_privacy_rights.sql \
+            20261119180000_admin_rbac_owner_control.sql \
+            20261119190000_member_broadcast.sql \
+            20261119200000_update_releases.sql \
+            20261120100000_inbox_push_foundation.sql \
+            20261120150000_membership_helper_hardening.sql \
+            20261121100000_profiles_discovery_privacy_hardening.sql \
+            20261121120000_facebook_setup_orders.sql \
+            20261121130000_facebook_setup_feedback.sql \
+            20261121140000_verified_payment_state.sql \
+            20261121150000_sslcommerz_checkout_enable.sql \
+            20261121160000_trusted_devices_login_history.sql \
+            20261121170000_group_rls_recursion_fix.sql \
+            20261121180000_member_verification_helpdesk.sql \
+            20261121190000_member_live_location.sql; do
+            test -f "supabase/migrations/$migration" || { echo "::error::Missing required migration: $migration"; exit 1; }
+          done
+
       - name: Link approved Supabase project
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
