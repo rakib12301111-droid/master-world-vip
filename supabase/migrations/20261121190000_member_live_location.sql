@@ -20,6 +20,7 @@ create table if not exists public.member_location_audit (
 );
 alter table public.member_location_shares enable row level security;
 alter table public.member_location_audit enable row level security;
+create index if not exists member_location_audit_actor_action_created_idx on public.member_location_audit(actor_id,action,created_at desc);
 revoke all on public.member_location_shares from anon, authenticated;
 revoke all on public.member_location_audit from anon, authenticated;
 
@@ -28,6 +29,9 @@ returns boolean language plpgsql security definer set search_path = '' as $$
 declare v_user uuid := auth.uid();
 begin
   if v_user is null then raise exception 'Authentication required'; end if;
+  if coalesce(p_enabled,false) and not exists(select 1 from auth.users u where u.id=v_user and u.phone_confirmed_at is not null) then
+    raise exception 'Verify your phone number before enabling location sharing';
+  end if;
   insert into public.member_location_shares(user_id,sharing_enabled)
   values(v_user,coalesce(p_enabled,false))
   on conflict(user_id) do update set
@@ -67,6 +71,9 @@ declare
   v_share public.member_location_shares%rowtype;
 begin
   if v_caller is null then raise exception 'Authentication required'; end if;
+  if not exists(select 1 from auth.users u where u.id=v_caller and u.phone_confirmed_at is not null) then
+    raise exception 'Verify your own phone number before searching member locations';
+  end if;
   if length(v_digits)<8 or length(v_digits)>15 then raise exception 'Enter a valid international phone number'; end if;
   if (select count(*) from public.member_location_audit a where a.actor_id=v_caller and a.action='lookup' and a.created_at>now()-interval '1 minute')>=10 then
     raise exception 'Too many searches. Please wait one minute.';
