@@ -153,7 +153,7 @@ Required GitHub Actions secrets:
 - `SUPABASE_ACCESS_TOKEN`
 - `SUPABASE_DB_PASSWORD`
 
-The workflow is pinned to project `lztbbrzeuyjkuiyzrsxp`, defaults to dry-run, and requires both explicit apply confirmation and recoverable-backup confirmation. The generated pre-migration artifact is a **schema-only snapshot**, not a full database backup and not a substitute for a tested, restorable backup. Do not choose `apply_migrations=yes` until a separate full backup is confirmed restorable.
+The workflow is pinned to project `lztbbrzeuyjkuiyzrsxp`, defaults to dry-run, and requires explicit apply confirmation, recoverable-backup confirmation, restore-test confirmation, and a non-secret backup reference. The generated pre-migration artifact is a **schema-only snapshot**, not a full database backup and not a substitute for a tested, restorable backup. Do not choose `apply_migrations=yes` until a separate full backup is confirmed restorable and its restore procedure has been tested.
 
 ### 2. Live RLS Audit
 
