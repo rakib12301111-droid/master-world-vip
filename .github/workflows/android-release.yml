@@ -69,6 +69,15 @@ jobs:
           chmod 600 "$RUNNER_TEMP/mwvip-signing/release.jks"
           echo "ANDROID_KEYSTORE_PATH=$RUNNER_TEMP/mwvip-signing/release.jks" >> "$GITHUB_ENV"
 
+      - name: Validate restored keystore and signing alias
+        env:
+          KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+        run: |
+          set -euo pipefail
+          keytool -list -keystore "$ANDROID_KEYSTORE_PATH" -storepass "$KEYSTORE_PASSWORD" -alias "$KEY_ALIAS" >/dev/null
+          echo "Signing keystore and requested alias validated."
+
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
@@ -87,12 +96,16 @@ jobs:
           set -euo pipefail
           APK="android-app/app/build/outputs/apk/release/app-release.apk"
           test -s "$APK"
-          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose "$APK"
+          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose --print-certs "$APK"
+          sha256sum "$APK" | tee "$APK.sha256"
+          test -s "$APK.sha256"
 
       - name: Upload signed release APK
         uses: actions/upload-artifact@v4
         with:
           name: master-world-vip-signed-release-apk
-          path: android-app/app/build/outputs/apk/release/app-release.apk
+          path: |
+            android-app/app/build/outputs/apk/release/app-release.apk
+            android-app/app/build/outputs/apk/release/app-release.apk.sha256
           if-no-files-found: error
           retention-days: 30
