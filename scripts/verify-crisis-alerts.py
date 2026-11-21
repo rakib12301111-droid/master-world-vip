@@ -7,7 +7,7 @@ for item in ["crisisCountry","crisisLanguage","crisisWar","crisisDisaster","cris
  assert 'id="'+item+'"' in ui, item
 for item in ["api.gdeltproject.org/api/v2/doc/doc","mwvip_crisis_cache_v1","mwvip_crisis_notice_optin","Notification.requestPermission","document.visibilityState==='visible'"]:
  assert item in ui, item
-assert "mwvip-pwa-v21" in sw
+assert "mwvip-pwa-v22" in sw
 assert "সরকারি সতর্কতা" in ui and "background push" in ui
 print("PASS — crisis news region and category filters")
 print("PASS — multilingual notification preference and explicit permission")
