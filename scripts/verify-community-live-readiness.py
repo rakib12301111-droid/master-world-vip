@@ -21,6 +21,8 @@ audit_workflow = Path(".github/workflows/audit-supabase-indexes-rls.yml").read_t
 rls_workflow = Path(".github/workflows/test-two-member-rls.yml").read_text(encoding="utf-8")
 audit_sql = Path("supabase/audits/production-index-rls-audit.sql").read_text(encoding="utf-8")
 rls_sql = Path("supabase/audits/two-member-rls-integration-test.sql").read_text(encoding="utf-8")
+android_gradle = Path("android-app/app/build.gradle").read_text(encoding="utf-8")
+android_release_workflow = Path(".github/workflows/android-release.yml").read_text(encoding="utf-8")
 helpdesk_sql = Path("supabase/migrations/20261121180000_member_verification_helpdesk.sql").read_text(encoding="utf-8")
 migration_block_start = migration_workflow.find("for migration in ")
 migration_block_end = migration_workflow.find("; do", migration_block_start)
@@ -134,6 +136,15 @@ checks = {
         and "review_verification_request" in helpdesk_sql
         and "insert into public.notifications" in helpdesk_sql
         and "government IDs, passwords, OTPs or login codes" in helpdesk_sql
+    ),
+    "Android signed release uses repository secrets and verifies the APK signature": (
+        "System.getenv(\"ANDROID_KEYSTORE_PATH\")" in android_gradle
+        and "System.getenv(\"ANDROID_KEYSTORE_PASSWORD\")" in android_gradle
+        and "confirm_signed_release" in android_release_workflow
+        and "ANDROID_KEYSTORE_BASE64" in android_release_workflow
+        and "ANDROID_KEY_ALIAS" in android_release_workflow
+        and "apksigner" in android_release_workflow
+        and "actions/upload-artifact@v4" in android_release_workflow
     ),
     "live acceptance guide exists": Path("docs/COMMUNITY_LIVE_READINESS.md").exists(),
 }
