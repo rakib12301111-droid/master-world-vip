@@ -1,7 +1,10 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
 
+const appBaseForCors = Deno.env.get("APP_BASE_URL") ?? "";
+let allowedOrigin = "*";
+try { allowedOrigin = new URL(appBaseForCors).origin; } catch { /* configuration check below returns 503 */ }
 const cors = {
-  "Access-Control-Allow-Origin": Deno.env.get("APP_BASE_URL") ?? "*",
+  "Access-Control-Allow-Origin": allowedOrigin,
   "Access-Control-Allow-Headers": "authorization, apikey, content-type",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
   "Content-Type": "application/json",
