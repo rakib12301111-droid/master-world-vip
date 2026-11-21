@@ -32,6 +32,8 @@ on:
       - "scripts/verify-emergency-games.py"
       - "scripts/verify-helpline-directory.py"
       - "scripts/verify-crisis-alerts.py"
+      - "scripts/verify-global-country-directory.py"
+      - "scripts/verify-push-sender.py"
       - "www/data/helplines-BD.json"
       - "www/index.html"
       - "www/sw.js"
