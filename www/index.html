@@ -1577,6 +1577,20 @@ let guessTarget=Math.floor(Math.random()*20)+1;
 $('submitGuess').addEventListener('click',()=>{const n=Number($('guessNumber').value);if(!Number.isInteger(n)||n<1||n>20){$('guessStatus').textContent='১ থেকে ২০-এর মধ্যে একটি পূর্ণ সংখ্যা দিন।';return;}if(n===guessTarget){$('guessStatus').textContent='অভিনন্দন! সঠিক সংখ্যা। নতুন খেলা শুরু করুন।';}else{$('guessStatus').textContent=n<guessTarget?'আরও বড় সংখ্যা চেষ্টা করুন।':'আরও ছোট সংখ্যা চেষ্টা করুন।';}});
 $('resetGuess').addEventListener('click',()=>{guessTarget=Math.floor(Math.random()*20)+1;$('guessNumber').value='';$('guessStatus').textContent='নতুন সংখ্যা তৈরি হয়েছে।';});
 
+
+/* SSLCOMMERZ browser return is informational only; the server IPN alone verifies payment. */
+(function handleSslPaymentReturn(){
+ const params=new URLSearchParams(window.location.search);
+ if(params.get('payment')!=='return')return;
+ showPage('fbService');
+ const status=$('sslCheckoutStatus');
+ if(status){
+  status.className='notice';
+  status.textContent='পেমেন্ট পেজ থেকে ফিরে এসেছেন। এটি পেমেন্ট সফল হওয়ার প্রমাণ নয়। সার্ভার SSLCOMMERZ-এর সঙ্গে যাচাই না করা পর্যন্ত অর্ডার Pending থাকবে। কয়েক মুহূর্ত পর “তালিকা রিফ্রেশ” চাপুন।';
+ }
+ history.replaceState({},document.title,window.location.pathname);
+})();
+
 /* Facebook setup assistance orders — never collect credentials, OTPs or ID images. */
 const FB_SERVICE_PAYMENTS={nagad:'01609066610',bkash:'01811473756'};
 const FB_ORDER_STATUSES={pending_payment:'পেমেন্ট যাচাই বাকি',payment_review:'পেমেন্ট যাচাই চলছে',approved:'অনুমোদিত',in_progress:'কাজ চলছে',completed:'সম্পন্ন',rejected:'বাতিল'};
