@@ -28,3 +28,15 @@ Build requested through the repository update on 2026-11-20.
 - [ ] Record Android version, device model, APK version and screenshots/logs for any failure.
 
 A successful GitHub APK build verifies compilation and artifact creation only. It does not prove installation or live backend messaging/push on a physical phone.
+
+
+## Signed release APK
+
+A separate manual workflow `.github/workflows/android-release.yml` can build a signed release APK after the Owner creates and securely stores an Android upload/signing keystore. Configure these repository Actions secrets (never paste them into chat or commit them):
+
+- `ANDROID_KEYSTORE_BASE64` — base64-encoded keystore file
+- `ANDROID_KEYSTORE_PASSWORD`
+- `ANDROID_KEY_ALIAS`
+- `ANDROID_KEY_PASSWORD`
+
+Then run Actions → **Build signed MASTER WORLD VIP Android release**, select `yes` only after confirming the signing key is the long-term project key, and download the verified artifact. Keep an offline backup of the keystore and passwords; losing them may prevent future updates signed with the same app identity. A successful signed APK build is not a Play Store publication or a physical-device acceptance test.
