@@ -64,7 +64,8 @@ SELECT
   gen_random_uuid() AS private_group_id,
   gen_random_uuid() AS broadcast_id,
   gen_random_uuid() AS support_ticket_id,
-  gen_random_uuid() AS notification_id;
+  gen_random_uuid() AS notification_id,
+  gen_random_uuid() AS verification_request_id;
 GRANT SELECT ON mwvip_rls_fixture TO authenticated;
 
 INSERT INTO public.conversations(id,kind,created_by)
@@ -86,6 +87,12 @@ INSERT INTO public.support_tickets(id,user_id,subject,message)
 SELECT support_ticket_id,member_a,'MWVIP RLS fixture','Temporary test ticket' FROM mwvip_rls_fixture;
 INSERT INTO public.notifications(id,user_id,title,body,category)
 SELECT notification_id,member_a,'MWVIP RLS fixture','Temporary test notification','test' FROM mwvip_rls_fixture;
+INSERT INTO public.member_verification_requests(id,user_id,request_note)
+SELECT verification_request_id,member_a,'Temporary private verification request fixture' FROM mwvip_rls_fixture;
+INSERT INTO public.verification_request_messages(request_id,sender_id,body)
+SELECT verification_request_id,member_a,'Temporary private helpdesk message' FROM mwvip_rls_fixture;
+INSERT INTO public.verification_request_events(request_id,actor_id,event_type,new_status)
+SELECT verification_request_id,member_a,'submitted','pending' FROM mwvip_rls_fixture;
 
 -- Member B: cannot see A's direct conversation, message, private group, group roster/posts,
 -- support ticket, notification, admin role table or audit log.
@@ -104,6 +111,9 @@ BEGIN
   IF EXISTS (SELECT 1 FROM public.group_messages WHERE group_id=f.private_group_id) THEN RAISE EXCEPTION 'FAIL: B can read A private group posts'; END IF;
   IF EXISTS (SELECT 1 FROM public.support_tickets WHERE id=f.support_ticket_id) THEN RAISE EXCEPTION 'FAIL: B can read A support ticket'; END IF;
   IF EXISTS (SELECT 1 FROM public.notifications WHERE id=f.notification_id) THEN RAISE EXCEPTION 'FAIL: B can read A notification'; END IF;
+  IF EXISTS (SELECT 1 FROM public.member_verification_requests WHERE id=f.verification_request_id) THEN RAISE EXCEPTION 'FAIL: B can read A verification request'; END IF;
+  IF EXISTS (SELECT 1 FROM public.verification_request_messages WHERE request_id=f.verification_request_id) THEN RAISE EXCEPTION 'FAIL: B can read A helpdesk messages'; END IF;
+  IF EXISTS (SELECT 1 FROM public.verification_request_events WHERE request_id=f.verification_request_id) THEN RAISE EXCEPTION 'FAIL: B can read A verification audit history'; END IF;
   IF has_table_privilege('authenticated','public.app_user_roles','SELECT') THEN RAISE EXCEPTION 'FAIL: authenticated role has direct SELECT on admin roles'; END IF;
   IF has_table_privilege('authenticated','public.admin_audit_logs','SELECT') THEN RAISE EXCEPTION 'FAIL: authenticated role has direct SELECT on admin audit logs'; END IF;
 END $$;
@@ -125,6 +135,9 @@ BEGIN
   IF NOT EXISTS (SELECT 1 FROM public.group_messages WHERE group_id=f.private_group_id) THEN RAISE EXCEPTION 'FAIL: A cannot read own private group post'; END IF;
   IF NOT EXISTS (SELECT 1 FROM public.support_tickets WHERE id=f.support_ticket_id) THEN RAISE EXCEPTION 'FAIL: A cannot read own support ticket'; END IF;
   IF NOT EXISTS (SELECT 1 FROM public.notifications WHERE id=f.notification_id) THEN RAISE EXCEPTION 'FAIL: A cannot read own notification'; END IF;
+  IF NOT EXISTS (SELECT 1 FROM public.member_verification_requests WHERE id=f.verification_request_id) THEN RAISE EXCEPTION 'FAIL: A cannot read own verification request'; END IF;
+  IF NOT EXISTS (SELECT 1 FROM public.verification_request_messages WHERE request_id=f.verification_request_id) THEN RAISE EXCEPTION 'FAIL: A cannot read own helpdesk messages'; END IF;
+  IF NOT EXISTS (SELECT 1 FROM public.verification_request_events WHERE request_id=f.verification_request_id) THEN RAISE EXCEPTION 'FAIL: A cannot read own verification audit history'; END IF;
 END $$;
 RESET ROLE;
 
