@@ -22,12 +22,15 @@ jobs:
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
           SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+          MEMBER_A: ${{ secrets.RLS_TEST_MEMBER_A_UUID }}
           SUPABASE_PROJECT_REF: lztbbrzeuyjkuiyzrsxp
         run: |
           set -euo pipefail
           test -n "${SUPABASE_ACCESS_TOKEN:-}" || { echo "::error::Missing Actions secret SUPABASE_ACCESS_TOKEN"; exit 1; }
           test -n "${SUPABASE_DB_PASSWORD:-}" || { echo "::error::Missing Actions secret SUPABASE_DB_PASSWORD"; exit 1; }
           test "$SUPABASE_PROJECT_REF" = "lztbbrzeuyjkuiyzrsxp" || { echo "::error::Unexpected project ref"; exit 1; }
+          test -n "${MEMBER_A:-}" || { echo "::error::Missing RLS_TEST_MEMBER_A_UUID"; exit 1; }
+          [[ "$MEMBER_A" =~ ^[0-9a-fA-F-]{36}$ ]] || { echo "::error::Member A UUID format invalid"; exit 1; }
           echo "Required credentials are present. Secret values are not printed."
 
       - name: Install PostgreSQL client
@@ -38,6 +41,7 @@ jobs:
       - name: Run read-only production audit
         env:
           PGPASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+          MEMBER_A: ${{ secrets.RLS_TEST_MEMBER_A_UUID }}
           PGHOST: db.lztbbrzeuyjkuiyzrsxp.supabase.co
           PGPORT: "5432"
           PGDATABASE: postgres
@@ -45,4 +49,4 @@ jobs:
           PGSSLMODE: require
         run: |
           set -euo pipefail
-          psql --no-psqlrc --set=ON_ERROR_STOP=1 --file=supabase/audits/production-index-rls-audit.sql
+          psql --no-psqlrc --set=ON_ERROR_STOP=1 --set=member_a="$MEMBER_A" --file=supabase/audits/production-index-rls-audit.sql
