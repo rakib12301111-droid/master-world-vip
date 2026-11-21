@@ -1,7 +1,7 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
 
 const reply = (body: string, status = 200) =>
-  new Response(body, { status, headers: { "Content-Type": "text/plain" } });
+  new Response(body, { status, headers: { "Content-Type": "text/plain", "Cache-Control": "no-store" } });
 
 Deno.serve(async (req) => {
   if (req.method !== "POST") return reply("Method not allowed", 405);
@@ -17,18 +17,20 @@ Deno.serve(async (req) => {
   let fields: Record<string, string> = {};
   try {
     const type = req.headers.get("content-type") ?? "";
-    if (type.includes("application/json")) fields = await req.json();
-    else {
+    if (type.includes("application/json")) {
+      const parsed = await req.json();
+      for (const [key, value] of Object.entries(parsed ?? {})) fields[key] = String(value ?? "");
+    } else {
       const form = new URLSearchParams(await req.text());
       form.forEach((v, k) => fields[k] = v);
     }
   } catch { return reply("Invalid notification", 400); }
 
-  const valId = String(fields.val_id ?? "");
-  const tranId = String(fields.tran_id ?? "");
-  if (!valId || !tranId) return reply("Missing validation identifiers", 400);
+  const valId = String(fields.val_id ?? "").trim();
+  const tranId = String(fields.tran_id ?? "").trim();
+  if (!valId || !tranId || tranId.length > 30) return reply("Missing or invalid transaction identifiers", 400);
 
-  const admin = createClient(url, service, { auth: { persistSession: false } });
+  const admin = createClient(url, service, { auth: { persistSession: false, autoRefreshToken: false } });
   const { data: attempt, error } = await admin.from("facebook_setup_payment_attempts")
     .select("id,order_id,tran_id,amount,currency,status")
     .eq("tran_id", tranId).maybeSingle();
@@ -42,18 +44,27 @@ Deno.serve(async (req) => {
   }).toString();
 
   try {
-    const validationResponse = await fetch(validationUrl);
+    const validationResponse = await fetch(validationUrl, { headers: { "Accept": "application/json" } });
     if (!validationResponse.ok) return reply("Provider validation unavailable", 502);
     const validation = await validationResponse.json();
-    const validStatus = ["VALID", "VALIDATED"].includes(String(validation.status ?? "").toUpperCase());
-    const valid = validStatus &&
-      String(validation.tran_id) === attempt.tran_id &&
-      String(validation.currency).toUpperCase() === attempt.currency &&
-      Number(validation.amount) === Number(attempt.amount) &&
-      String(validation.val_id) === valId;
+    const providerStatus = String(validation.status ?? "").toUpperCase();
+    const cents = (value: unknown) => {
+      const n = Number(value);
+      return Number.isFinite(n) ? Math.round(n * 100) : NaN;
+    };
+    const valid = ["VALID", "VALIDATED"].includes(providerStatus) &&
+      String(validation.tran_id ?? "") === attempt.tran_id &&
+      String(validation.currency ?? "").toUpperCase() === attempt.currency &&
+      cents(validation.amount) === cents(attempt.amount) &&
+      String(validation.val_id ?? "") === valId;
     if (!valid) {
-      console.warn("payment_validation_mismatch", tranId, validation.status);
+      console.warn("payment_validation_mismatch", tranId, providerStatus);
       return reply("Payment not verified", 400);
+    }
+
+    if (String(validation.risk_level ?? "0") === "1") {
+      console.warn("payment_held_for_risk_review", tranId);
+      return reply("Payment is valid but held for risk review; it is not marked paid", 202);
     }
 
     const now = new Date().toISOString();
@@ -63,7 +74,7 @@ Deno.serve(async (req) => {
     if (updateAttemptError) return reply("Could not record verification", 500);
     if (changed) {
       const { error: orderError } = await admin.from("facebook_setup_orders")
-        .update({ payment_status: "paid", paid_at: now, status: "approved" })
+        .update({ payment_status: "paid", paid_at: now, payment_provider: "sslcommerz" })
         .eq("id", attempt.order_id).eq("payment_status", "pending");
       if (orderError) {
         console.error("verified_payment_order_update_failed", tranId, orderError.message);
