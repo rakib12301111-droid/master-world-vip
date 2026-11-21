@@ -22,16 +22,21 @@ ORDER BY e.table_name,e.index_name;
 SELECT
   t.relname AS table_name,
   array_agg(ic.relname ORDER BY ic.relname) AS duplicate_index_names,
+  am.amname AS access_method,
   i.indisunique AS is_unique,
   i.indkey::text AS key_columns,
+  i.indclass::text AS operator_classes,
+  i.indcollation::text AS collations,
+  i.indoption::text AS index_options,
   pg_get_expr(i.indpred, i.indrelid) AS partial_predicate,
   pg_get_expr(i.indexprs, i.indrelid) AS index_expressions
 FROM pg_index i
 JOIN pg_class t ON t.oid=i.indrelid
 JOIN pg_namespace n ON n.oid=t.relnamespace
 JOIN pg_class ic ON ic.oid=i.indexrelid
+JOIN pg_am am ON am.oid=ic.relam
 WHERE n.nspname='public'
-GROUP BY t.relname, i.indisunique, i.indkey, i.indpred, i.indexprs, i.indrelid
+GROUP BY t.relname, am.amname, i.indisunique, i.indkey, i.indclass, i.indcollation, i.indoption, i.indpred, i.indexprs, i.indrelid
 HAVING count(*) > 1
 ORDER BY t.relname;
 
@@ -40,7 +45,9 @@ WITH expected(table_name) AS (
   VALUES ('profiles'),('friend_requests'),('conversations'),
          ('conversation_members'),('messages'),('community_groups'),
          ('group_members'),('group_messages'),('app_user_roles'),
-         ('admin_audit_logs'),('update_releases')
+         ('admin_audit_logs'),('update_releases'),('user_roles'),
+         ('privacy_consents'),('referrals'),('notifications'),
+         ('support_tickets'),('audit_logs')
 )
 SELECT e.table_name,
        CASE WHEN c.oid IS NULL THEN 'MISSING TABLE'
@@ -60,8 +67,16 @@ FROM pg_policies
 WHERE schemaname='public'
   AND tablename IN ('profiles','friend_requests','conversations',
     'conversation_members','messages','community_groups','group_members',
-    'group_messages','app_user_roles','admin_audit_logs','update_releases')
+    'group_messages','app_user_roles','admin_audit_logs','update_releases',
+    'user_roles','privacy_consents','referrals','notifications','support_tickets','audit_logs')
 ORDER BY tablename,policyname;
+
+\echo '=== Unsafe broad profile-discovery policy must be absent ==='
+SELECT count(*) AS broad_discoverable_profile_policies
+FROM pg_policies
+WHERE schemaname='public'
+  AND tablename='profiles'
+  AND policyname='discoverable profiles visible to members';
 
 \echo '=== Authenticated role must not directly read admin tables ==='
 SELECT
