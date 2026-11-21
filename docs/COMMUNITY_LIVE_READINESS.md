@@ -2,7 +2,7 @@
 
 This checklist distinguishes repository code from verified live services. A green GitHub Pages deployment does not prove that Supabase migrations or Edge Functions have been deployed.
 
-## Edge Functions deployed by GitHub Actions
+## Database migrations via guarded GitHub Actions workflow\n\nThe repository now includes `.github/workflows/apply-supabase-migrations.yml`. Run it manually from GitHub Actions. It defaults to preview-only (`apply_migrations=no`); applying changes requires explicitly selecting `yes`. It is pinned to project ref `lztbbrzeuyjkuiyzrsxp` and requires repository Actions secrets `SUPABASE_ACCESS_TOKEN` and `SUPABASE_DB_PASSWORD`. Review the dry-run output and confirm a recoverable backup before selecting `yes`. A successful workflow run proves only that the CLI migration command completed; still verify the resulting schema and run the two-account acceptance tests below.\n\n## Edge Functions deployed by GitHub Actions
 
 The production workflow deploys:
 - `ai-assistant`
