@@ -120,6 +120,18 @@
 <article class="card"><h2>🚀 Supabase Project Setup Wizard</h2>
 <p class="muted">ধাপে ধাপে Supabase তৈরি, SQL migration চালানো, নিরাপদ public key দিয়ে সংযোগ এবং Registration/Login পরীক্ষা করুন।</p>
 <div class="notice">এটি setup guide। এই ওয়েবসাইট আপনার Supabase database-এ নিজে থেকে SQL চালায় না। প্রতিটি SQL migration review করে আপনার নির্দিষ্ট project-এর SQL Editor-এ নিজে Run করুন।</div>
+<div class="feature section" id="supabaseWizardProgress">
+<strong>আপনার Supabase Setup অগ্রগতি</strong>
+<div id="supabaseWizardStatus" class="notice">এই ডিভাইসে setup অগ্রগতি সংরক্ষিত হবে।</div>
+<div class="feature-list">
+<label class="feature"><input type="checkbox" id="supabaseStep1"> ধাপ ১ — Project তৈরি সম্পন্ন</label>
+<label class="feature"><input type="checkbox" id="supabaseStep2"> ধাপ ২ — Backup যাচাই ও SQL migrations চালানো সম্পন্ন</label>
+<label class="feature"><input type="checkbox" id="supabaseStep3"> ধাপ ৩ — Public/Anon Key দিয়ে সংযোগ সম্পন্ন</label>
+<label class="feature"><input type="checkbox" id="supabaseStep4"> ধাপ ৪ — Registration/Login পরীক্ষা সম্পন্ন</label>
+</div>
+<div class="actions"><button class="btn" id="saveSupabaseWizardProgress" type="button">অগ্রগতি সংরক্ষণ করুন</button><button class="btn secondary" id="resetSupabaseWizardProgress" type="button">অগ্রগতি রিসেট</button></div>
+<p class="muted small">চেকবক্স শুধু আপনার নিশ্চিত করা অগ্রগতি চিহ্নিত করে; এটি নিজে থেকে SQL চালায় বা Supabase-এর অবস্থা যাচাই করে না। অগ্রগতি এই browser/device-এ localভাবে থাকবে।</p>
+</div>
 <div class="feature-list">
 <div class="feature"><strong>ধাপ ১ — Supabase Project তৈরি</strong><p class="muted small">Supabase-এ নতুন project তৈরি করুন, database password নিরাপদে রাখুন এবং project প্রস্তুত হওয়া পর্যন্ত অপেক্ষা করুন।</p><a class="btn secondary" href="https://supabase.com/dashboard/projects" target="_blank" rel="noopener noreferrer">Supabase Projects খুলুন ↗</a></div>
 <div class="feature"><strong>ধাপ ২ — SQL migrations চালান</strong><p class="muted small">প্রথমে base migration, তারপর dependency order অনুযায়ী বাকি migration একে একে চালান। Admin migration-এর Owner email আগে যাচাই করুন।</p><a class="btn secondary" href="https://github.com/rakib12301111-droid/master-world-vip/tree/main/supabase/migrations" target="_blank" rel="noopener noreferrer">SQL migration ফাইল দেখুন ↗</a> <a class="btn secondary" href="https://supabase.com/dashboard/project/lztbbrzeuyjkuiyzrsxp/sql/new" target="_blank" rel="noopener noreferrer">SQL Editor ↗</a></div>
@@ -618,9 +630,27 @@
 const $=id=>document.getElementById(id);
 const pages=[...document.querySelectorAll('.page')];
 const titles={setup:'One-Click Setup',settings:'Workspace Settings',overview:'MASTER WORLD VIP Dashboard',account:'Registration & Login',members:'Member Hub',ai:'AI Center',facebook:'Facebook Center',growth:'Global Growth',admin:'Admin & Security',privacy:'Privacy & GDPR',updates:'Update Center',progress:'কাজের অগ্রগতি / Project Progress',fbService:'Facebook Setup Service',inbox:'Unified Inbox',verification:'Member Verification & Helpdesk',global:'Global News & Offline',emergency:'Emergency Offline Center',games:'Games Center',location:'Live Number Location Map'};
-function showPage(id){pages.forEach(p=>p.classList.toggle('active',p.id===id));document.querySelectorAll('[data-page]').forEach(b=>b.classList.toggle('active',b.dataset.page===id));$('pageTitle').textContent=titles[id]||titles.overview;if(id==='settings')syncWorkspaceSettingsUI();window.scrollTo({top:0,behavior:'smooth'});if(id==='inbox'&&typeof loadInbox==='function')loadInbox();if(id==='verification'&&typeof loadVerificationRequests==='function')loadVerificationRequests();if(id==='fbService'&&typeof loadFbOrders==='function'){loadFbOrders();loadFbFeedback();}}
+function showPage(id){pages.forEach(p=>p.classList.toggle('active',p.id===id));document.querySelectorAll('[data-page]').forEach(b=>b.classList.toggle('active',b.dataset.page===id));$('pageTitle').textContent=titles[id]||titles.overview;if(id==='settings')syncWorkspaceSettingsUI();if(id==='account'){try{localStorage.setItem('mwvip_supabase_wizard_opened_at',new Date().toISOString());syncSupabaseWizardProgress();}catch(_e){}}window.scrollTo({top:0,behavior:'smooth'});if(id==='inbox'&&typeof loadInbox==='function')loadInbox();if(id==='verification'&&typeof loadVerificationRequests==='function')loadVerificationRequests();if(id==='fbService'&&typeof loadFbOrders==='function'){loadFbOrders();loadFbFeedback();}}
 document.querySelectorAll('[data-page]').forEach(b=>b.addEventListener('click',()=>showPage(b.dataset.page)));
 document.querySelectorAll('[data-go]').forEach(b=>b.addEventListener('click',()=>showPage(b.dataset.go)));
+function readSupabaseWizardProgress(){try{return JSON.parse(localStorage.getItem('mwvip_supabase_wizard_progress')||'{}')}catch(_e){return {};}}
+function syncSupabaseWizardProgress(){
+ const progress=readSupabaseWizardProgress();
+ [1,2,3,4].forEach(n=>{const el=$('supabaseStep'+n);if(el)el.checked=progress['step'+n]===true;});
+ const status=$('supabaseWizardStatus');
+ if(status){const done=[1,2,3,4].filter(n=>progress['step'+n]===true).length;const opened=localStorage.getItem('mwvip_supabase_wizard_opened_at');status.textContent=(opened?'Account setup এই device-এ খোলা হয়েছে · ':'')+'নিশ্চিত করা ধাপ: '+done+'/4'+(progress.updatedAt?' · সর্বশেষ সংরক্ষণ: '+new Date(progress.updatedAt).toLocaleString('bn-BD'):'');}
+}
+$('saveSupabaseWizardProgress')?.addEventListener('click',()=>{
+ const progress={};[1,2,3,4].forEach(n=>{progress['step'+n]=$('supabaseStep'+n)?.checked===true;});
+ progress.updatedAt=new Date().toISOString();
+ try{localStorage.setItem('mwvip_supabase_wizard_progress',JSON.stringify(progress));syncSupabaseWizardProgress();const status=$('supabaseWizardStatus');if(status)status.textContent='আপনার চিহ্নিত অগ্রগতি এই browser/device-এ সংরক্ষিত হয়েছে।';}
+ catch(_e){const status=$('supabaseWizardStatus');if(status)status.textContent='সংরক্ষণ হয়নি। Browser storage permission/space পরীক্ষা করুন।';}
+});
+$('resetSupabaseWizardProgress')?.addEventListener('click',()=>{
+ try{localStorage.removeItem('mwvip_supabase_wizard_progress');syncSupabaseWizardProgress();}catch(_e){}
+});
+syncSupabaseWizardProgress();
+
 function readSetupPrefs(){try{return JSON.parse(localStorage.getItem('mwvip_setup_preferences')||'{}')}catch(e){return {}}}
 function setupChecked(id, fallback){const el=$(id);return el?el.checked:fallback;}
 function applySafeSetup(){
