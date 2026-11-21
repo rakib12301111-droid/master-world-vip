@@ -36,7 +36,7 @@ JOIN pg_namespace n ON n.oid=t.relnamespace
 JOIN pg_class ic ON ic.oid=i.indexrelid
 JOIN pg_am am ON am.oid=ic.relam
 WHERE n.nspname='public'
-GROUP BY t.relname, am.amname, i.indisunique, i.indkey, i.indclass, i.indcollation, i.indoption, i.indpred, i.indexprs, i.indrelid
+GROUP BY t.relname, am.amname, i.indisunique, i.indkey, i.indclass, i.indcollation, i.indoption, i.indpred::text, i.indexprs::text, i.indrelid
 HAVING count(*) > 1
 ORDER BY t.relname;
 
