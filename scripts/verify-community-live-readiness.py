@@ -16,6 +16,7 @@ migration_files = sorted(Path("supabase/migrations").glob("*.sql"))
 migration_versions = [p.name.split("_", 1)[0] for p in migration_files]
 migration_version_unique = len(migration_versions) == len(set(migration_versions))
 migration_workflow = Path(".github/workflows/apply-supabase-migrations.yml").read_text(encoding="utf-8")
+verify_workflow = Path(".github/workflows/verify-supabase-migrations.yml").read_text(encoding="utf-8")
 audit_workflow = Path(".github/workflows/audit-supabase-indexes-rls.yml").read_text(encoding="utf-8")
 rls_workflow = Path(".github/workflows/test-two-member-rls.yml").read_text(encoding="utf-8")
 audit_sql = Path("supabase/audits/production-index-rls-audit.sql").read_text(encoding="utf-8")
@@ -74,6 +75,11 @@ checks = {
     ),
     "PWA service worker and push subscription flow exist": (
         "navigator.serviceWorker" in ui and "pushManager.subscribe" in ui
+    ),
+    "CI runs Node syntax validation for the published inline JavaScript": (
+        "actions/setup-node@v4" in verify_workflow
+        and "node-version: \"22\"" in verify_workflow
+        and "python scripts/verify-inline-js.py" in verify_workflow
     ),
     "production migration workflow defaults to preview and requires explicit backup confirmation": (
         'default: "no"' in migration_workflow
