@@ -29,7 +29,7 @@ on:
         default: "no"
       backup_reference:
         description: "Non-secret backup identifier or record reference (never paste a password or signed URL)"
-        required: true
+        required: false
         type: string
         default: ""
 
