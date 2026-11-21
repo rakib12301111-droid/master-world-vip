@@ -47,7 +47,9 @@ WITH expected(table_name) AS (
          ('group_members'),('group_messages'),('app_user_roles'),
          ('admin_audit_logs'),('update_releases'),('user_roles'),
          ('privacy_consents'),('referrals'),('notifications'),
-         ('support_tickets'),('audit_logs')
+         ('support_tickets'),('audit_logs'),('privacy_consent_events'),
+         ('account_data_requests'),('push_subscriptions'),
+         ('member_broadcasts'),('member_broadcast_deliveries')
 )
 SELECT e.table_name,
        CASE WHEN c.oid IS NULL THEN 'MISSING TABLE'
@@ -55,9 +57,10 @@ SELECT e.table_name,
             ELSE 'RLS DISABLED' END AS rls_status,
        COALESCE(c.relforcerowsecurity,false) AS force_rls
 FROM expected e
-LEFT JOIN pg_class c ON c.relname=e.table_name
-LEFT JOIN pg_namespace n ON n.oid=c.relnamespace AND n.nspname='public'
-WHERE c.oid IS NULL OR n.oid IS NOT NULL
+LEFT JOIN pg_class c
+  ON c.relname=e.table_name
+ AND c.relnamespace='public'::regnamespace
+WHERE c.oid IS NULL OR c.relnamespace='public'::regnamespace
 ORDER BY e.table_name;
 
 \echo '=== Policies on protected tables ==='
@@ -68,7 +71,9 @@ WHERE schemaname='public'
   AND tablename IN ('profiles','friend_requests','conversations',
     'conversation_members','messages','community_groups','group_members',
     'group_messages','app_user_roles','admin_audit_logs','update_releases',
-    'user_roles','privacy_consents','referrals','notifications','support_tickets','audit_logs')
+    'user_roles','privacy_consents','referrals','notifications','support_tickets','audit_logs',
+    'privacy_consent_events','account_data_requests','push_subscriptions',
+    'member_broadcasts','member_broadcast_deliveries')
 ORDER BY tablename,policyname;
 
 \echo '=== Unsafe broad profile-discovery policy must be absent ==='
@@ -107,4 +112,70 @@ WHERE group_id IN (SELECT group_id FROM public.group_members WHERE user_id=:'mem
 ORDER BY created_at DESC
 LIMIT 50;
 
-\echo '=== Audit completed: read-only; inspect results above ==='
+
+\echo '=== Enforce critical production audit assertions ==='
+DO $mwvip_audit_assertions$
+DECLARE
+  missing_indexes text;
+  unsafe_tables text;
+  broad_profile_policies integer;
+  roles_readable boolean;
+  admin_audit_readable boolean;
+BEGIN
+  SELECT string_agg(e.index_name, ', ' ORDER BY e.index_name)
+    INTO missing_indexes
+  FROM (VALUES
+    ('update_releases_published_idx'),
+    ('messages_conversation_created_idx'),
+    ('group_messages_group_created_idx'),
+    ('friend_requests_addressee_status_idx'),
+    ('profiles_username_lower_uidx')
+  ) AS e(index_name)
+  WHERE NOT EXISTS (
+    SELECT 1 FROM pg_indexes i
+    WHERE i.schemaname='public' AND i.indexname=e.index_name
+  );
+  IF missing_indexes IS NOT NULL THEN
+    RAISE EXCEPTION 'FAIL: required indexes missing: %', missing_indexes;
+  END IF;
+
+  SELECT string_agg(e.table_name, ', ' ORDER BY e.table_name)
+    INTO unsafe_tables
+  FROM (VALUES
+    ('profiles'),('friend_requests'),('conversations'),
+    ('conversation_members'),('messages'),('community_groups'),
+    ('group_members'),('group_messages'),('app_user_roles'),
+    ('admin_audit_logs'),('update_releases'),('user_roles'),
+    ('privacy_consents'),('referrals'),('notifications'),
+    ('support_tickets'),('audit_logs'),('privacy_consent_events'),
+    ('account_data_requests'),('push_subscriptions'),
+    ('member_broadcasts'),('member_broadcast_deliveries')
+  ) AS e(table_name)
+  LEFT JOIN pg_class c
+    ON c.relname=e.table_name
+   AND c.relnamespace='public'::regnamespace
+  WHERE c.oid IS NULL OR NOT c.relrowsecurity;
+  IF unsafe_tables IS NOT NULL THEN
+    RAISE EXCEPTION 'FAIL: required tables missing or RLS disabled: %', unsafe_tables;
+  END IF;
+
+  SELECT count(*) INTO broad_profile_policies
+  FROM pg_policies
+  WHERE schemaname='public'
+    AND tablename='profiles'
+    AND policyname='discoverable profiles visible to members';
+  IF broad_profile_policies > 0 THEN
+    RAISE EXCEPTION 'FAIL: unsafe broad discoverable-profile policy is present';
+  END IF;
+
+  roles_readable := has_table_privilege('authenticated','public.app_user_roles','SELECT');
+  admin_audit_readable := has_table_privilege('authenticated','public.admin_audit_logs','SELECT');
+  IF roles_readable OR admin_audit_readable THEN
+    RAISE EXCEPTION 'FAIL: authenticated role has direct SELECT on protected admin tables';
+  END IF;
+
+  RAISE NOTICE 'PASS: required indexes, protected-table RLS, profile privacy policy and admin-table grants verified';
+END
+$mwvip_audit_assertions$;
+
+\echo '=== Audit completed: read-only; critical assertions passed ==='
