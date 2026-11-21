@@ -6,6 +6,11 @@ on:
       - "supabase/migrations/**"
       - "scripts/verify-membership-helper-migration.py"
       - "scripts/verify-community-live-readiness.py"
+      - "scripts/verify-inline-js.py"
+      - ".github/workflows/apply-supabase-migrations.yml"
+      - ".github/workflows/audit-supabase-indexes-rls.yml"
+      - ".github/workflows/test-two-member-rls.yml"
+      - "supabase/audits/**"
       - "scripts/verify-live-service-health.py"
       - "scripts/verify-global-communication.py"
       - "scripts/verify-emergency-games.py"
@@ -53,6 +58,12 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.x"
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Verify inline JavaScript syntax
+        run: python scripts/verify-inline-js.py
       - name: Verify membership helper migration
         run: python scripts/verify-membership-helper-migration.py
       - name: Verify community live readiness
