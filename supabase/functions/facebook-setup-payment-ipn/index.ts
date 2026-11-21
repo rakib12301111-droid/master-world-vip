@@ -36,6 +36,7 @@ Deno.serve(async (req) => {
     .eq("tran_id", tranId).maybeSingle();
   if (error || !attempt) return reply("Unknown transaction", 404);
   if (attempt.status === "paid") {
+    if (mode !== "live") return reply("Sandbox transaction is test-only; it is not a live payment.");
     // Idempotent recovery if the attempt was saved but the order update previously failed.
     const { error: reconcileError } = await admin.from("facebook_setup_orders")
       .update({ payment_status: "paid", paid_at: new Date().toISOString(), payment_provider: "sslcommerz" })
