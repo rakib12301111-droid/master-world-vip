@@ -147,4 +147,4 @@ jobs:
 
       - name: Report backup confirmation required
         if: inputs.apply_migrations == 'yes' && (inputs.confirm_recoverable_backup != 'yes' || inputs.confirm_restore_tested != 'yes' || inputs.backup_reference == '')
-        run: echo "Production migration was blocked because recoverable-backup confirmation was not supplied."
+        run: echo "Production migration was blocked because backup, restore-test, or backup-reference confirmation was incomplete."
