@@ -494,6 +494,12 @@
 <div id="fbOrderStatus" class="notice">অর্ডার জমা দিতে MASTER WORLD VIP-এ লগইন করুন।</div>
 </div>
 </div>
+<div class="item section">
+<h3>🔒 SSLCOMMERZ Online Checkout</h3>
+<p class="muted small">Merchant approval ও নিরাপদ server configuration সম্পন্ন না হওয়া পর্যন্ত checkout বন্ধ থাকবে। Sandbox পরীক্ষায় বাস্তব টাকা কাটা হবে না। Live payment কেবল Live API validation সফল হলে Paid হবে।</p>
+<button class="btn" id="startSslCheckout" type="button">SSLCOMMERZ দিয়ে নিরাপদ পেমেন্ট</button>
+<div id="sslCheckoutStatus" class="notice">এখনো gateway credentials configure করা হয়নি। কোনো বাস্তব পেমেন্ট নেওয়া হচ্ছে না।</div>
+</div>
 </article>
 <article class="card section">
 <h2>📋 আমার অর্ডারসমূহ</h2>
@@ -1582,12 +1588,12 @@ async function loadFbOrders(){
  if(!client||!currentUser){box.textContent='অর্ডার দেখতে আগে লগইন করুন।';return;}
  box.textContent='অর্ডার লোড হচ্ছে…';
  try{
-  const {data,error}=await client.from('facebook_setup_orders').select('id,package_price,customer_name,customer_phone,payment_method,transaction_id,status,created_at,updated_at').order('created_at',{ascending:false}).limit(100);
+  const {data,error}=await client.from('facebook_setup_orders').select('id,package_price,customer_name,customer_phone,payment_method,transaction_id,status,payment_status,created_at,updated_at').order('created_at',{ascending:false}).limit(100);
   if(error)throw error;
   box.innerHTML='';
   if(!data?.length){box.textContent='এখনো কোনো অর্ডার নেই।';return;}
   data.forEach(o=>{const card=document.createElement('div');card.className='item section';
-   const title=document.createElement('strong');title.textContent='৳ '+o.package_price+' · '+(FB_ORDER_STATUSES[o.status]||o.status);
+   const title=document.createElement('strong');title.textContent='৳ '+o.package_price+' · '+(FB_ORDER_STATUSES[o.status]||o.status)+' · পেমেন্ট: '+({unpaid:'অপরিশোধিত',pending:'যাচাই বাকি',paid:'যাচাইকৃত',failed:'ব্যর্থ',cancelled:'বাতিল',refunded:'ফেরত'}[o.payment_status]||o.payment_status||'অজানা');
    const detail=document.createElement('p');detail.className='muted small';detail.textContent='অর্ডার: '+o.id+' · '+o.customer_name+' · '+o.customer_phone+' · '+String(o.payment_method).toUpperCase()+' · TrxID: '+o.transaction_id+' · '+new Date(o.created_at).toLocaleString('bn-BD');
    card.append(title,detail);box.append(card);
   });
@@ -1624,6 +1630,32 @@ $('submitFbOrder')?.addEventListener('click',async()=>{
  finally{btn.disabled=false;}
 });
 $('refreshFbOrders')?.addEventListener('click',loadFbOrders);
+
+$('startSslCheckout')?.addEventListener('click',async()=>{
+ const status=$('sslCheckoutStatus');
+ const setStatus=(message,ok=false)=>{if(status){status.className='notice'+(ok?' success':'');status.textContent=message;}};
+ if(!client||!currentUser){setStatus('পেমেন্ট শুরু করতে আগে MASTER WORLD VIP-এ লগইন করুন।');return;}
+ const name=$('fbOrderName')?.value.trim()||'',phone=$('fbOrderPhone')?.value.trim()||'';
+ const price=Number(selectedFbPackage());
+ if(name.length<2||! /^[0-9+() -]{8,24}$/.test(phone)){setStatus('সঠিক নাম ও যোগাযোগ নম্বর লিখুন।');return;}
+ if(![500,750,1000].includes(price)){setStatus('সঠিক প্যাকেজ নির্বাচন করুন।');return;}
+ if(!$('fbOrderConsent')?.checked){setStatus('নিজের অ্যাকাউন্ট নিজে নিয়ন্ত্রণের সম্মতি দিন।');return;}
+ const button=$('startSslCheckout');button.disabled=true;setStatus('নিরাপদ checkout session তৈরি হচ্ছে…');
+ try{
+  const {data,error}=await client.functions.invoke('facebook-setup-create-payment',{
+   body:{package_price:price,customer_name:name,customer_phone:phone}
+  });
+  if(error)throw error;
+  if(!data?.checkout_url||!/^https:\/\/(sandbox|securepay)\.sslcommerz\.com\//.test(data.checkout_url)){
+   throw new Error(data?.error||'Gateway checkout URL পাওয়া যায়নি।');
+  }
+  setStatus('Checkout session তৈরি হয়েছে। এখন SSLCOMMERZ-এর নিরাপদ পেমেন্ট পেজে যাচ্ছেন…',true);
+  window.location.assign(data.checkout_url);
+ }catch(error){
+  setStatus('পেমেন্ট শুরু হয়নি: '+(error?.message||String(error))+'. কোনো টাকা কাটা হয়নি। Merchant approval ও Supabase Secrets যাচাই করুন।');
+ }finally{button.disabled=false;}
+});
+
 
 
 
