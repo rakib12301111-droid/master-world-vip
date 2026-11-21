@@ -41,12 +41,12 @@
   page.innerHTML='<article class="card"><div class="vip-hero-card vip-gold"><div class="vip-heading"><span class="vip-icon">🔐</span><span>SECURITY CENTER</span></div><p class="vip-muted">Protect your account · Secure authentication · Device sessions</p></div><div class="vip-grid"><div class="vip-tile"><b>🔑 Two-Factor Authentication</b><span class="vip-muted" id="vipMfaState">Checking account factors…</span><div id="vipMfaFactors"></div><button class="vip-action" id="vipMfaEnroll">Set up authenticator</button></div><div class="vip-tile"><b>📱 Active Session Control</b><span class="vip-muted">Sign out this account from all sessions, including other devices.</span><button class="vip-action secondary" id="vipGlobalSignout">Sign out all devices</button></div><div class="vip-tile"><b>🕘 Login & Device History</b><span class="vip-muted">Detailed history needs a server-side security event pipeline; it is not fabricated in this screen.</span></div><div class="vip-tile"><b>🚨 Security Alerts</b><span class="vip-muted">Keep your email secure and review Supabase authentication notices.</span></div></div><div class="vip-tile"><b>Authenticator setup</b><p class="vip-muted">Use an authenticator app. Scan the QR code and enter its current 6-digit code to verify. Never share this code with anyone.</p><div id="vipMfaEnrollArea"></div><div id="vipMfaStatus" class="vip-status" role="status">Log in to manage two-factor authentication.</div></div><div class="vip-status">Security note: Two-factor authentication requires Supabase Auth MFA support and a logged-in account. Device history, trusted-device registry and suspicious-login detection require additional backend tables/functions and are not marked active until deployed and tested.</div></article>';
   main.append(page);
  }
- const $=id=>document.getElementById(id);
+ const $=id=>document.getElementById(id);\n const getClient=()=>window.mwvipGetClient?.()||null;\n const getUser=()=>window.mwvipGetUser?.()||null;
  const status=(s)=>{if($('vipMfaStatus'))$('vipMfaStatus').textContent=s;};
  async function refreshFactors(){
-  if(!window.client||!window.currentUser){if($('vipMfaState'))$('vipMfaState').textContent='Log in to check MFA status.';return;}
+  if(!getClient()||!getUser()){if($('vipMfaState'))$('vipMfaState').textContent='Log in to check MFA status.';return;}
   try{
-   const {data,error}=await window.client.auth.mfa.listFactors();if(error)throw error;
+   const {data,error}=await getClient().auth.mfa.listFactors();if(error)throw error;
    const verified=(data?.totp||[]).filter(f=>f.status==='verified');
    $('vipMfaState').textContent=verified.length?'Authenticator MFA is enabled.':'Authenticator MFA is not enabled.';
    $('vipMfaFactors').textContent=verified.map(f=>'Verified: '+(f.friendly_name||'Authenticator')).join(' · ');
@@ -54,10 +54,10 @@
  }
  document.addEventListener('click',async e=>{
   if(e.target?.id==='vipMfaEnroll'){
-   if(!window.client||!window.currentUser){status('আগে অ্যাকাউন্টে লগইন করুন।');return;}
+   if(!getClient()||!getUser()){status('আগে অ্যাকাউন্টে লগইন করুন।');return;}
    status('Authenticator enrollment তৈরি হচ্ছে…');
    try{
-    const {data,error}=await window.client.auth.mfa.enroll({factorType:'totp',friendlyName:'MASTER WORLD VIP Authenticator'});if(error)throw error;
+    const {data,error}=await getClient().auth.mfa.enroll({factorType:'totp',friendlyName:'MASTER WORLD VIP Authenticator'});if(error)throw error;
     const area=$('vipMfaEnrollArea');area.replaceChildren();
     const qr=document.createElement('img');qr.className='vip-qr';qr.alt='Authenticator QR code';qr.src=data.totp.qr_code;area.append(qr);
     const secret=document.createElement('p');secret.className='vip-muted';secret.textContent='Manual setup key: '+data.totp.secret;area.append(secret);
@@ -66,17 +66,17 @@
     verify.addEventListener('click',async()=>{
      const code=input.value.trim();if(!/^\d{6}$/.test(code)){status('৬ সংখ্যার সঠিক কোড লিখুন।');return;}
      status('কোড যাচাই হচ্ছে…');
-     try{const {error:ve}=await window.client.auth.mfa.challengeAndVerify({factorId:data.id,code});if(ve)throw ve;status('Two-factor authentication সফলভাবে চালু হয়েছে।');area.replaceChildren();await refreshFactors();}
+     try{const {error:ve}=await getClient().auth.mfa.challengeAndVerify({factorId:data.id,code});if(ve)throw ve;status('Two-factor authentication সফলভাবে চালু হয়েছে।');area.replaceChildren();await refreshFactors();}
      catch(err){status('যাচাই হয়নি: '+err.message);}
     });
     status('QR scan করুন, তারপর authenticator-এর ৬ সংখ্যার কোড দিন।');
    }catch(err){status('MFA setup করা যায়নি: '+err.message);}
   }
   if(e.target?.id==='vipGlobalSignout'){
-   if(!window.client||!window.currentUser){status('আগে লগইন করুন।');return;}
+   if(!getClient()||!getUser()){status('আগে লগইন করুন।');return;}
    if(!confirm('সব ডিভাইস থেকে সাইন আউট করবেন? আপনাকেও আবার লগইন করতে হবে।'))return;
    status('সব session বন্ধ করা হচ্ছে…');
-   try{const {error}=await window.client.auth.signOut({scope:'global'});if(error)throw error;status('সব session থেকে sign out করা হয়েছে।');}
+   try{const {error}=await getClient().auth.signOut({scope:'global'});if(error)throw error;status('সব session থেকে sign out করা হয়েছে।');}
    catch(err){status('সব session বন্ধ হয়নি: '+err.message);}
   }
  });
