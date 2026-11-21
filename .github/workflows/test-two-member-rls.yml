@@ -1,0 +1,54 @@
+name: MASTER WORLD VIP - Two Member RLS Integration Test
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: master-world-vip-two-member-rls-test
+  cancel-in-progress: false
+
+jobs:
+  rls-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate test account secrets and database credentials
+        env:
+          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+          MEMBER_A: ${{ secrets.RLS_TEST_MEMBER_A_UUID }}
+          MEMBER_B: ${{ secrets.RLS_TEST_MEMBER_B_UUID }}
+        run: |
+          set -euo pipefail
+          test -n "${SUPABASE_DB_PASSWORD:-}" || { echo "::error::Missing SUPABASE_DB_PASSWORD"; exit 1; }
+          test -n "${MEMBER_A:-}" || { echo "::error::Missing RLS_TEST_MEMBER_A_UUID"; exit 1; }
+          test -n "${MEMBER_B:-}" || { echo "::error::Missing RLS_TEST_MEMBER_B_UUID"; exit 1; }
+          [[ "$MEMBER_A" =~ ^[0-9a-fA-F-]{36}$ ]] || { echo "::error::Member A UUID format invalid"; exit 1; }
+          [[ "$MEMBER_B" =~ ^[0-9a-fA-F-]{36}$ ]] || { echo "::error::Member B UUID format invalid"; exit 1; }
+          test "$MEMBER_A" != "$MEMBER_B" || { echo "::error::Two different test accounts are required"; exit 1; }
+          echo "Two test account identifiers are present; values are not printed."
+
+      - name: Install PostgreSQL client
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes postgresql-client
+
+      - name: Run transactional two-member RLS assertions
+        env:
+          PGPASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+          PGHOST: db.lztbbrzeuyjkuiyzrsxp.supabase.co
+          PGPORT: "5432"
+          PGDATABASE: postgres
+          PGUSER: postgres
+          PGSSLMODE: require
+          MEMBER_A: ${{ secrets.RLS_TEST_MEMBER_A_UUID }}
+          MEMBER_B: ${{ secrets.RLS_TEST_MEMBER_B_UUID }}
+        run: |
+          set -euo pipefail
+          psql --no-psqlrc --set=ON_ERROR_STOP=1 \
+            --set=member_a="$MEMBER_A" --set=member_b="$MEMBER_B" \
+            --file=supabase/audits/two-member-rls-integration-test.sql
