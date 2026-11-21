@@ -42,13 +42,8 @@ revoke update on public.facebook_setup_orders from authenticated;
 drop policy if exists "admins update facebook setup orders" on public.facebook_setup_orders;
 -- Fulfilment status is deliberately separate from payment_status.
 -- Admin UI must not be able to assert payment success.
-create policy "admins update facebook setup fulfilment"
-  on public.facebook_setup_orders for update to authenticated
-  using (public.get_my_admin_access() in ('owner','super_admin','admin'))
-  with check (
-    public.get_my_admin_access() in ('owner','super_admin','admin')
-    and payment_status = (select o.payment_status from public.facebook_setup_orders o where o.id = id)
-  );
+-- Authenticated clients have no UPDATE privilege on orders after this migration.
+-- Admin fulfilment changes must be exposed through a separate role-checked server function.
 
 comment on column public.facebook_setup_orders.payment_status is
   'Provider-confirmed payment state. Only server-side provider validation may set paid.';
