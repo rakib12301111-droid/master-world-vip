@@ -132,8 +132,9 @@ jobs:
           SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
         run: |
           set -euo pipefail
-          supabase db push --remote="$SUPABASE_DB_URL"
-          echo "Supabase CLI completed the pending migration push."
+          # --yes is deliberately limited to this step, which only runs after all three explicit backup gates pass.
+          supabase db push --remote="$SUPABASE_DB_URL" --yes
+          echo "Supabase CLI completed the explicitly approved pending migration push."
 
       - name: Report preview-only run
         if: inputs.apply_migrations != 'yes'
