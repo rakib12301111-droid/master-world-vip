@@ -32,7 +32,7 @@ The workflow serializes deployments and refuses to run against a different proje
 ## Automatic Edge Function deployment through the update pipeline
 
 - The repository includes `.github/workflows/deploy-update-functions.yml`. After this PR is reviewed and merged, changes to either Update Center Edge Function or `supabase/config.toml` on `main` trigger deployment to the fixed approved project.
-- The workflow can also be started manually from GitHub Actions. It requires `SUPABASE_ACCESS_TOKEN` and `SUPABASE_PROJECT_REF` GitHub Actions secrets; the workflow rejects any project ref other than `lztbbrzeuyjkuiyzrsxp`.
+- The workflow can also be started manually from GitHub Actions. It requires the repository Actions secret `SUPABASE_ACCESS_TOKEN`; the approved project ref `lztbbrzeuyjkuiyzrsxp` is pinned in the workflow and is not a secret.
 - Protect the GitHub `production` environment with required reviewers if you want an approval gate before any function deployment. Deployment is not considered complete until the workflow run succeeds and the functions are visible in Supabase.
 
 ## Connect the app Update Center (one-time server setup)
