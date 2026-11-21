@@ -38,6 +38,10 @@ jobs:
             echo "::error::Never put the token in app code, workflow inputs, or chat."
             exit 1
           fi
+          if [[ ! "$SUPABASE_ACCESS_TOKEN" =~ ^sbp_[A-Za-z0-9]+$ ]]; then
+            echo "::error::SUPABASE_ACCESS_TOKEN is not a valid Supabase Personal Access Token. Create a new token in Supabase Account > Access Tokens; it must start with sbp_. Do not use the project anon/publishable/service-role key."
+            exit 1
+          fi
           if [ "$SUPABASE_PROJECT_REF" != "lztbbrzeuyjkuiyzrsxp" ]; then
             echo "::error::Project ref does not match the approved MASTER WORLD VIP project."
             exit 1
