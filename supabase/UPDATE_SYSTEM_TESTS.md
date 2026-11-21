@@ -62,6 +62,14 @@ supabase functions deploy check-updates --project-ref lztbbrzeuyjkuiyzrsxp
 
 The Supabase Edge runtime provides `SUPABASE_URL`. The function needs no AI-provider secret. It uses the public Supabase publishable/anon key sent by the app to read published release metadata. Never put a service-role key in the app.
 
+## API-key validation tests
+
+The update checker accepts `sb_publishable_...` keys and legacy JWTs only when the decoded JWT payload has `role: "anon"`. It rejects `sb_secret_...`, `service_role`, `authenticated`, malformed JWTs and arbitrary token-shaped strings. Run the automated tests with:
+
+```sh
+deno test supabase/functions/check-updates
+```
+
 ## Edge Function smoke test
 Use the app's public publishable key (it is not a service-role secret):
 
