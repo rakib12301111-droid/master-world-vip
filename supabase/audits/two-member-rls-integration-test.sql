@@ -1,0 +1,100 @@
+-- MASTER WORLD VIP two-member RLS integration test.
+-- Run only against production after a verified backup, with two existing test accounts.
+-- Uses transactional fixtures and rolls them back. Never use owner/admin UUIDs as members.
+\set ON_ERROR_STOP on
+\if :{?member_a}
+\else
+  \echo 'Set psql variable member_a to existing Member A auth.users UUID'; \quit 3
+\endif
+\if :{?member_b}
+\else
+  \echo 'Set psql variable member_b to existing Member B auth.users UUID'; \quit 3
+\endif
+
+BEGIN;
+SET LOCAL row_security = on;
+
+DO $$
+BEGIN
+  IF :'member_a'::uuid = :'member_b'::uuid THEN
+    RAISE EXCEPTION 'RLS test requires two different member accounts';
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE id=:'member_a'::uuid)
+     OR NOT EXISTS (SELECT 1 FROM auth.users WHERE id=:'member_b'::uuid) THEN
+    RAISE EXCEPTION 'Both test accounts must exist in auth.users';
+  END IF;
+  IF EXISTS (SELECT 1 FROM public.app_user_roles WHERE user_id IN (:'member_a'::uuid,:'member_b'::uuid) AND role IN ('owner','super_admin','admin')) THEN
+    RAISE EXCEPTION 'Use ordinary member accounts, not admin accounts';
+  END IF;
+END $$;
+
+-- Fixture IDs are transaction-local constants; rollback removes every inserted row.
+CREATE TEMP TABLE mwvip_rls_fixture AS
+SELECT
+  :'member_a'::uuid AS member_a,
+  :'member_b'::uuid AS member_b,
+  gen_random_uuid() AS conversation_id,
+  gen_random_uuid() AS private_group_id,
+  gen_random_uuid() AS broadcast_id,
+  gen_random_uuid() AS support_ticket_id,
+  gen_random_uuid() AS notification_id;
+
+INSERT INTO public.conversations(id,kind,created_by)
+SELECT conversation_id,'direct',member_a FROM mwvip_rls_fixture;
+INSERT INTO public.conversation_members(conversation_id,user_id)
+SELECT conversation_id,member_a FROM mwvip_rls_fixture
+UNION ALL
+SELECT conversation_id,member_b FROM mwvip_rls_fixture;
+INSERT INTO public.messages(conversation_id,sender_id,body)
+SELECT conversation_id,member_a,'MWVIP RLS integration fixture' FROM mwvip_rls_fixture;
+
+INSERT INTO public.community_groups(id,name,description,is_private,owner_id)
+SELECT private_group_id,'MWVIP RLS TEST','Temporary RLS fixture',true,member_a FROM mwvip_rls_fixture;
+INSERT INTO public.group_members(group_id,user_id,role)
+SELECT private_group_id,member_a,'owner' FROM mwvip_rls_fixture;
+INSERT INTO public.group_messages(group_id,sender_id,body)
+SELECT private_group_id,member_a,'MWVIP private group fixture' FROM mwvip_rls_fixture;
+
+INSERT INTO public.support_tickets(id,user_id,subject,message)
+SELECT support_ticket_id,member_a,'MWVIP RLS fixture','Temporary test ticket' FROM mwvip_rls_fixture;
+INSERT INTO public.notifications(id,user_id,title,body,category)
+SELECT notification_id,member_a,'MWVIP RLS fixture','Temporary test notification','test' FROM mwvip_rls_fixture;
+
+-- Member B: cannot see A's direct conversation, message, private group, group roster/posts,
+-- support ticket, notification, admin role table or audit log.
+SELECT set_config('request.jwt.claim.sub',(SELECT member_b::text FROM mwvip_rls_fixture),true);
+SET LOCAL ROLE authenticated;
+DO $$
+DECLARE f record;
+BEGIN
+  SELECT * INTO f FROM mwvip_rls_fixture;
+  IF EXISTS (SELECT 1 FROM public.conversations WHERE id=f.conversation_id) THEN RAISE EXCEPTION 'FAIL: B can read A private conversation'; END IF;
+  IF EXISTS (SELECT 1 FROM public.messages WHERE conversation_id=f.conversation_id) THEN RAISE EXCEPTION 'FAIL: B can read A private messages'; END IF;
+  IF EXISTS (SELECT 1 FROM public.community_groups WHERE id=f.private_group_id) THEN RAISE EXCEPTION 'FAIL: B can read A private group'; END IF;
+  IF EXISTS (SELECT 1 FROM public.group_members WHERE group_id=f.private_group_id) THEN RAISE EXCEPTION 'FAIL: B can read A private group roster'; END IF;
+  IF EXISTS (SELECT 1 FROM public.group_messages WHERE group_id=f.private_group_id) THEN RAISE EXCEPTION 'FAIL: B can read A private group posts'; END IF;
+  IF EXISTS (SELECT 1 FROM public.support_tickets WHERE id=f.support_ticket_id) THEN RAISE EXCEPTION 'FAIL: B can read A support ticket'; END IF;
+  IF EXISTS (SELECT 1 FROM public.notifications WHERE id=f.notification_id) THEN RAISE EXCEPTION 'FAIL: B can read A notification'; END IF;
+  IF has_table_privilege('authenticated','public.app_user_roles','SELECT') THEN RAISE EXCEPTION 'FAIL: authenticated role has direct SELECT on admin roles'; END IF;
+  IF has_table_privilege('authenticated','public.admin_audit_logs','SELECT') THEN RAISE EXCEPTION 'FAIL: authenticated role has direct SELECT on admin audit logs'; END IF;
+END $$;
+RESET ROLE;
+
+-- Member A can read own fixtures; B cannot read A's notification or support ticket.
+SELECT set_config('request.jwt.claim.sub',(SELECT member_a::text FROM mwvip_rls_fixture),true);
+SET LOCAL ROLE authenticated;
+DO $$
+DECLARE f record;
+BEGIN
+  SELECT * INTO f FROM mwvip_rls_fixture;
+  IF NOT EXISTS (SELECT 1 FROM public.conversations WHERE id=f.conversation_id) THEN RAISE EXCEPTION 'FAIL: A cannot read own conversation'; END IF;
+  IF NOT EXISTS (SELECT 1 FROM public.messages WHERE conversation_id=f.conversation_id) THEN RAISE EXCEPTION 'FAIL: A cannot read own message'; END IF;
+  IF NOT EXISTS (SELECT 1 FROM public.community_groups WHERE id=f.private_group_id) THEN RAISE EXCEPTION 'FAIL: A cannot read own private group'; END IF;
+  IF NOT EXISTS (SELECT 1 FROM public.group_messages WHERE group_id=f.private_group_id) THEN RAISE EXCEPTION 'FAIL: A cannot read own private group post'; END IF;
+  IF NOT EXISTS (SELECT 1 FROM public.support_tickets WHERE id=f.support_ticket_id) THEN RAISE EXCEPTION 'FAIL: A cannot read own support ticket'; END IF;
+  IF NOT EXISTS (SELECT 1 FROM public.notifications WHERE id=f.notification_id) THEN RAISE EXCEPTION 'FAIL: A cannot read own notification'; END IF;
+END $$;
+RESET ROLE;
+
+ROLLBACK;
+\echo 'PASS: two-member RLS fixtures passed and all test rows were rolled back.'
