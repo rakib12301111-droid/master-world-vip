@@ -20,7 +20,7 @@
  const nav=document.querySelector('.nav');
  if(nav&&!nav.querySelector('[data-page="security"]')){
   const b=document.createElement('button');b.dataset.page='security';b.textContent='🔐 Security Center';nav.insertBefore(b,nav.querySelector('[data-page="privacy"]'));
-  b.addEventListener('click',()=>window.showPage?window.showPage('security'):document.getElementById('security')?.classList.add('active'));
+  b.addEventListener('click',()=>window.showPage?.('security'));
  }
  const admin=document.getElementById('admin');
  if(admin&&!document.getElementById('vipAdminSummary')){
