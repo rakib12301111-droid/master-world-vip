@@ -128,7 +128,7 @@
  function attachSecurityAuthListener(){
   const cl=getClient();if(!cl||cl===observedAuthClient)return;observedAuthClient=cl;
   cl.auth.onAuthStateChange((event,session)=>{
-   if(event==='SIGNED_IN'&&session?.user){setTimeout(async()=>{try{await recordLogin('sign_in');await registerTrustedDevice();await refreshDevicePanels();}catch(err){console.warn('Security device tracking:',err.message);}},0);}
+   if(event==='SIGNED_IN'&&session?.user){setTimeout(async()=>{try{await recordLogin('sign_in');await refreshDevicePanels();}catch(err){console.warn('Security login history:',err.message);}},0);}
    if(event==='SIGNED_OUT'){if($('vipDevicesList'))$('vipDevicesList').textContent='লগইন করুন।';if($('vipLoginHistory'))$('vipLoginHistory').textContent='লগইন করুন।';}
   });
  }
