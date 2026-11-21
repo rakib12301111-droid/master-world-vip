@@ -14,7 +14,7 @@ checks={
  "voice recording requires explicit microphone request": "getUserMedia({audio:true})" in ui,
  "voice UI does not claim server delivery": 'অন্য সদস্যকে পাঠানো হয়নি' in ui,
  "satellite is not falsely advertised as connected": 'স্যাটেলাইট সংযোগ এখনো সক্রিয় নয়' in ui,
- "PWA cache version is refreshed": "mwvip-pwa-v22" in sw,
+ "PWA cache version is refreshed": "mwvip-pwa-v23" in sw,
  "PWA manifest remains configured": '"display": "standalone"' in manifest,
  "technical limitations and provider requirements are documented": "Satellite connection prerequisites" in doc and "cannot deliver a message" in doc,
 }
