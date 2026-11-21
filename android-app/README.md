@@ -11,7 +11,7 @@ This Android app opens the deployed MASTER WORLD VIP web app in an Android WebVi
 
 The repository workflow `.github/workflows/android-apk.yml` builds an installable debug APK on GitHub Actions. It runs on pushes affecting this folder or can be started manually from the Actions tab.
 
-The generated APK is a debug build signed with the runner's debug key. It is suitable for direct installation/testing, not Play Store upload. A production release requires a separately managed signing key and a release build.
+The generated APK is a debug build signed with the runner's debug key. It is suitable for direct installation/testing, not Play Store upload. A production release requires a separately managed signing key and a release build. Release Gradle tasks now fail closed if any signing environment variable is missing or the keystore file is absent; an unsigned release APK must not be produced accidentally.
 
 The app is a WebView shell around the existing website. Backend services and website features remain subject to their own deployment/configuration status.
 
