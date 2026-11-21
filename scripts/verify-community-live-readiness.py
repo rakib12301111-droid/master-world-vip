@@ -16,6 +16,10 @@ migration_files = sorted(Path("supabase/migrations").glob("*.sql"))
 migration_versions = [p.name.split("_", 1)[0] for p in migration_files]
 migration_version_unique = len(migration_versions) == len(set(migration_versions))
 migration_workflow = Path(".github/workflows/apply-supabase-migrations.yml").read_text(encoding="utf-8")
+audit_workflow = Path(".github/workflows/audit-supabase-indexes-rls.yml").read_text(encoding="utf-8")
+rls_workflow = Path(".github/workflows/test-two-member-rls.yml").read_text(encoding="utf-8")
+audit_sql = Path("supabase/audits/production-index-rls-audit.sql").read_text(encoding="utf-8")
+rls_sql = Path("supabase/audits/two-member-rls-integration-test.sql").read_text(encoding="utf-8")
 migration_block_start = migration_workflow.find("for migration in ")
 migration_block_end = migration_workflow.find("; do", migration_block_start)
 migration_block = (
@@ -68,6 +72,37 @@ checks = {
     ),
     "PWA service worker and push subscription flow exist": (
         "navigator.serviceWorker" in ui and "pushManager.subscribe" in ui
+    ),
+    "production migration workflow defaults to preview and requires explicit backup confirmation": (
+        'default: "no"' in migration_workflow
+        and "supabase db push --project-ref" in migration_workflow
+        and "--dry-run" in migration_workflow
+        and "inputs.apply_migrations == 'yes' && inputs.confirm_recoverable_backup == 'yes'" in migration_workflow
+        and "SUPABASE_ACCESS_TOKEN" in migration_workflow
+        and "SUPABASE_DB_PASSWORD" in migration_workflow
+    ),
+    "read-only production audit workflow requires a test member and runs the audit SQL": (
+        "RLS_TEST_MEMBER_A_UUID" in audit_workflow
+        and "supabase/audits/production-index-rls-audit.sql" in audit_workflow
+        and "PGSSLMODE: require" in audit_workflow
+    ),
+    "two-member RLS workflow requires two distinct member IDs and runs the transactional test": (
+        "RLS_TEST_MEMBER_A_UUID" in rls_workflow
+        and "RLS_TEST_MEMBER_B_UUID" in rls_workflow
+        and 'test "$MEMBER_A" != "$MEMBER_B"' in rls_workflow
+        and "supabase/audits/two-member-rls-integration-test.sql" in rls_workflow
+    ),
+    "production audit SQL fails on missing indexes, disabled RLS or unsafe admin grants": (
+        "RAISE EXCEPTION 'FAIL: required indexes missing" in audit_sql
+        and "RAISE EXCEPTION 'FAIL: required tables missing or RLS disabled" in audit_sql
+        and "authenticated role has direct SELECT" in audit_sql
+    ),
+    "two-member RLS SQL rejects elevated fixtures and rolls back all test data": (
+        "Use ordinary member accounts only" in rls_sql
+        and "SET LOCAL ROLE authenticated" in rls_sql
+        and "ROLLBACK;" in rls_sql
+        and "B can read A private conversation" in rls_sql
+        and "A cannot read own conversation" in rls_sql
     ),
     "live acceptance guide exists": Path("docs/COMMUNITY_LIVE_READINESS.md").exists(),
 }
