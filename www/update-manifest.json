@@ -2,13 +2,13 @@
   "schema_version": 1,
   "app": "MASTER WORLD VIP",
   "updated_at": "2026-11-21",
-  "note": "Status describes repository implementation only. A feature is not live until its external setup and tests are verified. PWA service-worker cache v20 and offline core asset coverage are now in the repository; deployment and Android-device verification remain required.",
+  "note": "Status describes repository implementation only. A feature is not live until its external setup and tests are verified. PWA service-worker cache v21 and offline core asset coverage are now in the repository; deployment and Android-device verification remain required.",
   "stages": [
     {
       "id": "release-center",
       "title": "Stage 0.4 — Version 3.3.0 Update Center",
       "status": "testing",
-      "summary": "App and Edge Function version-comparison flow, app-supplied current_version validation, PWA waiting-worker prompt and user-approved activation are in the repository. Service worker cache v20 includes verified core branding assets and preserves caches outside the MW VIP namespace.",
+      "summary": "App and Edge Function version-comparison flow, app-supplied current_version validation, PWA waiting-worker prompt and user-approved activation are in the repository. Service worker cache v21 includes verified core branding assets and preserves caches outside the MW VIP namespace.",
       "requires": "Deploy through GitHub Pages; deploy check-updates; apply 20261119200000_update_releases.sql; test update/no-update paths and offline navigation on Android. Confirm deployment workflow success.",
       "page": "updates"
     },
