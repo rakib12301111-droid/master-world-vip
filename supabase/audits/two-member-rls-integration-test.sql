@@ -45,10 +45,9 @@ GRANT SELECT ON mwvip_rls_fixture TO authenticated;
 
 INSERT INTO public.conversations(id,kind,created_by)
 SELECT conversation_id,'direct',member_a FROM mwvip_rls_fixture;
+-- Member B is deliberately NOT a participant: this tests cross-member denial.
 INSERT INTO public.conversation_members(conversation_id,user_id)
-SELECT conversation_id,member_a FROM mwvip_rls_fixture
-UNION ALL
-SELECT conversation_id,member_b FROM mwvip_rls_fixture;
+SELECT conversation_id,member_a FROM mwvip_rls_fixture;
 INSERT INTO public.messages(conversation_id,sender_id,body)
 SELECT conversation_id,member_a,'MWVIP RLS integration fixture' FROM mwvip_rls_fixture;
 
@@ -73,6 +72,7 @@ DECLARE f record;
 BEGIN
   SELECT * INTO f FROM mwvip_rls_fixture;
   IF EXISTS (SELECT 1 FROM public.profiles WHERE id=f.member_a) THEN RAISE EXCEPTION 'FAIL: B can read A full/private profile row'; END IF;
+  IF EXISTS (SELECT 1 FROM public.user_roles WHERE user_id=f.member_a) THEN RAISE EXCEPTION 'FAIL: B can read A role assignment'; END IF;
   IF EXISTS (SELECT 1 FROM public.conversations WHERE id=f.conversation_id) THEN RAISE EXCEPTION 'FAIL: B can read A private conversation'; END IF;
   IF EXISTS (SELECT 1 FROM public.messages WHERE conversation_id=f.conversation_id) THEN RAISE EXCEPTION 'FAIL: B can read A private messages'; END IF;
   IF EXISTS (SELECT 1 FROM public.community_groups WHERE id=f.private_group_id) THEN RAISE EXCEPTION 'FAIL: B can read A private group'; END IF;
@@ -93,6 +93,7 @@ DECLARE f record;
 BEGIN
   SELECT * INTO f FROM mwvip_rls_fixture;
   IF NOT EXISTS (SELECT 1 FROM public.profiles WHERE id=f.member_a) THEN RAISE EXCEPTION 'FAIL: A cannot read own profile'; END IF;
+  IF NOT EXISTS (SELECT 1 FROM public.user_roles WHERE user_id=f.member_a) THEN RAISE EXCEPTION 'FAIL: A cannot read own role assignment'; END IF;
   IF NOT EXISTS (SELECT 1 FROM public.conversations WHERE id=f.conversation_id) THEN RAISE EXCEPTION 'FAIL: A cannot read own conversation'; END IF;
   IF NOT EXISTS (SELECT 1 FROM public.messages WHERE conversation_id=f.conversation_id) THEN RAISE EXCEPTION 'FAIL: A cannot read own message'; END IF;
   IF NOT EXISTS (SELECT 1 FROM public.community_groups WHERE id=f.private_group_id) THEN RAISE EXCEPTION 'FAIL: A cannot read own private group'; END IF;
