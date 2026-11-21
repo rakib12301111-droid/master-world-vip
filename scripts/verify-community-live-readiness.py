@@ -130,6 +130,7 @@ checks = {
         and ">= 20" in helpdesk_sql
         and "verification_request_events" in helpdesk_sql
         and "review_verification_request" in helpdesk_sql
+        and "insert into public.notifications" in helpdesk_sql
         and "government IDs, passwords, OTPs or login codes" in helpdesk_sql
     ),
     "live acceptance guide exists": Path("docs/COMMUNITY_LIVE_READINESS.md").exists(),
