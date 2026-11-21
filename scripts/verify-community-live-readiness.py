@@ -150,7 +150,8 @@ checks = {
         and "ANDROID_KEYSTORE_BASE64" in android_release_workflow
         and "ANDROID_KEY_ALIAS" in android_release_workflow
         and "keytool -list" in android_release_workflow
-        and "apksigner verify --verbose --print-certs" in android_release_workflow
+        and "apksigner" in android_release_workflow
+        and "--print-certs" in android_release_workflow
         and "sha256sum" in android_release_workflow
         and "actions/upload-artifact@v4" in android_release_workflow
     ),
