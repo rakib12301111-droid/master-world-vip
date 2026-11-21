@@ -55,8 +55,14 @@ Deno.serve(async (req: Request) => {
     if (mode !== "dry_run" && mode !== "apply") {
       return reply({ success: false, error: "mode must be dry_run or apply" }, 400);
     }
-    if (mode === "apply" && (body?.confirm_apply !== "APPLY-MASTER-WORLD-VIP-MIGRATIONS" || body?.backup_confirmed !== true)) {
-      return reply({ success: false, error: "Apply requires the exact confirmation phrase and backup acknowledgement" }, 400);
+    if (mode === "apply") {
+      const backupReference = typeof body?.backup_reference === "string" ? body.backup_reference.trim() : "";
+      if (body?.confirm_apply !== "APPLY-MASTER-WORLD-VIP-MIGRATIONS" ||
+          body?.backup_confirmed !== true || body?.restore_tested !== true ||
+          backupReference.length < 3 || backupReference.length > 120 ||
+          /https?:\/\/|password|token|secret/i.test(backupReference)) {
+        return reply({ success: false, error: "Apply requires the exact confirmation phrase, recoverable backup, tested restore procedure and a non-secret backup reference" }, 400);
+      }
     }
 
     const requestId = crypto.randomUUID();
@@ -75,6 +81,10 @@ Deno.serve(async (req: Request) => {
           request_id: requestId,
           confirm_project: "MASTER-WORLD-VIP",
           apply_migrations: mode === "apply" ? "true" : "false",
+          backup_confirmed: mode === "apply" && body?.backup_confirmed === true ? "true" : "false",
+          restore_tested: mode === "apply" && body?.restore_tested === true ? "true" : "false",
+          backup_reference: mode === "apply" ? body.backup_reference.trim() : "",
+          confirm_apply: mode === "apply" ? body.confirm_apply : "",
         },
       }),
     });
