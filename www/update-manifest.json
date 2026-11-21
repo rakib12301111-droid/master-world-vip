@@ -48,8 +48,8 @@
       "id": "auth-community",
       "title": "Stage 2 — Supabase Auth ও Global Community",
       "status": "testing",
-      "summary": "Auth, profile, member search, friend requests, private/group chat frontend and SQL foundations are in the repository. User reports a basic real message-exchange test passed; broader RLS, inbox, read/unread and multi-user security tests are not yet independently verified.",
-      "requires": "Verify the target Supabase migrations and RLS policies; test registration/login, profile, friend requests, private/group chat, inbox and read/unread behavior with multiple accounts.",
+      "summary": "A Bengali Supabase Project Setup Wizard now explains project creation, ordered SQL migrations, public-key connection and Registration/Login testing. Browser validation accepts publishable keys or legacy anon JWTs and rejects sb_secret/service_role keys. Auth, profiles, community UI and SQL foundations are present in the repository.",
+      "requires": "Apply and verify all required migrations in the intended Supabase project (confirm Owner email first); configure Auth Site URL/Redirect URLs and email; test connection, registration, email confirmation, login, profile and multi-account RLS. No database migration is automatically applied by the website.",
       "page": "account"
     },
     {
