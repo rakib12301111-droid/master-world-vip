@@ -87,8 +87,8 @@ checks = {
     ),
     "production migration workflow defaults to preview and requires explicit backup confirmation": (
         'default: "no"' in migration_workflow
-        and 'supabase db push --dry-run --remote="$SUPABASE_DB_URL"' in migration_workflow
-        and 'supabase db push --remote="$SUPABASE_DB_URL" --yes' in migration_workflow
+        and 'supabase db push --dry-run --db-url "$SUPABASE_DB_URL"' in migration_workflow
+        and 'supabase db push --db-url "$SUPABASE_DB_URL" --yes' in migration_workflow
         and "SUPABASE_DB_URL" in migration_workflow
         and "SUPABASE_ACCESS_TOKEN" in migration_workflow
         and "inputs.apply_migrations == 'yes' && inputs.confirm_recoverable_backup == 'yes' && inputs.confirm_restore_tested == 'yes'" in migration_workflow
