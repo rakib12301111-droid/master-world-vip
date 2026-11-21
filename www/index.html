@@ -420,7 +420,7 @@
 <p class="small muted">শুধু যাচাইকৃত Owner কোড জমা দিতে পারবেন। SQL migration হিসেবে সংরক্ষিত হয়ে Dry Run ও অনুমোদিত Apply workflow-তে যাবে। Edge Function নির্দিষ্ট function folder-এ সংরক্ষিত হবে এবং deployment workflow চালু হবে।</p>
 <div class="card" id="githubSecretsSetup">
 <h3>🔐 Secure GitHub Actions Secret Setup</h3>
-<p class="small muted">এখান থেকেই Supabase Access Token ও Database Password GitHub Actions-এ encrypted secret হিসেবে পাঠানো যাবে। এগুলো browser storage, app database বা source code-এ রাখা হবে না।</p>
+<p class="small muted">এখান থেকেই Supabase Personal Access Token (Supabase Account → Access Tokens; token অবশ্যই sbp_ দিয়ে শুরু) ও Database Password GitHub Actions-এ encrypted secret হিসেবে পাঠানো যাবে। Project anon/publishable/service-role key এখানে দেবেন না। এগুলো browser storage, app database বা source code-এ রাখা হবে না।</p>
 <label>Supabase Access Token<input id="mwvipSupabaseAccessToken" type="password" autocomplete="new-password" spellcheck="false" placeholder="Supabase Account → Access Tokens"></label>
 <label>Supabase Database Password<input id="mwvipSupabaseDbPassword" type="password" autocomplete="new-password" placeholder="Supabase database password"></label>
 <label class="feature"><input type="checkbox" id="mwvipConfirmSecretSetup"> আমি নিশ্চিত করছি—এগুলো আমার নিজের Supabase project-এর credentials এবং GitHub Actions-এ সংরক্ষণে সম্মতি দিচ্ছি।</label>
