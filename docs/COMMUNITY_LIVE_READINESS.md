@@ -122,3 +122,16 @@ A clean audit is not a substitute for live two-account authorization tests. In p
 ## Member verification and private helpdesk foundation
 
 The additive migration `20261121180000_member_verification_helpdesk.sql` adds a private request queue, member/staff message thread, status-event history, staff-only review RPC, one-active-request-per-member rule and message rate limit. It intentionally stores a short explanation only. Do not request or upload Facebook passwords, OTPs, login codes, or government-ID images through this feature. The migration is not live until the guarded production workflow completes and the request/message/review flows pass with separate member and staff accounts. A member-facing web UI and staff review controls are now present in `www/index.html`; confirm them only after applying the migration and passing member/staff acceptance tests. Optional voice/video support remains a separate implementation task.
+
+### Verification/helpdesk acceptance test
+
+1. Sign in as ordinary Member A and submit a short verification request without attaching identity documents or sharing credentials.
+2. Sign in as ordinary Member B and confirm A's request, messages and event history are not visible.
+3. Sign in as an authorized helpdesk staff account (`owner`, `super_admin`, `admin` or `moderator`) and confirm the request appears in the private queue.
+4. Set the request to `needs_info` with a short staff note; confirm A can read the note and reply.
+5. Confirm staff can approve or reject the request and that status history plus `admin_audit_logs` record the review.
+6. Confirm ordinary members cannot call the review RPC successfully, a member cannot submit a second active request, and message rate limits are enforced.
+7. Confirm approved/rejected requests are closed to further messages.
+
+The UI uses the RPCs `submit_my_verification_request`, `send_verification_message` and `review_verification_request`. Do not mark the feature live until this sequence passes against the production project.
+
