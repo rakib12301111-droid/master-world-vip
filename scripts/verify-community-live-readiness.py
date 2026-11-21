@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Static readiness checks for MASTER WORLD VIP community services."""
 from pathlib import Path
+import re
 import sys
 
 required_functions = [
@@ -14,6 +15,18 @@ push = Path("supabase/functions/send-push/index.ts").read_text(encoding="utf-8")
 migration_files = sorted(Path("supabase/migrations").glob("*.sql"))
 migration_versions = [p.name.split("_", 1)[0] for p in migration_files]
 migration_version_unique = len(migration_versions) == len(set(migration_versions))
+migration_workflow = Path(".github/workflows/apply-supabase-migrations.yml").read_text(encoding="utf-8")
+migration_block_start = migration_workflow.find("for migration in \\\\")
+migration_block_end = migration_workflow.find("; do", migration_block_start)
+migration_block = (
+    migration_workflow[migration_block_start:migration_block_end]
+    if migration_block_start >= 0 and migration_block_end > migration_block_start
+    else ""
+)
+workflow_migrations = sorted(
+    re.findall(r"\\b[0-9]{14}_[A-Za-z0-9_-]+\\.sql\\b", migration_block)
+)
+repository_migrations = sorted(p.name for p in migration_files)
 required_migrations = [
     "20261121120000_facebook_setup_orders.sql",
     "20261121130000_facebook_setup_feedback.sql",
@@ -24,6 +37,9 @@ required_migrations = [
 ]
 checks = {
     "Supabase migration versions are unique": migration_version_unique,
+    "production workflow covers every SQL migration exactly once": (
+        workflow_migrations == repository_migrations
+    ),
     "all latest database migrations are present": all(
         Path("supabase/migrations", name).exists() for name in required_migrations
     ),
