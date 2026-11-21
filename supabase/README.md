@@ -14,6 +14,7 @@ Run each SQL file once in Supabase → SQL Editor, in this exact order:
 6. `supabase/migrations/20261119200000_update_releases.sql` — release metadata for Update Center.
 7. `supabase/migrations/20261120100000_inbox_push_foundation.sql` — unified inbox, unread/read markers and per-device Web Push subscription storage. Requires the global community migration first.
 8. `supabase/migrations/20261121120000_facebook_setup_orders.sql` — Facebook setup assistance order records, customer-only order visibility and Admin/Owner review. Requires the base and Admin RBAC migrations.
+9. `supabase/migrations/20261121160000_trusted_devices_login_history.sql` — RLS-protected trusted-device registry and app-observed login history. Requires authenticated Supabase users.
 
 Review and apply in a staging project first. The repository cannot confirm whether these migrations have already been applied to your live Supabase project.
 
