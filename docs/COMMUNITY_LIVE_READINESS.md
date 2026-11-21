@@ -11,11 +11,10 @@ The production workflow deploys:
 - `get-db-update-status`
 - `send-push`
 
-Required repository-level GitHub Actions secrets:
+Required repository-level GitHub Actions secret:
 - `SUPABASE_ACCESS_TOKEN`
-- `SUPABASE_PROJECT_REF` (must be `lztbbrzeuyjkuiyzrsxp`)
 
-The workflow intentionally fails closed if either secret is missing. It never reads or prints secret values.
+The approved project ref `lztbbrzeuyjkuiyzrsxp` is pinned in the workflow, not read from a secret. The workflow intentionally fails closed if the token is missing and never prints secret values.
 
 ## Supabase Edge Function runtime secrets
 
