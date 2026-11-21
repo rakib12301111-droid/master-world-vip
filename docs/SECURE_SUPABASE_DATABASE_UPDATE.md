@@ -75,3 +75,8 @@ Never use an owner/admin account for either RLS test identity. Never paste crede
 4. Run **MASTER WORLD VIP - Two Member RLS Integration Test**. It inserts temporary direct-message, private-group, support-ticket and notification fixtures inside a transaction, switches authenticated JWT identities between the two ordinary members, asserts own-versus-other access and admin-table denial, then rolls back all fixtures.
 
 The two-member test is destructive only within its own transaction and ends with ROLLBACK. Do not remove the rollback. A workflow success is the required evidence; do not mark live database migration, index health, query-plan improvement or RLS as verified until the corresponding run completes and its output has been reviewed. EXPLAIN plans are measurements, not an automatic pass/fail performance threshold; compare actual plan nodes, execution time and buffers against a saved baseline.
+
+
+## Additional group RLS recursion correction (2026-11-21)
+
+The two-member test review identified a policy dependency cycle: the community-group read policy queried `group_members`, while the group-roster policy queried `community_groups`. The additive migration `20261121120000_group_rls_recursion_fix.sql` replaces those checks with caller-scoped SECURITY DEFINER helpers using a fixed empty search path. It is included in the production migration preflight list. Apply only after the standard dry-run and recoverable-backup gate, then rerun the read-only audit and two-member integration test.
