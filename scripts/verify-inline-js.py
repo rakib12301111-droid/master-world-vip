@@ -8,7 +8,7 @@ import tempfile
 
 html = Path("www/index.html").read_text(encoding="utf-8")
 blocks = re.findall(
-    r"<script\\b(?![^>]*\\bsrc\\s*=)[^>]*>(.*?)</script\\s*>",
+    r"<script\b(?![^>]*\bsrc\s*=)[^>]*>(.*?)</script\s*>",
     html,
     flags=re.IGNORECASE | re.DOTALL,
 )
