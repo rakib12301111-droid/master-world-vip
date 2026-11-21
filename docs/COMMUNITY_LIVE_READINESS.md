@@ -48,7 +48,12 @@ Run the Update Center Dry Run first and inspect its complete output. The expecte
 7. `20261120100000_inbox_push_foundation.sql`
 8. `20261120150000_membership_helper_hardening.sql`
 9. `20261121100000_profiles_discovery_privacy_hardening.sql`
-10. `20261121120000_group_rls_recursion_fix.sql`
+10. `20261121120000_facebook_setup_orders.sql`
+11. `20261121130000_facebook_setup_feedback.sql`
+12. `20261121140000_verified_payment_state.sql`
+13. `20261121150000_sslcommerz_checkout_enable.sql`
+14. `20261121160000_trusted_devices_login_history.sql`
+15. `20261121170000_group_rls_recursion_fix.sql`
 
 Do not apply until the target project and a recent recoverable backup are confirmed. The Owner bootstrap statement is in migration 4 and is email-specific; verify that the matching auth user exists before applying. Never assume that a matching email query alone proves the role has been granted.
 
@@ -104,7 +109,7 @@ The new migration removes the broad discoverable-profile table SELECT policy bec
 
 ## Group RLS recursion correction
 
-The migration `20261121120000_group_rls_recursion_fix.sql` adds a narrowly scoped SECURITY DEFINER membership helper with a fixed search path and updates group policies to avoid recursive RLS evaluation. It is included in the guarded migration workflow. Do not mark the correction live until the migration has been applied and the two-member group access tests pass.
+The migration `20261121170000_group_rls_recursion_fix.sql` adds a narrowly scoped SECURITY DEFINER membership helper with a fixed search path and updates group policies to avoid recursive RLS evaluation. It is included in the guarded migration workflow. Do not mark the correction live until the migration has been applied and the two-member group access tests pass.
 
 ## Read-only production index and RLS audit
 
