@@ -1846,9 +1846,9 @@ $('submitFbFeedback')?.addEventListener('click',async()=>{
 });
 
 
-let liveLocationWatchId=null,liveLocationLastSentAt=0,liveLocationBusy=false;
+let liveLocationWatchId=null,liveLocationLastSentAt=0,liveLocationBusy=false,liveLocationTimer=null,liveLocationLastCoords=null;
 function locationReady(){if(!client||!currentUser){say('myLocationStatus','লোকেশন ফিচার ব্যবহারের আগে লগইন করুন।');return false;}return true;}
-function stopLocationWatch(){if(liveLocationWatchId!==null&&navigator.geolocation){navigator.geolocation.clearWatch(liveLocationWatchId);liveLocationWatchId=null;}}
+function stopLocationWatch(){if(liveLocationWatchId!==null&&navigator.geolocation){navigator.geolocation.clearWatch(liveLocationWatchId);liveLocationWatchId=null;}if(liveLocationTimer!==null){clearInterval(liveLocationTimer);liveLocationTimer=null;}liveLocationLastCoords=null;}
 async function stopMyLocationSharing(showMessage=true){
  stopLocationWatch();
  if(client&&currentUser){const {error}=await client.rpc('set_my_location_sharing',{p_enabled:false});if(error){if(showMessage)say('myLocationStatus','Sharing বন্ধের server update ব্যর্থ: '+error.message);return;}}
@@ -1882,6 +1882,7 @@ $('startLocationSharing')?.addEventListener('click',async()=>{
  say('myLocationStatus','GPS permission চাওয়া হচ্ছে…');
  stopLocationWatch();
  liveLocationWatchId=navigator.geolocation.watchPosition(async position=>{
+  liveLocationLastCoords=position.coords;
   if(liveLocationBusy||Date.now()-liveLocationLastSentAt<15000)return;
   liveLocationBusy=true;
   const {latitude,longitude,accuracy}=position.coords;
@@ -1889,12 +1890,13 @@ $('startLocationSharing')?.addEventListener('click',async()=>{
   liveLocationBusy=false;
   if(updateError){say('myLocationStatus','GPS update ব্যর্থ: '+updateError.message);stopLocationWatch();return;}
   liveLocationLastSentAt=Date.now();
-  say('myLocationStatus','LIVE GPS sharing চালু আছে · Accuracy প্রায় '+Math.round(accuracy||0)+' মিটার · update প্রতি ১৫ সেকেন্ডে।');
+  say('myLocationStatus','LIVE GPS sharing চালু আছে · Accuracy প্রায় '+Math.round(accuracy||0)+' মিটার · update প্রতি ৩০ সেকেন্ডে।');
  },error=>{
   say('myLocationStatus','GPS পাওয়া যায়নি: '+error.message+'। Browser location permission ও device GPS পরীক্ষা করুন।');
   stopLocationWatch();
   client.rpc('set_my_location_sharing',{p_enabled:false}).catch(()=>{});
  },{enableHighAccuracy:true,maximumAge:5000,timeout:20000});
+ liveLocationTimer=setInterval(async()=>{if(!liveLocationLastCoords||liveLocationBusy)return;const c=liveLocationLastCoords;liveLocationBusy=true;const {error:updateError}=await client.rpc('update_my_live_location',{p_latitude:c.latitude,p_longitude:c.longitude,p_accuracy_m:Math.round(c.accuracy||0)});liveLocationBusy=false;if(updateError){say('myLocationStatus','GPS update ব্যর্থ: '+updateError.message);stopLocationWatch();return;}liveLocationLastSentAt=Date.now();},30000);
 });
 $('stopLocationSharing')?.addEventListener('click',()=>stopMyLocationSharing(true));
 document.addEventListener('visibilitychange',()=>{
