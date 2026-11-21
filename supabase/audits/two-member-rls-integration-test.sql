@@ -26,8 +26,14 @@ BEGIN
      OR NOT EXISTS (SELECT 1 FROM auth.users WHERE id=b) THEN
     RAISE EXCEPTION 'Both test accounts must exist in auth.users';
   END IF;
-  IF EXISTS (SELECT 1 FROM public.app_user_roles WHERE user_id IN (a,b) AND role IN ('owner','super_admin','admin')) THEN
-    RAISE EXCEPTION 'Use ordinary member accounts, not admin accounts';
+  IF EXISTS (
+    SELECT 1 FROM public.app_user_roles
+    WHERE user_id IN (a,b) AND role IN ('owner','super_admin','admin','moderator')
+  ) OR EXISTS (
+    SELECT 1 FROM public.user_roles
+    WHERE user_id IN (a,b) AND role IN ('admin','moderator')
+  ) THEN
+    RAISE EXCEPTION 'Use ordinary member accounts only; elevated admin/moderator roles are not valid RLS fixtures';
   END IF;
 END $mwvip_check$;
 
