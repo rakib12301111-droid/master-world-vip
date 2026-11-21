@@ -99,3 +99,10 @@ GitHub CI can validate repository structure and static safety checks. It cannot 
 ## Profile discovery privacy correction
 
 The new migration removes the broad discoverable-profile table SELECT policy because permissive PostgreSQL policies combine with OR. It retains direct profile reads for the profile owner/admin and exposes a separate authenticated RPC returning only public discovery fields. Do not mark this protection live until the migration is applied and two-account RLS tests pass.
+
+
+## Read-only production index and RLS audit
+
+Run Actions → **MASTER WORLD VIP - Read-only Supabase Index and RLS Audit** → Run workflow. It uses the same repository-level `SUPABASE_DB_PASSWORD` and `SUPABASE_ACCESS_TOKEN` secrets and a fixed approved project target. The audit is read-only: it reports expected indexes, structurally duplicate index candidates, RLS enabled state, policy definitions, direct grants on admin tables, and EXPLAIN (ANALYZE, BUFFERS) plans for published releases and recent message lookups. It does not create/drop indexes or change policies.
+
+A clean audit is not a substitute for live two-account authorization tests. In particular, verify a normal member cannot read another member's private profile fields, role assignments, admin audit logs, private conversations, private group roster/posts, or support tickets. The audit workflow must complete successfully and its output must be reviewed before recording any item as PASS.
