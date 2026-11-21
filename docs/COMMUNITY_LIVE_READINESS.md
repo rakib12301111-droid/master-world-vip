@@ -191,3 +191,12 @@ The workflow verifies the restored signing key and APK signature, then stores th
 ### Secret handling and release boundary
 
 Add secrets directly in GitHub → Settings → Secrets and variables → Actions. Never paste passwords, tokens, keystore contents, or member UUIDs into ChatGPT, source files, logs, or public issues. A workflow is marked Live/PASS only after its corresponding real run completes successfully and its result is reviewed. Static CI success alone is not a live result.
+
+
+## Consent-based live member location map
+
+The additive migration `20261121190000_member_live_location.sql` adds a private GPS-sharing table and authenticated RPCs: `set_my_location_sharing` enables/disables sharing and clears coordinates when disabled; `update_my_live_location` accepts GPS only while the signed-in member has sharing enabled; `lookup_member_location_by_phone` searches only verified Supabase Auth phone numbers, limits each caller to 10 lookups per minute, and returns coordinates only while sharing is enabled and the last GPS update is newer than two minutes.
+
+The member-facing page is `Live Number Location Map`. It requires a verified phone number, an explicit sharing checkbox, HTTPS browser GPS permission, and a signed-in session. A stale or disabled share is reported as OFFLINE without coordinates. Map/place labels are derived from returned GPS coordinates; reverse geocoding uses OpenStreetMap Nominatim and may be unavailable or delayed. A phone/SIM being powered on does not reveal GPS location. The browser stops its GPS watch when the page is hidden; members must re-enable sharing when they return.
+
+Before production, run the guarded migration workflow in preview mode, confirm the full recoverable backup and tested restore process, then apply only after explicit operator approval. Verify with two controlled accounts: confirm phone A by SMS, enable sharing and grant GPS; search A from B and confirm the pin/place name; disable sharing on A and confirm B sees OFFLINE with no coordinates; wait over two minutes without updates and confirm OFFLINE; verify an unverified phone cannot be found; confirm ordinary members cannot directly select or write the location tables; confirm the lookup rate limit. Do not mark this feature live until the migration is applied and these tests pass.
