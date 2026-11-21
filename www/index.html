@@ -352,7 +352,7 @@
 <div id="ownerLiveHealthStatus" class="notice" role="status">Owner login ও health function deploy হলে পূর্ণ server/schema check করা যাবে।</div>
 <ul class="small muted">
 <li>GitHub Environment secrets-এর মান browser থেকে পড়া বা লেখা যাবে না।</li>
-<li>নিরাপত্তার জন্য SUPABASE_ACCESS_TOKEN ও SUPABASE_DB_PASSWORD GitHub-এর production Environment-এ যোগ করতে হবে। SUPABASE_PROJECT_REF হলো নির্দিষ্ট project reference।</li>
+<li>নিরাপত্তার জন্য SUPABASE_ACCESS_TOKEN ও SUPABASE_DB_PASSWORD GitHub repository Settings → Secrets and variables → Actions-এ যোগ করতে হবে। অনুমোদিত SUPABASE_PROJECT_REF workflow-তে স্থিরভাবে নির্ধারিত; এটি আলাদা Secret নয়।</li>
 <li>Secret যোগের পর Deploy workflow পুনরায় চালিয়ে ফলাফল যাচাই করা হবে।</li>
 </ul>
 </div>
