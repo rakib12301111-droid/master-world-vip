@@ -100,5 +100,6 @@
       "requires": "Developer account, signed AAB, store listing, privacy declarations, policy review and Play approval.",
       "page": "updates"
     }
-  ]
+  ],
+  "auth_community_stage": "Supabase Setup Wizard includes device-local progress tracking; database migrations and real Auth tests remain required."
 }
