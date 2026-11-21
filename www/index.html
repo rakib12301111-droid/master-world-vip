@@ -26,6 +26,7 @@
 <p class="brand"><img class="brand-mark" src="./icons/icon.svg" alt=""> MASTER WORLD VIP</p><p class="sub">Global Digital Platform</p>
 <nav class="nav" aria-label="Main navigation">
 <button class="active" data-page="setup">✓ One-Click Setup</button>
+<button data-page="settings">⚙ Settings</button>
 <button data-page="overview">⌂ Overview</button>
 <button data-page="account">♙ Register / Login</button>
 <button data-page="members">♧ Member Hub</button>
@@ -70,6 +71,23 @@
 <p class="muted small">Browser notification permission, backup upload, external account connection এবং optional analytics চালুর আগে আলাদা সম্মতি নেওয়া হবে। এই setup শুধু এই ডিভাইসের preference সংরক্ষণ করে।</p>
 </article></section>
 
+<section class="page" id="settings">
+<article class="card"><h2>⚙ Workspace Settings</h2><p class="muted">One-Click Setup থেকে সংরক্ষিত স্থানীয় পছন্দ এখানে দেখা ও পরিবর্তন করুন। পরিবর্তন শুধু এই ডিভাইসের browser-এ থাকবে।</p>
+<div id="workspaceSettingsStatus" class="notice">এই ডিভাইসের সেটিংস লোড হচ্ছে…</div>
+<div class="feature-list">
+<label class="feature"><input type="checkbox" id="prefBn"> বাংলা ভাষা ও Bangladesh region</label>
+<label class="feature"><input type="checkbox" id="prefDark"> Dark theme preference</label>
+<label class="feature"><input type="checkbox" id="prefSecurity"> Security alert preference</label>
+<label class="feature"><input type="checkbox" id="prefInApp"> In-app notifications preference</label>
+<label class="feature"><input type="checkbox" id="prefPrivacy"> Privacy-friendly defaults</label>
+<label class="feature"><input type="checkbox" id="prefBackup"> Backup/recovery reminder</label>
+<label class="feature"><input type="checkbox" id="prefSmartUpdate"> Smart Update checks</label>
+<label class="feature"><input type="checkbox" id="prefAnalytics"> Optional analytics preference (collection stays off until separately enabled)</label>
+</div>
+<div class="actions"><button class="btn" id="saveWorkspaceSettings" type="button">Save Settings</button><button class="btn secondary" data-go="overview" type="button">Dashboard</button><button class="btn secondary" data-go="setup" type="button">One-Click Setup</button></div>
+<p class="muted small">এই পেজ OS permission, browser notification, backup upload, external account connection বা legal consent চালু করে না। Analytics preference নির্বাচন করলেও analytics collection চালু হয় না।</p></article>
+</section>
+
 <section class="page" id="overview">
 <a href="https://rakib12301111-droid.github.io/master-world-vip/" aria-label="Open MASTER WORLD VIP website"><img class="vip-hero" src="./assets/mwvip-global-banner.svg" alt="MASTER WORLD VIP global community branding"></a>
 <div class="grid">
@@ -78,6 +96,7 @@
 <article class="card"><div class="label">Languages</div><div class="stat">BN / EN</div><div class="muted small">বহুভাষিক প্রস্তুতি</div></article>
 <article class="card"><div class="label">Release status</div><div class="stat">Stage 1</div><div class="muted small">পরীক্ষা ও backend কাজ বাকি</div></article>
 </div>
+<div class="section"><article class="card" id="setupDashboardCard"><h2>One-Click Setup · Workspace Preferences</h2><div id="dashboardSetupStatus" class="notice">সেটিংস পরীক্ষা করা হচ্ছে…</div><div class="actions"><button class="btn" data-go="settings" type="button">Manage Settings</button><button class="btn secondary" data-go="setup" type="button">Setup / Review</button></div></article></div>
 <div class="section two">
 <article class="card"><h2>প্রজেক্টের ফিচার তালিকা</h2><div class="feature-list">
 <div class="feature"><strong>Member Hub & Profiles</strong><div class="status">Auth foundation added; database setup/testing pending</div></div>
@@ -587,8 +606,8 @@
 <script>
 const $=id=>document.getElementById(id);
 const pages=[...document.querySelectorAll('.page')];
-const titles={setup:'One-Click Setup',overview:'MASTER WORLD VIP Dashboard',account:'Registration & Login',members:'Member Hub',ai:'AI Center',facebook:'Facebook Center',growth:'Global Growth',admin:'Admin & Security',privacy:'Privacy & GDPR',updates:'Update Center',progress:'কাজের অগ্রগতি / Project Progress',fbService:'Facebook Setup Service',inbox:'Unified Inbox',verification:'Member Verification & Helpdesk',global:'Global News & Offline',emergency:'Emergency Offline Center',games:'Games Center',location:'Live Number Location Map'};
-function showPage(id){pages.forEach(p=>p.classList.toggle('active',p.id===id));document.querySelectorAll('[data-page]').forEach(b=>b.classList.toggle('active',b.dataset.page===id));$('pageTitle').textContent=titles[id]||titles.overview;window.scrollTo({top:0,behavior:'smooth'});if(id==='inbox'&&typeof loadInbox==='function')loadInbox();if(id==='verification'&&typeof loadVerificationRequests==='function')loadVerificationRequests();if(id==='fbService'&&typeof loadFbOrders==='function'){loadFbOrders();loadFbFeedback();}}
+const titles={setup:'One-Click Setup',settings:'Workspace Settings',overview:'MASTER WORLD VIP Dashboard',account:'Registration & Login',members:'Member Hub',ai:'AI Center',facebook:'Facebook Center',growth:'Global Growth',admin:'Admin & Security',privacy:'Privacy & GDPR',updates:'Update Center',progress:'কাজের অগ্রগতি / Project Progress',fbService:'Facebook Setup Service',inbox:'Unified Inbox',verification:'Member Verification & Helpdesk',global:'Global News & Offline',emergency:'Emergency Offline Center',games:'Games Center',location:'Live Number Location Map'};
+function showPage(id){pages.forEach(p=>p.classList.toggle('active',p.id===id));document.querySelectorAll('[data-page]').forEach(b=>b.classList.toggle('active',b.dataset.page===id));$('pageTitle').textContent=titles[id]||titles.overview;if(id==='settings')syncWorkspaceSettingsUI();window.scrollTo({top:0,behavior:'smooth'});if(id==='inbox'&&typeof loadInbox==='function')loadInbox();if(id==='verification'&&typeof loadVerificationRequests==='function')loadVerificationRequests();if(id==='fbService'&&typeof loadFbOrders==='function'){loadFbOrders();loadFbFeedback();}}
 document.querySelectorAll('[data-page]').forEach(b=>b.addEventListener('click',()=>showPage(b.dataset.page)));
 document.querySelectorAll('[data-go]').forEach(b=>b.addEventListener('click',()=>showPage(b.dataset.go)));
 function readSetupPrefs(){try{return JSON.parse(localStorage.getItem('mwvip_setup_preferences')||'{}')}catch(e){return {}}}
@@ -613,15 +632,41 @@ function applySafeSetup(){
  localStorage.setItem('mwvip_setup_completed','true');
  const status=$('setupStatus');
  if(status){status.className='notice success';status.textContent='নিরাপদ স্থানীয় সেটআপ প্রয়োগ হয়েছে। Analytics, data collection, browser permission, account connection ও legal consent বন্ধ/অপরিবর্তিত আছে।';}
+ applyWorkspacePreferences(prefs);syncWorkspaceSettingsUI();
 }
 function loadSetupPrefs(){
  const p=readSetupPrefs();
  const map={setupBn:p.language!=='en',setupDark:p.theme!=='system',setupSecurity:p.securityAlerts!==false,setupInApp:p.inAppNotifications!==false,setupPrivacy:p.privacyFriendlyDefaults!==false,setupBackup:p.backupRecoveryReminder!==false,setupSmartUpdate:p.smartUpdateChecks!==false,setupAnalytics:p.analytics===true};
  Object.entries(map).forEach(([id,value])=>{if($(id))$(id).checked=value;});
  if(localStorage.getItem('mwvip_setup_completed')==='true'&&$('setupStatus')){$('setupStatus').className='notice success';$('setupStatus').textContent='এই ডিভাইসে নিরাপদ setup preferences সংরক্ষিত আছে। Review / Edit দিয়ে পরিবর্তন করুন।';}
+ applyWorkspacePreferences(p);syncWorkspaceSettingsUI();
 }
+function applyWorkspacePreferences(p){
+ const prefs=p||{};
+ document.documentElement.lang=prefs.language==='en'?'en':'bn';
+ document.documentElement.dataset.mwvipTheme=prefs.theme==='dark'?'dark':'system';
+ const complete=localStorage.getItem('mwvip_setup_completed')==='true';
+ const summary=complete?'সেটআপ সম্পন্ন · ভাষা: '+(prefs.language==='en'?'English':'বাংলা')+' · অঞ্চল: '+(prefs.region||'BD')+' · থিম: '+(prefs.theme||'dark')+' · Analytics collection: বন্ধ':'One-Click Setup এখনো সম্পন্ন হয়নি।';
+ if($('dashboardSetupStatus')){$('dashboardSetupStatus').className='notice'+(complete?' success':'');$('dashboardSetupStatus').textContent=summary;}
+ if($('workspaceSettingsStatus')){$('workspaceSettingsStatus').className='notice'+(complete?' success':'');$('workspaceSettingsStatus').textContent=complete?'এই ডিভাইসের সংরক্ষিত পছন্দ লোড হয়েছে। পরিবর্তন করে Save Settings চাপুন।':'এখনো কোনো setup সম্পন্ন হয়নি; পছন্দ নির্বাচন করে Save Settings চাপতে পারেন।';}
+}
+function syncWorkspaceSettingsUI(){
+ const p=readSetupPrefs();
+ const map={prefBn:p.language!=='en',prefDark:p.theme!=='system',prefSecurity:p.securityAlerts!==false,prefInApp:p.inAppNotifications!==false,prefPrivacy:p.privacyFriendlyDefaults!==false,prefBackup:p.backupRecoveryReminder!==false,prefSmartUpdate:p.smartUpdateChecks!==false,prefAnalytics:p.analytics===true};
+ Object.entries(map).forEach(([id,value])=>{if($(id))$(id).checked=value;});
+ applyWorkspacePreferences(p);
+}
+function saveWorkspaceSettings(){
+ const prefs={language:$('prefBn').checked?'bn':'en',region:$('prefBn').checked?'BD':'',theme:$('prefDark').checked?'dark':'system',securityAlerts:$('prefSecurity').checked,inAppNotifications:$('prefInApp').checked,privacyFriendlyDefaults:$('prefPrivacy').checked,backupRecoveryReminder:$('prefBackup').checked,smartUpdateChecks:$('prefSmartUpdate').checked,analytics:$('prefAnalytics').checked,externalDataCollection:false,browserNotificationPermission:'not_requested',accountConnection:'not_connected',legalConsent:'not_granted'};
+ localStorage.setItem('mwvip_setup_preferences',JSON.stringify(prefs));
+ localStorage.setItem('mwvip_setup_completed','true');
+ Object.entries({setupBn:prefs.language==='bn',setupDark:prefs.theme==='dark',setupSecurity:prefs.securityAlerts,setupInApp:prefs.inAppNotifications,setupPrivacy:prefs.privacyFriendlyDefaults,setupBackup:prefs.backupRecoveryReminder,setupSmartUpdate:prefs.smartUpdateChecks,setupAnalytics:prefs.analytics}).forEach(([id,value])=>{if($(id))$(id).checked=value;});
+ applyWorkspacePreferences(prefs);syncWorkspaceSettingsUI();
+ if($('setupStatus')){$('setupStatus').className='notice success';$('setupStatus').textContent='Workspace Settings সংরক্ষিত হয়েছে। সব preference এই ডিভাইসেই রাখা হয়েছে।';}
+}
+$('saveWorkspaceSettings')?.addEventListener('click',saveWorkspaceSettings);
 $('applySafeSetup').addEventListener('click',applySafeSetup);
-$('reviewSetup').addEventListener('click',()=>{$('setupStatus').textContent='সেটিংস পর্যালোচনা করুন; প্রয়োজনীয় checkbox বদলে Yes চাপুন।';});
+$('reviewSetup').addEventListener('click',()=>{syncWorkspaceSettingsUI();showPage('settings');});
 $('laterSetup').addEventListener('click',()=>{say('setupStatus','Setup পরে করা যাবে। কোনো সেটিংস পরিবর্তন হয়নি।');showPage('overview');});
 loadSetupPrefs();
 let client=null,currentUser=null;
