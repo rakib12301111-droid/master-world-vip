@@ -19,13 +19,21 @@ LEFT JOIN pg_indexes i
 ORDER BY e.table_name,e.index_name;
 
 \echo '=== Exact duplicate index definitions ==='
-SELECT schemaname, tablename, array_agg(indexname ORDER BY indexname) AS index_names,
-       indexdef
-FROM pg_indexes
-WHERE schemaname='public'
-GROUP BY schemaname,tablename,indexdef
+SELECT
+  t.relname AS table_name,
+  array_agg(ic.relname ORDER BY ic.relname) AS duplicate_index_names,
+  i.indisunique AS is_unique,
+  i.indkey::text AS key_columns,
+  pg_get_expr(i.indpred, i.indrelid) AS partial_predicate,
+  pg_get_expr(i.indexprs, i.indrelid) AS index_expressions
+FROM pg_index i
+JOIN pg_class t ON t.oid=i.indrelid
+JOIN pg_namespace n ON n.oid=t.relnamespace
+JOIN pg_class ic ON ic.oid=i.indexrelid
+WHERE n.nspname='public'
+GROUP BY t.relname, i.indisunique, i.indkey, i.indpred, i.indexprs, i.indrelid
 HAVING count(*) > 1
-ORDER BY tablename;
+ORDER BY t.relname;
 
 \echo '=== RLS enabled status for protected tables ==='
 WITH expected(table_name) AS (
