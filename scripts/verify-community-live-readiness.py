@@ -106,6 +106,8 @@ checks = {
         "RAISE EXCEPTION 'FAIL: required indexes missing" in audit_sql
         and "RAISE EXCEPTION 'FAIL: required tables missing or RLS disabled" in audit_sql
         and "authenticated role has direct SELECT" in audit_sql
+        and "private verification/helpdesk RLS policies are missing" in audit_sql
+        and "verification_request_messages_request_created_idx" in audit_sql
     ),
     "two-member RLS SQL rejects elevated fixtures and rolls back all test data": (
         "Use ordinary member accounts only" in rls_sql
@@ -115,6 +117,10 @@ checks = {
         and "A cannot read own conversation" in rls_sql
         and "B can read A verification request" in rls_sql
         and "A cannot read own verification request" in rls_sql
+        and "A can read B private conversation" in rls_sql
+        and "B cannot read own conversation" in rls_sql
+        and "A can read B verification request" in rls_sql
+        and "B cannot read own verification request" in rls_sql
     ),
     "verification helpdesk UI uses secure RPCs and does not request identity secrets": (
         'id="verification"' in ui
@@ -143,7 +149,9 @@ checks = {
         and "confirm_signed_release" in android_release_workflow
         and "ANDROID_KEYSTORE_BASE64" in android_release_workflow
         and "ANDROID_KEY_ALIAS" in android_release_workflow
-        and "apksigner" in android_release_workflow
+        and "keytool -list" in android_release_workflow
+        and "apksigner verify --verbose --print-certs" in android_release_workflow
+        and "sha256sum" in android_release_workflow
         and "actions/upload-artifact@v4" in android_release_workflow
     ),
     "live acceptance guide exists": Path("docs/COMMUNITY_LIVE_READINESS.md").exists(),
