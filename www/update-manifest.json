@@ -101,5 +101,5 @@
       "page": "updates"
     }
   ],
-  "auth_community_stage": "Supabase Setup Wizard includes device-local progress tracking; database migrations and real Auth tests remain required."
+  "auth_community_stage": "Supabase Auth guidance added: SQL backup/migration order, Auth URL/email configuration, signup, email confirmation, login and Member Hub profile test. Live backend remains unverified."
 }
