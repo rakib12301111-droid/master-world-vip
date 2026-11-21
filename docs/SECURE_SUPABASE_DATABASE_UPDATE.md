@@ -8,7 +8,7 @@ In GitHub repository Settings → Secrets and variables → Actions, add:
 
 - `SUPABASE_ACCESS_TOKEN`: a Supabase personal access token with project access.
 - `SUPABASE_DB_PASSWORD`: the database password for the approved project.
-- `SUPABASE_PROJECT_REF`: `lztbbrzeuyjkuiyzrsxp`.
+- The approved project ref `lztbbrzeuyjkuiyzrsxp` is pinned inside the workflow; it is **not** a third GitHub Actions secret for this migration workflow. Do not add a duplicate project-ref secret just for this workflow.
 
 Never put these values in frontend code, SQL snippets, commits, or chat.
 
