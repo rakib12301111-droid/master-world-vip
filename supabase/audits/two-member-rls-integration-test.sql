@@ -40,6 +40,7 @@ SELECT
   gen_random_uuid() AS broadcast_id,
   gen_random_uuid() AS support_ticket_id,
   gen_random_uuid() AS notification_id;
+GRANT SELECT ON mwvip_rls_fixture TO authenticated;
 
 INSERT INTO public.conversations(id,kind,created_by)
 SELECT conversation_id,'direct',member_a FROM mwvip_rls_fixture;
