@@ -47,3 +47,8 @@ The workflow serializes deployments and refuses to run against a different proje
 8. Deploy the frontend branch to the hosting environment only after review/merge. A queued response means the workflow was requested, not that the migration succeeded. Verify the Actions run and database afterward.
 
 The Update Center Apply action deliberately requires an explicit confirmation phrase and a backup acknowledgement. The workflow applies all pending migrations in timestamp order, so always inspect the Dry Run output first.
+
+
+## Profile discovery privacy hardening
+
+The additive migration `20261121100000_profiles_discovery_privacy_hardening.sql` removes the broad discoverable-profile SELECT policy. PostgreSQL permissive policies are combined with OR, so leaving that policy beside the own/admin policy could expose full profile rows. The migration restores own/admin-only direct table access and provides `search_discoverable_profiles`, which returns only explicitly selected public fields. It is included in the guarded migration preflight list. Review and apply it only through the same dry-run, backup and explicit approval process.
