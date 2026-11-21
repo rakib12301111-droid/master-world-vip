@@ -72,3 +72,5 @@ Before enabling for members, test with two consenting accounts and a test device
 ## 7. Android WebView limitation
 
 The current APK is a WebView shell. Web Push through a browser Service Worker is not guaranteed to work inside Android WebView, and this project has not yet added Firebase Cloud Messaging (FCM) native integration. Validate push in Chrome/PWA separately; native Android push requires FCM registration, a secure device-token table and a trusted FCM sender before claiming APK push support.
+
+16. `supabase/migrations/20261121180000_member_verification_helpdesk.sql` — private verification/helpdesk requests, message thread, staff review RPC and append-only activity events.
