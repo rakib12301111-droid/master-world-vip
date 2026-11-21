@@ -54,6 +54,7 @@ Run the Update Center Dry Run first and inspect its complete output. The expecte
 13. `20261121150000_sslcommerz_checkout_enable.sql`
 14. `20261121160000_trusted_devices_login_history.sql`
 15. `20261121170000_group_rls_recursion_fix.sql`
+16. `20261121180000_member_verification_helpdesk.sql`
 
 Do not apply until the target project and a recent recoverable backup are confirmed. The Owner bootstrap statement is in migration 4 and is email-specific; verify that the matching auth user exists before applying. Never assume that a matching email query alone proves the role has been granted.
 
@@ -116,3 +117,8 @@ The migration `20261121170000_group_rls_recursion_fix.sql` adds a narrowly scope
 Run Actions → **MASTER WORLD VIP - Read-only Supabase Index and RLS Audit** → Run workflow. It uses the same repository-level `SUPABASE_DB_PASSWORD` and `SUPABASE_ACCESS_TOKEN` secrets and a fixed approved project target. The audit is read-only: it reports expected indexes, structurally duplicate index candidates, RLS enabled state, policy definitions, direct grants on admin tables, and EXPLAIN (ANALYZE, BUFFERS) plans for published releases and recent message lookups. It does not create/drop indexes or change policies.
 
 A clean audit is not a substitute for live two-account authorization tests. In particular, verify a normal member cannot read another member's private profile fields, role assignments, admin audit logs, private conversations, private group roster/posts, or support tickets. The audit workflow must complete successfully and its output must be reviewed before recording any item as PASS.
+
+
+## Member verification and private helpdesk foundation
+
+The additive migration `20261121180000_member_verification_helpdesk.sql` adds a private request queue, member/staff message thread, status-event history, staff-only review RPC, one-active-request-per-member rule and message rate limit. It intentionally stores a short explanation only. Do not request or upload Facebook passwords, OTPs, login codes, or government-ID images through this feature. The migration is not live until the guarded production workflow completes and the request/message/review flows pass with separate member and staff accounts. The web UI and optional voice/video support remain separate implementation and acceptance tasks.
