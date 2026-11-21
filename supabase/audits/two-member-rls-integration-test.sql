@@ -31,6 +31,16 @@ BEGIN
   END IF;
 END $mwvip_check$;
 
+-- Ensure both fixtures have the ordinary member role row expected by this schema.
+-- These rows are temporary and are removed by the final ROLLBACK.
+INSERT INTO public.user_roles(user_id,role)
+SELECT v.user_id,'member'
+FROM (VALUES (:'member_a'::uuid), (:'member_b'::uuid)) AS v(user_id)
+WHERE NOT EXISTS (
+  SELECT 1 FROM public.user_roles r
+  WHERE r.user_id=v.user_id AND r.role='member'
+);
+
 -- Fixture IDs are transaction-local constants; rollback removes every inserted row.
 CREATE TEMP TABLE mwvip_rls_fixture AS
 SELECT
