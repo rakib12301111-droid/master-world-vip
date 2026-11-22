@@ -29,6 +29,7 @@ This repository contains the database foundation, community, privacy, admin/broa
 15. `20261121170000_group_rls_recursion_fix.sql` — group membership RLS recursion fix.
 16. `20261121180000_member_verification_helpdesk.sql` — private member verification/helpdesk requests and staff workflow.
 17. `20261121190000_member_live_location.sql` — consent-based live location sharing and lookup foundation.
+18. `20261122100000_messaging_realtime.sql` — realtime publication and messaging delivery support.
 
 **Important:** Repository files and this checklist do not prove that any migration has been applied to your Supabase project. SQL is not run by the website automatically. Keep a record of each successfully applied migration. Do not rerun a migration blindly if the project already has part or all of its schema; inspect the database first.
 
@@ -41,7 +42,11 @@ This repository contains the database foundation, community, privacy, admin/broa
 - Create a test account, complete email confirmation if enabled, log in, then open Member Hub and save/load your profile. Repeat with a second test account to check user isolation.
 - A successful browser connection does not prove that all database migrations, RLS policies, email delivery, or production security have been verified.
 
-## 2. Update Center
+## 2. GitHub Actions database connectivity
+
+For GitHub-hosted runners, use the IPv4-compatible Supabase **Session Pooler** connection string. Save it as the repository Actions secret `SUPABASE_DB_URL`; the secure database update workflow validates the pooler host and passes the URL through `supabase db push --db-url` for both dry-run and apply. Do not use the direct database host on an IPv4-only runner, and never commit the connection string or paste it into chat. The workflow still requires the configured Supabase personal access token and all backup/restore/explicit-authorization gates before production changes.
+
+## 3. Update Center
 
 The app and Edge Function use version `3.3.0`. The app sends its own `current_version` to `check-updates`; the function validates that value and compares it with the newest published row in `update_releases`. The function reads `SUPABASE_URL` from the Supabase Edge runtime and uses the app's public publishable/anon API key to read published releases. It does not require an AI provider key or a service-role key.
 
@@ -55,7 +60,7 @@ The Supabase Edge Function config keeps `verify_jwt = false`; the function valid
 
 Detailed checks: `supabase/UPDATE_SYSTEM_TESTS.md`.
 
-## 3. AI function
+## 4. AI function
 
 Deploy `supabase/functions/ai-assistant/index.ts` as `ai-assistant`:
 
@@ -67,7 +72,7 @@ The function requires a valid signed-in user JWT (`verify_jwt = true`). Configur
 
 Never put provider keys or Supabase secret/service-role keys in browser code.
 
-## 4. Remaining external integrations
+## 5. Remaining external integrations
 
 - Email/push delivery needs a provider, sender/device registration and permission tests.
 - Facebook discovery requires a Meta app, approved permissions and permitted Graph API use.
@@ -78,11 +83,11 @@ Never put provider keys or Supabase secret/service-role keys in browser code.
 Do not mark modules live until configured and tested in the target Supabase project and on real devices.
 
 
-## 5. Unified Inbox and Push foundation
+## 6. Unified Inbox and Push foundation
 
 Apply `20261120100000_inbox_push_foundation.sql` after the Global Community migration. It adds `get_my_inbox()` and `mark_my_inbox_read()` RPCs, unread counts/read markers, and RLS-protected per-user browser push subscriptions. The PWA can request browser permission only after the member presses Enable Push, then store the browser subscription. Actual push delivery is not active until a trusted sender service is deployed with VAPID public/private keys; keep the private key in server secrets only. Test subscribe, unsubscribe, user isolation, inbox unread/read counts and real-device delivery before marking this feature live.
 
-## 6. Real Web Push delivery setup
+## 7. Real Web Push delivery setup
 
 The repository includes `supabase/functions/send-push/index.ts`. Deploy it after setting these Edge Function secrets (never put them in the web app):
 
@@ -98,6 +103,6 @@ Also ensure `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` are available to the 
 
 Before enabling for members, test with two consenting accounts and a test device: create a notification row for the recipient, verify the browser subscription is present, confirm the sender reports `sent: 1`, check notification display while the PWA is backgrounded, and confirm 404/410 subscriptions are cleaned up. Do not send message body content in push if privacy settings require generic alerts; current sender uses the notification title/body already stored in the notifications table.
 
-## 7. Android WebView limitation
+## 8. Android WebView limitation
 
 The current APK is a WebView shell. Web Push through a browser Service Worker is not guaranteed to work inside Android WebView, and this project has not yet added Firebase Cloud Messaging (FCM) native integration. Validate push in Chrome/PWA separately; native Android push requires FCM registration, a secure device-token table and a trusted FCM sender before claiming APK push support.
