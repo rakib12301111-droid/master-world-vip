@@ -42,8 +42,8 @@ This register tracks the existing repository. A feature is **not live** merely b
 1. **Repair database connectivity:** configure GitHub Actions secret `SUPABASE_DB_URL` with the Supabase Session Pooler connection string that uses the IPv4-compatible pooler host. Do not put the URL/password in chat or source code. The secure database workflow now validates the pooler host and uses `--db-url` for dry-run and apply.
 2. **Preview only:** run the secure database workflow with `apply_migrations=false`; inspect the full pending migration list and confirm the target project. The workflow must not change the database during preview.
 3. **Review the complete migration set:** the guarded push applies every pending migration in timestamp order, not only the newest feature. Verify the Owner bootstrap email, migration order and every pending change.
-4. **Backup gate:** confirm a current recoverable backup and a genuinely tested restore procedure; record only a non-secret backup ID/reference.
-5. **Explicit authorization:** production apply requires the exact phrase `APPLY-MASTER-WORLD-VIP-MIGRATIONS` plus all workflow backup gates. Never mark restore-tested unless it was actually tested.
+4. **Backup gate:** follow [the Bengali backup/restore test guide](SUPABASE_BACKUP_RESTORE_TEST_BN.md); confirm a current recoverable backup and genuinely restore it to a separate test project/local environment. Record a non-secret backup ID/reference and a separate restore-test reference.
+5. **Explicit authorization:** production apply requires the exact phrase `APPLY-MASTER-WORLD-VIP-MIGRATIONS`, `backup_confirmed=true`, `restore_tested=true`, and both non-secret references. The workflow checks supplied references but cannot independently prove a human performed the restore; never set the boolean without completing the test.
 6. **Apply and verify:** after a successful workflow, inspect schema/RLS and run the two-member RLS, chat, group, broadcast, location and helpdesk acceptance tests.
 7. **External integrations:** configure AI, image licensing, Meta, push and Play services separately. Keep all private credentials in the provider's server-side secret store.
 
