@@ -4,7 +4,7 @@ This checklist distinguishes repository code from verified live services. A gree
 
 ## Database migrations via guarded GitHub Actions workflow
 
-The repository now includes `.github/workflows/apply-supabase-migrations.yml`. Run it manually from GitHub Actions. It defaults to preview-only (`apply_migrations=no`). It is pinned to project ref `lztbbrzeuyjkuiyzrsxp` and requires repository Actions secrets `SUPABASE_ACCESS_TOKEN` and `SUPABASE_DB_PASSWORD`. Before applying, the operator must select `apply_migrations=yes`, confirm a current recoverable backup, confirm the restore procedure was tested, and enter a non-secret backup record reference. The workflow blocks production changes if any of these confirmations is missing. Never enter passwords, access tokens, or signed backup URLs in the reference field. The project ref is hard-coded as a reviewed, fixed target, not a secret. A successful workflow run proves only that the CLI migration command completed; still verify the resulting schema and run the two-account acceptance tests below.
+The repository now includes `.github/workflows/apply-supabase-migrations.yml`. Run it manually from GitHub Actions. It defaults to preview-only (`apply_migrations=no`). It is pinned to project ref `lztbbrzeuyjkuiyzrsxp` and requires repository Actions secrets `SUPABASE_ACCESS_TOKEN` and `SUPABASE_DB_URL` (the database connection string used by the CLI). Before applying, the operator must select `apply_migrations=yes`, confirm a current recoverable backup, confirm the restore procedure was tested, and enter a non-secret backup record reference. The workflow blocks production changes if any of these confirmations is missing. Never enter passwords, access tokens, or signed backup URLs in the reference field. The project ref is hard-coded as a reviewed, fixed target, not a secret. A successful workflow run proves only that the CLI migration command completed; still verify the resulting schema and run the two-account acceptance tests below.
 
 ## Edge Functions deployed by GitHub Actions
 
@@ -156,7 +156,7 @@ Workflow: `.github/workflows/apply-supabase-migrations.yml`
 
 Required GitHub Actions secrets:
 - `SUPABASE_ACCESS_TOKEN`
-- `SUPABASE_DB_PASSWORD`
+- `SUPABASE_DB_URL`
 
 The workflow is pinned to project `lztbbrzeuyjkuiyzrsxp`, defaults to dry-run, and requires explicit apply confirmation, recoverable-backup confirmation, restore-test confirmation, and a non-secret backup reference. The generated pre-migration artifact is a **schema-only snapshot**, not a full database backup and not a substitute for a tested, restorable backup. Do not choose `apply_migrations=yes` until a separate full backup is confirmed restorable and its restore procedure has been tested.
 
