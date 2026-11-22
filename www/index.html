@@ -1035,12 +1035,17 @@ $('submitVerificationRequest').onclick=async()=>{
 $('refreshVerificationRequests').onclick=loadVerificationRequests;
 
 async function loadInbox(){
- if(!communityReady())return;
- const host=$('inboxList');say('inboxStatus','Inbox লোড হচ্ছে…');host.replaceChildren();
- const {data,error}=await client.rpc('get_my_inbox');
- if(error){say('inboxStatus','Inbox লোড হয়নি: '+error.message+'। 20261120100000_inbox_push_foundation.sql migration চালানো হয়েছে কি না দেখুন।');return;}
- if(!data?.length){say('inboxStatus','আপনার কোনো ব্যক্তিগত বা গ্রুপ কথোপকথন নেই।');return;}
- say('inboxStatus',data.reduce((n,x)=>n+Number(x.unread_count||0),0)+'টি অপঠিত মেসেজ আছে।');
+ const host=$('inboxList');
+ if(!client){say('inboxStatus','Supabase এখনো সংযুক্ত নয়। Account → Supabase Login / Setup থেকে আপনার সংরক্ষিত Project connection যাচাই করুন।');host.replaceChildren();return;}
+ if(!currentUser){say('inboxStatus','Supabase সংযুক্ত, কিন্তু সদস্য লগইন নেই। Register / Login করে আবার Inbox রিফ্রেশ করুন।');host.replaceChildren();return;}
+ say('inboxStatus','Supabase সংযোগ ও Inbox migration যাচাই করে বার্তা লোড হচ্ছে…');host.replaceChildren();
+ let data,error;
+ try{({data,error}=await client.rpc('get_my_inbox'));}
+ catch(e){say('inboxStatus','Inbox request ব্যর্থ: '+(e?.message||'Network error')+'। ইন্টারনেট ও Supabase project status পরীক্ষা করুন।');return;}
+ if(error){say('inboxStatus','Inbox RPC পাওয়া যায়নি বা permission error: '+error.message+'। Community migration এবং 20261120100000_inbox_push_foundation.sql migration, grants ও RLS যাচাই করুন।');return;}
+ if(!Array.isArray(data)){say('inboxStatus','Supabase থেকে অপ্রত্যাশিত Inbox response এসেছে।');return;}
+ if(!data.length){const empty=document.createElement('div');empty.className='feature';empty.textContent='Inbox সংযোগ সফল। এখনো কোনো ব্যক্তিগত বা গ্রুপ কথোপকথন নেই। Community থেকে নতুন Chat শুরু করুন।';host.append(empty);say('inboxStatus','✓ Supabase login ও Inbox RPC কাজ করছে · 0টি কথোপকথন · সর্বশেষ যাচাই: '+new Date().toLocaleString());return;}
+ say('inboxStatus','✓ Inbox সংযুক্ত · '+data.reduce((n,x)=>n+Number(x.unread_count||0),0)+'টি অপঠিত মেসেজ · '+data.length+'টি কথোপকথন · আপডেট: '+new Date().toLocaleString());
  data.forEach(item=>{
   const card=document.createElement('div');card.className='feature';
   const title=document.createElement('strong');title.textContent=(item.thread_type==='group'?'👥 গ্রুপ · ':'✉ ব্যক্তিগত · ')+item.title;
