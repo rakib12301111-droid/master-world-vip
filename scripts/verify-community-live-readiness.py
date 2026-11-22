@@ -9,6 +9,7 @@ required_functions = [
     "get-db-update-status", "send-push",
 ]
 workflow = Path(".github/workflows/deploy-update-functions.yml").read_text(encoding="utf-8")
+workflow_normalized = re.sub(r"\\\\\\s*\\n\\s*", " ", workflow)
 config = Path("supabase/config.toml").read_text(encoding="utf-8")
 ui = Path("www/index.html").read_text(encoding="utf-8")
 push = Path("supabase/functions/send-push/index.ts").read_text(encoding="utf-8")
@@ -46,6 +47,7 @@ required_migrations = [
     "20261121170000_group_rls_recursion_fix.sql",
     "20261121180000_member_verification_helpdesk.sql",
     "20261121190000_member_live_location.sql",
+    "20261122100000_messaging_realtime.sql",
 ]
 checks = {
     "Supabase migration versions are unique": migration_version_unique,
@@ -57,7 +59,7 @@ checks = {
     ),
     "all Edge Functions are deployed by production workflow": (
         'for function_dir in supabase/functions/*/' in workflow
-        and 'supabase functions deploy "$function_name" --project-ref "$SUPABASE_PROJECT_REF"' in workflow
+        and 'supabase functions deploy "$function_name" --project-ref "$SUPABASE_PROJECT_REF"' in workflow_normalized
         and all(Path("supabase/functions", name, "index.ts").exists() for name in required_functions)
     ),
     "deployment is scoped to the approved Supabase project": 'lztbbrzeuyjkuiyzrsxp' in workflow,
