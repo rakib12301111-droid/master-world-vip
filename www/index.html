@@ -765,21 +765,45 @@ $('disconnect').onclick=async()=>{if(client)await client.auth.signOut();await st
 $('signup').onclick=async()=>{
  if(!client){say('authmsg','আগে Supabase সংযোগ করুন।');return}
  const name=$('authname').value.trim(),email=$('signupemail').value.trim(),password=$('signuppass').value;
- if(!email||password.length<8){say('authmsg','সঠিক ইমেইল এবং কমপক্ষে ৮ অক্ষরের পাসওয়ার্ড দিন।');return}
- say('authmsg','অ্যাকাউন্ট তৈরি হচ্ছে…');
- const {data,error}=await client.auth.signUp({email,password,options:{data:{display_name:name}}});
- say('authmsg',error?'Registration error: '+error.message:(data.session?'অ্যাকাউন্ট তৈরি হয়েছে এবং লগইন হয়েছে।':'অ্যাকাউন্ট তৈরি হয়েছে। ইমেইল inbox/spam থেকে verification সম্পন্ন করুন, তারপর Login করুন।'));
- if(data.session){currentUser=data.user;await ensureProfile(name);await loadPrivacyRequests();}
+ if(!name){say('authmsg','আপনার নাম লিখুন।');return}
+ if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){say('authmsg','সঠিক ইমেইল ঠিকানা লিখুন।');return}
+ if(password.length<8){say('authmsg','কমপক্ষে ৮ অক্ষরের পাসওয়ার্ড দিন।');return}
+ const button=$('signup');button.disabled=true;say('authmsg','অ্যাকাউন্ট তৈরি হচ্ছে…');
+ try{
+  const {data,error}=await client.auth.signUp({email,password,options:{data:{display_name:name},emailRedirectTo:location.origin+location.pathname}});
+  if(error)throw error;
+  if(data.session&&data.user){
+   currentUser=data.user;say('authmsg','Registration সফল এবং Login হয়েছে। প্রোফাইল যাচাই করা হচ্ছে…');
+   await ensureProfile(name);await loadPrivacyRequests();$('dashAuth').textContent='Logged in';
+  }else say('authmsg','Registration অনুরোধ গ্রহণ করা হয়েছে। ইমেইলের Inbox/Spam-এ verification link থাকলে সেটি নিশ্চিত করে তারপর Login করুন। Supabase Email provider চালু থাকতে হবে।');
+ }catch(error){say('authmsg','Registration সম্পন্ন হয়নি: '+(error?.message||'অজানা সমস্যা')+'. Supabase Auth ও database migration পরীক্ষা করুন।')}
+ finally{button.disabled=false}
 };
 $('login').onclick=async()=>{
  if(!client){say('authmsg','আগে Supabase সংযোগ করুন।');return}
  const email=$('loginemail').value.trim(),password=$('loginpass').value;
- const {data,error}=await client.auth.signInWithPassword({email,password});
- say('authmsg',error?'Login error: '+error.message:'Login সফল: '+data.user.email);
- if(data.user){currentUser=data.user;await loadProfile();await loadPrivacyRequests();}
+ if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)||!password){say('authmsg','সঠিক ইমেইল ও পাসওয়ার্ড লিখুন।');return}
+ const button=$('login');button.disabled=true;say('authmsg','Login হচ্ছে…');
+ try{
+  const {data,error}=await client.auth.signInWithPassword({email,password});
+  if(error)throw error;if(!data.user)throw new Error('Auth user পাওয়া যায়নি।');
+  currentUser=data.user;$('dashAuth').textContent='Logged in';say('authmsg','Login সফল: '+data.user.email+'। প্রোফাইল লোড হচ্ছে…');
+  await loadProfile();await loadPrivacyRequests();startMessagingSync();
+ }catch(error){say('authmsg','Login সফল হয়নি: '+(error?.message||'অজানা সমস্যা')+'. ইমেইল verification ও পাসওয়ার্ড পরীক্ষা করুন।')}
+ finally{button.disabled=false}
 };
-$('logout').onclick=async()=>{if(!client){say('authmsg','আগে Supabase সংযোগ করুন।');return}const {error}=await client.auth.signOut();currentUser=null;await stopMessagingSync();say('authmsg',error?'Logout error: '+error.message:'Logout সফল হয়েছে।');$('dashAuth').textContent='Connected';$('memberstatus').textContent='লগইন করুন।';};
-$('reset').onclick=async()=>{if(!client){say('authmsg','আগে Supabase সংযোগ করুন।');return}const email=$('loginemail').value.trim()||$('signupemail').value.trim();if(!email){say('authmsg','Password reset-এর জন্য ইমেইল লিখুন।');return}const {error}=await client.auth.resetPasswordForEmail(email,{redirectTo:location.origin+location.pathname});say('authmsg',error?'Reset error: '+error.message:'Password reset link পাঠানো হলে ইমেইল দেখুন। Supabase Auth URL configuration-এ এই site URL অনুমোদিত থাকতে হবে।');};
+$('logout').onclick=async()=>{
+ if(!client){say('authmsg','আগে Supabase সংযোগ করুন।');return}
+ try{const {error}=await client.auth.signOut();if(error)throw error;currentUser=null;await stopMessagingSync();say('authmsg','Logout সফল হয়েছে।');$('dashAuth').textContent='Connected';$('memberstatus').textContent='লগইন করুন।';}
+ catch(error){say('authmsg','Logout সমস্যা: '+(error?.message||'অজানা সমস্যা'))}
+};
+$('reset').onclick=async()=>{
+ if(!client){say('authmsg','আগে Supabase সংযোগ করুন।');return}
+ const email=$('loginemail').value.trim()||$('signupemail').value.trim();
+ if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){say('authmsg','Password reset-এর জন্য সঠিক ইমেইল লিখুন।');return}
+ try{const {error}=await client.auth.resetPasswordForEmail(email,{redirectTo:location.origin+location.pathname});if(error)throw error;say('authmsg','Password reset link পাঠানোর অনুরোধ হয়েছে। ইমেইল দেখুন; Site URL/Redirect URL অনুমোদিত থাকতে হবে।');}
+ catch(error){say('authmsg','Reset error: '+(error?.message||'অজানা সমস্যা'))}
+};
 async function ensureProfile(name){
  if(!client||!currentUser)return;
  const payload={id:currentUser.id,display_name:name||currentUser.user_metadata?.display_name||currentUser.email};
