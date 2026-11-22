@@ -196,7 +196,7 @@
 <button class="btn secondary" id="startChat">Chat খুলুন</button>
 <input id="activeConversation" type="hidden">
 <div id="directMessages" class="section small">কোনো conversation খোলা নেই।</div>
-<div class="field"><label for="directMessageText">বার্তা</label><textarea id="directMessageText" placeholder="আপনার বার্তা লিখুন"></textarea></div>
+<div class="field"><label for="directMessageText">বার্তা</label><textarea id="directMessageText" maxlength="5000" placeholder="আপনার বার্তা লিখুন (সর্বোচ্চ ৫০০০ অক্ষর)"></textarea></div>
 <button class="btn" id="sendDirectMessage">বার্তা পাঠান</button>
 </div>
 <div class="item">
@@ -208,7 +208,7 @@
 <div id="groupResults" class="section small">গ্রুপের তালিকা এখানে দেখাবে।</div>
 <input id="activeGroupId" type="hidden">
 <div id="groupMessages" class="section small">গ্রুপ নির্বাচন করুন।</div>
-<div class="field"><label for="groupMessageText">গ্রুপ বার্তা</label><textarea id="groupMessageText" placeholder="গ্রুপে লিখুন"></textarea></div>
+<div class="field"><label for="groupMessageText">গ্রুপ বার্তা</label><textarea id="groupMessageText" maxlength="5000" placeholder="গ্রুপে লিখুন (সর্বোচ্চ ৫০০০ অক্ষর)"></textarea></div>
 <button class="btn" id="sendGroupMessage">গ্রুপে পাঠান</button>
 </div>
 </div>
@@ -887,21 +887,63 @@ async function searchCommunityMembers(){
 }
 async function sendFriendRequest(id){
  if(!communityReady())return;
- const {error}=await client.from('friend_requests').insert({requester_id:currentUser.id,addressee_id:id,status:'pending'});
- say('communityStatus',error?'Request error: '+error.message:'বন্ধুত্বের অনুরোধ পাঠানো হয়েছে।');
+ if(!id||id===currentUser.id){say('communityStatus','নিজেকে বন্ধুত্বের অনুরোধ পাঠানো যাবে না।');return;}
+ try{
+  const {error}=await client.from('friend_requests').insert({requester_id:currentUser.id,addressee_id:id,status:'pending'});
+  if(error)throw error;
+  say('communityStatus','✓ বন্ধুত্বের অনুরোধ পাঠানো হয়েছে।');
+  await loadFriendRequests();
+ }catch(error){say('communityStatus','অনুরোধ পাঠানো যায়নি: '+(error.message||String(error))+'। আগে পাঠানো অনুরোধ বা বিদ্যমান বন্ধুত্ব যাচাই করুন।');}
 }
 async function loadFriendRequests(){
  if(!communityReady())return;
- const {data,error}=await client.from('friend_requests').select('id,requester_id,addressee_id,status,created_at').eq('addressee_id',currentUser.id).eq('status','pending').order('created_at',{ascending:false});
- if(error){say('friendRequests','Load error: '+error.message);return;}
- if(!data?.length){say('friendRequests','নতুন অনুরোধ নেই।');return;}
- $('friendRequests').innerHTML=data.map(x=>'<div class="feature">From: '+safeText(x.requester_id)+'<br><button class="btn" data-accept="'+x.id+'">Accept</button> <button class="btn secondary" data-decline="'+x.id+'">Decline</button></div>').join('');
- $('friendRequests').querySelectorAll('[data-accept]').forEach(b=>b.onclick=()=>respondFriend(b.dataset.accept,'accepted'));
- $('friendRequests').querySelectorAll('[data-decline]').forEach(b=>b.onclick=()=>respondFriend(b.dataset.decline,'declined'));
+ const host=$('friendRequests');host.textContent='বন্ধুত্বের অনুরোধ লোড হচ্ছে…';
+ try{
+  const uid=currentUser.id;
+  const {data,error}=await client.from('friend_requests')
+   .select('id,requester_id,addressee_id,status,created_at')
+   .or('requester_id.eq.'+uid+',addressee_id.eq.'+uid)
+   .order('created_at',{ascending:false}).limit(60);
+  if(error)throw error;
+  host.replaceChildren();
+  (data||[]).forEach(x=>{
+   const incoming=x.addressee_id===uid,other=incoming?x.requester_id:x.addressee_id;
+   const card=document.createElement('div');card.className='feature';
+   const title=document.createElement('strong');title.textContent=(incoming?'প্রাপ্ত অনুরোধ · ':'আপনার পাঠানো · ')+x.status;
+   const detail=document.createElement('div');detail.className='muted small';detail.textContent='সদস্য ID: '+other+' · '+new Date(x.created_at).toLocaleString();
+   card.append(title,detail);
+   if(incoming&&x.status==='pending'){
+    const accept=document.createElement('button');accept.type='button';accept.className='btn';accept.textContent='গ্রহণ করুন';accept.onclick=()=>respondFriend(x.id,'accepted');
+    const decline=document.createElement('button');decline.type='button';decline.className='btn secondary';decline.textContent='প্রত্যাখ্যান';decline.onclick=()=>respondFriend(x.id,'declined');
+    card.append(accept,decline);
+   }else if(!incoming&&x.status==='pending'){
+    const cancel=document.createElement('button');cancel.type='button';cancel.className='btn secondary';cancel.textContent='অনুরোধ বাতিল';cancel.onclick=()=>cancelFriendRequest(x.id);
+    card.append(cancel);
+   }else if(x.status==='accepted'){
+    const chat=document.createElement('button');chat.type='button';chat.className='btn secondary';chat.textContent='Chat খুলুন';chat.onclick=async()=>{$('chatUserId').value=other;await openDirectChat();};
+    card.append(chat);
+   }
+   host.append(card);
+  });
+  if(!host.children.length)host.textContent='এখনো কোনো বন্ধুত্বের অনুরোধ বা সংযোগ নেই।';
+ }catch(error){host.textContent='অনুরোধ লোড হয়নি: '+(error.message||String(error));}
 }
 async function respondFriend(id,status){
- const {error}=await client.from('friend_requests').update({status}).eq('id',id).eq('addressee_id',currentUser.id);
- say('communityStatus',error?'Update error: '+error.message:'Friend request '+status+'.');loadFriendRequests();
+ if(!communityReady())return;
+ try{
+  const {error}=await client.from('friend_requests').update({status}).eq('id',id).eq('addressee_id',currentUser.id).eq('status','pending');
+  if(error)throw error;
+  say('communityStatus',status==='accepted'?'বন্ধুত্বের অনুরোধ গ্রহণ করা হয়েছে। এখন ব্যক্তিগত Chat শুরু করতে পারবেন।':'বন্ধুত্বের অনুরোধ প্রত্যাখ্যান করা হয়েছে।');
+  await loadFriendRequests();
+ }catch(error){say('communityStatus','অনুরোধ আপডেট হয়নি: '+(error.message||String(error)));}
+}
+async function cancelFriendRequest(id){
+ if(!communityReady())return;
+ try{
+  const {error}=await client.from('friend_requests').delete().eq('id',id).eq('requester_id',currentUser.id).eq('status','pending');
+  if(error)throw error;
+  say('communityStatus','পাঠানো অনুরোধ বাতিল করা হয়েছে।');await loadFriendRequests();
+ }catch(error){say('communityStatus','অনুরোধ বাতিল হয়নি: '+(error.message||String(error)));}
 }
 async function openDirectChat(){
  if(!communityReady())return;
@@ -1065,9 +1107,36 @@ async function loadInbox(){
 
 async function loadCommunityNotifications(){
  if(!communityReady())return;
- const {data,error}=await client.from('notifications').select('id,title,body,category,read_at,created_at').eq('user_id',currentUser.id).order('created_at',{ascending:false}).limit(30);
- if(error){say('communityNotifications','Notification error: '+error.message);return;}
- $('communityNotifications').innerHTML=(data||[]).map(n=>'<div class="feature"><b>'+safeText(n.title)+'</b><br>'+safeText(n.body)+'<br><span class="muted">'+new Date(n.created_at).toLocaleString()+'</span>'+(n.read_at?' · Read':' · Unread')+'</div>').join('')||'নতুন নোটিফিকেশন নেই।';
+ const host=$('communityNotifications');host.textContent='নোটিফিকেশন লোড হচ্ছে…';
+ try{
+  const {data,error}=await client.from('notifications')
+   .select('id,title,body,category,read_at,created_at').eq('user_id',currentUser.id)
+   .order('created_at',{ascending:false}).limit(30);
+  if(error)throw error;
+  host.replaceChildren();
+  const unread=(data||[]).filter(n=>!n.read_at).length;
+  (data||[]).forEach(n=>{
+   const card=document.createElement('div');card.className='feature';
+   const title=document.createElement('strong');title.textContent=n.title;
+   const body=document.createElement('p');body.textContent=n.body;
+   const meta=document.createElement('div');meta.className='muted small';
+   meta.textContent=(n.category||'general')+' · '+new Date(n.created_at).toLocaleString()+(n.read_at?' · পড়া হয়েছে':' · অপঠিত');
+   card.append(title,body,meta);
+   if(!n.read_at){
+    const button=document.createElement('button');button.type='button';button.className='btn secondary';button.textContent='পড়া হয়েছে চিহ্নিত করুন';
+    button.onclick=async()=>{
+     button.disabled=true;
+     const {error:updateError}=await client.from('notifications').update({read_at:new Date().toISOString()}).eq('id',n.id).eq('user_id',currentUser.id);
+     if(updateError){button.disabled=false;say('communityStatus','নোটিফিকেশন read status আপডেট হয়নি: '+updateError.message);return;}
+     await loadCommunityNotifications();
+    };
+    card.append(button);
+   }
+   host.append(card);
+  });
+  if(!host.children.length)host.textContent='নতুন নোটিফিকেশন নেই।';
+  say('communityStatus','নোটিফিকেশন: '+(data||[]).length+'টি · অপঠিত '+unread+'টি।');
+ }catch(error){host.textContent='নোটিফিকেশন লোড হয়নি: '+(error.message||String(error));}
 }
 async function loadMemberBroadcastInbox(){
  if(!communityReady())return;
@@ -1532,15 +1601,16 @@ function urlBase64ToUint8Array(value){
 function pushVapidKey(){return $('pushVapidPublicKey').value.trim()||localStorage.getItem('mwvip_push_vapid_public_key')||'';}
 async function enableDevicePush(){
  if(!client||!currentUser){say('pushStatus','Push চালু করতে আগে লগইন করুন।');return;}
- if(!('serviceWorker' in navigator)||!('PushManager' in window)){say('pushStatus','এই browser-এ Web Push সমর্থিত নয়। HTTPS-এ Chrome ব্যবহার করুন।');return;}
- const vapid=pushVapidKey();if(!vapid){say('pushStatus','VAPID public key দিন। এটি ছাড়া subscription তৈরি করা যাবে না।');return;}
+ if(!('serviceWorker' in navigator)||!('PushManager' in window)||!('Notification' in window)){say('pushStatus','এই browser-এ Web Push সমর্থিত নয়। HTTPS-এ সমর্থিত Chrome/PWA ব্যবহার করুন।');return;}
+ const vapid=pushVapidKey();if(!vapid){say('pushStatus','VAPID public key দিন। Private key এখানে দেবেন না।');return;}
  try{
-  localStorage.setItem('mwvip_push_vapid_public_key',vapid);
+  const decoded=urlBase64ToUint8Array(vapid);
+  if(decoded.length!==65||decoded[0]!==4)throw new Error('VAPID public key সঠিক Base64URL uncompressed key নয়।');
   const permission=await Notification.requestPermission();
   if(permission!=='granted'){say('pushStatus','Browser notification permission দেওয়া হয়নি।');return;}
   const reg=await navigator.serviceWorker.ready;
   let sub=await reg.pushManager.getSubscription();
-  if(!sub)sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:urlBase64ToUint8Array(vapid)});
+  if(!sub)sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:decoded});
   const json=sub.toJSON();
   if(!json.endpoint||!json.keys?.p256dh||!json.keys?.auth)throw new Error('Browser subscription data অসম্পূর্ণ।');
   const {error}=await client.from('push_subscriptions').upsert({
@@ -1548,7 +1618,8 @@ async function enableDevicePush(){
    auth_secret:json.keys.auth,expiration_time:json.expirationTime||null
   },{onConflict:'endpoint'});
   if(error)throw error;
-  say('pushStatus','এই ডিভাইসের Push subscription সংরক্ষিত হয়েছে। Push পাঠাতে server-side sender/VAPID private key configure করা এখনো প্রয়োজন।');
+  localStorage.setItem('mwvip_push_vapid_public_key',vapid);
+  say('pushStatus','✓ এই ডিভাইসের Push subscription Supabase-এ সংরক্ষিত। বাস্তব Push delivery পেতে server-side sender ও VAPID private key configure করতে হবে।');
  }catch(error){say('pushStatus','Push setup হয়নি: '+(error.message||String(error)));}
 }
 async function disableDevicePush(){
