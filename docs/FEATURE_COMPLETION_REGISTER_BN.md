@@ -12,6 +12,13 @@ This register tracks the existing repository. A feature is **not live** merely b
 - **Acceptance test pending** — must pass with separate test accounts or real devices.
 - **Legal/provider approval pending** — depends on external approval or legal review.
 
+## Update 2 progress — 2026-11-22
+
+- Member Hub UI now edits and reloads display name, username, bio, HTTPS-only avatar URL, country, and member-search visibility.
+- Public member search now displays the member-provided bio alongside the already-approved public fields returned by `search_discoverable_profiles`.
+- Existing server-side RBAC, owner-only role changes, audit-log RPC, private verification/helpdesk request flow, staff review, private messages, status history and notifications were present in the repository before this UI update.
+- **Not yet Live:** Supabase migrations still require guarded production apply; owner bootstrap, two-account privacy/RLS tests, staff review tests, and deployment verification remain pending.
+
 ## Feature register
 
 | Feature | Repository foundation | Remaining work before Live |
