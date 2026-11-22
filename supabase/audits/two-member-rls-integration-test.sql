@@ -62,6 +62,8 @@ SELECT
   :'member_a'::uuid AS member_a,
   :'member_b'::uuid AS member_b,
   gen_random_uuid() AS conversation_id,
+  gen_random_uuid() AS shared_conversation_id,
+  gen_random_uuid() AS shared_group_id,
   gen_random_uuid() AS private_group_id,
   gen_random_uuid() AS broadcast_id,
   gen_random_uuid() AS support_ticket_id,
@@ -72,7 +74,7 @@ SELECT
   gen_random_uuid() AS b_support_ticket_id,
   gen_random_uuid() AS b_notification_id,
   gen_random_uuid() AS b_verification_request_id;
-GRANT SELECT ON mwvip_rls_fixture TO authenticated;
+GRANT SELECT, UPDATE ON mwvip_rls_fixture TO authenticated;
 
 INSERT INTO public.conversations(id,kind,created_by)
 SELECT conversation_id,'direct',member_a FROM mwvip_rls_fixture;
@@ -82,12 +84,35 @@ SELECT conversation_id,member_a FROM mwvip_rls_fixture;
 INSERT INTO public.messages(conversation_id,sender_id,body)
 SELECT conversation_id,member_a,'MWVIP RLS integration fixture' FROM mwvip_rls_fixture;
 
+-- Shared direct conversation: accepted friendship and the actual RPC used by the app.
+INSERT INTO public.friend_requests(requester_id,addressee_id,status)
+SELECT member_a,member_b,'accepted' FROM mwvip_rls_fixture
+ON CONFLICT (requester_id,addressee_id) DO UPDATE SET status='accepted';
+SELECT set_config('request.jwt.claim.sub',(SELECT member_a::text FROM mwvip_rls_fixture),true);
+SET LOCAL ROLE authenticated;
+UPDATE mwvip_rls_fixture f
+SET shared_conversation_id=public.start_direct_conversation(f.member_b);
+RESET ROLE;
+INSERT INTO public.messages(conversation_id,sender_id,body)
+SELECT shared_conversation_id,member_a,'MWVIP A-to-B direct test' FROM mwvip_rls_fixture;
+
 INSERT INTO public.community_groups(id,name,description,is_private,owner_id)
 SELECT private_group_id,'MWVIP RLS TEST','Temporary RLS fixture',true,member_a FROM mwvip_rls_fixture;
 INSERT INTO public.group_members(group_id,user_id,role)
 SELECT private_group_id,member_a,'owner' FROM mwvip_rls_fixture;
 INSERT INTO public.group_messages(group_id,sender_id,body)
 SELECT private_group_id,member_a,'MWVIP private group fixture' FROM mwvip_rls_fixture;
+
+-- Shared public group with both members for bidirectional group messaging.
+INSERT INTO public.community_groups(id,name,description,is_private,owner_id)
+SELECT shared_group_id,'MWVIP SHARED TEST','Temporary two-member messaging fixture',false,member_a
+FROM mwvip_rls_fixture;
+INSERT INTO public.group_members(group_id,user_id,role)
+SELECT shared_group_id,member_a,'owner' FROM mwvip_rls_fixture
+UNION ALL
+SELECT shared_group_id,member_b,'member' FROM mwvip_rls_fixture;
+INSERT INTO public.group_messages(group_id,sender_id,body)
+SELECT shared_group_id,member_a,'MWVIP A-to-B group test' FROM mwvip_rls_fixture;
 
 INSERT INTO public.support_tickets(id,user_id,subject,message)
 SELECT support_ticket_id,member_a,'MWVIP RLS fixture','Temporary test ticket' FROM mwvip_rls_fixture;
@@ -142,6 +167,16 @@ BEGIN
   IF NOT EXISTS (SELECT 1 FROM public.member_verification_requests WHERE id=f.b_verification_request_id) THEN RAISE EXCEPTION 'FAIL: B cannot read own verification request'; END IF;
   IF NOT EXISTS (SELECT 1 FROM public.verification_request_messages WHERE request_id=f.b_verification_request_id) THEN RAISE EXCEPTION 'FAIL: B cannot read own helpdesk messages'; END IF;
   IF NOT EXISTS (SELECT 1 FROM public.verification_request_events WHERE request_id=f.b_verification_request_id) THEN RAISE EXCEPTION 'FAIL: B cannot read own helpdesk audit history'; END IF;
+  IF NOT EXISTS (SELECT 1 FROM public.messages WHERE conversation_id=f.shared_conversation_id AND body='MWVIP A-to-B direct test') THEN RAISE EXCEPTION 'FAIL: B cannot receive A direct message'; END IF;
+  IF NOT EXISTS (SELECT 1 FROM public.group_messages WHERE group_id=f.shared_group_id AND body='MWVIP A-to-B group test') THEN RAISE EXCEPTION 'FAIL: B cannot receive A group message'; END IF;
+  IF NOT EXISTS (SELECT 1 FROM public.get_my_inbox() WHERE thread_type='direct' AND thread_id=f.shared_conversation_id AND unread_count>=1) THEN RAISE EXCEPTION 'FAIL: B inbox did not show unread direct message'; END IF;
+  IF NOT EXISTS (SELECT 1 FROM public.get_my_inbox() WHERE thread_type='group' AND thread_id=f.shared_group_id AND unread_count>=1) THEN RAISE EXCEPTION 'FAIL: B inbox did not show unread group message'; END IF;
+  IF NOT public.mark_my_inbox_read('direct',f.shared_conversation_id) THEN RAISE EXCEPTION 'FAIL: B could not mark direct inbox read'; END IF;
+  IF NOT public.mark_my_inbox_read('group',f.shared_group_id) THEN RAISE EXCEPTION 'FAIL: B could not mark group inbox read'; END IF;
+  INSERT INTO public.messages(conversation_id,sender_id,body)
+    VALUES(f.shared_conversation_id,f.member_b,'MWVIP B-to-A direct test');
+  INSERT INTO public.group_messages(group_id,sender_id,body)
+    VALUES(f.shared_group_id,f.member_b,'MWVIP B-to-A group test');
   IF EXISTS (SELECT 1 FROM public.profiles WHERE id=f.member_a) THEN RAISE EXCEPTION 'FAIL: B can read A full/private profile row'; END IF;
   IF EXISTS (SELECT 1 FROM public.user_roles WHERE user_id=f.member_a) THEN RAISE EXCEPTION 'FAIL: B can read A role assignment'; END IF;
   IF EXISTS (SELECT 1 FROM public.conversations WHERE id=f.conversation_id) THEN RAISE EXCEPTION 'FAIL: B can read A private conversation'; END IF;
@@ -189,6 +224,11 @@ BEGIN
   IF NOT EXISTS (SELECT 1 FROM public.member_verification_requests WHERE id=f.verification_request_id) THEN RAISE EXCEPTION 'FAIL: A cannot read own verification request'; END IF;
   IF NOT EXISTS (SELECT 1 FROM public.verification_request_messages WHERE request_id=f.verification_request_id) THEN RAISE EXCEPTION 'FAIL: A cannot read own helpdesk messages'; END IF;
   IF NOT EXISTS (SELECT 1 FROM public.verification_request_events WHERE request_id=f.verification_request_id) THEN RAISE EXCEPTION 'FAIL: A cannot read own verification audit history'; END IF;
+  IF public.start_direct_conversation(f.member_b) <> f.shared_conversation_id THEN RAISE EXCEPTION 'FAIL: A could not reopen the accepted direct conversation'; END IF;
+  IF NOT EXISTS (SELECT 1 FROM public.messages WHERE conversation_id=f.shared_conversation_id AND body='MWVIP B-to-A direct test') THEN RAISE EXCEPTION 'FAIL: A cannot receive B direct message'; END IF;
+  IF NOT EXISTS (SELECT 1 FROM public.group_messages WHERE group_id=f.shared_group_id AND body='MWVIP B-to-A group test') THEN RAISE EXCEPTION 'FAIL: A cannot receive B group message'; END IF;
+  IF NOT EXISTS (SELECT 1 FROM public.get_my_inbox() WHERE thread_type='direct' AND thread_id=f.shared_conversation_id AND unread_count>=1) THEN RAISE EXCEPTION 'FAIL: A inbox did not show unread direct reply'; END IF;
+  IF NOT EXISTS (SELECT 1 FROM public.get_my_inbox() WHERE thread_type='group' AND thread_id=f.shared_group_id AND unread_count>=1) THEN RAISE EXCEPTION 'FAIL: A inbox did not show unread group reply'; END IF;
 END $$;
 RESET ROLE;
 
