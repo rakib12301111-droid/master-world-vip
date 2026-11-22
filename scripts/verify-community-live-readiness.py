@@ -25,6 +25,7 @@ android_gradle = Path("android-app/app/build.gradle").read_text(encoding="utf-8"
 android_release_workflow = Path(".github/workflows/android-release.yml").read_text(encoding="utf-8")
 helpdesk_sql = Path("supabase/migrations/20261121180000_member_verification_helpdesk.sql").read_text(encoding="utf-8")
 location_sql = Path("supabase/migrations/20261121190000_member_live_location.sql").read_text(encoding="utf-8")
+server_code_staging = Path("supabase/functions/stage-server-code/index.ts").read_text(encoding="utf-8")
 migration_block_start = migration_workflow.find("for migration in ")
 migration_block_end = migration_workflow.find("; do", migration_block_start)
 migration_block = (
@@ -170,6 +171,12 @@ checks = {
         and "--print-certs" in android_release_workflow
         and "sha256sum" in android_release_workflow
         and "actions/upload-artifact@v4" in android_release_workflow
+    ),
+    "Owner Server Code Box queues SQL preview only and preserves separate production approval gates": (
+        'apply_migrations: "false"' in server_code_staging
+        and 'apply_migrations: "true"' not in server_code_staging
+        and "No database changes were applied" in server_code_staging
+        and "restore-test and confirmation gates" in server_code_staging
     ),
     "live acceptance guide exists": Path("docs/COMMUNITY_LIVE_READINESS.md").exists(),
 }
