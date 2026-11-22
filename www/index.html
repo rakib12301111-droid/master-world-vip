@@ -166,8 +166,8 @@
 
 <section class="page" id="members">
 <article class="card"><h2>♧ Member Hub</h2><p class="muted">নিজের প্রোফাইল দেখা ও আপডেট করা।</p><div id="memberstatus" class="notice">প্রোফাইল ব্যবহারের আগে লগইন করুন এবং Supabase profiles table তৈরি করুন।</div>
-<div class="field"><label for="profileName">Display name</label><input id="profileName" maxlength="80" placeholder="আপনার প্রদর্শিত নাম"></div><div class="field"><label for="profileUsername">Username (৩–২৪ অক্ষর, A–Z, 0–9, _)</label><input id="profileUsername" maxlength="24" autocomplete="username" placeholder="যেমন rakib_123"></div><div class="field"><label for="profileCountry">Country</label><input id="profileCountry" placeholder="Bangladesh"></div><div class="actions"><button class="btn" id="saveProfile">Save my profile</button><button class="btn secondary" id="loadProfile">Refresh profile</button></div><div id="profileResult" class="item">এখনো কোনো প্রোফাইল লোড হয়নি।</div>
-<div class="notice">গোপনীয়তার জন্য সাধারণ সদস্যরা শুধু নিজের প্রোফাইল দেখতে ও সম্পাদনা করতে পারবেন। Admin-এর সকল সদস্য ব্যবস্থাপনা পরে নিরাপদ server-side role দিয়ে যুক্ত হবে।</div></article>
+<div class="field"><label for="profileName">Display name</label><input id="profileName" maxlength="80" placeholder="আপনার প্রদর্শিত নাম"></div><div class="field"><label for="profileUsername">Username (৩–২৪ অক্ষর, A–Z, 0–9, _)</label><input id="profileUsername" maxlength="24" autocomplete="username" placeholder="যেমন rakib_123"></div><div class="field"><label for="profileBio">Bio / নিজের পরিচিতি (সর্বোচ্চ ৫০০ অক্ষর)</label><textarea id="profileBio" maxlength="500" rows="3" placeholder="নিজের সম্পর্কে সংক্ষেপে লিখুন"></textarea></div><div class="field"><label for="profileAvatar">Avatar image URL (শুধু HTTPS)</label><input id="profileAvatar" type="url" maxlength="500" placeholder="https://example.com/avatar.jpg"></div><div class="field"><label for="profileCountry">Country</label><input id="profileCountry" maxlength="80" placeholder="Bangladesh"></div><label class="feature"><input id="profileDiscoverable" type="checkbox" checked> অন্য সদস্যরা Member Search-এ আমার public profile খুঁজে পেতে পারবেন</label><div class="actions"><button class="btn" id="saveProfile">Save my profile</button><button class="btn secondary" id="loadProfile">Refresh profile</button></div><div id="profileResult" class="item">এখনো কোনো প্রোফাইল লোড হয়নি।</div>
+<div class="notice">আপনার bio, display name, username, country ও avatar URL শুধু discoverable চালু থাকলে নির্দিষ্ট public fields হিসেবে Member Search-এ দেখানো হবে। ইমেইল, ফোন, private data বা account details প্রকাশ করা হয় না।</div></article>
 </section>
 
 
@@ -812,25 +812,32 @@ async function ensureProfile(name){
  else await loadProfile();
 }
 async function loadProfile(){
- if(!client||!currentUser){say('memberstatus','প্রোফাইল দেখতে লগইন করুন।');return}
- const {data,error}=await client.from('profiles').select('id,display_name,username,country,created_at').eq('id',currentUser.id).maybeSingle();
- if(error){say('memberstatus','Profile load error: '+error.message+' — Privacy পৃষ্ঠা থেকে SQL setup চালান।');return}
- if(!data){$('profileName').value=currentUser.user_metadata?.display_name||'';$('profileUsername').value='';$('profileCountry').value='';say('memberstatus','অ্যাকাউন্ট আছে। নিজের প্রোফাইল তৈরি করুন।');say('profileResult','প্রোফাইল এখনো তৈরি হয়নি।');return}
- $('profileName').value=data.display_name||'';$('profileUsername').value=data.username||'';$('profileCountry').value=data.country||'';
- say('memberstatus','লগইন: '+currentUser.email);
- say('profileResult','প্রোফাইল ID: '+data.id+' | নাম: '+(data.display_name||'—')+' | Username: '+(data.username?'@'+data.username:'—')+' | দেশ: '+(data.country||'—'));
+  if(!client||!currentUser){say('memberstatus','প্রোফাইল দেখতে লগইন করুন।');return}
+  const {data,error}=await client.from('profiles').select('id,display_name,username,bio,avatar_url,country,is_discoverable,created_at').eq('id',currentUser.id).maybeSingle();
+  if(error){say('memberstatus','Profile load error: '+error.message+' — Global Community migration ও Privacy hardening migration চালু আছে কি না দেখুন।');return}
+  if(!data){
+    $('profileName').value=currentUser.user_metadata?.display_name||'';$('profileUsername').value='';$('profileBio').value='';$('profileAvatar').value='';$('profileCountry').value='';$('profileDiscoverable').checked=true;
+    say('memberstatus','অ্যাকাউন্ট আছে। নিজের প্রোফাইল তৈরি করুন।');say('profileResult','প্রোফাইল এখনো তৈরি হয়নি।');return;
+  }
+  $('profileName').value=data.display_name||'';$('profileUsername').value=data.username||'';$('profileBio').value=data.bio||'';$('profileAvatar').value=data.avatar_url||'';$('profileCountry').value=data.country||'';$('profileDiscoverable').checked=data.is_discoverable!==false;
+  say('memberstatus','লগইন: '+currentUser.email);
+  say('profileResult','প্রোফাইল ID: '+data.id+' | নাম: '+(data.display_name||'—')+' | Username: '+(data.username?'@'+data.username:'—')+' | দেশ: '+(data.country||'—')+' | Search visibility: '+(data.is_discoverable?'On':'Off'));
 }
 $('loadProfile').onclick=loadProfile;
 $('saveProfile').onclick=async()=>{
- if(!client||!currentUser){say('memberstatus','আগে লগইন করুন।');return}
- const username=$('profileUsername').value.trim().toLowerCase();
- if(username&&!/^[a-z0-9_]{3,24}$/.test(username)){say('memberstatus','Username ৩–২৪ অক্ষরের হতে হবে; শুধু ইংরেজি অক্ষর, সংখ্যা ও underscore ব্যবহার করুন।');return;}
- const payload={id:currentUser.id,display_name:$('profileName').value.trim(),username:username||null,country:$('profileCountry').value.trim()};
- const {error}=await client.from('profiles').upsert(payload,{onConflict:'id'});
- if(error)say('memberstatus','Save error: '+error.message+' — profiles table/RLS SQL setup হয়েছে কি না দেখুন।');
- else{say('memberstatus','আপনার প্রোফাইল সংরক্ষিত হয়েছে।');await loadProfile();}
+  if(!client||!currentUser){say('memberstatus','আগে লগইন করুন।');return}
+  const username=$('profileUsername').value.trim().toLowerCase();
+  const bio=$('profileBio').value.trim(),avatar=$('profileAvatar').value.trim();
+  if(username&&!/^[a-z0-9_]{3,24}$/.test(username)){say('memberstatus','Username ৩–২৪ অক্ষরের হতে হবে; শুধু ইংরেজি অক্ষর, সংখ্যা ও underscore ব্যবহার করুন।');return;}
+  if(bio.length>500){say('memberstatus','Bio সর্বোচ্চ ৫০০ অক্ষর হতে পারবে।');return;}
+  if(avatar){try{const u=new URL(avatar);if(u.protocol!=='https:')throw new Error();}catch(_e){say('memberstatus','Avatar image URL অবশ্যই সঠিক HTTPS URL হতে হবে।');return;}}
+  const payload={id:currentUser.id,display_name:$('profileName').value.trim(),username:username||null,bio,avatar_url:avatar||null,country:$('profileCountry').value.trim(),is_discoverable:$('profileDiscoverable').checked};
+  const button=$('saveProfile');button.disabled=true;
+  const {error}=await client.from('profiles').upsert(payload,{onConflict:'id'});
+  button.disabled=false;
+  if(error)say('memberstatus','Save error: '+error.message+' — Global Community migration ও profiles RLS setup হয়েছে কি না দেখুন।');
+  else{say('memberstatus','আপনার প্রোফাইল সংরক্ষিত হয়েছে।');await loadProfile();}
 };
-
 function communityReady(){if(!client||!currentUser){say('communityStatus','আগে Register/Login থেকে Supabase-এ লগইন করুন।');return false}return true;}
 
 let messagingChannel=null;
@@ -883,7 +890,7 @@ async function searchCommunityMembers(){
  const {data,error}=await client.rpc('search_discoverable_profiles',{p_search:q,p_limit:20});
  if(error){say('memberSearchResults','Member search error: '+error.message+' — Global Community SQL migration চালানো হয়েছে কি?');return;}
  if(!data?.length){say('memberSearchResults','কোনো discoverable member পাওয়া যায়নি।');return;}
- $('memberSearchResults').innerHTML=data.map(p=>'<div class="feature"><b>'+safeText(p.display_name||'Member')+'</b> · @'+safeText(p.username||'—')+'<br><span class="muted">'+safeText(p.country||'')+'</span><br><small>User ID: '+safeText(p.id)+'</small><br><button class="btn secondary" data-friend="'+safeText(p.id)+'">বন্ধুত্বের অনুরোধ</button> <button class="btn secondary" data-chat="'+safeText(p.id)+'">Chat খুলুন</button></div>').join('');
+ $('memberSearchResults').innerHTML=data.map(p=>'<div class="feature"><b>'+safeText(p.display_name||'Member')+'</b> · @'+safeText(p.username||'—')+'<br><span class="muted">'+safeText(p.country||'')+'</span><br><span class="small">'+safeText(p.bio||'')+'</span><br><small>User ID: '+safeText(p.id)+'</small><br><button class="btn secondary" data-friend="'+safeText(p.id)+'">বন্ধুত্বের অনুরোধ</button> <button class="btn secondary" data-chat="'+safeText(p.id)+'">Chat খুলুন</button></div>').join('');
  $('memberSearchResults').querySelectorAll('[data-friend]').forEach(b=>b.onclick=()=>sendFriendRequest(b.dataset.friend));
  $('memberSearchResults').querySelectorAll('[data-chat]').forEach(b=>b.onclick=async()=>{$('chatUserId').value=b.dataset.chat;await openDirectChat();});
 }
