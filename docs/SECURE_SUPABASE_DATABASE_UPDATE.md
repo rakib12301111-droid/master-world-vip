@@ -4,11 +4,14 @@ This workflow applies the repository's versioned Supabase migrations through the
 
 ## Required GitHub Actions secrets
 
-In GitHub repository Settings → Secrets and variables → Actions, add:
+For the **Safe Supabase Migration Deploy** workflow, add these repository Actions secrets:
 
 - `SUPABASE_ACCESS_TOKEN`: a Supabase personal access token with project access.
-- `SUPABASE_DB_PASSWORD`: the database password for the approved project.
-- The approved project ref `lztbbrzeuyjkuiyzrsxp` is pinned inside the workflow; it is **not** a third GitHub Actions secret for this migration workflow. Do not add a duplicate project-ref secret just for this workflow.
+- `SUPABASE_DB_URL`: the approved project's IPv4-compatible PostgreSQL Session Pooler connection string.
+
+The migration workflow does **not** use `SUPABASE_DB_PASSWORD`. The separate read-only RLS audit and two-member test workflows use `SUPABASE_DB_PASSWORD` plus the required test-member UUID secrets.
+
+The approved project ref `lztbbrzeuyjkuiyzrsxp` is pinned inside the migration workflow; it is **not** a GitHub Actions secret. Never add credentials to frontend code, SQL snippets, commits, or chat.
 
 Never put these values in frontend code, SQL snippets, commits, or chat.
 
