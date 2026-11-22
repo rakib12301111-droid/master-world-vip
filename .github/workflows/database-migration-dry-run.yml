@@ -2,8 +2,6 @@ name: MASTER WORLD VIP - Database Migration Safety Check
 
 on:
   workflow_dispatch:
-  schedule:
-    - cron: "15 3 * * *"
 
 permissions:
   contents: read
@@ -26,7 +24,7 @@ jobs:
         run: |
           set -euo pipefail
           test -n "${SUPABASE_ACCESS_TOKEN:-}" || { echo "::error::Missing repository Actions secret SUPABASE_ACCESS_TOKEN."; exit 1; }
-          [[ "$SUPABASE_ACCESS_TOKEN" =~ ^sbp_[A-Za-z0-9]+$ ]] || { echo "::error::SUPABASE_ACCESS_TOKEN must be a Supabase Personal Access Token."; exit 1; }
+          case "$SUPABASE_ACCESS_TOKEN" in sbp_*) ;; *) echo "::error::SUPABASE_ACCESS_TOKEN must be a Supabase Personal Access Token (sbp_ prefix)."; exit 1 ;; esac
           test -n "${SUPABASE_DB_PASSWORD:-}" || { echo "::error::Missing repository Actions secret SUPABASE_DB_PASSWORD."; exit 1; }
           echo "Required secrets are present; values are not displayed."
 
