@@ -6,6 +6,7 @@ import sys
 health = Path("supabase/functions/service-health/index.ts").read_text(encoding="utf-8")
 config = Path("supabase/config.toml").read_text(encoding="utf-8")
 deploy = Path(".github/workflows/deploy-update-functions.yml").read_text(encoding="utf-8")
+deploy_normalized = " ".join(deploy.replace("\\\\\n", " ").split())
 ui = Path("www/index.html").read_text(encoding="utf-8")
 checks = {
     "health endpoint requires a bearer session": 'Authorization' in health and 'Bearer ' in health and '401' in health,
@@ -15,7 +16,7 @@ checks = {
     "health endpoint is JWT protected in Supabase config": '[functions.service-health]' in config and 'verify_jwt = true' in config.split('[functions.service-health]',1)[1],
     "production workflow deploys service-health through its all-functions loop": (
         'for function_dir in supabase/functions/*/' in deploy
-        and 'supabase functions deploy "$function_name" --project-ref "$SUPABASE_PROJECT_REF"' in deploy
+        and 'supabase functions deploy "$function_name" --project-ref "$SUPABASE_PROJECT_REF"' in deploy_normalized
         and Path("supabase/functions/service-health/index.ts").is_file()
     ),
     "production workflow checks deployment token before deploy": (
