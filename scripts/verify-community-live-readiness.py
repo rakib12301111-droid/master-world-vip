@@ -9,7 +9,7 @@ required_functions = [
     "get-db-update-status", "send-push",
 ]
 workflow = Path(".github/workflows/deploy-update-functions.yml").read_text(encoding="utf-8")
-workflow_normalized = re.sub(r"\\\\\\s*\\n\\s*", " ", workflow)
+workflow_normalized = re.sub(r"\\\s*\n\s*", " ", workflow)
 config = Path("supabase/config.toml").read_text(encoding="utf-8")
 ui = Path("www/index.html").read_text(encoding="utf-8")
 push = Path("supabase/functions/send-push/index.ts").read_text(encoding="utf-8")
