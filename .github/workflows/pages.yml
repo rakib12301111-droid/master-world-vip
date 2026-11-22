@@ -1,7 +1,11 @@
 name: Deploy MASTER WORLD VIP to GitHub Pages
 
 on:
-  # Manual only: repository updates must not automatically publish the website.
+  # Publish website changes automatically when main is updated.
+  push:
+    branches:
+      - main
+  # Keep manual deployment available for an on-demand publish.
   workflow_dispatch:
 
 permissions:
