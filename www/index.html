@@ -753,15 +753,15 @@ async function connect(){
   currentUser=data.session?.user||null;
   setStatus(currentUser?'সংযুক্ত এবং লগইন আছে: '+currentUser.email:'Supabase সংযুক্ত হয়েছে। এখন Register অথবা Login করুন।');
   $('dashAuth').textContent=currentUser?'Logged in':'Connected';
-  if(currentUser)await loadProfile();
-  client.auth.onAuthStateChange((_event,session)=>{currentUser=session?.user||null;$('dashAuth').textContent=currentUser?'Logged in':'Connected';if(currentUser){$('memberstatus').textContent='লগইন আছে: '+currentUser.email;setTimeout(()=>{loadProfile();loadPrivacyRequests();if(typeof loadVerificationRequests==='function')loadVerificationRequests();},0)}else{$('memberstatus').textContent='লগইন করুন।';$('profileResult').textContent='লগইন করা নেই।';$('privacyRequestList').textContent='অনুরোধ দেখতে লগইন করুন।'}});
+  if(currentUser){await loadProfile();startMessagingSync();}
+  client.auth.onAuthStateChange((_event,session)=>{currentUser=session?.user||null;$('dashAuth').textContent=currentUser?'Logged in':'Connected';if(currentUser){startMessagingSync();$('memberstatus').textContent='লগইন আছে: '+currentUser.email;setTimeout(()=>{loadProfile();loadPrivacyRequests();if(typeof loadVerificationRequests==='function')loadVerificationRequests();},0)}else{stopMessagingSync();$('memberstatus').textContent='লগইন করুন।';$('profileResult').textContent='লগইন করা নেই।';$('privacyRequestList').textContent='অনুরোধ দেখতে লগইন করুন।'}});
  }catch(e){client=null;setStatus('সংযোগে সমস্যা: '+e.message)}
 }
 $('jumpAccountConnection').onclick=()=>$('account-connect').scrollIntoView({behavior:'smooth',block:'start'});
 $('connect').onclick=connect;
 const saved=config();$('sburl').value=saved.url||SUPABASE_PROJECT_URL;$('sbkey').value=saved.key||SUPABASE_PUBLISHABLE_KEY;
 if(saved.url&&saved.key){connect().catch(()=>{});}
-$('disconnect').onclick=async()=>{if(client)await client.auth.signOut();client=null;currentUser=null;localStorage.removeItem('mwvip_supabase_config');$('sburl').value='';$('sbkey').value='';$('dashAuth').textContent='Not connected';setStatus('এই ডিভাইস থেকে Supabase config সরানো হয়েছে। Supabase project বা account মুছে যায়নি।');};
+$('disconnect').onclick=async()=>{if(client)await client.auth.signOut();await stopMessagingSync();client=null;currentUser=null;localStorage.removeItem('mwvip_supabase_config');$('sburl').value='';$('sbkey').value='';$('dashAuth').textContent='Not connected';setStatus('এই ডিভাইস থেকে Supabase config সরানো হয়েছে। Supabase project বা account মুছে যায়নি।');};
 $('signup').onclick=async()=>{
  if(!client){say('authmsg','আগে Supabase সংযোগ করুন।');return}
  const name=$('authname').value.trim(),email=$('signupemail').value.trim(),password=$('signuppass').value;
@@ -778,7 +778,7 @@ $('login').onclick=async()=>{
  say('authmsg',error?'Login error: '+error.message:'Login সফল: '+data.user.email);
  if(data.user){currentUser=data.user;await loadProfile();await loadPrivacyRequests();}
 };
-$('logout').onclick=async()=>{if(!client){say('authmsg','আগে Supabase সংযোগ করুন।');return}const {error}=await client.auth.signOut();currentUser=null;say('authmsg',error?'Logout error: '+error.message:'Logout সফল হয়েছে।');$('dashAuth').textContent='Connected';$('memberstatus').textContent='লগইন করুন।';};
+$('logout').onclick=async()=>{if(!client){say('authmsg','আগে Supabase সংযোগ করুন।');return}const {error}=await client.auth.signOut();currentUser=null;await stopMessagingSync();say('authmsg',error?'Logout error: '+error.message:'Logout সফল হয়েছে।');$('dashAuth').textContent='Connected';$('memberstatus').textContent='লগইন করুন।';};
 $('reset').onclick=async()=>{if(!client){say('authmsg','আগে Supabase সংযোগ করুন।');return}const email=$('loginemail').value.trim()||$('signupemail').value.trim();if(!email){say('authmsg','Password reset-এর জন্য ইমেইল লিখুন।');return}const {error}=await client.auth.resetPasswordForEmail(email,{redirectTo:location.origin+location.pathname});say('authmsg',error?'Reset error: '+error.message:'Password reset link পাঠানো হলে ইমেইল দেখুন। Supabase Auth URL configuration-এ এই site URL অনুমোদিত থাকতে হবে।');};
 async function ensureProfile(name){
  if(!client||!currentUser)return;
@@ -806,6 +806,50 @@ $('saveProfile').onclick=async()=>{
 };
 
 function communityReady(){if(!client||!currentUser){say('communityStatus','আগে Register/Login থেকে Supabase-এ লগইন করুন।');return false}return true;}
+
+let messagingChannel=null;
+let messagingRefreshTimer=null;
+async function stopMessagingSync(){
+ if(messagingRefreshTimer){clearInterval(messagingRefreshTimer);messagingRefreshTimer=null;}
+ const oldChannel=messagingChannel;messagingChannel=null;
+ if(oldChannel&&client){try{await client.removeChannel(oldChannel);}catch(_e){}}
+}
+function refreshMessagingViews(){
+ if(!client||!currentUser||document.hidden)return;
+ const activePage=document.querySelector('.page.active')?.id;
+ if(activePage==='inbox')loadInbox();
+ if(activePage==='community'){
+  if($('activeConversation').value)loadDirectMessages();
+  if($('activeGroupId').value)loadGroupMessages();
+  loadCommunityNotifications();
+ }
+}
+function startMessagingSync(){
+ if(!client||!currentUser)return;
+ const userId=currentUser.id;
+ if(messagingRefreshTimer)clearInterval(messagingRefreshTimer);
+ if(messagingChannel){const old=messagingChannel;messagingChannel=null;client.removeChannel(old).catch(()=>{});}
+ try{
+  messagingChannel=client.channel('mwvip-messages-'+userId)
+   .on('postgres_changes',{event:'INSERT',schema:'public',table:'messages'},payload=>{
+    if(currentUser?.id!==userId)return;
+    if($('activeConversation').value===payload.new?.conversation_id)loadDirectMessages();
+    if(document.querySelector('.page.active')?.id==='inbox')loadInbox();
+   })
+   .on('postgres_changes',{event:'INSERT',schema:'public',table:'group_messages'},payload=>{
+    if(currentUser?.id!==userId)return;
+    if($('activeGroupId').value===payload.new?.group_id)loadGroupMessages();
+    if(document.querySelector('.page.active')?.id==='inbox')loadInbox();
+   })
+   .on('postgres_changes',{event:'INSERT',schema:'public',table:'notifications',filter:'user_id=eq.'+userId},()=>{
+    if(currentUser?.id!==userId)return;
+    if(document.querySelector('.page.active')?.id==='community')loadCommunityNotifications();
+   })
+   .subscribe();
+ }catch(_e){messagingChannel=null;}
+ // Polling fallback: messages still refresh if Supabase Realtime is not enabled.
+ messagingRefreshTimer=setInterval(refreshMessagingViews,15000);
+}
 function safeText(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 async function searchCommunityMembers(){
  if(!communityReady())return;
@@ -813,8 +857,9 @@ async function searchCommunityMembers(){
  const {data,error}=await client.rpc('search_discoverable_profiles',{p_search:q,p_limit:20});
  if(error){say('memberSearchResults','Member search error: '+error.message+' — Global Community SQL migration চালানো হয়েছে কি?');return;}
  if(!data?.length){say('memberSearchResults','কোনো discoverable member পাওয়া যায়নি।');return;}
- $('memberSearchResults').innerHTML=data.map(p=>'<div class="feature"><b>'+safeText(p.display_name||'Member')+'</b> · @'+safeText(p.username||'—')+'<br><span class="muted">'+safeText(p.country||'')+'</span><br><small>User ID: '+safeText(p.id)+'</small><br><button class="btn secondary" data-friend="'+safeText(p.id)+'">বন্ধুত্বের অনুরোধ</button></div>').join('');
+ $('memberSearchResults').innerHTML=data.map(p=>'<div class="feature"><b>'+safeText(p.display_name||'Member')+'</b> · @'+safeText(p.username||'—')+'<br><span class="muted">'+safeText(p.country||'')+'</span><br><small>User ID: '+safeText(p.id)+'</small><br><button class="btn secondary" data-friend="'+safeText(p.id)+'">বন্ধুত্বের অনুরোধ</button> <button class="btn secondary" data-chat="'+safeText(p.id)+'">Chat খুলুন</button></div>').join('');
  $('memberSearchResults').querySelectorAll('[data-friend]').forEach(b=>b.onclick=()=>sendFriendRequest(b.dataset.friend));
+ $('memberSearchResults').querySelectorAll('[data-chat]').forEach(b=>b.onclick=async()=>{$('chatUserId').value=b.dataset.chat;await openDirectChat();});
 }
 async function sendFriendRequest(id){
  if(!communityReady())return;
@@ -839,7 +884,7 @@ async function openDirectChat(){
  const target=$('chatUserId').value.trim();if(!target){say('communityStatus','বন্ধুর User ID দিন।');return;}
  const {data,error}=await client.rpc('start_direct_conversation',{target_user:target});
  if(error){say('communityStatus','Chat শুরু হয়নি: '+error.message);return;}
- $('activeConversation').value=data;say('communityStatus','ব্যক্তিগত conversation খোলা হয়েছে।');loadDirectMessages();
+ $('activeConversation').value=data;say('communityStatus','ব্যক্তিগত conversation খোলা হয়েছে।');await loadDirectMessages();await loadInbox();
 }
 async function loadDirectMessages(){
  const id=$('activeConversation').value;if(!id)return;
@@ -853,7 +898,7 @@ async function sendDirectMessage(){
  if(!conversation_id||!body){say('communityStatus','আগে chat খুলুন এবং বার্তা লিখুন।');return;}
  const {error}=await client.from('messages').insert({conversation_id,sender_id:currentUser.id,body});
  if(error){say('communityStatus','Message error: '+error.message);return;}
- $('directMessageText').value='';loadDirectMessages();
+ $('directMessageText').value='';await Promise.all([loadDirectMessages(),loadInbox()]);
 }
 async function createCommunityGroup(){
  if(!communityReady())return;
@@ -872,7 +917,7 @@ async function loadCommunityGroups(){
 async function joinCommunityGroup(id){
  const {error}=await client.from('group_members').insert({group_id:id,user_id:currentUser.id,role:'member'});
  if(error&& !String(error.message).includes('duplicate')){say('communityStatus','Join error: '+error.message);return;}
- $('activeGroupId').value=id;say('communityStatus','গ্রুপে যোগ হয়েছেন / আগে থেকেই সদস্য।');loadGroupMessages();
+ $('activeGroupId').value=id;say('communityStatus','গ্রুপে যোগ হয়েছেন / আগে থেকেই সদস্য।');await loadGroupMessages();await loadInbox();
 }
 async function loadGroupMessages(){
  const id=$('activeGroupId').value;if(!id)return;
@@ -886,7 +931,7 @@ async function sendGroupMessage(){
  if(!group_id||!body){say('communityStatus','আগে গ্রুপে Join/Open করুন এবং বার্তা লিখুন।');return;}
  const {error}=await client.from('group_messages').insert({group_id,sender_id:currentUser.id,body});
  if(error){say('communityStatus','Group message error: '+error.message);return;}
- $('groupMessageText').value='';loadGroupMessages();
+ $('groupMessageText').value='';await Promise.all([loadGroupMessages(),loadInbox()]);
 }
 
 async function loadVerificationMessages(requestId,host){
