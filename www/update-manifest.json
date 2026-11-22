@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "app": "MASTER WORLD VIP",
-  "updated_at": "2026-11-21",
-  "note": "Status describes repository implementation only. A feature is not live until its external setup and tests are verified. One-Click Setup preferences now sync with a dedicated Workspace Settings page and Dashboard status card; preferences remain local to this browser/device. Deployment and Android-device verification remain required.",
+  "updated_at": "2026-11-22",
+  "note": "Status describes repository implementation only. A feature is not live until its external setup and tests are verified. Global Community dashboard now includes incoming/outgoing friend-request management, per-notification read markers, clearer push subscription validation, direct/group messaging, unified inbox and member-only broadcast inbox. Deployment, Supabase migration/RLS checks and two-account Android/browser acceptance tests remain required.",
   "stages": [
     {
       "id": "release-center",
@@ -24,8 +24,8 @@
       "id": "inbox-push",
       "title": "Stage 0.6 — Unified Inbox & Push Notification Foundation",
       "status": "testing",
-      "summary": "Unified Inbox UI, direct/group thread list, unread counters, read markers, explicit browser push permission and subscription storage, plus Service Worker push display/click handling added to repository.",
-      "requires": "Apply 20261120100000_inbox_push_foundation.sql after community migration; configure VAPID public/private keys and trusted push sender; test subscription, delivery, unsubscribe and Android browser behavior.",
+      "summary": "Unified Inbox UI, direct/group thread list, unread counters, read markers, incoming/outgoing friend-request workflow, per-notification read markers, explicit browser push permission and per-user subscription storage, plus Service Worker push display/click handling are in the repository.",
+      "requires": "Verify Community, Admin/Broadcast and Inbox migrations in dependency order; configure VAPID public/private keys and trusted push sender server-side; test two-account privacy, subscription, delivery, unsubscribe, notification read status and Android Chrome/PWA behavior. Android WebView push is not guaranteed without native FCM.",
       "page": "inbox"
     },
     {
@@ -48,8 +48,8 @@
       "id": "auth-community",
       "title": "Stage 2 — Supabase Auth ও Global Community",
       "status": "testing",
-      "summary": "A Bengali Supabase Project Setup Wizard now explains project creation, ordered SQL migrations, public-key connection and Registration/Login testing. Browser validation accepts publishable keys or legacy anon JWTs and rejects sb_secret/service_role keys. Auth, profiles, community UI and SQL foundations are present in the repository.",
-      "requires": "Apply and verify all required migrations in the intended Supabase project (confirm Owner email first); configure Auth Site URL/Redirect URLs and email; test connection, registration, email confirmation, login, profile and multi-account RLS. No database migration is automatically applied by the website.",
+      "summary": "Bengali Supabase setup guidance and Global Community UI are present: discoverable member search, incoming/outgoing friend requests with accept/decline/cancel, accepted-friend-only direct chat enforced by server RPC, public groups, group messaging, per-user notifications with read markers, Unified Inbox, explicit browser push subscription, and member-only Broadcast Inbox. Client validates public VAPID key format and never accepts a private key.",
+      "requires": "Apply and verify all required migrations in the intended Supabase project (confirm Owner email first); configure Auth Site URL/Redirect URLs and email; verify RLS and RPC permissions; test two separate accounts for discovery privacy, friend request accept/decline/cancel, chat restriction before acceptance, direct/group message isolation, unread/read markers, notifications, admin broadcast recipient isolation, push subscribe/unsubscribe and actual delivery in Chrome/PWA on Android. Live Supabase state and device delivery are not established by repository code alone.",
       "page": "account"
     },
     {
