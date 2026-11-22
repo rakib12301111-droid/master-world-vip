@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 """Static safety checks for Owner-only live service diagnostics."""
 from pathlib import Path
+import re
 import sys
 
 health = Path("supabase/functions/service-health/index.ts").read_text(encoding="utf-8")
 config = Path("supabase/config.toml").read_text(encoding="utf-8")
 deploy = Path(".github/workflows/deploy-update-functions.yml").read_text(encoding="utf-8")
-deploy_normalized = " ".join(deploy.replace("\\\\\n", " ").split())
+deploy_normalized = " ".join(re.sub(r"\\\s*\n\s*", " ", deploy).split())
 ui = Path("www/index.html").read_text(encoding="utf-8")
 checks = {
     "health endpoint requires a bearer session": 'Authorization' in health and 'Bearer ' in health and '401' in health,
