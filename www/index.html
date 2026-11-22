@@ -166,7 +166,7 @@
 
 <section class="page" id="members">
 <article class="card"><h2>♧ Member Hub</h2><p class="muted">নিজের প্রোফাইল দেখা ও আপডেট করা।</p><div id="memberstatus" class="notice">প্রোফাইল ব্যবহারের আগে লগইন করুন এবং Supabase profiles table তৈরি করুন।</div>
-<div class="field"><label for="profileName">Display name</label><input id="profileName" placeholder="আপনার প্রদর্শিত নাম"></div><div class="field"><label for="profileCountry">Country</label><input id="profileCountry" placeholder="Bangladesh"></div><div class="actions"><button class="btn" id="saveProfile">Save my profile</button><button class="btn secondary" id="loadProfile">Refresh profile</button></div><div id="profileResult" class="item">এখনো কোনো প্রোফাইল লোড হয়নি।</div>
+<div class="field"><label for="profileName">Display name</label><input id="profileName" maxlength="80" placeholder="আপনার প্রদর্শিত নাম"></div><div class="field"><label for="profileUsername">Username (৩–২৪ অক্ষর, A–Z, 0–9, _)</label><input id="profileUsername" maxlength="24" autocomplete="username" placeholder="যেমন rakib_123"></div><div class="field"><label for="profileCountry">Country</label><input id="profileCountry" placeholder="Bangladesh"></div><div class="actions"><button class="btn" id="saveProfile">Save my profile</button><button class="btn secondary" id="loadProfile">Refresh profile</button></div><div id="profileResult" class="item">এখনো কোনো প্রোফাইল লোড হয়নি।</div>
 <div class="notice">গোপনীয়তার জন্য সাধারণ সদস্যরা শুধু নিজের প্রোফাইল দেখতে ও সম্পাদনা করতে পারবেন। Admin-এর সকল সদস্য ব্যবস্থাপনা পরে নিরাপদ server-side role দিয়ে যুক্ত হবে।</div></article>
 </section>
 
@@ -641,7 +641,7 @@
 const $=id=>document.getElementById(id);
 const pages=[...document.querySelectorAll('.page')];
 const titles={setup:'One-Click Setup',settings:'Workspace Settings',overview:'MASTER WORLD VIP Dashboard',account:'Registration & Login',members:'Member Hub',ai:'AI Center',facebook:'Facebook Center',growth:'Global Growth',admin:'Admin & Security',privacy:'Privacy & GDPR',updates:'Update Center',progress:'কাজের অগ্রগতি / Project Progress',fbService:'Facebook Setup Service',inbox:'Unified Inbox',verification:'Member Verification & Helpdesk',global:'Global News & Offline',emergency:'Emergency Offline Center',games:'Games Center',location:'Live Number Location Map'};
-function showPage(id){pages.forEach(p=>p.classList.toggle('active',p.id===id));document.querySelectorAll('[data-page]').forEach(b=>b.classList.toggle('active',b.dataset.page===id));$('pageTitle').textContent=titles[id]||titles.overview;if(id==='settings')syncWorkspaceSettingsUI();if(id==='account'){try{localStorage.setItem('mwvip_supabase_wizard_opened_at',new Date().toISOString());syncSupabaseWizardProgress();}catch(_e){}}window.scrollTo({top:0,behavior:'smooth'});if(id==='inbox'&&typeof loadInbox==='function')loadInbox();if(id==='verification'&&typeof loadVerificationRequests==='function')loadVerificationRequests();if(id==='fbService'&&typeof loadFbOrders==='function'){loadFbOrders();loadFbFeedback();}}
+function showPage(id){pages.forEach(p=>p.classList.toggle('active',p.id===id));document.querySelectorAll('[data-page]').forEach(b=>b.classList.toggle('active',b.dataset.page===id));$('pageTitle').textContent=titles[id]||titles.overview;if(id==='community'&&typeof loadFriendRequests==='function'&&client&&currentUser){loadFriendRequests();loadCommunityGroups();loadCommunityNotifications();loadMemberBroadcastInbox();}if(id==='settings')syncWorkspaceSettingsUI();if(id==='account'){try{localStorage.setItem('mwvip_supabase_wizard_opened_at',new Date().toISOString());syncSupabaseWizardProgress();}catch(_e){}}window.scrollTo({top:0,behavior:'smooth'});if(id==='inbox'&&typeof loadInbox==='function')loadInbox();if(id==='verification'&&typeof loadVerificationRequests==='function')loadVerificationRequests();if(id==='fbService'&&typeof loadFbOrders==='function'){loadFbOrders();loadFbFeedback();}}
 document.querySelectorAll('[data-page]').forEach(b=>b.addEventListener('click',()=>showPage(b.dataset.page)));
 document.querySelectorAll('[data-go]').forEach(b=>b.addEventListener('click',()=>showPage(b.dataset.go)));
 function readSupabaseWizardProgress(){try{return JSON.parse(localStorage.getItem('mwvip_supabase_wizard_progress')||'{}')}catch(_e){return {};}}
@@ -813,17 +813,19 @@ async function ensureProfile(name){
 }
 async function loadProfile(){
  if(!client||!currentUser){say('memberstatus','প্রোফাইল দেখতে লগইন করুন।');return}
- const {data,error}=await client.from('profiles').select('id,display_name,country,created_at').eq('id',currentUser.id).maybeSingle();
+ const {data,error}=await client.from('profiles').select('id,display_name,username,country,created_at').eq('id',currentUser.id).maybeSingle();
  if(error){say('memberstatus','Profile load error: '+error.message+' — Privacy পৃষ্ঠা থেকে SQL setup চালান।');return}
- if(!data){$('profileName').value=currentUser.user_metadata?.display_name||'';$('profileCountry').value='';say('memberstatus','অ্যাকাউন্ট আছে। নিজের প্রোফাইল তৈরি করুন।');say('profileResult','প্রোফাইল এখনো তৈরি হয়নি।');return}
- $('profileName').value=data.display_name||'';$('profileCountry').value=data.country||'';
+ if(!data){$('profileName').value=currentUser.user_metadata?.display_name||'';$('profileUsername').value='';$('profileCountry').value='';say('memberstatus','অ্যাকাউন্ট আছে। নিজের প্রোফাইল তৈরি করুন।');say('profileResult','প্রোফাইল এখনো তৈরি হয়নি।');return}
+ $('profileName').value=data.display_name||'';$('profileUsername').value=data.username||'';$('profileCountry').value=data.country||'';
  say('memberstatus','লগইন: '+currentUser.email);
- say('profileResult','প্রোফাইল ID: '+data.id+' | নাম: '+(data.display_name||'—')+' | দেশ: '+(data.country||'—'));
+ say('profileResult','প্রোফাইল ID: '+data.id+' | নাম: '+(data.display_name||'—')+' | Username: '+(data.username?'@'+data.username:'—')+' | দেশ: '+(data.country||'—'));
 }
 $('loadProfile').onclick=loadProfile;
 $('saveProfile').onclick=async()=>{
  if(!client||!currentUser){say('memberstatus','আগে লগইন করুন।');return}
- const payload={id:currentUser.id,display_name:$('profileName').value.trim(),country:$('profileCountry').value.trim()};
+ const username=$('profileUsername').value.trim().toLowerCase();
+ if(username&&!/^[a-z0-9_]{3,24}$/.test(username)){say('memberstatus','Username ৩–২৪ অক্ষরের হতে হবে; শুধু ইংরেজি অক্ষর, সংখ্যা ও underscore ব্যবহার করুন।');return;}
+ const payload={id:currentUser.id,display_name:$('profileName').value.trim(),username:username||null,country:$('profileCountry').value.trim()};
  const {error}=await client.from('profiles').upsert(payload,{onConflict:'id'});
  if(error)say('memberstatus','Save error: '+error.message+' — profiles table/RLS SQL setup হয়েছে কি না দেখুন।');
  else{say('memberstatus','আপনার প্রোফাইল সংরক্ষিত হয়েছে।');await loadProfile();}
@@ -945,12 +947,18 @@ async function cancelFriendRequest(id){
   say('communityStatus','পাঠানো অনুরোধ বাতিল করা হয়েছে।');await loadFriendRequests();
  }catch(error){say('communityStatus','অনুরোধ বাতিল হয়নি: '+(error.message||String(error)));}
 }
+async function markCommunityThreadRead(type,id){
+ if(!communityReady()||!id)return false;
+ const {error}=await client.rpc('mark_my_inbox_read',{p_thread_type:type,p_thread_id:id});
+ if(error){say('communityStatus','কথোপকথন খোলা হয়েছে, তবে read status আপডেট হয়নি: '+error.message);return false;}
+ return true;
+}
 async function openDirectChat(){
  if(!communityReady())return;
  const target=$('chatUserId').value.trim();if(!target){say('communityStatus','বন্ধুর User ID দিন।');return;}
  const {data,error}=await client.rpc('start_direct_conversation',{target_user:target});
  if(error){say('communityStatus','Chat শুরু হয়নি: '+error.message);return;}
- $('activeConversation').value=data;say('communityStatus','ব্যক্তিগত conversation খোলা হয়েছে।');await loadDirectMessages();await loadInbox();
+ $('activeConversation').value=data;say('communityStatus','ব্যক্তিগত conversation খোলা হয়েছে।');await markCommunityThreadRead('direct',data);await loadDirectMessages();await loadInbox();
 }
 async function loadDirectMessages(){
  const id=$('activeConversation').value;if(!id)return;
@@ -983,7 +991,7 @@ async function loadCommunityGroups(){
 async function joinCommunityGroup(id){
  const {error}=await client.from('group_members').insert({group_id:id,user_id:currentUser.id,role:'member'});
  if(error&& !String(error.message).includes('duplicate')){say('communityStatus','Join error: '+error.message);return;}
- $('activeGroupId').value=id;say('communityStatus','গ্রুপে যোগ হয়েছেন / আগে থেকেই সদস্য।');await loadGroupMessages();await loadInbox();
+ $('activeGroupId').value=id;say('communityStatus','গ্রুপে যোগ হয়েছেন / আগে থেকেই সদস্য।');await markCommunityThreadRead('group',id);await loadGroupMessages();await loadInbox();
 }
 async function loadGroupMessages(){
  const id=$('activeGroupId').value;if(!id)return;
