@@ -126,10 +126,10 @@ Deno.serve(async (req: Request) => {
       const dispatch = await fetch("https://api.github.com/repos/" + repository + "/actions/workflows/secure-supabase-db-update.yml/dispatches", {
         method: "POST",
         headers: { Authorization: "Bearer " + githubToken, Accept: "application/vnd.github+json", "X-GitHub-Api-Version": "2022-11-28", "Content-Type": "application/json" },
-        body: JSON.stringify({ ref: "main", inputs: { request_id: requestId, confirm_project: "MASTER-WORLD-VIP", apply_migrations: "true" } }),
+        body: JSON.stringify({ ref: "main", inputs: { request_id: requestId, confirm_project: "MASTER-WORLD-VIP", apply_migrations: "false" } }),
       });
       if (dispatch.status !== 204) return reply({ success: false, committed: true, commit_sha: commitSha, path, error: "Migration file was saved, but the database workflow could not be started. Check GitHub Actions permission." }, 502);
-      return reply({ success: true, kind, status: "queued", request_id: requestId, commit_sha: commitSha, path, message: "SQL migration committed and Apply workflow queued. Check Update Status for the final result." }, 202);
+      return reply({ success: true, kind, status: "queued", request_id: requestId, commit_sha: commitSha, path, message: "SQL migration committed and preview workflow queued. No database changes were applied; production Apply still requires separate Owner backup, restore-test and confirmation gates." }, 202);
     }
     return reply({ success: true, kind, status: "committed", commit_sha: commitSha, path, message: "Edge Function code committed. GitHub Actions will attempt automatic deployment; deployment secrets must be configured." }, 202);
   } catch (error) {
