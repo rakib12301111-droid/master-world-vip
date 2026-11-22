@@ -84,7 +84,7 @@ jobs:
             20261121160000_trusted_devices_login_history.sql \
             20261121170000_group_rls_recursion_fix.sql \
             20261121180000_member_verification_helpdesk.sql \
-            20261121190000_member_live_location.sql \\
+            20261121190000_member_live_location.sql \
             20261122100000_messaging_realtime.sql; do
             test -f "supabase/migrations/$migration" || { echo "::error::Missing required migration: $migration"; exit 1; }
           done
