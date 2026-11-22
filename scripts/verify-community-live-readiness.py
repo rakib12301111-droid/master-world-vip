@@ -180,6 +180,14 @@ checks = {
         and "No database changes were applied" in server_code_staging
         and "restore-test and confirmation gates" in server_code_staging
     ),
+    "two-member test verifies bidirectional direct/group messages and inbox read state": all(
+        x in rls_sql for x in [
+            "MWVIP A-to-B direct test", "MWVIP B-to-A direct test",
+            "MWVIP A-to-B group test", "MWVIP B-to-A group test",
+            "public.get_my_inbox()", "public.mark_my_inbox_read",
+            "public.start_direct_conversation",
+        ]
+    ),
     "live acceptance guide exists": Path("docs/COMMUNITY_LIVE_READINESS.md").exists(),
 }
 for name, passed in checks.items():
