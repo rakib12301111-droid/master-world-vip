@@ -59,6 +59,8 @@ Run the Update Center Dry Run first and inspect its complete output. The expecte
 14. `20261121160000_trusted_devices_login_history.sql`
 15. `20261121170000_group_rls_recursion_fix.sql`
 16. `20261121180000_member_verification_helpdesk.sql`
+17. `20261121190000_member_live_location.sql`
+18. `20261122100000_messaging_realtime.sql`
 
 Do not apply until the target project and a recent recoverable backup are confirmed. The Owner bootstrap statement is in migration 4 and is email-specific; verify that the matching auth user exists before applying. Never assume that a matching email query alone proves the role has been granted.
 
@@ -67,19 +69,22 @@ Do not apply until the target project and a recent recoverable backup are confir
 Use two accounts controlled by the project owner. Do not use strangers' accounts or ask users to share passwords.
 
 ### Private chat and inbox
-1. Account A sends a friend request to B.
-2. B accepts it.
-3. A starts a direct conversation and sends a unique test message.
-4. B opens Inbox, confirms the conversation and unread count, then opens it.
-5. B confirms unread count clears; A confirms the message remains visible.
-6. Verify A cannot read a conversation that neither account belongs to.
+1. Confirm migration `20261122100000_messaging_realtime.sql` is applied. The website subscribes to Supabase Realtime when available and uses a 15-second visible-page refresh fallback.
+2. Account A sends a friend request to B.
+3. B accepts it.
+4. A starts a direct conversation and sends a unique test message.
+5. B opens Inbox, confirms the conversation and unread count, then opens it.
+6. B replies; A confirms the reply appears without manual page reload.
+7. B confirms unread count clears; A confirms the message remains visible.
+8. Verify A cannot read a conversation that neither account belongs to.
 
 ### Group chat
 1. A creates a public test group.
 2. B joins it.
 3. A sends a unique test group message; B confirms receipt.
-4. B opens the group through Inbox and confirms read status.
-5. Verify a non-member cannot read or post to the group.
+4. B replies; A confirms the message appears without manual page reload.
+5. B opens the group through Inbox and confirms read status.
+6. Verify a non-member cannot read or post to the group.
 
 ### Broadcast
 1. Promote A to an authorized admin only in a controlled test environment.
@@ -174,7 +179,7 @@ Required GitHub Actions secrets:
 - `RLS_TEST_MEMBER_A_UUID`
 - `RLS_TEST_MEMBER_B_UUID`
 
-Use two distinct, existing ordinary member accounts. Do not use owner/admin/moderator accounts. The SQL test uses a transaction and rolls back its temporary fixtures.
+Use two distinct, existing ordinary member accounts. Do not use owner/admin/moderator accounts. The SQL test uses a transaction and rolls back its temporary fixtures. It also exercises the accepted-friend direct-chat RPC, A-to-B and B-to-A direct/group message inserts and reads, Inbox unread counts, and read acknowledgements.
 
 ### 4. Signed Release APK
 
