@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - "supabase/migrations/**"
+      - "supabase/functions/stage-server-code/index.ts"
       - "supabase/audits/**"
       - "scripts/verify-membership-helper-migration.py"
       - "scripts/verify-community-live-readiness.py"
@@ -31,6 +32,7 @@ on:
     branches: [main]
     paths:
       - "supabase/migrations/**"
+      - "supabase/functions/stage-server-code/index.ts"
       - "supabase/audits/**"
       - "scripts/verify-membership-helper-migration.py"
       - "scripts/verify-community-live-readiness.py"
