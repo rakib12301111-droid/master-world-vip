@@ -28,6 +28,11 @@ on:
         required: true
         type: boolean
         default: false
+      restore_test_reference:
+        description: "Non-secret reference to the successful restore test project or test record"
+        required: false
+        type: string
+        default: ""
       backup_reference:
         description: "Non-secret backup ID or record reference; never use a password or signed URL"
         required: false
@@ -132,6 +137,7 @@ jobs:
         env:
           BACKUP_CONFIRMED: ${{ inputs.backup_confirmed }}
           RESTORE_TESTED: ${{ inputs.restore_tested }}
+          RESTORE_TEST_REFERENCE: ${{ inputs.restore_test_reference }}
           BACKUP_REFERENCE: ${{ inputs.backup_reference }}
           CONFIRM_APPLY: ${{ inputs.confirm_apply }}
         run: |
@@ -139,16 +145,22 @@ jobs:
           test "$BACKUP_CONFIRMED" = "true" || { echo "::error::Apply blocked: a current recoverable full backup was not confirmed."; exit 1; }
           test "$RESTORE_TESTED" = "true" || { echo "::error::Apply blocked: backup restore test was not confirmed."; exit 1; }
           test "${#BACKUP_REFERENCE}" -ge 3 || { echo "::error::Apply blocked: a non-secret backup reference is required."; exit 1; }
+          test "${#RESTORE_TEST_REFERENCE}" -ge 3 || { echo "::error::Apply blocked: a non-secret successful restore-test reference is required."; exit 1; }
+          test "${#RESTORE_TEST_REFERENCE}" -le 120 || { echo "::error::Restore-test reference is too long."; exit 1; }
+          if [[ "$RESTORE_TEST_REFERENCE" =~ (https?://|password|token|secret) ]]; then
+            echo "::error::Restore-test reference must be a non-secret identifier, not a URL or credential."
+            exit 1
+          fi
           test "${#BACKUP_REFERENCE}" -le 120 || { echo "::error::Backup reference is too long."; exit 1; }
           if [[ "$BACKUP_REFERENCE" =~ (https?://|password|token|secret) ]]; then
             echo "::error::Backup reference must be a non-secret identifier, not a URL or credential."
             exit 1
           fi
           test "$CONFIRM_APPLY" = "APPLY-MASTER-WORLD-VIP-MIGRATIONS" || { echo "::error::Apply blocked: exact confirmation phrase is required."; exit 1; }
-          echo "Backup, restore-test and explicit approval gates passed. Reference recorded without echoing its value."
+          echo "Backup, restore-test reference and explicit approval gates passed. References recorded without echoing their values."
 
       - name: Apply pending production migrations
-        if: ${{ inputs.apply_migrations == true && inputs.backup_confirmed == true && inputs.restore_tested == true && inputs.confirm_apply == 'APPLY-MASTER-WORLD-VIP-MIGRATIONS' && inputs.backup_reference != '' }}
+        if: ${{ inputs.apply_migrations == true && inputs.backup_confirmed == true && inputs.restore_tested == true && inputs.confirm_apply == 'APPLY-MASTER-WORLD-VIP-MIGRATIONS' && inputs.backup_reference != '' && inputs.restore_test_reference != '' }}
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
           SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
@@ -162,7 +174,7 @@ jobs:
         run: echo "Preview only. No database changes were applied."
 
       - name: Report blocked Apply request
-        if: ${{ inputs.apply_migrations == true && (inputs.backup_confirmed != true || inputs.restore_tested != true || inputs.confirm_apply != 'APPLY-MASTER-WORLD-VIP-MIGRATIONS' || inputs.backup_reference == '') }}
+        if: ${{ inputs.apply_migrations == true && (inputs.backup_confirmed != true || inputs.restore_tested != true || inputs.confirm_apply != 'APPLY-MASTER-WORLD-VIP-MIGRATIONS' || inputs.backup_reference == '' || inputs.restore_test_reference == '') }}
         run: |
           echo "::error::Production migration was blocked because one or more backup, restore-test, reference or confirmation gates were incomplete."
           exit 1
