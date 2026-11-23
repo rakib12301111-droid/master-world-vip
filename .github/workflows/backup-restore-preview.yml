@@ -1,0 +1,112 @@
+name: MASTER WORLD VIP - Encrypted Backup, Restore Test & Migration Preview
+run-name: MASTER WORLD VIP DB Safety Pipeline
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: master-world-vip-db-safety-pipeline
+  cancel-in-progress: false
+
+jobs:
+  backup-restore-preview:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    services:
+      restore-db:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: restore_test_only
+          POSTGRES_DB: mwvip_restore_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d mwvip_restore_test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 12
+    env:
+      SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      BACKUP_ENCRYPTION_PASSPHRASE: ${{ secrets.BACKUP_ENCRYPTION_PASSPHRASE }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Validate required secrets without printing values
+        run: |
+          set -euo pipefail
+          test -n "${SUPABASE_DB_URL:-}" || { echo "::error::Missing Actions secret SUPABASE_DB_URL."; exit 1; }
+          test -n "${SUPABASE_ACCESS_TOKEN:-}" || { echo "::error::Missing Actions secret SUPABASE_ACCESS_TOKEN."; exit 1; }
+          test -n "${BACKUP_ENCRYPTION_PASSPHRASE:-}" || { echo "::error::Missing Actions secret BACKUP_ENCRYPTION_PASSPHRASE. Set a strong unique passphrase in repository Actions secrets."; exit 1; }
+          case "$SUPABASE_DB_URL" in *pooler.supabase.com*) ;; *) echo "::error::SUPABASE_DB_URL must use the IPv4-compatible Supabase Session Pooler."; exit 1 ;; esac
+          echo "Required secret values are present and were not printed."
+
+      - name: Install PostgreSQL client
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes postgresql-client
+
+      - name: Create encrypted full logical backup
+        id: backup
+        run: |
+          set -euo pipefail
+          mkdir -p backup
+          pg_dump "$SUPABASE_DB_URL" --format=custom --no-owner --no-acl --file=backup/master-world-vip.dump
+          test -s backup/master-world-vip.dump
+          openssl enc -aes-256-cbc -pbkdf2 -salt \
+            -in backup/master-world-vip.dump \
+            -out backup/master-world-vip.dump.enc \
+            -pass env:BACKUP_ENCRYPTION_PASSPHRASE
+          rm -f backup/master-world-vip.dump
+          test -s backup/master-world-vip.dump.enc
+          echo "backup_reference=mwvip-logical-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" >> "$GITHUB_OUTPUT"
+          echo "Encrypted logical backup created; plaintext dump removed from the runner."
+
+      - name: Decrypt backup inside isolated runner and restore to disposable test database
+        run: |
+          set -euo pipefail
+          openssl enc -d -aes-256-cbc -pbkdf2 \
+            -in backup/master-world-vip.dump.enc \
+            -out backup/restore-test.dump \
+            -pass env:BACKUP_ENCRYPTION_PASSPHRASE
+          test -s backup/restore-test.dump
+          PGPASSWORD=restore_test_only pg_restore \
+            --host=127.0.0.1 --port=5432 --username=postgres \
+            --dbname=mwvip_restore_test --no-owner --no-acl \
+            --exit-on-error backup/restore-test.dump
+          PGPASSWORD=restore_test_only psql -h 127.0.0.1 -U postgres -d mwvip_restore_test \
+            -v ON_ERROR_STOP=1 -Atc "select count(*) from information_schema.tables where table_schema not in ('pg_catalog','information_schema')" \
+            > backup/restored_table_count.txt
+          test "$(cat backup/restored_table_count.txt)" -gt 0
+          rm -f backup/restore-test.dump
+          echo "Restore test succeeded in the disposable PostgreSQL service; production was not modified."
+
+      - name: Preview all pending production migrations
+        run: |
+          set -euo pipefail
+          npx --yes supabase@latest db push --dry-run --db-url "$SUPABASE_DB_URL"
+
+      - name: Upload encrypted backup and non-secret test report
+        if: always() && steps.backup.outcome == 'success'
+        uses: actions/upload-artifact@v4
+        with:
+          name: master-world-vip-encrypted-backup-${{ github.run_id }}
+          path: |
+            backup/master-world-vip.dump.enc
+            backup/restored_table_count.txt
+          retention-days: 7
+          if-no-files-found: warn
+
+      - name: Print non-secret references for the migration approval record
+        if: success()
+        env:
+          BACKUP_REFERENCE: ${{ steps.backup.outputs.backup_reference }}
+        run: |
+          echo "BACKUP_REFERENCE=$BACKUP_REFERENCE"
+          echo "RESTORE_TEST_REFERENCE=github-actions-run-${GITHUB_RUN_ID}"
+          echo "Pipeline passed: encrypted logical backup, disposable restore test, and migration preview."
+          echo "Production migrations were NOT applied by this workflow."
