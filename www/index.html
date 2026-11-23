@@ -31,6 +31,7 @@
 <button data-page="account">♙ Register / Login</button>
 <button data-page="members">♧ Member Hub</button>
 <button data-page="community">🌐 Community</button>
+<button data-page="workEarn">💼 Work & Earn</button>
 <button data-page="location">📍 Live Location Map</button>
 <button data-page="inbox">✉ Inbox</button>
 <button data-page="verification">🛡 Member Verification & Helpdesk</button>
@@ -225,6 +226,53 @@
 <div id="memberBroadcastInbox" class="section small">Broadcast এখনো লোড হয়নি।</div>
 </div>
 <div class="notice">গোপনীয়তা: ব্যক্তিগত বার্তা কেবল conversation-এর সদস্যরা দেখতে পারবেন। বন্ধুত্ব গ্রহণের আগে সরাসরি chat শুরু করা যাবে না। Browser tab বন্ধ থাকলে push notification পেতে আলাদা অনুমতি ও delivery service প্রয়োজন।</div>
+</article>
+</section>
+
+
+<section class="page" id="workEarn">
+<article class="card">
+<h2>💼 Work & Earn — কাজ ও আয়</h2>
+<p class="muted">সদস্যরা কাজের সুযোগ পোস্ট করতে, কাজ খুঁজতে এবং আবেদন করতে পারবেন। কাজের শর্ত ও পারিশ্রমিক সরাসরি কাজদাতা ও কর্মীর মধ্যে যাচাই করুন।</p>
+<div id="workEarnStatus" class="notice">কাজ দেখতে বা পোস্ট করতে আগে লগইন করুন। Supabase Work & Earn migration চালু থাকতে হবে।</div>
+<div class="grid">
+<div class="card"><div class="label">সক্রিয় কাজ</div><div class="stat" id="workOpenCount">—</div></div>
+<div class="card"><div class="label">আমার পোস্ট</div><div class="stat" id="workMyPostCount">—</div></div>
+<div class="card"><div class="label">আমার আবেদন</div><div class="stat" id="workMyApplicationCount">—</div></div>
+<div class="card"><div class="label">নিরাপত্তা</div><div class="stat">✓</div><div class="muted small">রিপোর্ট ও যাচাই</div></div>
+</div>
+<div class="section two">
+<div class="item">
+<h3>🔎 কাজ খুঁজুন</h3>
+<div class="field"><label for="workSearch">কাজের নাম / বিবরণ</label><input id="workSearch" maxlength="100" placeholder="যেমন: বাংলা টাইপিং, ডিজাইন"></div>
+<div class="field"><label for="workCategoryFilter">কাজের বিভাগ</label><select id="workCategoryFilter"><option value="">সব বিভাগ</option><option>Typing & Data Entry</option><option>Design & Creative</option><option>Writing & Translation</option><option>Marketing & Sales</option><option>Development & IT</option><option>Education & Tutoring</option><option>Other</option></select></div>
+<button class="btn" id="searchWorkPosts" type="button">কাজ খুঁজুন</button>
+<div id="workPostResults" class="section small">কাজের তালিকা এখানে দেখাবে।</div>
+</div>
+<div class="item">
+<h3>📢 নতুন কাজ পোস্ট করুন</h3>
+<div class="field"><label for="workTitle">কাজের শিরোনাম</label><input id="workTitle" maxlength="100" placeholder="কাজের নাম"></div>
+<div class="field"><label for="workCategory">বিভাগ</label><select id="workCategory"><option>Typing & Data Entry</option><option>Design & Creative</option><option>Writing & Translation</option><option>Marketing & Sales</option><option>Development & IT</option><option>Education & Tutoring</option><option>Other</option></select></div>
+<div class="field"><label for="workDescription">কাজের বিস্তারিত</label><textarea id="workDescription" maxlength="3000" placeholder="কী কাজ, কী দক্ষতা লাগবে, সময়সীমা ও শর্ত লিখুন"></textarea></div>
+<div class="field"><label for="workPayType">পারিশ্রমিকের ধরন</label><select id="workPayType"><option value="fixed">নির্দিষ্ট টাকা</option><option value="hourly">প্রতি ঘণ্টা</option><option value="negotiable">আলোচনা সাপেক্ষ</option><option value="volunteer">স্বেচ্ছাসেবী / বিনা পারিশ্রমিক</option></select></div>
+<div class="field"><label for="workPayAmount">পারিশ্রমিক (BDT, ঐচ্ছিক)</label><input id="workPayAmount" type="number" min="0" max="100000000" step="1" placeholder="টাকার পরিমাণ"></div>
+<div class="field"><label for="workLocation">কাজের স্থান / Remote</label><input id="workLocation" maxlength="120" placeholder="Remote / Bangladesh / Dhaka"></div>
+<label class="feature"><input id="workPostAgree" type="checkbox"> আমি কাজের তথ্য সঠিক বলে নিশ্চিত করছি এবং প্রতারণামূলক/অবৈধ কাজ পোস্ট করব না।</label>
+<button class="btn" id="publishWorkPost" type="button">কাজ পোস্ট করুন</button>
+<div id="workPublishStatus" class="notice">পোস্ট করতে লগইন করুন।</div>
+</div>
+</div>
+<div class="section two">
+<div class="item"><h3>📋 আমার পোস্ট করা কাজ</h3><button class="btn secondary" id="loadMyWorkPosts" type="button">আমার কাজ দেখুন</button><div id="myWorkPosts" class="section small">এখনো লোড হয়নি।</div></div>
+<div class="item"><h3>📝 আমার আবেদন</h3><button class="btn secondary" id="loadMyWorkApplications" type="button">আবেদন দেখুন</button><div id="myWorkApplications" class="section small">এখনো লোড হয়নি।</div></div>
+</div>
+<div class="section item" id="workApplyPanel" hidden>
+<h3>কাজের জন্য আবেদন</h3><input id="workApplyPostId" type="hidden">
+<div class="field"><label for="workApplyMessage">কেন আপনি কাজটি করতে পারবেন?</label><textarea id="workApplyMessage" maxlength="1500" placeholder="আপনার দক্ষতা ও প্রস্তাব লিখুন"></textarea></div>
+<button class="btn" id="submitWorkApplication" type="button">আবেদন পাঠান</button><button class="btn secondary" id="cancelWorkApplication" type="button">বাতিল</button>
+<div id="workApplyStatus" class="notice">আবেদন পাঠানোর আগে কাজের শর্ত যাচাই করুন।</div>
+</div>
+<div class="notice">⚠️ সতর্কতা: MASTER WORLD VIP কোনো চাকরি বা আয়ের নিশ্চয়তা দেয় না এবং সদস্যদের মধ্যে টাকা লেনদেন পরিচালনা করে না। চাকরি পেতে আগাম টাকা, OTP, পাসওয়ার্ড, NID-এর ছবি বা ব্যাংক তথ্য দেবেন না। সন্দেহজনক কাজ রিপোর্ট করুন।</div>
 </article>
 </section>
 
@@ -640,8 +688,8 @@
 <script>
 const $=id=>document.getElementById(id);
 const pages=[...document.querySelectorAll('.page')];
-const titles={setup:'One-Click Setup',settings:'Workspace Settings',overview:'MASTER WORLD VIP Dashboard',account:'Registration & Login',members:'Member Hub',ai:'AI Center',facebook:'Facebook Center',growth:'Global Growth',admin:'Admin & Security',privacy:'Privacy & GDPR',updates:'Update Center',progress:'কাজের অগ্রগতি / Project Progress',fbService:'Facebook Setup Service',inbox:'Unified Inbox',verification:'Member Verification & Helpdesk',global:'Global News & Offline',emergency:'Emergency Offline Center',games:'Games Center',location:'Live Number Location Map'};
-function showPage(id){pages.forEach(p=>p.classList.toggle('active',p.id===id));document.querySelectorAll('[data-page]').forEach(b=>b.classList.toggle('active',b.dataset.page===id));$('pageTitle').textContent=titles[id]||titles.overview;if(id==='community'&&typeof loadFriendRequests==='function'&&client&&currentUser){loadFriendRequests();loadCommunityGroups();loadCommunityNotifications();loadMemberBroadcastInbox();}if(id==='settings')syncWorkspaceSettingsUI();if(id==='account'){try{localStorage.setItem('mwvip_supabase_wizard_opened_at',new Date().toISOString());syncSupabaseWizardProgress();}catch(_e){}}window.scrollTo({top:0,behavior:'smooth'});if(id==='inbox'&&typeof loadInbox==='function')loadInbox();if(id==='verification'&&typeof loadVerificationRequests==='function')loadVerificationRequests();if(id==='admin'&&typeof refreshAdminAccess==='function')refreshAdminAccess();if(id==='fbService'&&typeof loadFbOrders==='function'){loadFbOrders();loadFbFeedback();}}
+const titles={setup:'One-Click Setup',settings:'Workspace Settings',overview:'MASTER WORLD VIP Dashboard',account:'Registration & Login',members:'Member Hub',workEarn:'Work & Earn — কাজ ও আয়',ai:'AI Center',facebook:'Facebook Center',growth:'Global Growth',admin:'Admin & Security',privacy:'Privacy & GDPR',updates:'Update Center',progress:'কাজের অগ্রগতি / Project Progress',fbService:'Facebook Setup Service',inbox:'Unified Inbox',verification:'Member Verification & Helpdesk',global:'Global News & Offline',emergency:'Emergency Offline Center',games:'Games Center',location:'Live Number Location Map'};
+function showPage(id){pages.forEach(p=>p.classList.toggle('active',p.id===id));document.querySelectorAll('[data-page]').forEach(b=>b.classList.toggle('active',b.dataset.page===id));$('pageTitle').textContent=titles[id]||titles.overview;if(id==='community'&&typeof loadFriendRequests==='function'&&client&&currentUser){loadFriendRequests();loadCommunityGroups();loadCommunityNotifications();loadMemberBroadcastInbox();}if(id==='workEarn'&&typeof loadWorkPosts==='function'){loadWorkPosts();if(currentUser){loadMyWorkPosts();loadMyWorkApplications();}}if(id==='settings')syncWorkspaceSettingsUI();if(id==='account'){try{localStorage.setItem('mwvip_supabase_wizard_opened_at',new Date().toISOString());syncSupabaseWizardProgress();}catch(_e){}}window.scrollTo({top:0,behavior:'smooth'});if(id==='inbox'&&typeof loadInbox==='function')loadInbox();if(id==='verification'&&typeof loadVerificationRequests==='function')loadVerificationRequests();if(id==='admin'&&typeof refreshAdminAccess==='function')refreshAdminAccess();if(id==='fbService'&&typeof loadFbOrders==='function'){loadFbOrders();loadFbFeedback();}}
 document.querySelectorAll('[data-page]').forEach(b=>b.addEventListener('click',()=>showPage(b.dataset.page)));
 document.querySelectorAll('[data-go]').forEach(b=>b.addEventListener('click',()=>showPage(b.dataset.go)));
 function readSupabaseWizardProgress(){try{return JSON.parse(localStorage.getItem('mwvip_supabase_wizard_progress')||'{}')}catch(_e){return {};}}
@@ -2218,6 +2266,85 @@ $('lookupMemberLocation')?.addEventListener('click',async()=>{
  const meta=document.createElement('p');meta.className='muted small';meta.textContent='Accuracy: '+(member.accuracy_m==null?'—':Math.round(member.accuracy_m)+' মিটার')+' · Updated: '+new Date(member.updated_at).toLocaleString();
  details.append(title,place,coords,meta);$('locationDetails').append(details);
  buildLocationMap(Number(member.latitude),Number(member.longitude));
+});
+
+
+/* Work & Earn — member job board. All writes are authenticated and RLS-protected. */
+const WORK_CATEGORIES=['Typing & Data Entry','Design & Creative','Writing & Translation','Marketing & Sales','Development & IT','Education & Tutoring','Other'];
+function workStatus(message,ok=false){const el=$('workEarnStatus');if(el){el.className='notice'+(ok?' success':'');el.textContent=message;}}
+function workText(value){return String(value??'');}
+function workCard(tag,value){const el=document.createElement(tag);el.textContent=workText(value);return el;}
+function workMoney(post){if(post.pay_type==='volunteer')return 'স্বেচ্ছাসেবী';if(post.pay_type==='negotiable'||post.pay_amount==null)return 'আলোচনা সাপেক্ষ';return '৳'+Number(post.pay_amount).toLocaleString('bn-BD')+(post.pay_type==='hourly'?' / ঘণ্টা':'');}
+async function loadWorkPosts(){
+ const box=$('workPostResults');if(!box)return;
+ if(!client||!currentUser){box.textContent='কাজ দেখতে আগে লগইন করুন।';workStatus('কাজ দেখতে বা পোস্ট করতে আগে লগইন করুন।');return;}
+ box.textContent='কাজ লোড হচ্ছে…';
+ try{
+  let q=client.from('work_posts').select('id,owner_id,title,category,description,pay_type,pay_amount,currency,location,status,created_at,profiles(display_name,country)').eq('status','open').order('created_at',{ascending:false}).limit(50);
+  const search=$('workSearch')?.value.trim();const category=$('workCategoryFilter')?.value;
+  if(category)q=q.eq('category',category);
+  if(search)q=q.or('title.ilike.%'+search+'%,description.ilike.%'+search+'%');
+  const {data,error}=await q;if(error)throw error;
+  box.innerHTML='';
+  if(!data?.length){box.textContent='এখনো কোনো খোলা কাজ নেই। পরে আবার দেখুন।';$('workOpenCount').textContent='0';return;}
+  $('workOpenCount').textContent=String(data.length);
+  data.forEach(post=>{
+   const card=document.createElement('div');card.className='item section';
+   const title=workCard('strong',post.title);const meta=workCard('p',post.category+' · '+workMoney(post)+' · '+(post.location||'Remote'));
+   meta.className='muted small';const desc=workCard('p',post.description);const owner=workCard('p','কাজদাতা: '+(post.profiles?.display_name||'সদস্য')+(post.profiles?.country?' · '+post.profiles.country:''));
+   owner.className='muted small';const date=workCard('p',new Date(post.created_at).toLocaleDateString('bn-BD'));date.className='muted small';
+   card.append(title,meta,desc,owner,date);
+   if(post.owner_id!==currentUser.id){const apply=document.createElement('button');apply.className='btn';apply.type='button';apply.textContent='আবেদন করুন';apply.addEventListener('click',()=>{$('workApplyPostId').value=post.id;$('workApplyPanel').hidden=false;$('workApplyStatus').textContent='কাজের শর্ত পড়ে আপনার প্রস্তাব লিখুন।';$('workApplyPanel').scrollIntoView({behavior:'smooth',block:'center'});});card.append(apply);}
+   box.append(card);
+  });
+  workStatus('কাজের তালিকা আপডেট হয়েছে। আবেদন করতে কাজের শর্ত ভালোভাবে পড়ে নিন।',true);
+ }catch(e){box.textContent='কাজ লোড হয়নি: '+(e.message||String(e))+'। Work & Earn database migration apply হয়েছে কি না যাচাই করুন।';workStatus('Database setup বাকি অথবা সংযোগে সমস্যা হয়েছে।');}
+}
+async function loadMyWorkPosts(){
+ const box=$('myWorkPosts');if(!box)return;if(!client||!currentUser){box.textContent='আগে লগইন করুন।';return;}
+ box.textContent='লোড হচ্ছে…';
+ try{const {data,error}=await client.from('work_posts').select('id,title,status,created_at').eq('owner_id',currentUser.id).order('created_at',{ascending:false}).limit(50);if(error)throw error;box.innerHTML='';$('workMyPostCount').textContent=String(data?.length||0);
+  if(!data?.length){box.textContent='আপনি এখনো কোনো কাজ পোস্ট করেননি।';return;}
+  data.forEach(post=>{const row=document.createElement('div');row.className='feature';const h=workCard('strong',post.title+' · '+(post.status==='open'?'চলমান':'বন্ধ'));const close=document.createElement('button');close.className='btn secondary';close.type='button';close.textContent=post.status==='open'?'কাজ বন্ধ করুন':'আবার খুলুন';close.addEventListener('click',async()=>{close.disabled=true;const {error}=await client.from('work_posts').update({status:post.status==='open'?'closed':'open'}).eq('id',post.id).eq('owner_id',currentUser.id);close.disabled=false;if(error){alert('পরিবর্তন হয়নি: '+error.message);return;}loadMyWorkPosts();loadWorkPosts();});row.append(h,close);box.append(row);});
+ }catch(e){box.textContent='নিজের কাজ লোড হয়নি: '+e.message;}
+}
+async function loadMyWorkApplications(){
+ const box=$('myWorkApplications');if(!box)return;if(!client||!currentUser){box.textContent='আগে লগইন করুন।';return;}
+ box.textContent='লোড হচ্ছে…';
+ try{const {data,error}=await client.from('work_applications').select('id,post_id,status,message,created_at,work_posts(title)').eq('applicant_id',currentUser.id).order('created_at',{ascending:false}).limit(50);if(error)throw error;box.innerHTML='';$('workMyApplicationCount').textContent=String(data?.length||0);
+  if(!data?.length){box.textContent='আপনি এখনো কোনো কাজে আবেদন করেননি।';return;}
+  data.forEach(app=>{const row=document.createElement('div');row.className='feature';row.append(workCard('strong',app.work_posts?.title||'কাজ'),workCard('p','অবস্থা: '+({pending:'পর্যালোচনায়',accepted:'গৃহীত',rejected:'বাতিল',withdrawn:'প্রত্যাহার'}[app.status]||app.status)));box.append(row);});
+ }catch(e){box.textContent='আবেদন লোড হয়নি: '+e.message;}
+}
+$('searchWorkPosts')?.addEventListener('click',loadWorkPosts);
+$('publishWorkPost')?.addEventListener('click',async()=>{
+ const status=$('workPublishStatus');const sayStatus=(m,ok=false)=>{status.className='notice'+(ok?' success':'');status.textContent=m;};
+ if(!client||!currentUser){sayStatus('কাজ পোস্ট করতে আগে লগইন করুন।');return;}
+ const title=$('workTitle').value.trim(),category=$('workCategory').value,description=$('workDescription').value.trim(),payType=$('workPayType').value,payRaw=$('workPayAmount').value.trim(),location=$('workLocation').value.trim();
+ if(title.length<4||description.length<20){sayStatus('শিরোনাম কমপক্ষে ৪ অক্ষর এবং বিস্তারিত কমপক্ষে ২০ অক্ষর লিখুন।');return;}
+ if(!WORK_CATEGORIES.includes(category)||!['fixed','hourly','negotiable','volunteer'].includes(payType)){sayStatus('বিভাগ বা পারিশ্রমিকের ধরন সঠিক নয়।');return;}
+ const amount=payRaw===''?null:Number(payRaw);if(amount!==null&&(!Number.isFinite(amount)||amount<0||amount>100000000)){sayStatus('পারিশ্রমিকের পরিমাণ সঠিক নয়।');return;}
+ if(['fixed','hourly'].includes(payType)&&amount===null){sayStatus('নির্দিষ্ট বা ঘণ্টাভিত্তিক পারিশ্রমিক লিখুন, অথবা আলোচনা সাপেক্ষ নির্বাচন করুন।');return;}
+ if(!$('workPostAgree').checked){sayStatus('কাজের তথ্য সঠিক বলে নিশ্চিত করুন।');return;}
+ const btn=$('publishWorkPost');btn.disabled=true;
+ try{const {error}=await client.from('work_posts').insert({owner_id:currentUser.id,title,category,description,pay_type:payType,pay_amount:amount,currency:'BDT',location:location||'Remote',status:'open'});if(error)throw error;
+  sayStatus('কাজ পোস্ট হয়েছে। সদস্যরা এখন তালিকায় দেখতে পারবেন।',true);$('workTitle').value='';$('workDescription').value='';$('workPayAmount').value='';$('workLocation').value='';$('workPostAgree').checked=false;await loadWorkPosts();await loadMyWorkPosts();
+ }catch(e){sayStatus('কাজ পোস্ট হয়নি: '+(e.message||String(e))+'। Work & Earn migration apply হয়েছে কি না দেখুন।');}
+ finally{btn.disabled=false;}
+});
+$('loadMyWorkPosts')?.addEventListener('click',loadMyWorkPosts);
+$('loadMyWorkApplications')?.addEventListener('click',loadMyWorkApplications);
+$('cancelWorkApplication')?.addEventListener('click',()=>{$('workApplyPanel').hidden=true;$('workApplyMessage').value='';});
+$('submitWorkApplication')?.addEventListener('click',async()=>{
+ const status=$('workApplyStatus'),sayStatus=(m,ok=false)=>{status.className='notice'+(ok?' success':'');status.textContent=m;};
+ if(!client||!currentUser){sayStatus('আবেদন করতে আগে লগইন করুন।');return;}
+ const postId=$('workApplyPostId').value,message=$('workApplyMessage').value.trim();
+ if(!postId||message.length<20){sayStatus('কাজ নির্বাচন করুন এবং কমপক্ষে ২০ অক্ষরের প্রস্তাব লিখুন।');return;}
+ const btn=$('submitWorkApplication');btn.disabled=true;
+ try{const {error}=await client.from('work_applications').insert({post_id:postId,applicant_id:currentUser.id,message,status:'pending'});if(error)throw error;
+  sayStatus('আবেদন পাঠানো হয়েছে। কাজদাতা আবেদনটি পর্যালোচনা করবেন।',true);$('workApplyMessage').value='';$('workApplyPanel').hidden=true;await loadMyWorkApplications();
+ }catch(e){sayStatus('আবেদন পাঠানো যায়নি: '+(e.message||String(e))+'। একই কাজে একবারই আবেদন করা যায়।');}
+ finally{btn.disabled=false;}
 });
 
 window.mwvipGetClient=()=>client;
