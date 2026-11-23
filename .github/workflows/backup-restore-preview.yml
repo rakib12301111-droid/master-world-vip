@@ -53,13 +53,13 @@ jobs:
           case "$SUPABASE_DB_URL" in *pooler.supabase.com*) ;; *) echo "::error::SUPABASE_DB_URL must use the IPv4-compatible Supabase Session Pooler."; exit 1 ;; esac
           echo "Required secret values are present and were not printed."
 
-      - name: Install PostgreSQL 17 client
+      - name: Install PostgreSQL client
         run: |
           set -euo pipefail
           sudo apt-get update
-          sudo apt-get install --yes postgresql-client-17
-          /usr/lib/postgresql/17/bin/pg_dump --version
-          /usr/lib/postgresql/17/bin/pg_restore --version
+          sudo apt-get install --yes postgresql-client
+          pg_dump --version
+          pg_restore --version
 
       - name: Parse and validate Session Pooler URI without exposing credentials
         run: |
@@ -102,11 +102,11 @@ jobs:
           set -euo pipefail
           mkdir -p backup
           SERVER_VERSION="$(psql --no-psqlrc --host="$PGHOST" --port="$PGPORT" --username="$PGUSER" --dbname="$PGDATABASE" -v ON_ERROR_STOP=1 -Atc 'show server_version_num')"
-          CLIENT_VERSION="$(/usr/lib/postgresql/17/bin/pg_dump --version | awk '{print $3}' | cut -d. -f1)"
+          CLIENT_VERSION="$(pg_dump --version | awk '{print $3}' | cut -d. -f1)"
           SERVER_MAJOR="$((SERVER_VERSION / 10000))"
           test "$CLIENT_VERSION" -ge "$SERVER_MAJOR" || { echo "::error::pg_dump client major version $CLIENT_VERSION is older than server major version $SERVER_MAJOR."; exit 1; }
           echo "PostgreSQL server major: $SERVER_MAJOR; pg_dump client major: $CLIENT_VERSION."
-          /usr/lib/postgresql/17/bin/pg_dump --host="$PGHOST" --port="$PGPORT" --username="$PGUSER" --dbname="$PGDATABASE" --format=custom --no-owner --no-acl --file=backup/master-world-vip.dump
+          pg_dump --host="$PGHOST" --port="$PGPORT" --username="$PGUSER" --dbname="$PGDATABASE" --format=custom --no-owner --no-acl --file=backup/master-world-vip.dump
           openssl enc -aes-256-cbc -pbkdf2 -salt \
             -in backup/master-world-vip.dump \
             -out backup/master-world-vip.dump.enc \
