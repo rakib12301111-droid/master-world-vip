@@ -1,6 +1,6 @@
 # MASTER WORLD VIP — Feature Completion Register
 
-Last reviewed: 2026-11-22
+Last reviewed: 2026-11-23
 
 This register tracks the existing repository. A feature is **not live** merely because its UI, SQL migration, or Edge Function exists. Mark a feature live only after its migration/function is deployed and its acceptance tests pass in the target project.
 
@@ -20,9 +20,23 @@ This register tracks the existing repository. A feature is **not live** merely b
 - **Not yet Live:** Supabase migrations still require guarded production apply; owner bootstrap, two-account privacy/RLS tests, staff review tests, and deployment verification remain pending.
 
 ## Update 3 progress — 2026-11-23
+
 - Added Work & Earn job board UI: job search, categories, posting, member applications, own-post management, incoming application review and accept/reject actions.
 - Added additive SQL migration `20261123100000_work_earn_job_board.sql` with authenticated-only access, RLS, one-application-per-member constraint, and owner/admin review RPCs.
 - **Not live yet:** production migration, Pages deployment and two-account privacy/permission tests must pass before marking Work & Earn available. No payment processing or income guarantee is included.
+
+## Update 4 requirements — 2026-11-23: MW VIP FREE GLOBAL INTERNET
+
+- User requirement: provide every member and the admin with no-charge access to general internet services, including Google, YouTube, Facebook, WhatsApp, web browsing and other services that require internet—not merely selected app content.
+- Required experience: a clearly labelled Global Internet Connect/Disconnect area in MASTER WORLD VIP; connection and usage status; transparent data accounting; offline Maps and previously downloaded content when no live connection exists.
+- User's desired coverage includes remote locations without a cellular SIM/data plan or local Wi-Fi. This requires an actual satellite or other authorized upstream network path and compatible terminal/radio hardware; the phone app alone cannot create an internet signal where no communications link exists.
+- User-facing price target: **৳0 for every member and the admin**. This is a subsidy/zero-rating goal, not a claim that network capacity is cost-free. All wholesale connectivity, satellite capacity, hardware, gateway, power, roaming, support and regulatory costs must be funded by MASTER WORLD VIP, sponsors, donors or an approved connectivity partner. Do not promise unlimited or worldwide coverage until contracted capacity and coverage are verified.
+- Required provider work: obtain written commercial and technical proposals from satellite/mobile/network providers; verify Bangladesh and target-country licensing, coverage, terminal compatibility, roaming, throughput, latency, fair-use limits, service availability and wholesale pricing; obtain authorization for any direct-to-device service.
+- Required architecture: provider-approved satellite terminal or direct-to-device service -> authorized gateway/backhaul -> authenticated MW VIP member access -> usage/accounting and abuse controls. Never bypass carrier billing, network access controls, SIM restrictions or provider authentication.
+- Required safety/security: use encrypted transport, per-member authentication, rate limits, abuse prevention, privacy-minimizing logs, clear outage/status indicators and emergency-use disclaimers. Do not collect members' third-party Google/Facebook passwords or OTPs.
+- Offline fallback: downloadable offline maps and user-selected cached content can work without a live connection, but cannot provide live search, streaming, messaging or current website data while disconnected.
+- **Status: Requirements recorded only — NOT implemented, NOT connected, NOT free/live.** No satellite provider contract, hardware deployment, gateway, funded data capacity, app UI, backend service or real-device acceptance test is confirmed by this entry. Do not represent this as an available feature.
+- Implementation gates: (1) select and contract an authorized provider; (2) approve sustainable funding for the ৳0 member price; (3) deploy compatible terminals/gateways and coverage; (4) implement secure app/backend integration; (5) test in Bangladesh and each claimed coverage area; (6) publish only verified service limits and mark Live only after all tests pass.
 
 ## Feature register
 
@@ -30,6 +44,7 @@ This register tracks the existing repository. A feature is **not live** merely b
 |---|---|---|
 | Member Hub & Profiles | Supabase Auth starter, profile UI, username/bio/discovery fields and profile migrations | Fix IPv4 pooler connection; apply migrations; configure Auth Site/Redirect URLs and email; signup, confirmation, login, profile CRUD and two-user RLS tests |
 | Global Community — Search, Friends & Chat | Member discovery, friend requests, accepted-friend-only direct chat RPC, public groups/group chat, inbox, read markers, broadcasts and realtime/polling fallback | Apply all required migrations in dependency order; verify profile privacy, direct/group membership RLS, read/unread, broadcast authorization and rate limit with two accounts |
+| MW VIP FREE GLOBAL INTERNET | User requirements and architecture/funding/provider gates documented only | Obtain authorized provider contract and sustainable funding; verify regulatory approval, coverage, compatible satellite/direct-to-device hardware and gateway; implement app/backend connection and usage controls; test actual connectivity. **No free internet service is currently implemented or live.** |
 | Live Number Location Map | Consent-based location migration and UI; verified phone lookup, sharing toggle, timestamp/freshness checks and map presentation foundation | Apply migration; configure browser geolocation permissions; verify phone numbers through Auth; test opt-in/opt-out, stale/offline behavior, lookup rate limit and no disclosure when sharing is off. A phone number/SIM alone must never reveal GPS |
 | AI Text & Voice Assistant | AI assistant Edge Function foundation | Choose provider/model; configure provider API key only in Supabase Edge Function secrets; deploy function; implement/test voice input/output, usage limits, abuse controls and error handling |
 | AI Image Search + License | AI Center UI placeholder | Select a licensed image/search provider; configure server-side credentials; return attribution, source URL, license and permitted-use metadata; test rights/attribution display |
