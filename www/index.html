@@ -265,6 +265,7 @@
 <div class="section two">
 <div class="item"><h3>📋 আমার পোস্ট করা কাজ</h3><button class="btn secondary" id="loadMyWorkPosts" type="button">আমার কাজ দেখুন</button><div id="myWorkPosts" class="section small">এখনো লোড হয়নি।</div></div>
 <div class="item"><h3>📝 আমার আবেদন</h3><button class="btn secondary" id="loadMyWorkApplications" type="button">আবেদন দেখুন</button><div id="myWorkApplications" class="section small">এখনো লোড হয়নি।</div></div>
+<div class="item section"><h3>📨 আমার পোস্টে আসা আবেদন</h3><button class="btn secondary" id="loadReceivedWorkApplications" type="button">আবেদন পর্যালোচনা</button><div id="receivedWorkApplications" class="section small">এখনো লোড হয়নি।</div></div>
 </div>
 <div class="section item" id="workApplyPanel" hidden>
 <h3>কাজের জন্য আবেদন</h3><input id="workApplyPostId" type="hidden">
@@ -2334,6 +2335,34 @@ $('publishWorkPost')?.addEventListener('click',async()=>{
 });
 $('loadMyWorkPosts')?.addEventListener('click',loadMyWorkPosts);
 $('loadMyWorkApplications')?.addEventListener('click',loadMyWorkApplications);
+$('loadReceivedWorkApplications')?.addEventListener('click',loadReceivedWorkApplications);
+async function loadReceivedWorkApplications(){
+ const box=$('receivedWorkApplications');if(!box)return;if(!client||!currentUser){box.textContent='আগে লগইন করুন।';return;}
+ box.textContent='আবেদন লোড হচ্ছে…';
+ try{
+  const {data:posts,error:postError}=await client.from('work_posts').select('id,title').eq('owner_id',currentUser.id).limit(100);if(postError)throw postError;
+  const ids=(posts||[]).map(p=>p.id);if(!ids.length){box.textContent='আপনার পোস্টে এখনো কোনো আবেদন নেই।';return;}
+  const {data,error}=await client.from('work_applications').select('id,post_id,applicant_id,message,status,created_at').in('post_id',ids).order('created_at',{ascending:false}).limit(100);if(error)throw error;
+  box.innerHTML='';if(!data?.length){box.textContent='আপনার পোস্টে এখনো কোনো আবেদন নেই।';return;}
+  const titleById=new Map(posts.map(p=>[p.id,p.title]));
+  data.forEach(app=>{
+   const card=document.createElement('div');card.className='feature';
+   card.append(workCard('strong',titleById.get(app.post_id)||'আপনার কাজ'));
+   card.append(workCard('p','আবেদনকারী ID: '+app.applicant_id));
+   card.append(workCard('p',app.message));
+   const state=workCard('p','অবস্থা: '+({pending:'পর্যালোচনায়',accepted:'গৃহীত',rejected:'বাতিল',withdrawn:'প্রত্যাহার'}[app.status]||app.status));state.className='muted small';card.append(state);
+   if(app.status==='pending'){
+    for(const [value,label] of [['accepted','আবেদন গ্রহণ'],['rejected','আবেদন বাতিল']]){
+     const button=document.createElement('button');button.className='btn secondary';button.type='button';button.textContent=label;
+     button.addEventListener('click',async()=>{button.disabled=true;const {error}=await client.rpc('review_work_application',{p_application_id:app.id,p_status:value});button.disabled=false;if(error){alert('সিদ্ধান্ত সংরক্ষণ হয়নি: '+error.message);return;}loadReceivedWorkApplications();});
+     card.append(button);
+    }
+   }
+   box.append(card);
+  });
+ }catch(e){box.textContent='আসা আবেদন লোড হয়নি: '+e.message+'। Work & Earn migration apply হয়েছে কি না যাচাই করুন।';}
+}
+
 $('cancelWorkApplication')?.addEventListener('click',()=>{$('workApplyPanel').hidden=true;$('workApplyMessage').value='';});
 $('submitWorkApplication')?.addEventListener('click',async()=>{
  const status=$('workApplyStatus'),sayStatus=(m,ok=false)=>{status.className='notice'+(ok?' success':'');status.textContent=m;};
