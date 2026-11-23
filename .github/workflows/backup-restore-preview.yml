@@ -72,7 +72,7 @@ jobs:
           set -euo pipefail
           mkdir -p backup
           SERVER_VERSION="$(psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 -Atc 'show server_version_num')"
-          CLIENT_VERSION="$(pg_dump --version | sed -E 's/.* ([0-9]+)\\..*/\\1/')"
+          CLIENT_VERSION="$(pg_dump --version | awk '{print $3}' | cut -d. -f1)"
           SERVER_MAJOR="$((SERVER_VERSION / 10000))"
           test "$CLIENT_VERSION" -ge "$SERVER_MAJOR" || { echo "::error::pg_dump client major version $CLIENT_VERSION is older than server major version $SERVER_MAJOR."; exit 1; }
           echo "PostgreSQL server major: $SERVER_MAJOR; pg_dump client major: $CLIENT_VERSION."
