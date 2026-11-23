@@ -19,6 +19,11 @@ This register tracks the existing repository. A feature is **not live** merely b
 - Existing server-side RBAC, owner-only role changes, audit-log RPC, private verification/helpdesk request flow, staff review, private messages, status history and notifications were present in the repository before this UI update.
 - **Not yet Live:** Supabase migrations still require guarded production apply; owner bootstrap, two-account privacy/RLS tests, staff review tests, and deployment verification remain pending.
 
+## Update 3 progress — 2026-11-23
+- Added Work & Earn job board UI: job search, categories, posting, member applications, own-post management, incoming application review and accept/reject actions.
+- Added additive SQL migration `20261123100000_work_earn_job_board.sql` with authenticated-only access, RLS, one-application-per-member constraint, and owner/admin review RPCs.
+- **Not live yet:** production migration, Pages deployment and two-account privacy/permission tests must pass before marking Work & Earn available. No payment processing or income guarantee is included.
+
 ## Feature register
 
 | Feature | Repository foundation | Remaining work before Live |
