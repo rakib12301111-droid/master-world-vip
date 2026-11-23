@@ -499,6 +499,7 @@
 <div id="mwInternetNotice" class="notice" role="status">প্রোভাইডার ইন্টিগ্রেশন অপেক্ষমাণ। এই বাটন কোনো স্যাটেলাইট সংযোগ চালু করে না।</div>
 </div>
 <div class="notice">পরবর্তী ধাপ: অনুমোদিত প্রোভাইডার চুক্তি, বাংলাদেশে বৈধতা/কভারেজ, হার্ডওয়্যার ও গেটওয়ে, সদস্য-ভিত্তিক নিরাপদ অথেনটিকেশন, খরচ বহনের বাজেট এবং বাস্তব ডিভাইস পরীক্ষা। এসব ছাড়া Global Internet LIVE দেখানো হবে না।</div>
+<div class="section item"><h3>📋 Global Internet — ৭ ধাপের সংযোগ পরিকল্পনা</h3><p class="small muted">এই তালিকা Update Manifest থেকে লোড হয়। অ্যাপ আপডেট হলে অগ্রগতির অবস্থা এখানে ও Update Center-এ দেখা যাবে।</p><div id="mwInternetMilestones" class="feature-list"><div class="muted small">আপডেট পরিকল্পনা লোড হচ্ছে…</div></div></div>
 </article>
 </section>
 
@@ -1404,6 +1405,7 @@ const UPDATE_PLAN_URL='./update-manifest.json';
 function renderUpdatePlan(plan){
  const host=$('updateRoadmap');host.replaceChildren();
  const stateLabel={available:'কোড/ভিত্তি আছে',blocked:'বাহ্যিক setup প্রয়োজন',planned:'পরিকল্পিত',testing:'পরীক্ষা বাকি',released:'প্রকাশিত ও যাচাইকৃত'};
+ const milestoneLabel={completed:'সম্পন্ন',pending:'অপেক্ষমাণ',blocked:'বাধাপ্রাপ্ত'};
  (plan.stages||[]).forEach((stage,index)=>{
   const card=document.createElement('div');card.className='feature';
   const heading=document.createElement('strong');heading.textContent=(index+1)+'. '+stage.title;
@@ -1411,10 +1413,13 @@ function renderUpdatePlan(plan){
   const detail=document.createElement('div');detail.className='status';detail.textContent=stage.summary;
   const deps=document.createElement('p');deps.className='muted small';deps.textContent='পরবর্তী প্রয়োজন: '+(stage.requires||'কোনো অতিরিক্ত dependency উল্লেখ নেই');
   card.append(heading,badge,detail,deps);
-  if(stage.page){
-   const action=document.createElement('button');action.type='button';action.className='btn secondary';action.style.marginTop='8px';action.textContent='এই বিভাগ খুলুন';
-   action.addEventListener('click',()=>showPage(stage.page));card.append(action);
+  if(Array.isArray(stage.milestones)&&stage.milestones.length){
+   const list=document.createElement('div');list.className='feature-list';list.style.marginTop='9px';
+   stage.milestones.forEach(m=>{const item=document.createElement('div');item.className='item';const title=document.createElement('strong');title.textContent=m.title;const status=document.createElement('span');status.className='tag';status.textContent=milestoneLabel[m.status]||m.status;const summary=document.createElement('p');summary.className='muted small';summary.textContent=m.summary;const next=document.createElement('p');next.className='muted small';next.textContent='পরবর্তী কাজ: '+m.requires;item.append(title,status,summary,next);list.append(item);});
+   card.append(list);
+   if(stage.id==='global-internet'){const panel=$('mwInternetMilestones');if(panel){panel.replaceChildren();stage.milestones.forEach(m=>{const item=document.createElement('div');item.className='feature';const title=document.createElement('strong');title.textContent=m.title;const status=document.createElement('span');status.className='tag';status.textContent=milestoneLabel[m.status]||m.status;const summary=document.createElement('p');summary.className='muted small';summary.textContent=m.summary;item.append(title,status,summary);panel.append(item);});}}
   }
+  if(stage.page){const action=document.createElement('button');action.type='button';action.className='btn secondary';action.style.marginTop='8px';action.textContent='এই বিভাগ খুলুন';action.addEventListener('click',()=>showPage(stage.page));card.append(action);}
   host.append(card);
  });
 }
