@@ -2281,7 +2281,7 @@ async function loadWorkPosts(){
  if(!client||!currentUser){box.textContent='কাজ দেখতে আগে লগইন করুন।';workStatus('কাজ দেখতে বা পোস্ট করতে আগে লগইন করুন।');return;}
  box.textContent='কাজ লোড হচ্ছে…';
  try{
-  let q=client.from('work_posts').select('id,owner_id,title,category,description,pay_type,pay_amount,currency,location,status,created_at,profiles(display_name,country)').eq('status','open').order('created_at',{ascending:false}).limit(50);
+  let q=client.from('work_posts').select('id,owner_id,title,category,description,pay_type,pay_amount,currency,location,status,created_at').eq('status','open').order('created_at',{ascending:false}).limit(50);
   const search=$('workSearch')?.value.trim();const category=$('workCategoryFilter')?.value;
   if(category)q=q.eq('category',category);
   if(search)q=q.or('title.ilike.%'+search+'%,description.ilike.%'+search+'%');
@@ -2292,7 +2292,7 @@ async function loadWorkPosts(){
   data.forEach(post=>{
    const card=document.createElement('div');card.className='item section';
    const title=workCard('strong',post.title);const meta=workCard('p',post.category+' · '+workMoney(post)+' · '+(post.location||'Remote'));
-   meta.className='muted small';const desc=workCard('p',post.description);const owner=workCard('p','কাজদাতা: '+(post.profiles?.display_name||'সদস্য')+(post.profiles?.country?' · '+post.profiles.country:''));
+   meta.className='muted small';const desc=workCard('p',post.description);const owner=workCard('p','কাজদাতা: MASTER WORLD VIP সদস্য');
    owner.className='muted small';const date=workCard('p',new Date(post.created_at).toLocaleDateString('bn-BD'));date.className='muted small';
    card.append(title,meta,desc,owner,date);
    if(post.owner_id!==currentUser.id){const apply=document.createElement('button');apply.className='btn';apply.type='button';apply.textContent='আবেদন করুন';apply.addEventListener('click',()=>{$('workApplyPostId').value=post.id;$('workApplyPanel').hidden=false;$('workApplyStatus').textContent='কাজের শর্ত পড়ে আপনার প্রস্তাব লিখুন।';$('workApplyPanel').scrollIntoView({behavior:'smooth',block:'center'});});card.append(apply);}
