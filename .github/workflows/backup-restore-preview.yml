@@ -92,7 +92,7 @@ jobs:
           }
           with open(os.environ["GITHUB_ENV"], "a", encoding="utf-8") as env_file:
               for key, value in values.items():
-                  env_file.write(f"{key}={value}\\n")
+                  env_file.write(f"{key}={value}\n")
           print("Session Pooler URI parsed successfully; credentials were not printed.")
           PY
 
