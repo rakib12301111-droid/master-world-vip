@@ -1,9 +1,17 @@
 {
   "schema_version": 1,
   "app": "MASTER WORLD VIP",
-  "updated_at": "2026-11-22",
-  "note": "Status describes repository implementation only. A feature is not live until its external setup and tests are verified. Global Community dashboard now includes incoming/outgoing friend-request management, per-notification read markers, clearer push subscription validation, direct/group messaging, unified inbox and member-only broadcast inbox. Deployment, Supabase migration/RLS checks and two-account Android/browser acceptance tests remain required.",
+  "updated_at": "2026-11-23",
+  "note": "Status describes repository implementation only. Work & Earn job board UI, authenticated job posting, member applications, owner review RPC and RLS migration are now in the repository; live database migration, Pages deployment and multi-account acceptance tests remain required.",
   "stages": [
+    {
+      "id": "work-earn",
+      "title": "Stage 0.7 — Work & Earn Job Board",
+      "status": "testing",
+      "summary": "Responsive Work & Earn page with job search, category filters, member job posting, applications, applicant tracking, employer accept/reject controls and server-side RLS/RPC migration are in the repository.",
+      "requires": "Verify recoverable Supabase backup and restore test; apply 20261123100000_work_earn_job_board.sql through the protected migration workflow; deploy GitHub Pages; test two accounts for job visibility, own-post controls, duplicate application denial, applicant privacy, employer review permissions and mobile Android navigation. No payments or guaranteed earnings are provided.",
+      "page": "workEarn"
+    },
     {
       "id": "release-center",
       "title": "Stage 0.4 — Version 3.3.0 Update Center",
