@@ -68,3 +68,24 @@ Secure Database Update workflow-তে Apply কেবল তখনই চাল
 - Database backups: https://supabase.com/docs/guides/platform/backups
 - Restore to a new project: https://supabase.com/docs/guides/platform/clone-project
 - Backup and restore using CLI: https://supabase.com/docs/guides/platform/migrating-within-supabase/backup-restore
+
+
+## GitHub Actions automated pipeline (2026-11-23)
+
+Repository-তে `.github/workflows/backup-restore-preview.yml` যোগ করা হয়েছে। এটি manual dispatch-এ:
+
+1. Supabase Session Pooler দিয়ে database-এর full logical dump নেয়;
+2. dump-টি AES-256-CBC/PBKDF2 দিয়ে encrypt করে;
+3. disposable PostgreSQL 17 service-এ decrypt করে restore চালায়—Production-এ নয়;
+4. সব pending migration-এর `supabase db push --dry-run` preview চালায়;
+5. encrypted backup artifact ৭ দিন রাখে এবং non-secret backup/restore run reference দেখায়।
+
+চালানোর আগে GitHub repository → Settings → Secrets and variables → Actions-এ নিচের secret থাকতে হবে:
+
+- `SUPABASE_DB_URL`: Supabase IPv4-compatible Session Pooler connection string;
+- `SUPABASE_ACCESS_TOKEN`: Supabase Personal Access Token (`sbp_` দিয়ে শুরু);
+- `BACKUP_ENCRYPTION_PASSPHRASE`: শক্তিশালী, অনন্য backup encryption passphrase।
+
+এই secret-গুলোর মান কখনো chat/issue/commit-এ দেবেন না। Workflow run সফল না হওয়া পর্যন্ত backup বা restore test সফল হয়েছে বলা যাবে না। Restore step PostgreSQL 17-এ কোনো Supabase-specific extension/role/schema incompatibility পেলে fail করবে; সেটিকে সফল restore হিসেবে গণ্য করা যাবে না এবং Production Apply gate খোলা যাবে না।
+
+এই pipeline Production migration apply করে না। সফল backup+restore+preview-এর পরে আলাদা অনুমোদিত migration workflow এবং দুই সদস্যের RLS integration test চালাতে হবে। `RLS_TEST_MEMBER_A_UUID`, `RLS_TEST_MEMBER_B_UUID`, এবং ঐ workflow-এর প্রয়োজনীয় DB credential secrets আগে থেকেই নিরাপদে configured থাকতে হবে।
