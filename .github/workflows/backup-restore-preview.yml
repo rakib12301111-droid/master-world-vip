@@ -7,7 +7,11 @@ on:
     branches: [main]
     paths:
       - '.github/workflows/backup-restore-preview.yml'
+      - '.github/workflows/secure-supabase-db-update.yml'
+      - '.github/workflows/apply-supabase-migrations.yml'
+      - '.github/workflows/test-two-member-rls.yml'
       - 'supabase/migrations/**'
+      - 'supabase/audits/**'
       - 'supabase/config.toml'
 
 permissions:
