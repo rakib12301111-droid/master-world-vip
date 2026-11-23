@@ -59,6 +59,11 @@ jobs:
           grep -q "applySafeSetup" /tmp/mwvip-live.html
           grep -q "continueStartup" /tmp/mwvip-live.html
           grep -q "laterSetup" /tmp/mwvip-live.html
+          grep -q 'id="signup"' /tmp/mwvip-live.html
+          grep -q 'id="login"' /tmp/mwvip-live.html
+          grep -q "signUp(" /tmp/mwvip-live.html
+          grep -q "signInWithPassword(" /tmp/mwvip-live.html
+          grep -q "resetPasswordForEmail(" /tmp/mwvip-live.html
           curl --fail --silent --show-error --location "${PAGE_URL%/}/www/sw.js" -o /tmp/mwvip-sw.js
           grep -q "mwvip-pwa-v28" /tmp/mwvip-sw.js
-          echo "PASS: live site, setup actions, startup navigation hooks, and PWA cache v28 are published."
+          echo "PASS: live site, setup actions, Registration/Login code, startup navigation hooks, and PWA cache v28 are published."
