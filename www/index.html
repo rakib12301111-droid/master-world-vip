@@ -759,6 +759,7 @@ function applySafeSetup(){
  const status=$('setupStatus');
  if(status){status.className='notice success';status.textContent='নিরাপদ স্থানীয় সেটআপ প্রয়োগ হয়েছে। Analytics, data collection, browser permission, account connection ও legal consent বন্ধ/অপরিবর্তিত আছে।';}
  applyWorkspacePreferences(prefs);syncWorkspaceSettingsUI();
+ continueStartup();
 }
 function loadSetupPrefs(){
  const p=readSetupPrefs();
@@ -789,13 +790,15 @@ function saveWorkspaceSettings(){
  Object.entries({setupBn:prefs.language==='bn',setupDark:prefs.theme==='dark',setupSecurity:prefs.securityAlerts,setupInApp:prefs.inAppNotifications,setupPrivacy:prefs.privacyFriendlyDefaults,setupBackup:prefs.backupRecoveryReminder,setupSmartUpdate:prefs.smartUpdateChecks,setupAnalytics:prefs.analytics}).forEach(([id,value])=>{if($(id))$(id).checked=value;});
  applyWorkspacePreferences(prefs);syncWorkspaceSettingsUI();
  if($('setupStatus')){$('setupStatus').className='notice success';$('setupStatus').textContent='Workspace Settings সংরক্ষিত হয়েছে। সব preference এই ডিভাইসেই রাখা হয়েছে।';}
+ continueStartup();
 }
 $('saveWorkspaceSettings')?.addEventListener('click',saveWorkspaceSettings);
 $('applySafeSetup').addEventListener('click',applySafeSetup);
 $('reviewSetup').addEventListener('click',()=>{syncWorkspaceSettingsUI();showPage('settings');});
-$('laterSetup').addEventListener('click',()=>{say('setupStatus','Setup পরে করা যাবে। কোনো সেটিংস পরিবর্তন হয়নি।');showPage('overview');});
+$('laterSetup').addEventListener('click',()=>{localStorage.setItem('mwvip_setup_skipped','true');say('setupStatus','Setup পরে করা যাবে। কোনো সেটিংস পরিবর্তন হয়নি।');continueStartup();});
 loadSetupPrefs();
 let client=null,currentUser=null;
+function continueStartup(){if(currentUser){showPage('overview');}else{showPage('account');}}
 function say(id,msg){$(id).textContent=msg;}
 const SUPABASE_PROJECT_URL='https://lztbbrzeuyjkuiyzrsxp.supabase.co';
 const SUPABASE_PUBLISHABLE_KEY='sb_publishable_r6Qq3bM6nSgbqvKTYQZdUQ_ux2kUc8r';
@@ -827,8 +830,9 @@ async function connect(){
   currentUser=data.session?.user||null;
   setStatus(currentUser?'সংযুক্ত এবং লগইন আছে: '+currentUser.email:'Supabase সংযুক্ত হয়েছে। এখন Register অথবা Login করুন।');
   $('dashAuth').textContent=currentUser?'Logged in':'Connected';
-  if(currentUser){await loadProfile();startMessagingSync();}
-  client.auth.onAuthStateChange((_event,session)=>{currentUser=session?.user||null;$('dashAuth').textContent=currentUser?'Logged in':'Connected';if(currentUser){startMessagingSync();$('memberstatus').textContent='লগইন আছে: '+currentUser.email;setTimeout(()=>{loadProfile();loadPrivacyRequests();if(typeof loadVerificationRequests==='function')loadVerificationRequests();if(typeof refreshAdminAccess==='function')refreshAdminAccess();},0)}else{stopMessagingSync();$('memberstatus').textContent='লগইন করুন।';$('profileResult').textContent='লগইন করা নেই।';$('privacyRequestList').textContent='অনুরোধ দেখতে লগইন করুন।'}});
+  if(currentUser){await loadProfile();startMessagingSync();showPage('overview');}
+  else if(localStorage.getItem('mwvip_setup_completed')==='true'||localStorage.getItem('mwvip_setup_skipped')==='true'){showPage('account');}
+  client.auth.onAuthStateChange((_event,session)=>{currentUser=session?.user||null;$('dashAuth').textContent=currentUser?'Logged in':'Connected';if(currentUser){showPage('overview');startMessagingSync();$('memberstatus').textContent='লগইন আছে: '+currentUser.email;setTimeout(()=>{loadProfile();loadPrivacyRequests();if(typeof loadVerificationRequests==='function')loadVerificationRequests();if(typeof refreshAdminAccess==='function')refreshAdminAccess();},0)}else{stopMessagingSync();$('memberstatus').textContent='লগইন করুন।';$('profileResult').textContent='লগইন করা নেই।';$('privacyRequestList').textContent='অনুরোধ দেখতে লগইন করুন।'}});
  }catch(e){client=null;setStatus('সংযোগে সমস্যা: '+e.message)}
 }
 $('jumpAccountConnection').onclick=()=>$('account-connect').scrollIntoView({behavior:'smooth',block:'start'});
@@ -848,7 +852,7 @@ $('signup').onclick=async()=>{
   if(error)throw error;
   if(data.session&&data.user){
    currentUser=data.user;say('authmsg','Registration সফল এবং Login হয়েছে। প্রোফাইল যাচাই করা হচ্ছে…');
-   await ensureProfile(name);await loadPrivacyRequests();$('dashAuth').textContent='Logged in';
+   await ensureProfile(name);await loadPrivacyRequests();$('dashAuth').textContent='Logged in';showPage('overview');
   }else say('authmsg','Registration অনুরোধ গ্রহণ করা হয়েছে। ইমেইলের Inbox/Spam-এ verification link থাকলে সেটি নিশ্চিত করে তারপর Login করুন। Supabase Email provider চালু থাকতে হবে।');
  }catch(error){say('authmsg','Registration সম্পন্ন হয়নি: '+(error?.message||'অজানা সমস্যা')+'. Supabase Auth ও database migration পরীক্ষা করুন।')}
  finally{button.disabled=false}
@@ -862,7 +866,7 @@ $('login').onclick=async()=>{
   const {data,error}=await client.auth.signInWithPassword({email,password});
   if(error)throw error;if(!data.user)throw new Error('Auth user পাওয়া যায়নি।');
   currentUser=data.user;$('dashAuth').textContent='Logged in';say('authmsg','Login সফল: '+data.user.email+'। প্রোফাইল লোড হচ্ছে…');
-  await loadProfile();await loadPrivacyRequests();startMessagingSync();
+  await loadProfile();await loadPrivacyRequests();startMessagingSync();showPage('overview');
  }catch(error){say('authmsg','Login সফল হয়নি: '+(error?.message||'অজানা সমস্যা')+'. ইমেইল verification ও পাসওয়ার্ড পরীক্ষা করুন।')}
  finally{button.disabled=false}
 };
