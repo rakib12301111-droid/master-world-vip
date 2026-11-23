@@ -68,10 +68,15 @@ jobs:
           import os
           from urllib.parse import urlsplit, unquote
 
-          raw = os.environ["SUPABASE_DB_URL"].strip()
+          raw = os.environ["SUPABASE_DB_URL"].lstrip("\\ufeff").strip()
+          # Normalize common copy/paste wrappers without exposing the secret.
+          if len(raw) >= 2 and raw[0] == raw[-1] and raw[0] in ('"', "'"):
+              raw = raw[1:-1].strip()
+          if raw.startswith("SUPABASE_DB_URL="):
+              raw = raw.split("=", 1)[1].strip().strip("\\\"'")
           parsed = urlsplit(raw)
           if parsed.scheme not in ("postgres", "postgresql"):
-              raise SystemExit("::error::SUPABASE_DB_URL must be a PostgreSQL URI beginning with postgresql://.")
+              raise SystemExit("::error::SUPABASE_DB_URL is not a PostgreSQL URI. Check that the secret starts with postgresql:// and contains no label or extra text.")
           if not parsed.hostname or not parsed.hostname.endswith(".pooler.supabase.com"):
               raise SystemExit("::error::SUPABASE_DB_URL host is not a Supabase Session Pooler host.")
           if parsed.port != 5432:
@@ -93,6 +98,7 @@ jobs:
           with open(os.environ["GITHUB_ENV"], "a", encoding="utf-8") as env_file:
               for key, value in values.items():
                   env_file.write(f"{key}={value}\n")
+              env_file.write(f"SUPABASE_DB_URL={raw}\\n")
           print("Session Pooler URI parsed successfully; credentials were not printed.")
           PY
 
