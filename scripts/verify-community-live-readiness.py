@@ -48,6 +48,7 @@ required_migrations = [
     "20261121180000_member_verification_helpdesk.sql",
     "20261121190000_member_live_location.sql",
     "20261122100000_messaging_realtime.sql",
+    "20261123100000_work_earn_job_board.sql",
 ]
 checks = {
     "Supabase migration versions are unique": migration_version_unique,
