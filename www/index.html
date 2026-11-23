@@ -44,6 +44,7 @@
 <button data-page="growth">↗ Global Growth</button>
 <button data-page="admin">⚙ Admin & Security</button>
 <button data-page="privacy">♢ Privacy & GDPR</button>
+<button data-page="globalInternet">🛰️ Global Internet</button>
 <button data-page="updates">⟳ Update Center</button>
 <button data-page="progress">☷ কাজের অগ্রগতি</button>
 </nav></aside>
@@ -478,6 +479,29 @@
 <div class="notice">ঐচ্ছিক consent এখন লগইন থাকলে Supabase-এ বর্তমান পছন্দ এবং অপরিবর্তনীয় consent history হিসেবে সংরক্ষণের চেষ্টা করবে; লগইন না থাকলে শুধু এই browser-এ থাকবে। Analytics/notification service নিজে থেকে চালু হবে না। Access/correction/deletion request queue তৈরি হয়েছে, কিন্তু বাস্তব deletion, policy publication, breach-response operation, legal review ও retention schedule এখনও প্রয়োজন। এটি GDPR certification বা পূর্ণ আইনি compliance-এর দাবি নয়।</div>
 <button class="btn secondary" id="showSql">Database setup SQL দেখুন</button><pre id="sqlBlock" class="code hidden"></pre></article></section>
 
+<section class="page" id="globalInternet">
+<article class="card">
+<h2>🛰️ MW VIP FREE GLOBAL INTERNET</h2>
+<p class="muted">সদস্য ও অ্যাডমিনদের জন্য লক্ষ্য: ৳০ ব্যবহারকারী মূল্য। বাস্তব সংযোগ দিতে অনুমোদিত স্যাটেলাইট/নেটওয়ার্ক পার্টনার, অর্থায়ন, কভারেজ এবং উপযুক্ত হার্ডওয়্যার আবশ্যক।</p>
+<div class="grid">
+<div class="card"><div class="label">সংযোগ অবস্থা</div><div class="stat" id="mwNetState">যাচাই হয়নি</div><div class="muted small" id="mwNetDetail">অ্যাপের ইন্টারনেট পরীক্ষা করুন।</div></div>
+<div class="card"><div class="label">প্রোভাইডার সংযোগ</div><div class="stat">PENDING</div><div class="muted small">অনুমোদিত প্রোভাইডার/API এখনো যুক্ত নয়।</div></div>
+<div class="card"><div class="label">ব্যবহারকারী মূল্য লক্ষ্য</div><div class="stat">৳০</div><div class="muted small">অর্থায়ন ও চুক্তি নিশ্চিত হলে।</div></div>
+</div>
+<div class="section item">
+<h3>Connect / Disconnect</h3>
+<p class="small muted">Connect/Disconnect নিয়ন্ত্রণ এখানে প্রস্তুত রাখা হয়েছে। বর্তমানে কোনো স্যাটেলাইট বা মোবাইল নেটওয়ার্ক প্রোভাইডার সংযুক্ত না থাকায় এটি ইন্টারনেট চালু করতে পারবে না।</p>
+<div class="actions">
+<button class="btn" id="mwProviderConnect" type="button">Connect — প্রোভাইডার প্রয়োজন</button>
+<button class="btn secondary" id="mwProviderDisconnect" type="button" disabled>Disconnect</button>
+<button class="btn secondary" id="mwCheckInternet" type="button">বর্তমান ইন্টারনেট পরীক্ষা</button>
+</div>
+<div id="mwInternetNotice" class="notice" role="status">প্রোভাইডার ইন্টিগ্রেশন অপেক্ষমাণ। এই বাটন কোনো স্যাটেলাইট সংযোগ চালু করে না।</div>
+</div>
+<div class="notice">পরবর্তী ধাপ: অনুমোদিত প্রোভাইডার চুক্তি, বাংলাদেশে বৈধতা/কভারেজ, হার্ডওয়্যার ও গেটওয়ে, সদস্য-ভিত্তিক নিরাপদ অথেনটিকেশন, খরচ বহনের বাজেট এবং বাস্তব ডিভাইস পরীক্ষা। এসব ছাড়া Global Internet LIVE দেখানো হবে না।</div>
+</article>
+</section>
+
 <section class="page" id="updates">
 <article class="card">
 <h2>⟳ Update Center & One-Click Update</h2>
@@ -689,7 +713,7 @@
 <script>
 const $=id=>document.getElementById(id);
 const pages=[...document.querySelectorAll('.page')];
-const titles={setup:'One-Click Setup',settings:'Workspace Settings',overview:'MASTER WORLD VIP Dashboard',account:'Registration & Login',members:'Member Hub',workEarn:'Work & Earn — কাজ ও আয়',ai:'AI Center',facebook:'Facebook Center',growth:'Global Growth',admin:'Admin & Security',privacy:'Privacy & GDPR',updates:'Update Center',progress:'কাজের অগ্রগতি / Project Progress',fbService:'Facebook Setup Service',inbox:'Unified Inbox',verification:'Member Verification & Helpdesk',global:'Global News & Offline',emergency:'Emergency Offline Center',games:'Games Center',location:'Live Number Location Map'};
+const titles={setup:'One-Click Setup',settings:'Workspace Settings',overview:'MASTER WORLD VIP Dashboard',account:'Registration & Login',members:'Member Hub',workEarn:'Work & Earn — কাজ ও আয়',ai:'AI Center',facebook:'Facebook Center',growth:'Global Growth',admin:'Admin & Security',privacy:'Privacy & GDPR',globalInternet:'MW VIP FREE GLOBAL INTERNET',updates:'Update Center',progress:'কাজের অগ্রগতি / Project Progress',fbService:'Facebook Setup Service',inbox:'Unified Inbox',verification:'Member Verification & Helpdesk',global:'Global News & Offline',emergency:'Emergency Offline Center',games:'Games Center',location:'Live Number Location Map'};
 function showPage(id){pages.forEach(p=>p.classList.toggle('active',p.id===id));document.querySelectorAll('[data-page]').forEach(b=>b.classList.toggle('active',b.dataset.page===id));$('pageTitle').textContent=titles[id]||titles.overview;if(id==='community'&&typeof loadFriendRequests==='function'&&client&&currentUser){loadFriendRequests();loadCommunityGroups();loadCommunityNotifications();loadMemberBroadcastInbox();}if(id==='workEarn'&&typeof loadWorkPosts==='function'){loadWorkPosts();if(currentUser){loadMyWorkPosts();loadMyWorkApplications();}}if(id==='settings')syncWorkspaceSettingsUI();if(id==='account'){try{localStorage.setItem('mwvip_supabase_wizard_opened_at',new Date().toISOString());syncSupabaseWizardProgress();}catch(_e){}}window.scrollTo({top:0,behavior:'smooth'});if(id==='inbox'&&typeof loadInbox==='function')loadInbox();if(id==='verification'&&typeof loadVerificationRequests==='function')loadVerificationRequests();if(id==='admin'&&typeof refreshAdminAccess==='function')refreshAdminAccess();if(id==='fbService'&&typeof loadFbOrders==='function'){loadFbOrders();loadFbFeedback();}}
 document.querySelectorAll('[data-page]').forEach(b=>b.addEventListener('click',()=>showPage(b.dataset.page)));
 document.querySelectorAll('[data-go]').forEach(b=>b.addEventListener('click',()=>showPage(b.dataset.go)));
@@ -2379,5 +2403,9 @@ $('submitWorkApplication')?.addEventListener('click',async()=>{
 window.mwvipGetClient=()=>client;
 window.mwvipGetUser=()=>currentUser;
 </script>
-<script src="./vip-security-center.js" defer></script>
+<script src="./vip-security-center.js" defer>
+// MW VIP Global Internet: honest connectivity diagnostics; no simulated satellite access.
+$('mwProviderConnect')?.addEventListener('click',()=>{const n=$('mwInternetNotice');if(n)n.textContent='সংযোগ স্থাপন করা যায়নি: কোনো অনুমোদিত স্যাটেলাইট/নেটওয়ার্ক প্রোভাইডার API বা হার্ডওয়্যার এখনো কনফিগার করা হয়নি।';});
+$('mwCheckInternet')?.addEventListener('click',async()=>{const state=$('mwNetState'),detail=$('mwNetDetail'),notice=$('mwInternetNotice'),btn=$('mwCheckInternet');btn.disabled=true;if(state)state.textContent='পরীক্ষা চলছে…';try{if(!navigator.onLine)throw new Error('এই ডিভাইসে নেটওয়ার্ক সংযোগ নেই।');const response=await fetch('./manifest.webmanifest?mwvip_health='+Date.now(),{cache:'no-store'});if(!response.ok)throw new Error('অ্যাপ সার্ভার পরীক্ষা ব্যর্থ হয়েছে।');if(state)state.textContent='APP ONLINE';if(detail)detail.textContent='অ্যাপ সার্ভারের সঙ্গে সংযোগ পাওয়া গেছে; এটি স্যাটেলাইট সংযোগের প্রমাণ নয়।';if(notice)notice.textContent='বর্তমান ডিভাইসে ইন্টারনেট পাওয়া যাচ্ছে। এটি বিদ্যমান Wi-Fi/মোবাইল নেটওয়ার্ক হতে পারে; MW VIP স্যাটেলাইট সেবা এখনো সক্রিয় নয়।';}catch(e){if(state)state.textContent='OFFLINE';if(detail)detail.textContent=e.message;if(notice)notice.textContent='লাইভ সংযোগ পাওয়া যায়নি: '+e.message;}finally{btn.disabled=false;}});
+</script>
 </body></html>
