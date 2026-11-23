@@ -57,27 +57,56 @@ jobs:
         run: |
           set -euo pipefail
           sudo apt-get update
-          sudo apt-get install --yes ca-certificates curl
-          sudo install -d /usr/share/postgresql-common/pgdg
-          curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo gpg --dearmor --yes -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.gpg
-          echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.gpg] https://apt.postgresql.org/pub/repos/apt $(. /etc/os-release && echo "$VERSION_CODENAME")-pgdg main" | sudo tee /etc/apt/sources.list.d/pgdg.list
-          sudo apt-get update
           sudo apt-get install --yes postgresql-client-17
-          pg_dump --version
-          pg_restore --version
+          /usr/lib/postgresql/17/bin/pg_dump --version
+          /usr/lib/postgresql/17/bin/pg_restore --version
+
+      - name: Parse and validate Session Pooler URI without exposing credentials
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import os
+          from urllib.parse import urlsplit, unquote
+
+          raw = os.environ["SUPABASE_DB_URL"].strip()
+          parsed = urlsplit(raw)
+          if parsed.scheme not in ("postgres", "postgresql"):
+              raise SystemExit("::error::SUPABASE_DB_URL must be a PostgreSQL URI beginning with postgresql://.")
+          if not parsed.hostname or not parsed.hostname.endswith(".pooler.supabase.com"):
+              raise SystemExit("::error::SUPABASE_DB_URL host is not a Supabase Session Pooler host.")
+          if parsed.port != 5432:
+              raise SystemExit("::error::Session Pooler URI must use port 5432.")
+          if parsed.path.lstrip("/") != "postgres":
+              raise SystemExit("::error::Session Pooler URI database path must be /postgres.")
+          username = unquote(parsed.username or "")
+          password = unquote(parsed.password or "")
+          if not username or not password or any(ch in username + password for ch in "\\r\\n"):
+              raise SystemExit("::error::Session Pooler URI is missing valid username/password credentials.")
+          values = {
+              "PGHOST": parsed.hostname,
+              "PGPORT": str(parsed.port),
+              "PGDATABASE": parsed.path.lstrip("/"),
+              "PGUSER": username,
+              "PGPASSWORD": password,
+              "PGSSLMODE": "require",
+          }
+          with open(os.environ["GITHUB_ENV"], "a", encoding="utf-8") as env_file:
+              for key, value in values.items():
+                  env_file.write(f"{key}={value}\\n")
+          print("Session Pooler URI parsed successfully; credentials were not printed.")
+          PY
 
       - name: Create encrypted full logical backup
         id: backup
         run: |
           set -euo pipefail
           mkdir -p backup
-          SERVER_VERSION="$(psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 -Atc 'show server_version_num')"
-          CLIENT_VERSION="$(pg_dump --version | awk '{print $3}' | cut -d. -f1)"
+          SERVER_VERSION="$(psql --no-psqlrc --host="$PGHOST" --port="$PGPORT" --username="$PGUSER" --dbname="$PGDATABASE" -v ON_ERROR_STOP=1 -Atc 'show server_version_num')"
+          CLIENT_VERSION="$(/usr/lib/postgresql/17/bin/pg_dump --version | awk '{print $3}' | cut -d. -f1)"
           SERVER_MAJOR="$((SERVER_VERSION / 10000))"
           test "$CLIENT_VERSION" -ge "$SERVER_MAJOR" || { echo "::error::pg_dump client major version $CLIENT_VERSION is older than server major version $SERVER_MAJOR."; exit 1; }
           echo "PostgreSQL server major: $SERVER_MAJOR; pg_dump client major: $CLIENT_VERSION."
-          pg_dump "$SUPABASE_DB_URL" --format=custom --no-owner --no-acl --file=backup/master-world-vip.dump
-          test -s backup/master-world-vip.dump
+          /usr/lib/postgresql/17/bin/pg_dump --host="$PGHOST" --port="$PGPORT" --username="$PGUSER" --dbname="$PGDATABASE" --format=custom --no-owner --no-acl --file=backup/master-world-vip.dump
           openssl enc -aes-256-cbc -pbkdf2 -salt \
             -in backup/master-world-vip.dump \
             -out backup/master-world-vip.dump.enc \
