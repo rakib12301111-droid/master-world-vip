@@ -30,6 +30,8 @@ jobs:
         with:
           path: .
   deploy:
+    outputs:
+      page_url: ${{ steps.deployment.outputs.page_url }}
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
@@ -39,3 +41,24 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+
+  verify:
+    name: Verify live GitHub Pages release
+    runs-on: ubuntu-latest
+    needs: deploy
+    steps:
+      - name: Check published website, startup flow, and PWA cache
+        env:
+          PAGE_URL: ${{ needs.deploy.outputs.page_url }}
+        run: |
+          set -euo pipefail
+          SITE_URL="${PAGE_URL%/}/www/"
+          echo "Checking ${SITE_URL}"
+          curl --fail --silent --show-error --location --retry 12 --retry-all-errors --retry-delay 10 "${SITE_URL}" -o /tmp/mwvip-live.html
+          grep -q "GLOBAL AI-POWERED WORKSPACE" /tmp/mwvip-live.html
+          grep -q "applySafeSetup" /tmp/mwvip-live.html
+          grep -q "continueStartup" /tmp/mwvip-live.html
+          grep -q "laterSetup" /tmp/mwvip-live.html
+          curl --fail --silent --show-error --location "${PAGE_URL%/}/www/sw.js" -o /tmp/mwvip-sw.js
+          grep -q "mwvip-pwa-v28" /tmp/mwvip-sw.js
+          echo "PASS: live site, setup actions, startup navigation hooks, and PWA cache v28 are published."
