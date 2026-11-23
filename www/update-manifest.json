@@ -2,8 +2,16 @@
   "schema_version": 1,
   "app": "MASTER WORLD VIP",
   "updated_at": "2026-11-23",
-  "note": "Status describes repository implementation only. Work & Earn job board UI, authenticated job posting, member applications, owner review RPC and RLS migration are in the repository. GitHub Pages deployment has succeeded; live database migration and multi-account acceptance tests remain required.",
+  "note": "Status describes repository implementation only. Work & Earn job board UI, authenticated job posting, member applications, owner review RPC and RLS migration are in the repository. GitHub Pages deployment has succeeded; live database migration and multi-account acceptance tests remain required. Global Internet Connect status UI and current-network diagnostics have been added; no satellite provider connection is configured and the service is not live.",
   "stages": [
+    {
+      "id": "global-internet",
+      "title": "Stage 0.8 — MW VIP FREE GLOBAL INTERNET",
+      "status": "testing",
+      "summary": "Global Internet page, provider-pending Connect/Disconnect controls and a real check of the current app-host connection are in the repository. The UI explicitly distinguishes existing device internet from satellite service.",
+      "requires": "Select and contract an authorized provider; confirm Bangladesh licensing, target-area coverage, supported hardware/terminal, gateway/backhaul and sustainable funding for ৳0 member pricing; implement provider-approved backend authentication/usage controls; deploy and test on real devices with provider service. Until then no satellite internet is available.",
+      "page": "globalInternet"
+    },
     {
       "id": "work-earn",
       "title": "Stage 0.7 — Work & Earn Job Board",
