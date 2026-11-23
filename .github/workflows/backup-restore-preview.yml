@@ -80,7 +80,7 @@ jobs:
               raise SystemExit("::error::Session Pooler URI database path must be /postgres.")
           username = unquote(parsed.username or "")
           password = unquote(parsed.password or "")
-          if not username or not password or any(ch in username + password for ch in "\\r\\n"):
+          if not username or not password or any(ch in username + password for ch in "\r\n"):
               raise SystemExit("::error::Session Pooler URI is missing valid username/password credentials.")
           values = {
               "PGHOST": parsed.hostname,
