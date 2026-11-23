@@ -2,15 +2,66 @@
   "schema_version": 1,
   "app": "MASTER WORLD VIP",
   "updated_at": "2026-11-23",
-  "note": "Status describes repository implementation only. Work & Earn job board UI, authenticated job posting, member applications, owner review RPC and RLS migration are in the repository. GitHub Pages deployment has succeeded; live database migration and multi-account acceptance tests remain required. Global Internet Connect status UI and current-network diagnostics have been added; no satellite provider connection is configured and the service is not live.",
+  "note": "Global Internet rollout checklist is displayed in the app and Update Center. GitHub Pages deployment of the previous UI foundation succeeded; provider, contract/API, terminal, gateway/backhaul, funding and real-world service tests remain pending. No satellite internet service is live.",
   "stages": [
     {
       "id": "global-internet",
       "title": "Stage 0.8 — MW VIP FREE GLOBAL INTERNET",
       "status": "testing",
-      "summary": "Global Internet page, provider-pending Connect/Disconnect controls and a real check of the current app-host connection are in the repository. The UI explicitly distinguishes existing device internet from satellite service.",
-      "requires": "Select and contract an authorized provider; confirm Bangladesh licensing, target-area coverage, supported hardware/terminal, gateway/backhaul and sustainable funding for ৳0 member pricing; implement provider-approved backend authentication/usage controls; deploy and test on real devices with provider service. Until then no satellite internet is available.",
-      "page": "globalInternet"
+      "summary": "Global Internet page and Update Center now show a seven-step rollout checklist. Previous UI foundation deployment succeeded; live satellite/network service is still not connected.",
+      "requires": "Complete the seven rollout milestones shown in milestones. Provider authorization, compatible infrastructure, sustainable subsidy and real-device acceptance tests are mandatory before marking service LIVE.",
+      "page": "globalInternet",
+      "milestones": [
+        {
+          "id": "pages-deploy",
+          "title": "১. GitHub Pages Deployment",
+          "status": "completed",
+          "summary": "Global Internet UI foundation deployed successfully to GitHub Pages.",
+          "requires": "Confirm this new checklist build also deploys and verify it in a browser."
+        },
+        {
+          "id": "provider",
+          "title": "২. Satellite / Network Provider",
+          "status": "pending",
+          "summary": "No provider selected or connected.",
+          "requires": "Choose an authorized provider that can supply internet in Bangladesh and intended coverage areas."
+        },
+        {
+          "id": "contract-api",
+          "title": "৩. Authorized Contract & API",
+          "status": "pending",
+          "summary": "No signed service agreement or provider API credentials configured.",
+          "requires": "Obtain written authorization, technical documentation, API access and provider-side account approval; store secrets only server-side."
+        },
+        {
+          "id": "terminal",
+          "title": "৪. Satellite Device / Terminal",
+          "status": "pending",
+          "summary": "No compatible terminal or direct-to-device service has been supplied or tested.",
+          "requires": "Acquire provider-approved equipment and power; verify phone/device compatibility and lawful operation."
+        },
+        {
+          "id": "gateway",
+          "title": "৫. Gateway & Backhaul",
+          "status": "pending",
+          "summary": "No authorized gateway/backhaul route is configured.",
+          "requires": "Provider must provision the gateway, internet transit, coverage and network routing."
+        },
+        {
+          "id": "funding",
+          "title": "৬. Funding for ৳০ Member Price",
+          "status": "pending",
+          "summary": "৳০ is the target price to members; operating budget is not yet confirmed.",
+          "requires": "Secure sponsor, company, donor or partner funding for capacity, equipment, power, support and regulatory costs."
+        },
+        {
+          "id": "real-tests",
+          "title": "৭. Real Internet Acceptance Tests",
+          "status": "blocked",
+          "summary": "Cannot test provider internet until provider, contract, equipment and backhaul are active.",
+          "requires": "On real devices and each claimed coverage area, verify Google, YouTube, Facebook, WhatsApp, ordinary websites, speed, latency, outages, privacy and usage limits. Only then may service be marked LIVE."
+        }
+      ]
     },
     {
       "id": "work-earn",
