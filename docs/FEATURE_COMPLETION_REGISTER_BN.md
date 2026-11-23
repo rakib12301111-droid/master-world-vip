@@ -38,13 +38,22 @@ This register tracks the existing repository. A feature is **not live** merely b
 - **Status: Requirements recorded only — NOT implemented, NOT connected, NOT free/live.** No satellite provider contract, hardware deployment, gateway, funded data capacity, app UI, backend service or real-device acceptance test is confirmed by this entry. Do not represent this as an available feature.
 - Implementation gates: (1) select and contract an authorized provider; (2) approve sustainable funding for the ৳0 member price; (3) deploy compatible terminals/gateways and coverage; (4) implement secure app/backend integration; (5) test in Bangladesh and each claimed coverage area; (6) publish only verified service limits and mark Live only after all tests pass.
 
+
+## Update 5 progress — 2026-11-23: Global Internet app-side foundation
+
+- Added a dedicated **MW VIP FREE GLOBAL INTERNET** page and navigation entry to the existing PWA.
+- Added Connect control that clearly reports provider integration is not configured; it does not fake a satellite connection. Disconnect remains disabled until a real provider session exists.
+- Added a real diagnostic that checks the device's current network path to the app's own manifest endpoint and labels the result as app-host connectivity only—not satellite service.
+- Added provider/funding/legal/hardware acceptance requirements to the update manifest and bumped the PWA cache namespace to v26 so the updated app shell can be fetched.
+- **Status: Repository UI and diagnostic code added; deployment and browser/device tests pending. Satellite provider/API/contract, gateway, funded data capacity and actual satellite internet remain NOT connected and NOT live.** The diagnostic cannot create internet access and cannot test connectivity with no network.
+
 ## Feature register
 
 | Feature | Repository foundation | Remaining work before Live |
 |---|---|---|
 | Member Hub & Profiles | Supabase Auth starter, profile UI, username/bio/discovery fields and profile migrations | Fix IPv4 pooler connection; apply migrations; configure Auth Site/Redirect URLs and email; signup, confirmation, login, profile CRUD and two-user RLS tests |
 | Global Community — Search, Friends & Chat | Member discovery, friend requests, accepted-friend-only direct chat RPC, public groups/group chat, inbox, read markers, broadcasts and realtime/polling fallback | Apply all required migrations in dependency order; verify profile privacy, direct/group membership RLS, read/unread, broadcast authorization and rate limit with two accounts |
-| MW VIP FREE GLOBAL INTERNET | User requirements and architecture/funding/provider gates documented only | Obtain authorized provider contract and sustainable funding; verify regulatory approval, coverage, compatible satellite/direct-to-device hardware and gateway; implement app/backend connection and usage controls; test actual connectivity. **No free internet service is currently implemented or live.** |
+| MW VIP FREE GLOBAL INTERNET | Requirements documented; PWA page, provider-pending Connect/Disconnect UI, app-host connectivity diagnostic, update-manifest entry and cache v26 added. Deployment/device tests pending. No satellite service connected. | Obtain authorized provider contract and sustainable funding; verify regulatory approval, coverage, compatible satellite/direct-to-device hardware and gateway; implement app/backend connection and usage controls; test actual connectivity. **No free internet service is currently implemented or live.** |
 | Live Number Location Map | Consent-based location migration and UI; verified phone lookup, sharing toggle, timestamp/freshness checks and map presentation foundation | Apply migration; configure browser geolocation permissions; verify phone numbers through Auth; test opt-in/opt-out, stale/offline behavior, lookup rate limit and no disclosure when sharing is off. A phone number/SIM alone must never reveal GPS |
 | AI Text & Voice Assistant | AI assistant Edge Function foundation | Choose provider/model; configure provider API key only in Supabase Edge Function secrets; deploy function; implement/test voice input/output, usage limits, abuse controls and error handling |
 | AI Image Search + License | AI Center UI placeholder | Select a licensed image/search provider; configure server-side credentials; return attribution, source URL, license and permitted-use metadata; test rights/attribution display |
