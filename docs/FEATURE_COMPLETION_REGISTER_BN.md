@@ -148,3 +148,13 @@ This register tracks the existing repository. A feature is **not live** merely b
 - Member registration and access remain free. Do not fund Owner compensation from member deposits, hidden fees or mandatory purchases. Use only real platform revenue, sponsorship or a separately approved Owner funding allocation.
 - Policy details: [Admin/Owner Monthly Compensation Policy](ADMIN_OWNER_COMPENSATION_POLICY_BN.md).
 - **Status: policy approved and committed; technical implementation NOT live.** No compensation ledger/UI, monthly accrual automation, funding reserve, payout integration, Supabase migration or payment has been implemented or verified by this documentation update. These require separate code, security review, deployment and acceptance tests.
+
+## Update 12 — 2026-11-24: Owner compensation ledger implementation foundation
+
+- Added additive migration `202611240004_owner_monthly_compensation.sql` with private monthly compensation and payment tables, Owner-only RPCs, append-only payment records, duplicate-month/payment-reference controls and Admin audit events.
+- Added the Owner-only monthly compensation panel inside the existing Admin & Security page. It displays minimum, total due, paid and outstanding amounts; monthly history; commission/source/reference entry; and recording of a real transfer after it occurs.
+- Monthly accrual is idempotently generated/backfilled from November 2026 when the verified Owner opens or refreshes the panel. **This is on-demand accrual, not a background scheduler.** The Owner must manually enter eligible settled commission and evidence; the platform does not yet calculate revenue share automatically.
+- The payment form records an actual transfer reference only after money has been sent externally. It does not connect to or initiate bKash, Nagad or bank transfers.
+- Added static safety checks in `scripts/verify-owner-compensation.py` and included the new migration in the guarded production migration preflight.
+- **Status: code and migration foundation committed; NOT production-live or payment-enabled.** Supabase migration apply, Pages deployment, CI safety run, Owner-role verification, separate ordinary-member access-denial test and end-to-end ledger acceptance remain pending. No money was funded, accrued in production, or paid by this commit.
+- Details: [Admin/Owner Monthly Compensation Policy](ADMIN_OWNER_COMPENSATION_POLICY_BN.md).
