@@ -68,5 +68,5 @@ jobs:
           grep -q "signInWithPassword(" /tmp/mwvip-live.html
           grep -q "resetPasswordForEmail(" /tmp/mwvip-live.html
           curl --fail --silent --show-error --location "$BASE_URL/www/sw.js" -o /tmp/mwvip-sw.js
-          grep -q "mwvip-pwa-v29" /tmp/mwvip-sw.js
-          echo "PASS: live website, signup/login, in-app email OTP verification, and PWA cache v29 are published."
+          grep -q "mwvip-pwa-v30" /tmp/mwvip-sw.js
+          echo "PASS: live website, signup/login, in-app email OTP verification, and PWA cache v30 are published."
