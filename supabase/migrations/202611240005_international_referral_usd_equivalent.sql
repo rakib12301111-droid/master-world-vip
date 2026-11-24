@@ -212,7 +212,8 @@ begin
       and char_length(btrim(coalesce(p.display_name,''))) > 0
       and r.referrer_id <> u.id
       and inviter_profile.country is not null
-      and char_length(btrim(inviter_profile.country)) > 0\n      and inviter_profile.referral_reward_country_verified=true
+      and char_length(btrim(inviter_profile.country)) > 0
+      and inviter_profile.referral_reward_country_verified=true
     order by r.created_at asc
     for update of r skip locked
   loop
@@ -274,7 +275,8 @@ begin
     and u.created_at <= now() - interval '24 hours'
     and u.confirmed_at is not null
     and (u.banned_until is null or u.banned_until <= now())
-    and (inviter_profile.country is null or char_length(btrim(inviter_profile.country))=0\n      or inviter_profile.referral_reward_country_verified is distinct from true);
+    and (inviter_profile.country is null or char_length(btrim(inviter_profile.country))=0
+      or inviter_profile.referral_reward_country_verified is distinct from true);
 
   return jsonb_build_object(
     'qualified',v_qualified,'rewarded',v_rewarded,'paused',false,
