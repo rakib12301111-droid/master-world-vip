@@ -185,3 +185,11 @@ This register tracks the existing repository. A feature is **not live** merely b
 - **Resolved:** the previously pending Pages deployment for the zero-personal-cost policy update is now successful.
 - **Still not live:** Supabase production migrations (including referral migration 006), referral Edge Function/cron integration, funding confirmation, two-member/deep-tree tests, and automatic bKash/Nagad payout. No production database migration was applied by this deployment.
 - No personal payment, deposit or paid service was initiated by this update. Free-tier limits still apply; no guarantee of unlimited free hosting, SMS, data, payment processing or provider capacity is made.
+
+
+## Update 15 — 2026-11-24: Referral payout reference integrity hardening
+
+- Added additive migration `202611240007_referral_payout_reference_hardening.sql` to require every Paid withdrawal to retain a non-empty 4–120 character transfer reference, a reviewer and a paid timestamp.
+- Added a case-insensitive unique index per payout method so the same bKash or Nagad transaction reference cannot be reused to mark multiple withdrawal requests Paid. The migration stops with a clear error if existing Paid rows are incomplete or duplicate; it does not silently rewrite historical payout records.
+- Included migration 007 in the guarded Supabase migration preflight and expanded `scripts/verify-referral-rewards.py` to check the new payout protections and the shared authenticated wallet/withdrawal path for both ordinary members and the Owner.
+- **Not production-live:** this is a code/migration hardening change only. It does not send money, add funds, enable cash rewards, or mark any request Paid. The migration remains pending until the documented recoverable-backup, restore-test and exact authorization gates are completed. Static CI and live Pages verification are pending for this commit.
