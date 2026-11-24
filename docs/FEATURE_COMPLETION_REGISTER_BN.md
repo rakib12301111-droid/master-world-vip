@@ -87,6 +87,13 @@ This register tracks the existing repository. A feature is **not live** merely b
 - Do not label any feature **Live** until deployment and its real acceptance test both pass.
 
 
+## Update 6 — 2026-11-24: Approved free referral reward terms
+
+- User-approved terms recorded in [Referral Reward Policy (Bangla)](REFERRAL_REWARD_POLICY_BN.md): free signup and referral; no deposit or mandatory purchase for inviter or invitee; 24-hour account-good-standing qualification period (not 24-hour continuous online use); verified email and profile completion; ৳৫০ BDT per eligible direct referral.
+- Self-referrals, duplicate/fake accounts and attribution manipulation are disallowed; qualification and reward approval must be server-side, idempotent and audited.
+- Reward source must be a pre-funded, available platform marketing/reward budget. If budget is unavailable, pause issuance; never fabricate a cash balance or require members to deposit.
+- **Status: Policy approved and documented only — NOT live.** The existing referral code/attribution and stats foundation exists, but qualification workflow, funded reward ledger, payout integration and acceptance tests remain pending. Production migrations must follow the existing backup/dry-run/explicit-authorization process.
+
 ## Public Member Referral Identity — 2026-11-24
 - Added a system-managed public member profile route using `?member=<member-id>`.
 - Added the permanent “MASTER WORLD VIP-এর মাধ্যমে যুক্ত” identity badge and stable referral code display.
