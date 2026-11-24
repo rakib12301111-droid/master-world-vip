@@ -42,6 +42,7 @@
 <button data-page="facebook">◎ Facebook Center</button>
 <button data-page="fbService">🧾 Facebook Setup Service</button>
 <button data-page="growth">↗ Global Growth</button>
+<button data-page="growth">🔗 Referral Center</button>
 <button data-page="admin">⚙ Admin & Security</button>
 <button data-page="privacy">♢ Privacy & GDPR</button>
 <button data-page="globalInternet">🛰️ Global Internet</button>
@@ -422,9 +423,16 @@
 <div class="feature-list section"><div class="feature"><strong>AI-assisted discovery</strong><div class="status">Planned</div></div><div class="feature"><strong>Manual member workflow</strong><div class="status">Planned</div></div><div class="feature"><strong>Limited transparent verification</strong><div class="status">Consent and policy checks required</div></div><div class="feature"><strong>Country filters & refresh</strong><div class="status">Authorized data source required</div></div></div>
 <div class="notice">শুধু প্রকাশ্য/অনুমোদিত তথ্য ও Meta-র নিয়ম মেনে কাজ করবে। Private account access, password collection বা unauthorized scraping থাকবে না।</div></article></section>
 
-<section class="page" id="growth"><article class="card"><h2>↗ Global Growth</h2><div class="feature-list">
-<div class="feature"><strong>Global Promotion</strong><div class="status">Planned</div></div><div class="feature"><strong>Referral & transparent rewards</strong><div class="status">Planned</div></div><div class="feature"><strong>Shareable app links</strong><div class="status">Planned</div></div><div class="feature"><strong>Multilingual website</strong><div class="status">BN/EN foundation</div></div><div class="feature"><strong>Public landing page</strong><div class="status">Planned</div></div><div class="feature"><strong>Install/signup/country analytics</strong><div class="status">Planned</div></div><div class="feature"><strong>Google Play release</strong><div class="status">Build, policy review & approval required</div></div><div class="feature"><strong>Real testimonials</strong><div class="status">Only verified, consented feedback</div></div></div>
-<div class="notice">বিশ্বব্যাপী পৌঁছানো Play Store approval, country availability, marketing এবং মানুষের adoption-এর ওপর নির্ভর করে—নিশ্চিত ফল নয়। কোনো ভুয়া review বা growth claim দেখানো হবে না।</div></article></section>
+<section class="page" id="growth">
+<article class="card"><h2>🔗 My Referral Link</h2><p class="muted">আপনার ব্যক্তিগত লিংক বন্ধুদের পাঠান। কেউ এই লিংক দিয়ে নতুন অ্যাকাউন্ট খুললে রেফারেল হিসেবে গণনা হবে।</p>
+<div class="field"><label for="myReferralLink">আপনার Referral Link</label><input id="myReferralLink" readonly placeholder="লগইন করলে লিংক তৈরি হবে"></div>
+<div class="actions"><button class="btn" id="copyReferralLink" type="button">লিংক কপি করুন</button><button class="btn secondary" id="shareReferralLink" type="button">Share</button><button class="btn secondary" id="refreshReferral" type="button">Refresh</button></div>
+<div id="myReferralStatus" class="notice">Referral Link দেখতে লগইন করুন।</div>
+<div class="grid section"><div class="feature"><strong>মোট রেফারেল</strong><div class="stat" id="myReferralTotal">—</div></div><div class="feature"><strong>নতুন নিবন্ধন</strong><div class="stat" id="myReferralRegistered">—</div></div><div class="feature"><strong>যোগ্য রেফারেল</strong><div class="stat" id="myReferralQualified">—</div></div><div class="feature"><strong>পুরস্কারপ্রাপ্ত</strong><div class="stat" id="myReferralRewarded">—</div></div></div></article>
+<article class="card" id="adminReferralPanel" hidden><h2>👑 Owner / Admin — সব Referral</h2><p class="muted">শুধু অনুমোদিত Admin account এই সামগ্রিক পরিসংখ্যান দেখতে পারবে।</p>
+<div class="grid"><div class="feature"><strong>মোট রেফারেল</strong><div class="stat" id="adminReferralTotal">—</div></div><div class="feature"><strong>নতুন নিবন্ধন</strong><div class="stat" id="adminReferralRegistered">—</div></div><div class="feature"><strong>যোগ্য</strong><div class="stat" id="adminReferralQualified">—</div></div><div class="feature"><strong>পুরস্কারপ্রাপ্ত</strong><div class="stat" id="adminReferralRewarded">—</div></div></div>
+<div id="adminReferralMembers" class="feature-list section">Admin access যাচাই হচ্ছে…</div><div id="adminReferralStatus" class="notice">Admin report লোড হচ্ছে…</div></article>
+<article class="card"><h2>Global Growth</h2><div class="feature-list"><div class="feature"><strong>Multilingual website</strong><div class="status">BN/EN foundation</div></div><div class="feature"><strong>Google Play release</strong><div class="status">Build, policy review & approval required</div></div><div class="feature"><strong>Transparent referral rewards</strong><div class="status">পুরস্কারের নিয়ম ও server-side qualification এখনো নির্ধারণ/পরীক্ষা বাকি</div></div></div><div class="notice">রেফারেল গণনা নতুন অ্যাকাউন্ট তৈরির সময় সার্ভার থেকে হবে। নিজে নিজের লিংকে নিবন্ধন গণনা হবে না। কোনো নগদ পুরস্কার এখনো প্রতিশ্রুত নয়।</div></article></section>
 
 <section class="page" id="admin"><article class="card"><h2>⚙ Admin & Security Center</h2>
 <p class="muted">Owner-controlled administration · Server-side role verification</p>
@@ -715,7 +723,7 @@
 const $=id=>document.getElementById(id);
 const pages=[...document.querySelectorAll('.page')];
 const titles={setup:'One-Click Setup',settings:'Workspace Settings',overview:'MASTER WORLD VIP Dashboard',account:'Registration & Login',members:'Member Hub',workEarn:'Work & Earn — কাজ ও আয়',ai:'AI Center',facebook:'Facebook Center',growth:'Global Growth',admin:'Admin & Security',privacy:'Privacy & GDPR',globalInternet:'MW VIP FREE GLOBAL INTERNET',updates:'Update Center',progress:'কাজের অগ্রগতি / Project Progress',fbService:'Facebook Setup Service',inbox:'Unified Inbox',verification:'Member Verification & Helpdesk',global:'Global News & Offline',emergency:'Emergency Offline Center',games:'Games Center',location:'Live Number Location Map'};
-function showPage(id){pages.forEach(p=>p.classList.toggle('active',p.id===id));document.querySelectorAll('[data-page]').forEach(b=>b.classList.toggle('active',b.dataset.page===id));$('pageTitle').textContent=titles[id]||titles.overview;if(id==='community'&&typeof loadFriendRequests==='function'&&client&&currentUser){loadFriendRequests();loadCommunityGroups();loadCommunityNotifications();loadMemberBroadcastInbox();}if(id==='workEarn'&&typeof loadWorkPosts==='function'){loadWorkPosts();if(currentUser){loadMyWorkPosts();loadMyWorkApplications();}}if(id==='settings')syncWorkspaceSettingsUI();if(id==='account'){try{localStorage.setItem('mwvip_supabase_wizard_opened_at',new Date().toISOString());syncSupabaseWizardProgress();}catch(_e){}}window.scrollTo({top:0,behavior:'smooth'});if(id==='inbox'&&typeof loadInbox==='function')loadInbox();if(id==='verification'&&typeof loadVerificationRequests==='function')loadVerificationRequests();if(id==='admin'&&typeof refreshAdminAccess==='function')refreshAdminAccess();if(id==='fbService'&&typeof loadFbOrders==='function'){loadFbOrders();loadFbFeedback();}}
+function showPage(id){pages.forEach(p=>p.classList.toggle('active',p.id===id));document.querySelectorAll('[data-page]').forEach(b=>b.classList.toggle('active',b.dataset.page===id));$('pageTitle').textContent=titles[id]||titles.overview;if(id==='community'&&typeof loadFriendRequests==='function'&&client&&currentUser){loadFriendRequests();loadCommunityGroups();loadCommunityNotifications();loadMemberBroadcastInbox();}if(id==='workEarn'&&typeof loadWorkPosts==='function'){loadWorkPosts();if(currentUser){loadMyWorkPosts();loadMyWorkApplications();}}if(id==='settings')syncWorkspaceSettingsUI();if(id==='account'){try{localStorage.setItem('mwvip_supabase_wizard_opened_at',new Date().toISOString());syncSupabaseWizardProgress();}catch(_e){}}window.scrollTo({top:0,behavior:'smooth'});if(id==='growth'&&typeof loadReferralDashboard==='function')loadReferralDashboard();if(id==='inbox'&&typeof loadInbox==='function')loadInbox();if(id==='verification'&&typeof loadVerificationRequests==='function')loadVerificationRequests();if(id==='admin'&&typeof refreshAdminAccess==='function')refreshAdminAccess();if(id==='fbService'&&typeof loadFbOrders==='function'){loadFbOrders();loadFbFeedback();}}
 document.querySelectorAll('[data-page]').forEach(b=>b.addEventListener('click',()=>showPage(b.dataset.page)));
 document.querySelectorAll('[data-go]').forEach(b=>b.addEventListener('click',()=>showPage(b.dataset.go)));
 function readSupabaseWizardProgress(){try{return JSON.parse(localStorage.getItem('mwvip_supabase_wizard_progress')||'{}')}catch(_e){return {};}}
@@ -848,7 +856,8 @@ $('signup').onclick=async()=>{
  if(password.length<8){say('authmsg','কমপক্ষে ৮ অক্ষরের পাসওয়ার্ড দিন।');return}
  const button=$('signup');button.disabled=true;say('authmsg','অ্যাকাউন্ট তৈরি হচ্ছে…');
  try{
-  const {data,error}=await client.auth.signUp({email,password,options:{data:{display_name:name},emailRedirectTo:location.origin+location.pathname}});
+  const referralCode=(new URLSearchParams(location.search).get('ref')||'').trim().toUpperCase();
+   const {data,error}=await client.auth.signUp({email,password,options:{data:{display_name:name,referral_code:referralCode},emailRedirectTo:location.origin+location.pathname}});
   if(error)throw error;
   if(data.session&&data.user){
    currentUser=data.user;say('authmsg','Registration সফল এবং Login হয়েছে। প্রোফাইল যাচাই করা হচ্ছে…');
@@ -2416,5 +2425,29 @@ window.mwvipGetUser=()=>currentUser;
 // MW VIP Global Internet: honest connectivity diagnostics; no simulated satellite access.
 $('mwProviderConnect')?.addEventListener('click',()=>{const n=$('mwInternetNotice');if(n)n.textContent='সংযোগ স্থাপন করা যায়নি: কোনো অনুমোদিত স্যাটেলাইট/নেটওয়ার্ক প্রোভাইডার API বা হার্ডওয়্যার এখনো কনফিগার করা হয়নি।';});
 $('mwCheckInternet')?.addEventListener('click',async()=>{const state=$('mwNetState'),detail=$('mwNetDetail'),notice=$('mwInternetNotice'),btn=$('mwCheckInternet');btn.disabled=true;if(state)state.textContent='পরীক্ষা চলছে…';try{if(!navigator.onLine)throw new Error('এই ডিভাইসে নেটওয়ার্ক সংযোগ নেই।');const response=await fetch('./manifest.webmanifest?mwvip_health='+Date.now(),{cache:'no-store'});if(!response.ok)throw new Error('অ্যাপ সার্ভার পরীক্ষা ব্যর্থ হয়েছে।');if(state)state.textContent='APP ONLINE';if(detail)detail.textContent='অ্যাপ সার্ভারের সঙ্গে সংযোগ পাওয়া গেছে; এটি স্যাটেলাইট সংযোগের প্রমাণ নয়।';if(notice)notice.textContent='বর্তমান ডিভাইসে ইন্টারনেট পাওয়া যাচ্ছে। এটি বিদ্যমান Wi-Fi/মোবাইল নেটওয়ার্ক হতে পারে; MW VIP স্যাটেলাইট সেবা এখনো সক্রিয় নয়।';}catch(e){if(state)state.textContent='OFFLINE';if(detail)detail.textContent=e.message;if(notice)notice.textContent='লাইভ সংযোগ পাওয়া যায়নি: '+e.message;}finally{btn.disabled=false;}});
+
+async function loadReferralDashboard(){
+ const status=$('myReferralStatus'),linkInput=$('myReferralLink');
+ if(!client||!currentUser){if(status)status.textContent='Referral Link ও হিসাব দেখতে আগে লগইন করুন।';if(linkInput)linkInput.value='';return;}
+ if(status)status.textContent='আপনার Referral Link তৈরি ও হিসাব লোড হচ্ছে…';
+ try{
+  const {data:code,error}=await client.rpc('get_my_referral_code');if(error)throw error;
+  const link=new URL(location.pathname,location.origin);link.searchParams.set('ref',code);if(linkInput)linkInput.value=link.toString();
+  const {data:stats,error:statsError}=await client.rpc('get_my_referral_stats');if(statsError)throw statsError;
+  $('myReferralTotal').textContent=stats?.total??0;$('myReferralRegistered').textContent=stats?.registered??0;$('myReferralQualified').textContent=stats?.qualified??0;$('myReferralRewarded').textContent=stats?.rewarded??0;
+  if(status)status.textContent='আপনার ব্যক্তিগত Referral Link প্রস্তুত। নতুন সদস্য নিবন্ধন করলে হিসাব এখানে দেখা যাবে।';
+ }catch(error){if(status)status.textContent='Referral system এখনো প্রস্তুত নয়: '+(error?.message||String(error))+'। প্রয়োজনীয় migration apply হয়েছে কি না দেখুন।';}
+ try{
+  const {data:overview,error}=await client.rpc('get_admin_referral_overview');if(error)throw error;
+  $('adminReferralPanel').hidden=false;$('adminReferralTotal').textContent=overview?.total??0;$('adminReferralRegistered').textContent=overview?.registered??0;$('adminReferralQualified').textContent=overview?.qualified??0;$('adminReferralRewarded').textContent=overview?.rewarded??0;
+  const host=$('adminReferralMembers');host.replaceChildren();
+  (overview?.members||[]).forEach(member=>{const item=document.createElement('div');item.className='feature';const name=document.createElement('strong');name.textContent=member.display_name||'Member';const count=document.createElement('div');count.className='status';count.textContent='রেফারেল: '+(member.referral_count||0);item.append(name,count);host.appendChild(item);});
+  $('adminReferralStatus').textContent='Admin report সার্ভার থেকে লোড হয়েছে।';
+ }catch(_error){$('adminReferralPanel').hidden=true;}
+}
+$('copyReferralLink')?.addEventListener('click',async()=>{const value=$('myReferralLink')?.value||'';if(!value){$('myReferralStatus').textContent='আগে লগইন করে Referral Link তৈরি করুন।';return;}try{await navigator.clipboard.writeText(value);$('myReferralStatus').textContent='Referral Link কপি হয়েছে।';}catch(_e){$('myReferralLink').focus();$('myReferralLink').select();$('myReferralStatus').textContent='লিংকটি নির্বাচন করা হয়েছে; Copy চাপুন।';}});
+$('shareReferralLink')?.addEventListener('click',async()=>{const value=$('myReferralLink')?.value||'';if(!value){$('myReferralStatus').textContent='আগে লগইন করে Referral Link তৈরি করুন।';return;}const shareData={title:'Join MASTER WORLD VIP',text:'আমার Referral Link দিয়ে MASTER WORLD VIP-এ যোগ দিন:',url:value};if(navigator.share){try{await navigator.share(shareData);}catch(_e){}}else{try{await navigator.clipboard.writeText(value);$('myReferralStatus').textContent='এই ডিভাইসে Share নেই; লিংক কপি হয়েছে।';}catch(_e){$('myReferralStatus').textContent='লিংক কপি করা যায়নি; লিংকটি হাতে কপি করুন।';}}});
+$('refreshReferral')?.addEventListener('click',loadReferralDashboard);
+
 </script>
 </body></html>
