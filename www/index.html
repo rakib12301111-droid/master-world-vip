@@ -170,7 +170,24 @@
 <section class="page" id="members">
 <article class="card"><h2>♧ Member Hub</h2><p class="muted">নিজের প্রোফাইল দেখা ও আপডেট করা।</p><div id="memberstatus" class="notice">প্রোফাইল ব্যবহারের আগে লগইন করুন এবং Supabase profiles table তৈরি করুন।</div>
 <div class="field"><label for="profileName">Display name</label><input id="profileName" maxlength="80" placeholder="আপনার প্রদর্শিত নাম"></div><div class="field"><label for="profileUsername">Username (৩–২৪ অক্ষর, A–Z, 0–9, _)</label><input id="profileUsername" maxlength="24" autocomplete="username" placeholder="যেমন rakib_123"></div><div class="field"><label for="profileBio">Bio / নিজের পরিচিতি (সর্বোচ্চ ৫০০ অক্ষর)</label><textarea id="profileBio" maxlength="500" rows="3" placeholder="নিজের সম্পর্কে সংক্ষেপে লিখুন"></textarea></div><div class="field"><label for="profileAvatar">Avatar image URL (শুধু HTTPS)</label><input id="profileAvatar" type="url" maxlength="500" placeholder="https://example.com/avatar.jpg"></div><div class="field"><label for="profileCountry">Country</label><input id="profileCountry" maxlength="80" placeholder="Bangladesh"></div><label class="feature"><input id="profileDiscoverable" type="checkbox" checked> অন্য সদস্যরা Member Search-এ আমার public profile খুঁজে পেতে পারবেন</label><div class="actions"><button class="btn" id="saveProfile">Save my profile</button><button class="btn secondary" id="loadProfile">Refresh profile</button></div><div id="profileResult" class="item">এখনো কোনো প্রোফাইল লোড হয়নি।</div>
+<div class="item section" id="memberReferralIdentity">
+<strong>🔗 MASTER WORLD VIP Member পরিচয়</strong>
+<p class="muted small">এই পরিচয় ও Referral Code সিস্টেম-নিয়ন্ত্রিত; সদস্য নিজের Bio বা প্রোফাইল সেটিংস থেকে এটি মুছতে বা বদলাতে পারবেন না। Public profile চালু থাকলে বাইরের সবাই দেখতে পারবেন।</p>
+<div class="field"><label for="memberPublicProfileLink">আপনার Public Member Profile Link</label><input id="memberPublicProfileLink" readonly value="লগইন করে প্রোফাইল রিফ্রেশ করুন"></div>
+<div class="actions"><button class="btn secondary" id="copyMemberPublicProfile" type="button">Copy Public Profile Link</button><button class="btn secondary" id="openMemberPublicProfile" type="button">Preview Public Profile</button></div>
+<div id="memberReferralIdentityStatus" class="small muted">Referral code প্রস্তুত হলে এখানে লিংক দেখাবে।</div>
+</div>
 <div class="notice">আপনার bio, display name, username, country ও avatar URL শুধু discoverable চালু থাকলে নির্দিষ্ট public fields হিসেবে Member Search-এ দেখানো হবে। ইমেইল, ফোন, private data বা account details প্রকাশ করা হয় না।</div></article>
+</section>
+
+<section class="page" id="publicProfile">
+<article class="card">
+<h2>🌐 Public Member Profile</h2>
+<div id="publicMemberStatus" class="notice">সদস্যের পরিচয় লোড হচ্ছে…</div>
+<div id="publicMemberCard" class="item" hidden></div>
+<div class="actions"><a class="btn" href="./">Open MASTER WORLD VIP</a><a class="btn secondary" id="publicMemberJoin" href="./">এই সদস্যের Referral Link দিয়ে যোগ দিন</a></div>
+<p class="muted small">শুধু সদস্য নিজে Public profile discoverability চালু রাখলে এই পরিচিতি দেখা যাবে। ব্যক্তিগত ইমেইল, ফোন বা account data প্রকাশ করা হয় না।</p>
+</article>
 </section>
 
 
@@ -722,7 +739,7 @@
 <script>
 const $=id=>document.getElementById(id);
 const pages=[...document.querySelectorAll('.page')];
-const titles={setup:'One-Click Setup',settings:'Workspace Settings',overview:'MASTER WORLD VIP Dashboard',account:'Registration & Login',members:'Member Hub',workEarn:'Work & Earn — কাজ ও আয়',ai:'AI Center',facebook:'Facebook Center',growth:'Global Growth',admin:'Admin & Security',privacy:'Privacy & GDPR',globalInternet:'MW VIP FREE GLOBAL INTERNET',updates:'Update Center',progress:'কাজের অগ্রগতি / Project Progress',fbService:'Facebook Setup Service',inbox:'Unified Inbox',verification:'Member Verification & Helpdesk',global:'Global News & Offline',emergency:'Emergency Offline Center',games:'Games Center',location:'Live Number Location Map'};
+const titles={setup:'One-Click Setup',settings:'Workspace Settings',overview:'MASTER WORLD VIP Dashboard',account:'Registration & Login',members:'Member Hub',workEarn:'Work & Earn — কাজ ও আয়',ai:'AI Center',facebook:'Facebook Center',growth:'Global Growth',admin:'Admin & Security',privacy:'Privacy & GDPR',globalInternet:'MW VIP FREE GLOBAL INTERNET',updates:'Update Center',progress:'কাজের অগ্রগতি / Project Progress',fbService:'Facebook Setup Service',inbox:'Unified Inbox',verification:'Member Verification & Helpdesk',global:'Global News & Offline',emergency:'Emergency Offline Center',games:'Games Center',location:'Live Number Location Map',publicProfile:'Public Member Profile'};
 function showPage(id){pages.forEach(p=>p.classList.toggle('active',p.id===id));document.querySelectorAll('[data-page]').forEach(b=>b.classList.toggle('active',b.dataset.page===id));$('pageTitle').textContent=titles[id]||titles.overview;if(id==='community'&&typeof loadFriendRequests==='function'&&client&&currentUser){loadFriendRequests();loadCommunityGroups();loadCommunityNotifications();loadMemberBroadcastInbox();}if(id==='workEarn'&&typeof loadWorkPosts==='function'){loadWorkPosts();if(currentUser){loadMyWorkPosts();loadMyWorkApplications();}}if(id==='settings')syncWorkspaceSettingsUI();if(id==='account'){try{localStorage.setItem('mwvip_supabase_wizard_opened_at',new Date().toISOString());syncSupabaseWizardProgress();}catch(_e){}}window.scrollTo({top:0,behavior:'smooth'});if(id==='growth'&&typeof loadReferralDashboard==='function')loadReferralDashboard();if(id==='inbox'&&typeof loadInbox==='function')loadInbox();if(id==='verification'&&typeof loadVerificationRequests==='function')loadVerificationRequests();if(id==='admin'&&typeof refreshAdminAccess==='function')refreshAdminAccess();if(id==='fbService'&&typeof loadFbOrders==='function'){loadFbOrders();loadFbFeedback();}}
 document.querySelectorAll('[data-page]').forEach(b=>b.addEventListener('click',()=>showPage(b.dataset.page)));
 document.querySelectorAll('[data-go]').forEach(b=>b.addEventListener('click',()=>showPage(b.dataset.go)));
@@ -838,7 +855,8 @@ async function connect(){
   currentUser=data.session?.user||null;
   setStatus(currentUser?'সংযুক্ত এবং লগইন আছে: '+currentUser.email:'Supabase সংযুক্ত হয়েছে। এখন Register অথবা Login করুন।');
   $('dashAuth').textContent=currentUser?'Logged in':'Connected';
-  if(currentUser){await loadProfile();startMessagingSync();showPage('overview');}
+  if(new URLSearchParams(location.search).has('member')){showPage('publicProfile');await loadPublicMemberProfile();}
+  else if(currentUser){await loadProfile();startMessagingSync();showPage('overview');}
   else if(localStorage.getItem('mwvip_setup_completed')==='true'||localStorage.getItem('mwvip_setup_skipped')==='true'){showPage('account');}
   client.auth.onAuthStateChange((_event,session)=>{currentUser=session?.user||null;$('dashAuth').textContent=currentUser?'Logged in':'Connected';if(currentUser){showPage('overview');startMessagingSync();$('memberstatus').textContent='লগইন আছে: '+currentUser.email;setTimeout(()=>{loadProfile();loadPrivacyRequests();if(typeof loadVerificationRequests==='function')loadVerificationRequests();if(typeof refreshAdminAccess==='function')refreshAdminAccess();},0)}else{stopMessagingSync();$('memberstatus').textContent='লগইন করুন।';$('profileResult').textContent='লগইন করা নেই।';$('privacyRequestList').textContent='অনুরোধ দেখতে লগইন করুন।'}});
  }catch(e){client=null;setStatus('সংযোগে সমস্যা: '+e.message)}
@@ -891,6 +909,44 @@ $('reset').onclick=async()=>{
  try{const {error}=await client.auth.resetPasswordForEmail(email,{redirectTo:location.origin+location.pathname});if(error)throw error;say('authmsg','Password reset link পাঠানোর অনুরোধ হয়েছে। ইমেইল দেখুন; Site URL/Redirect URL অনুমোদিত থাকতে হবে।');}
  catch(error){say('authmsg','Reset error: '+(error?.message||'অজানা সমস্যা'))}
 };
+async function loadMemberReferralIdentity(){
+ const status=$('memberReferralIdentityStatus'),input=$('memberPublicProfileLink');
+ if(!client||!currentUser){if(status)status.textContent='লগইন করে নিজের Public Profile Link তৈরি করুন.';return;}
+ try{
+  const {data:code,error}=await client.rpc('get_my_referral_code');if(error)throw error;
+  const link=new URL(location.pathname,location.origin);link.searchParams.set('member',currentUser.id);
+  if(input)input.value=link.toString();
+  if(status)status.textContent='স্থায়ী Member ID ও Referral Code তৈরি আছে: '+code+' · Public visibility '+($('profileDiscoverable').checked?'চালু':'বন্ধ');
+ }catch(e){if(status)status.textContent='Referral identity এখনো প্রস্তুত নয়: '+(e.message||String(e))+'। নতুন public-profile migration apply হয়েছে কি না দেখুন.';}
+}
+$('copyMemberPublicProfile')?.addEventListener('click',async()=>{
+ const value=$('memberPublicProfileLink')?.value||'';if(!value||value.startsWith('লগইন'))return;
+ try{await navigator.clipboard.writeText(value);$('memberReferralIdentityStatus').textContent='Public Profile Link কপি হয়েছে।';}
+ catch(_e){$('memberPublicProfileLink').focus();$('memberPublicProfileLink').select();$('memberReferralIdentityStatus').textContent='লিংকটি নির্বাচন করা হয়েছে; Copy করুন।';}
+});
+$('openMemberPublicProfile')?.addEventListener('click',()=>{const value=$('memberPublicProfileLink')?.value||'';if(value&&!value.startsWith('লগইন'))location.href=value;});
+async function loadPublicMemberProfile(){
+ const status=$('publicMemberStatus'),host=$('publicMemberCard');
+ const memberId=new URLSearchParams(location.search).get('member');
+ if(!memberId){if(status)status.textContent='Public profile link-এ member ID পাওয়া যায়নি।';return;}
+ if(!client){if(status)status.textContent='Public profile দেখতে Supabase connection প্রয়োজন।';return;}
+ if(status)status.textContent='Public profile লোড হচ্ছে…';
+ try{
+  const {data,error}=await client.rpc('get_public_member_profile',{p_user_id:memberId});if(error)throw error;
+  if(!data){if(status)status.textContent='এই সদস্যের Public Profile বন্ধ, পাওয়া যায়নি, অথবা লিংকটি সঠিক নয়।';host.hidden=true;return;}
+  host.replaceChildren();
+  if(data.avatar_url){const img=document.createElement('img');img.src=data.avatar_url;img.alt='Member avatar';img.referrerPolicy='no-referrer';img.style='width:84px;height:84px;object-fit:cover;border-radius:50%;border:1px solid #b58a38';host.append(img);}
+  const title=document.createElement('h3');title.textContent=data.display_name||'MASTER WORLD VIP Member';host.append(title);
+  const badge=document.createElement('p');badge.textContent='✓ MASTER WORLD VIP-এর মাধ্যমে যুক্ত';badge.className='tag';host.append(badge);
+  if(data.username){const u=document.createElement('p');u.textContent='@'+data.username;host.append(u);}
+  if(data.country){const c=document.createElement('p');c.textContent='দেশ: '+data.country;host.append(c);}
+  if(data.bio){const b=document.createElement('p');b.textContent=data.bio;host.append(b);}
+  const link=new URL(location.pathname,location.origin);link.searchParams.set('ref',data.referral_code);
+  $('publicMemberJoin').href=link.toString();
+  host.hidden=false;if(status)status.textContent='Public Member Profile · যে কেউ দেখতে পারবেন। MASTER WORLD VIP-এ যোগ দিতে নিচের Referral Link ব্যবহার করুন।';
+ }catch(e){if(status)status.textContent='Public profile লোড হয়নি: '+(e.message||String(e))+'। Migration apply হয়েছে কি না দেখুন.';}
+}
+
 async function ensureProfile(name){
  if(!client||!currentUser)return;
  const payload={id:currentUser.id,display_name:name||currentUser.user_metadata?.display_name||currentUser.email};
@@ -907,6 +963,7 @@ async function loadProfile(){
     say('memberstatus','অ্যাকাউন্ট আছে। নিজের প্রোফাইল তৈরি করুন।');say('profileResult','প্রোফাইল এখনো তৈরি হয়নি।');return;
   }
   $('profileName').value=data.display_name||'';$('profileUsername').value=data.username||'';$('profileBio').value=data.bio||'';$('profileAvatar').value=data.avatar_url||'';$('profileCountry').value=data.country||'';$('profileDiscoverable').checked=data.is_discoverable!==false;
+  await loadMemberReferralIdentity();
   say('memberstatus','লগইন: '+currentUser.email);
   say('profileResult','প্রোফাইল ID: '+data.id+' | নাম: '+(data.display_name||'—')+' | Username: '+(data.username?'@'+data.username:'—')+' | দেশ: '+(data.country||'—')+' | Search visibility: '+(data.is_discoverable?'On':'Off'));
 }
@@ -923,7 +980,7 @@ $('saveProfile').onclick=async()=>{
   const {error}=await client.from('profiles').upsert(payload,{onConflict:'id'});
   button.disabled=false;
   if(error)say('memberstatus','Save error: '+error.message+' — Global Community migration ও profiles RLS setup হয়েছে কি না দেখুন।');
-  else{say('memberstatus','আপনার প্রোফাইল সংরক্ষিত হয়েছে।');await loadProfile();}
+  else{say('memberstatus','আপনার প্রোফাইল সংরক্ষিত হয়েছে।');await loadProfile();if(!$('profileDiscoverable').checked){say('memberReferralIdentityStatus','Public profile visibility বন্ধ। বাইরের কেউ আপনার public profile দেখতে পারবেন না; Referral Code আপনার অ্যাকাউন্টে থাকবে।');}}
 };
 function communityReady(){if(!client||!currentUser){say('communityStatus','আগে Register/Login থেকে Supabase-এ লগইন করুন।');return false}return true;}
 
