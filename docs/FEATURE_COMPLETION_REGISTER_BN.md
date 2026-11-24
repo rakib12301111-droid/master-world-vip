@@ -139,3 +139,12 @@ This register tracks the existing repository. A feature is **not live** merely b
 - Do not invent or activate a commission percentage, monthly fee, member charge or payout schedule. These remain **Owner decision pending** and require confirmation of the intended revenue model and rate, plus applicable legal/tax/payment-provider review.
 - The ৳৫০ referral reward remains a separate, pre-funded marketing reward with its existing eligibility rules; it must not be counted as Owner commission or funded from member deposits.
 - **Status: requirement documented only — no commission has been configured, accrued or paid.** No new paid subscription or fee is being introduced by this documentation update.
+
+## Update 11 — 2026-11-24: Owner-approved ৳১,০০০ monthly minimum compensation policy
+
+- The Owner approved a **৳১,০০০ BDT monthly minimum Admin/Owner compensation target**, separate from the one-time ৳৫০ eligible direct-referral reward.
+- If calculated eligible monthly commission exceeds ৳১,০০০, record the higher amount. If it is lower, record the shortfall separately so the monthly target remains ৳১,০০০.
+- If funds are unavailable, the shortfall may be shown only as an **unpaid/outstanding internal payable** under the approved policy; it is not cash, a withdrawable wallet balance, or evidence that funds exist. Do not mark it paid until an actual lawful transfer is reconciled.
+- Member registration and access remain free. Do not fund Owner compensation from member deposits, hidden fees or mandatory purchases. Use only real platform revenue, sponsorship or a separately approved Owner funding allocation.
+- Policy details: [Admin/Owner Monthly Compensation Policy](ADMIN_OWNER_COMPENSATION_POLICY_BN.md).
+- **Status: policy approved and committed; technical implementation NOT live.** No compensation ledger/UI, monthly accrual automation, funding reserve, payout integration, Supabase migration or payment has been implemented or verified by this documentation update. These require separate code, security review, deployment and acceptance tests.
