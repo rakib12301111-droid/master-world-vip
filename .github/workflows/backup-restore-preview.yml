@@ -45,13 +45,35 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Validate required secrets without printing values
+      - name: Validate required secrets and identify connection type without printing credentials
         run: |
           set -euo pipefail
           test -n "${SUPABASE_DB_URL:-}" || { echo "::error::Missing Actions secret SUPABASE_DB_URL."; exit 1; }
           test -n "${BACKUP_ENCRYPTION_PASSPHRASE:-}" || { echo "::error::Missing Actions secret BACKUP_ENCRYPTION_PASSPHRASE. Set a strong unique passphrase in repository Actions secrets."; exit 1; }
-          case "$SUPABASE_DB_URL" in *pooler.supabase.com*) ;; *) echo "::error::SUPABASE_DB_URL must use the IPv4-compatible Supabase Session Pooler."; exit 1 ;; esac
-          echo "Required secret values are present and were not printed."
+          python3 - <<'PY'
+          import os
+          from urllib.parse import urlsplit
+
+          raw = os.environ["SUPABASE_DB_URL"].lstrip("\\ufeff").strip()
+          if len(raw) >= 2 and raw[0] == raw[-1] and raw[0] in ('"', "'"):
+              raw = raw[1:-1].strip()
+          if raw.startswith("SUPABASE_DB_URL="):
+              raw = raw.split("=", 1)[1].strip().strip("\\\\"'")
+          parsed = urlsplit(raw)
+          if parsed.scheme not in ("postgres", "postgresql") or not parsed.hostname:
+              raise SystemExit("::error::SUPABASE_DB_URL must be a PostgreSQL URI. Check for a copied label, extra text, or missing postgresql:// prefix.")
+          host = parsed.hostname.lower()
+          if not host.endswith(".pooler.supabase.com"):
+              # Hostname is not a credential; showing it helps identify Direct vs Session Pooler safely.
+              print(f"Detected database host type: non-pooler ({host}).")
+              raise SystemExit("::error::GitHub Actions backup requires the IPv4-compatible Session Pooler host, for example aws-0-ap-south-1.pooler.supabase.com. Direct db.<project>.supabase.co is not accepted by this workflow.")
+          if parsed.port != 5432 or parsed.path.lstrip("/") != "postgres":
+              raise SystemExit("::error::Session Pooler URI must use port 5432 and database path /postgres.")
+          if not parsed.username or not parsed.password:
+              raise SystemExit("::error::Session Pooler URI is missing username or password.")
+          print(f"Detected Supabase Session Pooler host: {host}; URI structure is valid.")
+          PY
+          echo "Required secret values were checked and never printed."
 
       - name: Install PostgreSQL client
         run: |
