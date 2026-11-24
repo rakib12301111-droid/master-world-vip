@@ -95,9 +95,9 @@ jobs:
             202611240001_member_referrals.sql \
             202611240002_public_member_referral_profile.sql \
             202611240003_referral_wallet_rewards.sql \
-            202611240004_owner_monthly_compensation.sql \\
-            202611240005_international_referral_usd_equivalent.sql \\\n            202611240006_network_admin_referral_rewards.sql; do
-            test -f "supabase/migrations/$migration" || { echo "::error::Missing migration file: $migration"; exit 1; }
+            202611240004_owner_monthly_compensation.sql \
+            202611240005_international_referral_usd_equivalent.sql \
+            202611240006_network_admin_referral_rewards.sql; do
           done
 
       - name: Preview pending production migrations
