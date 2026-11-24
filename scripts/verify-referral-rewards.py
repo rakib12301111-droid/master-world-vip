@@ -27,7 +27,7 @@ checks = {
  'cron runs every 15 minutes using secrets': '*/15 * * * *' in cron and 'REFERRAL_CRON_SECRET' in cron and 'SUPABASE_URL' in cron,
  'Supabase function does not require public JWT': '[functions.process-referral-rewards]' in config and 'verify_jwt = false' in config,
  'member wallet and admin budget UI exist': 'memberReferralWallet' in ui and 'refWalletAvailable' in ui and 'refFundAmount' in ui and 'adminReferralWithdrawals' in ui,
- 'referral inline JS is no longer inside an external script tag': '<script src="./vip-security-center.js" defer></script>\\n<script>' in ui,
+ 'referral inline JS is no longer inside an external script tag': '<script src="./vip-security-center.js" defer></script>' in ui and 'async function loadReferralDashboard()' in ui,
  'guarded migration workflow includes all referral migrations': all(x in migration_workflow for x in ['202611240001_member_referrals.sql','202611240002_public_member_referral_profile.sql','202611240003_referral_wallet_rewards.sql']),
  'two-member test checks cross-wallet privacy and privilege separation': 'member_a' in test_sql and 'member_b' in test_sql and 'get_my_referral_wallet' in test_sql and 'get_admin_referral_finance_overview' in test_sql,
  'two-member test workflow requires separate member UUIDs': 'RLS_TEST_MEMBER_A_UUID' in test_workflow and 'RLS_TEST_MEMBER_B_UUID' in test_workflow and 'test "$MEMBER_A" != "$MEMBER_B"' in test_workflow,
