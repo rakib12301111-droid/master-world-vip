@@ -68,3 +68,9 @@
 - Owner/Admin-এর বিদ্যমান role, security controls, network reward reporting এবং administrative access অক্ষুণ্ণ থাকবে।
 
 **বাস্তব সীমা:** কোনো software update নিজে থেকে টাকা, ইন্টারনেট ডেটা, SMS/email delivery, bKash/Nagad transfer বা paid provider capacity তৈরি করতে পারে না। স্বয়ংক্রিয় cash payout কেবল অনুমোদিত provider integration ও প্রকৃত payout balance থাকলে সম্ভব।
+
+
+## Deployment verification — ২০২৬-১১-২৪
+
+- Zero-personal-cost policy UI update GitHub Pages-এ সফলভাবে প্রকাশিত ও যাচাই হয়েছে: workflow run `45436255175`, commit `1cbc26fe0c63a32a50fc6b933ab0f2adbaf95de3`; build, deploy এবং live-release verification—তিনটিই সফল।
+- এটি শুধু website/UI ও policy wording প্রকাশ করেছে। Supabase production migration 006, Edge Function/cron, প্রকৃত reward funding, end-to-end referral tests এবং স্বয়ংক্রিয় bKash/Nagad payout এখনো চালু/যাচাইকৃত নয়।
