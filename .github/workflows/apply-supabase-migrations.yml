@@ -94,7 +94,8 @@ jobs:
             20261123100000_work_earn_job_board.sql \
             202611240001_member_referrals.sql \
             202611240002_public_member_referral_profile.sql \
-            202611240003_referral_wallet_rewards.sql; do
+            202611240003_referral_wallet_rewards.sql \\
+            202611240004_owner_monthly_compensation.sql; do
             test -f "supabase/migrations/$migration" || { echo "::error::Missing migration file: $migration"; exit 1; }
           done
 
