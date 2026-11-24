@@ -155,7 +155,6 @@ begin
       ) order by m.period_start desc)
       from public.owner_compensation_months m
       where m.owner_user_id=v_owner
-        and m.period_start >= (date_trunc('month',current_date)-interval '11 months')::date
     ),'[]'::jsonb)
   ) into v_result;
   return v_result;
