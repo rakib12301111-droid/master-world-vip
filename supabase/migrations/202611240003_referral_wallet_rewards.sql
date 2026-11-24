@@ -253,6 +253,12 @@ begin
   if v_actor is null or not exists(
     select 1 from public.app_user_roles where user_id=v_actor and role='owner'
   ) then raise exception 'Only the verified Owner can change referral reward status'; end if;
+  if p_enabled and (
+    coalesce((select sum(amount) from public.referral_reward_fundings where confirmed_funds),0)
+    - coalesce((select sum(amount) from public.referral_wallet_ledger where entry_type='credit'),0)
+  ) < 50 then
+    raise exception 'At least BDT 50.00 of confirmed reward budget is required before enabling rewards';
+  end if;
   update public.referral_reward_settings
     set rewards_enabled=p_enabled,updated_by=v_actor,updated_at=now()
     where singleton=true;
@@ -402,6 +408,7 @@ begin
     where r.status in ('registered','qualified')
       and u.created_at <= now() - interval '24 hours'
       and u.confirmed_at is not null
+      and (u.banned_until is null or u.banned_until <= now())
       and char_length(btrim(coalesce(p.display_name,''))) > 0
       and r.referrer_id <> u.id
     order by r.created_at asc
