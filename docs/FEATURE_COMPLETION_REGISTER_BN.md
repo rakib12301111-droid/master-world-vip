@@ -67,6 +67,15 @@ This register tracks the existing repository. A feature is **not live** merely b
 - Added deployment verification for the in-app OTP UI and PWA cache v30. Static migration-safety workflow passed on commit `afbc12fd54a316335fe3b1f08bc63d246c6a9b2a`; latest Pages deployment for the newer commit is still in progress.
 - **Still blocked/not live:** Production Supabase migration requires configured GitHub Actions secrets, a verified restorable backup and explicit authorization; no real reward funds have been added; two distinct test-member accounts and their end-to-end test are not yet available; bKash/Nagad payout remains manual until official API/merchant integration. Do not advertise rewards as live.
  
+## Update 9 — 2026-11-24: Database safety execution runbook
+
+- Added `docs/DB_SAFETY_EXECUTION_STATUS_BN.md` with the exact safety sequence, secret-to-workflow matrix, known unknowns, evidence requirements and explicit production-apply blockers.
+- Updated `docs/SUPABASE_BACKUP_RESTORE_TEST_BN.md` to distinguish secrets required by backup, dry-run, secure migration and two-member tests, and to document the 7-day GitHub artifact retention plus off-platform encrypted backup requirement.
+- Repository inspection confirms the encrypted backup/restore/preview workflow, secure migration workflow, migration dry-run workflow and two-member RLS/referral test workflows exist.
+- **Not verified from repository access:** whether GitHub Actions secrets are present; whether Supabase has a current recoverable backup; whether the encrypted backup/restore workflow has passed on current secrets; whether production Owner identity/bootstrap is correct; whether migrations are applied; whether the two-member tests passed.
+- **No production database changes were made.** No secret values were read or changed. Production migration remains blocked until real backup, separate restore test, migration preview review, Owner verification and explicit authorization are completed.
+- Next operator step: configure/check the listed GitHub Actions secret names in repository Settings, then manually run `backup-restore-preview.yml` and preserve its encrypted artifact outside GitHub.
+
 ## Feature register
 
 | Feature | Repository foundation | Remaining work before Live |
