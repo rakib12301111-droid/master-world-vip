@@ -31,7 +31,7 @@
 
 1. Server-side 24-hour qualification, verified email, complete profile, good-standing, self-referral ও duplicate checks.
 2. Bangladesh BDT 50 এবং foreign USD 50-equivalent BDT হিসাব; applied FX rate ledger-এ lock করা।
-3. Owner-only FX rate update with source/reference audit; rate না থাকলে foreign reward hold।
+3. Owner-only FX rate update with source/reference audit; rate না থাকলে foreign reward hold। Owner/Admin country verification review queue দিয়ে country যাচাই না হওয়া পর্যন্ত reward hold।
 4. Country missing হলে reward hold; country নিজে থেকে অনুমান নয়।
 5. Append-only funded wallet ledger, budget checks ও idempotent processor।
 6. দুইটি পৃথক account দিয়ে referral, privacy, fraud, missing-country, missing-FX-rate, insufficient-budget ও duplicate-job tests।
@@ -42,6 +42,6 @@
 - Existing BDT 50 referral wallet foundation remains in migration `202611240003_referral_wallet_rewards.sql`.
 - Added migration `202611240005_international_referral_usd_equivalent.sql`: Owner-only USD/BDT rate setting with source/reference audit; BDT 50 for Bangladesh-based referrers; USD 50 converted to BDT for non-Bangladesh referrers; rate/country/base USD metadata recorded on ledger; foreign awards wait when rate is missing; rewards wait when referrer's profile country is missing.
 - Added the new migration to the guarded production migration preflight.
-- The FX rate is Owner-entered; no automatic FX data provider is configured. Existing wallet/payout UI remains BDT and Bangladesh bKash/Nagad only; the new Owner FX rate UI and non-Bangladesh payout-provider support are not yet implemented.
+- The FX rate is Owner-entered; no automatic FX data provider is configured. Existing wallet/payout UI remains BDT and Bangladesh bKash/Nagad only; the new Owner FX rate UI and Owner/Admin country verification queue are included; non-Bangladesh payout-provider support is not implemented.
 
 **Not live yet:** production migration has not been applied; no FX rate has been entered; no real reward funds have been confirmed; Edge Function deployment, Actions secrets and two-member/end-to-end acceptance tests remain unverified. No automatic bKash/Nagad or foreign payout is active. Do not advertise the rewards as available until all production gates and real funding/payout checks pass.
