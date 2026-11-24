@@ -10,7 +10,7 @@
 5. Supabase Edge Function process-referral-rewards deploy হয়েছে নিশ্চিত করুন। Function Secrets-এ REFERRAL_CRON_SECRET দিন।
 6. GitHub Actions Secrets-এ একই গোপন মান REFERRAL_CRON_SECRET এবং project URL SUPABASE_URL দিন। Secret কখনো chat, source code বা browser-এ রাখবেন না।
 7. Reward চালুর আগে বাস্তবে আলাদা করে রাখা পর্যাপ্ত BDT Reward Fund Owner-এর মাধ্যমে ledger-এ রেকর্ড করুন। বিদেশি referral-এর জন্য US$৫০ × বর্তমান BDT/USD rate যত হয়, অন্তত সেই পরিমাণ budget থাকতে হবে। ভুয়া reference বা অনুপস্থিত টাকা কখনো funding হিসেবে যোগ করবেন না।
-8. Owner panel-এ নির্ভরযোগ্য উৎস, তারিখ/reference-সহ USD/BDT rate সংরক্ষণ করুন। উদাহরণস্বরূপ rate 130 হলে বিদেশি reward ৳৬,৫০০; এটি কেবল উদাহরণ, live quote নয়।
+8. Owner panel-এ নির্ভরযোগ্য উৎস, তারিখ/reference-সহ USD/BDT rate সংরক্ষণ করুন। Admin Country Review queue-তে profile country-এর প্রমাণ দেখে country verify করুন। উদাহরণস্বরূপ rate 130 হলে বিদেশি reward ৳৬,৫০০; এটি কেবল উদাহরণ, live quote নয়।
 
 ## ২. দুই সদস্য দিয়ে Referral পরীক্ষা
 - Member A ও Member B নামে দুটি পৃথক সাধারণ (non-admin) account তৈরি করুন।
@@ -20,7 +20,7 @@
 - প্রথম ২৪ ঘণ্টার আগে Member A-এর Wallet-এ কোনো reward যোগ হওয়া চলবে না।
 - Member B-এর signup-এর ২৪ ঘণ্টা পূর্ণ হওয়ার পর scheduled processor পরবর্তী run-এ eligibility যাচাই করবে। Email verified, profile complete, account not currently banned, valid attribution এবং পর্যাপ্ত reward budget থাকলে একবারই credit হবে। বাংলাদেশে থাকা referrer পাবে ৳৫০; বাংলাদেশ-বহির্ভূত referrer পাবে US$৫০ × সংরক্ষিত rate অনুযায়ী BDT।
 - একই processor আবার চালালেও দ্বিতীয় credit হবে না; ledger-এ প্রযোজ্য country, USD base amount ও FX rate সংরক্ষিত থাকবে।
-- Email unverified, profile incomplete, self-referral, duplicate attribution, banned account, referrer country missing, foreign rate missing বা পর্যাপ্ত BDT budget না থাকলে reward credit হবে না।
+- Email unverified, profile incomplete, self-referral, duplicate attribution, banned account, referrer country missing or not Admin-verified, foreign rate missing বা পর্যাপ্ত BDT budget না থাকলে reward credit হবে না।
 - Member A যেন Member B-এর Wallet/withdrawal details দেখতে না পারেন; Member B-ও যেন Member A-এর data দেখতে না পারেন।
 
 ## ৩. Withdrawal পরীক্ষা
