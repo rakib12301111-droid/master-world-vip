@@ -114,7 +114,14 @@ jobs:
             20261121180000_member_verification_helpdesk.sql \
             20261121190000_member_live_location.sql \
             20261122100000_messaging_realtime.sql \
-            20261123100000_work_earn_job_board.sql; do
+            20261123100000_work_earn_job_board.sql \
+            202611240001_member_referrals.sql \
+            202611240002_public_member_referral_profile.sql \
+            202611240003_referral_wallet_rewards.sql \
+            202611240004_owner_monthly_compensation.sql \
+            202611240005_international_referral_usd_equivalent.sql \
+            202611240006_network_admin_referral_rewards.sql \
+            202611240007_referral_payout_reference_hardening.sql; do
             test -f "supabase/migrations/$migration" || { echo "::error::Missing required migration: $migration"; exit 1; }
           done
 
