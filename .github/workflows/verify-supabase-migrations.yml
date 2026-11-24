@@ -16,6 +16,7 @@ on:
       - "scripts/verify-crisis-alerts.py"
       - "scripts/verify-global-country-directory.py"
       - "scripts/verify-push-sender.py"
+      - "scripts/verify-referral-rewards.py"
       - "www/data/helplines-BD.json"
       - "www/index.html"
       - "www/sw.js"
@@ -93,3 +94,5 @@ jobs:
         run: python scripts/verify-global-country-directory.py
       - name: Verify push sender security
         run: python scripts/verify-push-sender.py
+      - name: Verify referral reward security
+        run: python scripts/verify-referral-rewards.py
