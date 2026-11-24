@@ -85,3 +85,12 @@ This register tracks the existing repository. A feature is **not live** merely b
 - Admin authorization is enforced server-side with RLS/RPC checks, not by hiding UI buttons.
 - Keep message, profile, helpdesk and location data private by default.
 - Do not label any feature **Live** until deployment and its real acceptance test both pass.
+
+
+## Public Member Referral Identity — 2026-11-24
+- Added a system-managed public member profile route using `?member=<member-id>`.
+- Added the permanent “MASTER WORLD VIP-এর মাধ্যমে যুক্ত” identity badge and stable referral code display.
+- Added a public RPC that returns only explicitly discoverable profile fields and the member's referral code; it does not expose email, phone, or private account data.
+- Added a direct referral join URL so visitors can open MASTER WORLD VIP and register with the referring member's code.
+- New migration: `202611240002_public_member_referral_profile.sql` (depends on the base profiles and referral-code migrations, including `202611240001_member_referrals.sql`).
+- Pending: apply migrations in the approved order after backup/dry-run/explicit authorization; verify anonymous public-profile access, privacy toggle behavior, referral attribution, and two-account registration. GitHub commits do not by themselves deploy or activate the feature.
