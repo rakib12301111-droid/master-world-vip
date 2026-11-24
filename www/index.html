@@ -162,7 +162,7 @@
 <div id="authstatus" class="item" role="status">Supabase এখনো সংযুক্ত নয়।</div>
 <hr style="border-color:var(--line);margin:18px 0">
 <div class="two">
-<div><h3>নতুন অ্যাকাউন্ট</h3><div class="field"><label for="authname">নাম</label><input id="authname" placeholder="আপনার নাম" autocomplete="name"></div><div class="field"><label for="signupemail">ইমেইল</label><input id="signupemail" type="email" placeholder="name@example.com" autocomplete="email"></div><div class="field"><label for="signuppass">পাসওয়ার্ড (কমপক্ষে ৮ অক্ষর)</label><input id="signuppass" type="password" minlength="8" autocomplete="new-password"></div><button class="btn" id="signup">Create account</button></div>
+<div><h3>নতুন অ্যাকাউন্ট</h3><div class="field"><label for="authname">নাম</label><input id="authname" placeholder="আপনার নাম" autocomplete="name"></div><div class="field"><label for="signupemail">ইমেইল</label><input id="signupemail" type="email" placeholder="name@example.com" autocomplete="email"></div><div class="field"><label for="signuppass">পাসওয়ার্ড (কমপক্ষে ৮ অক্ষর)</label><input id="signuppass" type="password" minlength="8" autocomplete="new-password"></div><button class="btn" id="signup">Create account</button><div class="field section"><label for="signupEmailOtp">Gmail verification code</label><input id="signupEmailOtp" inputmode="numeric" autocomplete="one-time-code" maxlength="8" placeholder="ইমেইলে পাওয়া কোড লিখুন"></div><div class="actions"><button class="btn secondary" id="verifySignupEmail" type="button">কোড যাচাই করুন</button><button class="btn secondary" id="resendSignupEmailOtp" type="button">কোড আবার পাঠান</button></div></div>
 <div><h3>আগের অ্যাকাউন্টে প্রবেশ</h3><div class="field"><label for="loginemail">ইমেইল</label><input id="loginemail" type="email" placeholder="name@example.com" autocomplete="email"></div><div class="field"><label for="loginpass">পাসওয়ার্ড</label><input id="loginpass" type="password" autocomplete="current-password"></div><div class="actions"><button class="btn" id="login">Login</button><button class="btn secondary" id="reset">Reset password</button></div></div>
 </div><div class="actions"><button class="btn danger" id="logout">Logout</button></div><div id="authmsg" class="item" role="status">অ্যাকাউন্টের অবস্থা এখানে দেখা যাবে।</div>
 </article></section>
@@ -862,7 +862,7 @@ $('applySafeSetup').addEventListener('click',applySafeSetup);
 $('reviewSetup').addEventListener('click',()=>{syncWorkspaceSettingsUI();showPage('settings');});
 $('laterSetup').addEventListener('click',()=>{localStorage.setItem('mwvip_setup_skipped','true');say('setupStatus','Setup পরে করা যাবে। কোনো সেটিংস পরিবর্তন হয়নি।');continueStartup();});
 loadSetupPrefs();
-let client=null,currentUser=null;
+let client=null,currentUser=null,pendingSignupEmail='';
 function continueStartup(){if(currentUser){showPage('overview');}else{showPage('account');}}
 function say(id,msg){$(id).textContent=msg;}
 const SUPABASE_PROJECT_URL='https://lztbbrzeuyjkuiyzrsxp.supabase.co';
@@ -906,6 +906,34 @@ $('connect').onclick=connect;
 const saved=config();$('sburl').value=saved.url||SUPABASE_PROJECT_URL;$('sbkey').value=saved.key||SUPABASE_PUBLISHABLE_KEY;
 if(saved.url&&saved.key){connect().catch(()=>{});}
 $('disconnect').onclick=async()=>{if(client)await client.auth.signOut();await stopMessagingSync();client=null;currentUser=null;localStorage.removeItem('mwvip_supabase_config');$('sburl').value='';$('sbkey').value='';$('dashAuth').textContent='Not connected';setStatus('এই ডিভাইস থেকে Supabase config সরানো হয়েছে। Supabase project বা account মুছে যায়নি।');};
+$('verifySignupEmail')?.addEventListener('click',async()=>{
+ if(!client){say('authmsg','আগে Supabase সংযোগ করুন।');return;}
+ const email=(pendingSignupEmail||$('signupemail').value.trim()).toLowerCase();
+ const token=$('signupEmailOtp').value.trim();
+ if(!email||!/^\\d{6,8}$/.test(token)){say('authmsg','Gmail verification code-এর ৬–৮টি সংখ্যা লিখুন।');return;}
+ const button=$('verifySignupEmail');button.disabled=true;say('authmsg','Gmail code যাচাই হচ্ছে…');
+ try{
+  const {data,error}=await client.auth.verifyOtp({email,token,type:'signup'});
+  if(error)throw error;
+  if(!data.user)throw new Error('Verified account পাওয়া যায়নি।');
+  pendingSignupEmail='';currentUser=data.user;
+  const name=$('authname').value.trim()||data.user.user_metadata?.display_name||'Member';
+  await ensureProfile(name);await loadPrivacyRequests();
+  $('dashAuth').textContent='Logged in';say('authmsg','Gmail verification সফল। আপনার অ্যাকাউন্ট সক্রিয় হয়েছে।');showPage('overview');
+ }catch(error){say('authmsg','কোড যাচাই হয়নি: '+(error?.message||'অজানা সমস্যা')+'। নতুন কোড পাঠিয়ে আবার চেষ্টা করুন।');}
+ finally{button.disabled=false;}
+});
+$('resendSignupEmailOtp')?.addEventListener('click',async()=>{
+ if(!client){say('authmsg','আগে Supabase সংযোগ করুন।');return;}
+ const email=(pendingSignupEmail||$('signupemail').value.trim()).toLowerCase();
+ if(!email){say('authmsg','আগে Registration email লিখুন।');return;}
+ const button=$('resendSignupEmailOtp');button.disabled=true;say('authmsg','নতুন verification code পাঠানো হচ্ছে…');
+ try{
+  const {error}=await client.auth.resend({type:'signup',email});
+  if(error)throw error;pendingSignupEmail=email;say('authmsg','নতুন Gmail verification code পাঠানো হয়েছে। Inbox/Spam দেখুন।');
+ }catch(error){say('authmsg','কোড পাঠানো যায়নি: '+(error?.message||'অজানা সমস্যা'));}
+ finally{button.disabled=false;}
+});
 $('signup').onclick=async()=>{
  if(!client){say('authmsg','আগে Supabase সংযোগ করুন।');return}
  const name=$('authname').value.trim(),email=$('signupemail').value.trim(),password=$('signuppass').value;
@@ -920,7 +948,10 @@ $('signup').onclick=async()=>{
   if(data.session&&data.user){
    currentUser=data.user;say('authmsg','Registration সফল এবং Login হয়েছে। প্রোফাইল যাচাই করা হচ্ছে…');
    await ensureProfile(name);await loadPrivacyRequests();$('dashAuth').textContent='Logged in';showPage('overview');
-  }else say('authmsg','Registration অনুরোধ গ্রহণ করা হয়েছে। ইমেইলের Inbox/Spam-এ verification link থাকলে সেটি নিশ্চিত করে তারপর Login করুন। Supabase Email provider চালু থাকতে হবে।');
+  }else {
+   pendingSignupEmail=email;
+   say('authmsg','আপনার Gmail Inbox/Spam-এ Supabase verification code পাঠানো হয়েছে। নিচের ঘরে কোড লিখে “কোড যাচাই করুন” চাপুন। Supabase Email template-এ {{ .Token }} থাকতে হবে।');
+  }
  }catch(error){say('authmsg','Registration সম্পন্ন হয়নি: '+(error?.message||'অজানা সমস্যা')+'. Supabase Auth ও database migration পরীক্ষা করুন।')}
  finally{button.disabled=false}
 };
