@@ -102,23 +102,25 @@ begin
   perform public.ensure_owner_compensation_months();
   select jsonb_build_object(
     'minimum_monthly',1000.00,
-    'due_total',coalesce(sum(m.amount_due),0),
-    'paid_total',coalesce(sum(m.amount_paid),0),
-    'outstanding_total',coalesce(sum(m.amount_due-m.amount_paid),0),
-    'months',coalesce(jsonb_agg(jsonb_build_object(
-      'id',m.id,'period_start',m.period_start,
-      'minimum_amount',m.minimum_amount,
-      'eligible_commission',m.eligible_commission,
-      'minimum_top_up',m.minimum_top_up,
-      'amount_due',m.amount_due,'amount_paid',m.amount_paid,
-      'outstanding',m.amount_due-m.amount_paid,
-      'commission_source',m.commission_source,
-      'commission_reference',m.commission_reference
-    ) order by m.period_start desc),'[]'::jsonb)
-  ) into v_result
-  from public.owner_compensation_months m
-  where m.owner_user_id=v_owner
-    and m.period_start >= (date_trunc('month',current_date)-interval '11 months')::date;
+    'due_total',(select coalesce(sum(m.amount_due),0) from public.owner_compensation_months m where m.owner_user_id=v_owner),
+    'paid_total',(select coalesce(sum(m.amount_paid),0) from public.owner_compensation_months m where m.owner_user_id=v_owner),
+    'outstanding_total',(select coalesce(sum(m.amount_due-m.amount_paid),0) from public.owner_compensation_months m where m.owner_user_id=v_owner),
+    'months',coalesce((
+      select jsonb_agg(jsonb_build_object(
+        'id',m.id,'period_start',m.period_start,
+        'minimum_amount',m.minimum_amount,
+        'eligible_commission',m.eligible_commission,
+        'minimum_top_up',m.minimum_top_up,
+        'amount_due',m.amount_due,'amount_paid',m.amount_paid,
+        'outstanding',m.amount_due-m.amount_paid,
+        'commission_source',m.commission_source,
+        'commission_reference',m.commission_reference
+      ) order by m.period_start desc)
+      from public.owner_compensation_months m
+      where m.owner_user_id=v_owner
+        and m.period_start >= (date_trunc('month',current_date)-interval '11 months')::date
+    ),'[]'::jsonb)
+  ) into v_result;
   return v_result;
 end;
 $$;
