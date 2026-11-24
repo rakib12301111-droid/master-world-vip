@@ -1,0 +1,41 @@
+name: MASTER WORLD VIP - Process Eligible Referral Rewards
+
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: master-world-vip-referral-reward-processor
+  cancel-in-progress: false
+
+jobs:
+  process:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Validate protected secrets
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          REFERRAL_CRON_SECRET: ${{ secrets.REFERRAL_CRON_SECRET }}
+        run: |
+          set -euo pipefail
+          test -n "${SUPABASE_URL:-}" || { echo "::error::Missing SUPABASE_URL Actions secret."; exit 1; }
+          test -n "${REFERRAL_CRON_SECRET:-}" || { echo "::error::Missing REFERRAL_CRON_SECRET Actions secret."; exit 1; }
+          case "$SUPABASE_URL" in https://*.supabase.co) ;; *) echo "::error::SUPABASE_URL must be the HTTPS Supabase project URL."; exit 1;; esac
+
+      - name: Process verified eligible referrals
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          REFERRAL_CRON_SECRET: ${{ secrets.REFERRAL_CRON_SECRET }}
+        run: |
+          set -euo pipefail
+          response="$(curl --fail-with-body --silent --show-error \
+            --request POST \
+            --header "x-cron-secret: $REFERRAL_CRON_SECRET" \
+            --header "content-type: application/json" \
+            "$SUPABASE_URL/functions/v1/process-referral-rewards")"
+          echo "$response" | jq '{ok, result}'
