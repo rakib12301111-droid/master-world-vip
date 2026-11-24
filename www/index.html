@@ -1951,7 +1951,7 @@ $('ownerCompMonth')?.addEventListener('change',async()=>{
 });
 $('saveOwnerCompCommission')?.addEventListener('click',async()=>{
  const month=$('ownerCompMonth').value,commission=Number($('ownerCompCommission').value||0);
- if(!/^\\d{4}-\\d{2}$/.test(month)||!Number.isFinite(commission)||commission<0){$('ownerCompStatus').textContent='সঠিক মাস ও শূন্য বা তার বেশি কমিশন লিখুন।';return;}
+ if(!/^\d{4}-\d{2}$/.test(month)||!Number.isFinite(commission)||commission<0){$('ownerCompStatus').textContent='সঠিক মাস ও শূন্য বা তার বেশি কমিশন লিখুন।';return;}
  const btn=$('saveOwnerCompCommission');btn.disabled=true;
  try{
   const {error}=await client.rpc('owner_set_monthly_compensation_commission',{
@@ -1965,7 +1965,7 @@ $('saveOwnerCompCommission')?.addEventListener('click',async()=>{
 });
 $('recordOwnerCompPayment')?.addEventListener('click',async()=>{
  const month=$('ownerCompMonth').value,amount=Number($('ownerCompPayAmount').value),reference=$('ownerCompPayReference').value.trim();
- if(!/^\\d{4}-\\d{2}$/.test(month)||!Number.isFinite(amount)||amount<=0||reference.length<4){$('ownerCompStatus').textContent='মাস, সঠিক পরিমাণ এবং প্রকৃত transfer reference দিন।';return;}
+ if(!/^\d{4}-\d{2}$/.test(month)||!Number.isFinite(amount)||amount<=0||reference.length<4){$('ownerCompStatus').textContent='মাস, সঠিক পরিমাণ এবং প্রকৃত transfer reference দিন।';return;}
  if(!confirm('এই অর্থ কি সত্যিই আপনার কাছে স্থানান্তর হয়েছে? শুধু বাস্তব payment হলে Yes দিন।'))return;
  const btn=$('recordOwnerCompPayment');btn.disabled=true;
  try{
