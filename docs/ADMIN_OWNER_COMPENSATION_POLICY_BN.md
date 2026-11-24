@@ -1,45 +1,35 @@
-# MASTER WORLD VIP — Admin/Owner Compensation Policy (Decision Pending)
+# MASTER WORLD VIP — Admin/Owner Monthly Compensation Policy
 
 Last updated: 2026-11-24
 
-## Purpose
+## Owner-approved policy
 
-Record the project Owner/Admin's request for a fair, transparent compensation or commission arrangement. This policy is separate from member referral rewards.
+The Owner has approved recording a monthly minimum Admin/Owner compensation target of **৳১,০০০ BDT**. This compensation is separate from the member referral reward and does not create any fee for members.
 
-## Important current status
+### Monthly calculation
 
-- Admin role alone does not automatically create a commission payment.
-- A member using MASTER WORLD VIP for one month does not automatically generate commission for the Admin.
-- No subscription price, platform revenue share, commission percentage, monthly payout or Admin payment has been approved or activated by this document.
-- No member should be charged, and no payment should be represented as due, until the Owner approves the commercial model and it is implemented and disclosed in the applicable terms.
+- Minimum monthly Admin/Owner compensation: **৳১,০০০ BDT**.
+- If the separately calculated eligible monthly commission exceeds ৳১,০০০, record the higher amount.
+- If the eligible commission is below ৳১,০০০, the monthly compensation target remains ৳১,০০০; the shortfall is recorded separately as an outstanding amount, not silently discarded.
+- The monthly ledger must show the period, eligible revenue/commission, minimum top-up, amount paid, outstanding amount, funding source and approval/audit history.
+- The outstanding amount is an internal payable record only when the Owner has formally approved it as an amount owed by the platform. It is **not cash, not a withdrawable wallet balance, and not proof that funds exist**.
+- Pay only from real, lawful platform funds (for example, settled platform revenue, sponsorship or a separately approved Owner funding allocation). If funds are unavailable, keep the amount marked **unpaid/outstanding**; do not report it as paid or promise a payment date.
+- No member deposit, registration fee, purchase or hidden deduction may be used to fund this compensation. Member access remains free under this policy.
+- Any actual transfer must be recorded only after it occurs, with a non-sensitive transaction reference and audit entry.
 
-## Recommended model for Owner approval
+## Separation from referral rewards
 
-If the platform later earns revenue from paid subscriptions, advertising, sponsorships or other lawful services, the Owner may approve a defined share of eligible **settled net platform revenue**.
+The previously approved direct-referral reward remains **৳৫০ BDT once per eligible direct referral**, subject to the 24-hour good-standing period, verified email and completed profile, and only when backed by a pre-funded reward budget. It is not a monthly recurring commission and must not be merged with Admin/Owner compensation.
 
-A transparent calculation should:
-1. Count only money actually received and settled by the platform.
-2. Exclude free member usage, unpaid invoices, refunds, chargebacks, taxes and payment-provider fees.
-3. Identify the revenue source, accounting period, approved rate, calculation, adjustments and payout status.
-4. Keep an append-only audit trail and restrict compensation records to authorized Owner/Admin access.
-5. Disclose any applicable fees and revenue terms to members before charging them.
-6. Follow applicable Bangladesh law, tax obligations, payment-provider terms and any other country-specific requirements.
+## Controls required before any payment
 
-## Separate referral reward
+1. Keep a restricted, append-only Admin/Owner compensation ledger; ordinary members cannot view or alter it.
+2. Record monthly calculations and any top-up transparently; prevent duplicate monthly entries.
+3. Require authorized Owner approval for each payout and preserve an audit trail.
+4. Reconcile the ledger against actual bank/mobile-financial-service or other lawful payment records.
+5. Review Bangladesh legal, tax and payment-provider requirements before real payments.
+6. Never request or store passwords, OTPs, bKash/Nagad PINs, card security codes or other private payment credentials.
 
-The previously approved member referral reward remains ৳৫০ BDT for each eligible direct referral, subject to its own 24-hour good-standing, email verification and profile-completion rules, and only when backed by a pre-funded reward budget. This is not Admin commission and must not be mixed with Owner compensation.
+## Activation boundary
 
-## Decisions required before implementation
-
-The Owner must explicitly approve:
-- Revenue sources covered (subscription, ads, sponsorship, or other).
-- Whether compensation is a fixed monthly amount or a percentage of eligible settled net revenue.
-- The exact amount/rate and payout schedule.
-- Who may view, approve and reconcile the ledger.
-- Applicable member-facing disclosure and legal/tax review.
-
-Until these decisions are approved, keep the commission feature **disabled / not configured**. Do not fabricate a balance or promise a payment.
-
-## Safety rule
-
-Never request or store a member's password, OTP, bank PIN, bKash/Nagad PIN, card security code or private payment credentials for commission accounting.
+This document records the Owner's policy approval. It does **not** itself deploy application code, create a funded reserve, apply a Supabase migration, enable a payout provider, or transfer money. The compensation ledger/UI and payout workflow must be implemented and tested before describing the feature as technically live. Until then, this is an approved policy recorded in the repository, with no claim that any amount has been paid or is currently available.
