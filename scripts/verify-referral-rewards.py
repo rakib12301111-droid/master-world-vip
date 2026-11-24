@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Static safety checks for MASTER WORLD VIP referral rewards."""
 from pathlib import Path
+import re
 import sys
 
 sql = Path('supabase/migrations/202611240003_referral_wallet_rewards.sql').read_text(encoding='utf-8')
@@ -16,6 +17,8 @@ test_sql = Path('supabase/audits/referral-wallet-two-member-test.sql').read_text
 test_workflow = Path('.github/workflows/test-referral-wallet-two-members.yml').read_text(encoding='utf-8')
 
 checks = {
+ 'international migration PL/pgSQL dollar quotes are balanced': international_sql.count('$') >= 10 and international_sql.count('$') % 2 == 0,
+ 'international migration has no malformed dollar delimiters or escaped newlines': not re.search(r'\bas \$(?!\$)', international_sql) and r'\\n' not in international_sql,
  'reward is fixed at BDT 50 and 24 hours': 'reward_amount numeric(12,2) not null default 50.00' in sql and 'qualification_hours integer not null default 24' in sql and "interval '24 hours'" in sql,
  'international migration is included in guarded preflight': '202611240005_international_referral_usd_equivalent.sql' in migration_workflow and 'admin_set_referral_usd_bdt_rate' in international_sql,
  'network reward migration is included in guarded preflight': '202611240006_network_admin_referral_rewards.sql' in migration_workflow,
