@@ -97,6 +97,7 @@ jobs:
         run: python scripts/verify-global-country-directory.py
       - name: Verify push sender security
         run: python scripts/verify-push-sender.py
+      # Includes payout reference uniqueness, Paid audit metadata, and Owner/member wallet isolation checks.
       - name: Verify referral reward security
         run: python scripts/verify-referral-rewards.py
       - name: Verify Owner compensation ledger security
