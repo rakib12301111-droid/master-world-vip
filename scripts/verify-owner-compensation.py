@@ -21,6 +21,7 @@ checks = {
     "month input validation uses correct YYYY-MM digit regex": r"/^\d{4}-\d{2}$/.test(month)" in ui,
     "guarded migration workflow includes compensation migration": "202611240004_owner_monthly_compensation.sql" in deploy,
     "monthly accrual workflow runs on first day and calls server RPC": 'cron: "10 0 1 * *"' in monthly and "service_accrue_owner_compensation_months" in monthly,
+    "server monthly accrual RPC is service-role-only": "create or replace function public.service_accrue_owner_compensation_months()" in sql and "grant execute on function public.service_accrue_owner_compensation_months() to service_role" in sql,
 }
 for name, ok in checks.items():
     print(("PASS" if ok else "FAIL") + " — " + name)
