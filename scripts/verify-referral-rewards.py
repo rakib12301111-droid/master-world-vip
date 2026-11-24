@@ -6,6 +6,7 @@ import sys
 sql = Path('supabase/migrations/202611240003_referral_wallet_rewards.sql').read_text(encoding='utf-8')
 international_sql = Path('supabase/migrations/202611240005_international_referral_usd_equivalent.sql').read_text(encoding='utf-8')
 network_sql = Path('supabase/migrations/202611240006_network_admin_referral_rewards.sql').read_text(encoding='utf-8')
+payout_sql = Path('supabase/migrations/202611240007_referral_payout_reference_hardening.sql').read_text(encoding='utf-8')
 edge = Path('supabase/functions/process-referral-rewards/index.ts').read_text(encoding='utf-8')
 cron = Path('.github/workflows/process-referral-rewards.yml').read_text(encoding='utf-8')
 ui = Path('www/index.html').read_text(encoding='utf-8')
@@ -18,6 +19,11 @@ checks = {
  'reward is fixed at BDT 50 and 24 hours': 'reward_amount numeric(12,2) not null default 50.00' in sql and 'qualification_hours integer not null default 24' in sql and "interval '24 hours'" in sql,
  'international migration is included in guarded preflight': '202611240005_international_referral_usd_equivalent.sql' in migration_workflow and 'admin_set_referral_usd_bdt_rate' in international_sql,
  'network reward migration is included in guarded preflight': '202611240006_network_admin_referral_rewards.sql' in migration_workflow,
+ 'payout hardening migration is included in guarded preflight': '202611240007_referral_payout_reference_hardening.sql' in migration_workflow,
+ 'Owner and members use their own authenticated wallet balance for withdrawal': 'where user_id=v_user' in sql and 'v_user uuid := auth.uid()' in sql and 'beneficiary_id=v_owner' in network_sql,
+ 'Paid withdrawals require real transfer reference, reviewer and timestamp': 'referral_paid_requires_transfer_audit' in payout_sql and 'paid_at is not null' in payout_sql and 'reviewed_by is not null' in payout_sql,
+ 'same-method Paid transfer references cannot be reused': 'referral_withdrawal_paid_reference_unique_idx' in payout_sql and 'lower(btrim(payment_reference))' in payout_sql,
+ 'payout hardening does not claim to send money automatically': 'does not initiate payments or create wallet funds' in payout_sql,
  'member gets 100% direct and Owner gets additional 100% network reward': "'member_direct'" in network_sql and "'owner_network'" in network_sql and "'combined_reward_cost_percent',200" in network_sql,
  'network Owner reward requires exactly one verified Owner': "if v_owner_count <> 1" in network_sql and "where role='owner'" in network_sql,
  'both entitlements remain pending until the full 200% funding is available': "where e.status='pending'" in network_sql and 'v_budget < v_row.combined_amount' in network_sql and "set status='credited'" in network_sql,
