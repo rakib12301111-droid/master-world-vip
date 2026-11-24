@@ -176,3 +176,12 @@ This register tracks the existing repository. A feature is **not live** merely b
 - The Admin funding UI now labels the source as Platform Income / Sponsor Fund and explicitly states that Owner personal funding is not mandatory and members must never be charged.
 - Preserve existing Owner/Admin controls, audit trails, country/FX checks and fraud protections. Do not introduce paid API, merchant, subscription or infrastructure dependencies as mandatory requirements; where a free-tier limit is reached, pause or use a safe fallback rather than incur charges.
 - **This commit changes policy/UI wording only.** It does not fund the reward pool, apply Supabase migrations, deploy Edge Functions, activate cash rewards, create real money, or enable automatic bKash/Nagad payouts. Production migration and acceptance gates remain unchanged.
+
+
+## Update 14 — 2026-11-24: Zero-cost policy deployment verified
+
+- Verified GitHub Actions Pages run `45436255175` for commit `1cbc26fe0c63a32a50fc6b933ab0f2adbaf95de3`: build, deploy, and the dedicated **Verify live GitHub Pages release** job all completed successfully.
+- The deployed site includes the Owner-personal-funding-not-required wording and the Admin funding-source label **Platform Income / Sponsor Fund**. The existing Owner/Admin controls and 100% direct-member + 100% Owner network reward policy remain in place.
+- **Resolved:** the previously pending Pages deployment for the zero-personal-cost policy update is now successful.
+- **Still not live:** Supabase production migrations (including referral migration 006), referral Edge Function/cron integration, funding confirmation, two-member/deep-tree tests, and automatic bKash/Nagad payout. No production database migration was applied by this deployment.
+- No personal payment, deposit or paid service was initiated by this update. Free-tier limits still apply; no guarantee of unlimited free hosting, SMS, data, payment processing or provider capacity is made.
