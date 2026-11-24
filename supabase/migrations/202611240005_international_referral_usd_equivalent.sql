@@ -30,7 +30,7 @@ returns boolean
 language plpgsql
 security definer
 set search_path = ''
-as $
+as $$
 declare v_actor uuid := auth.uid();
 begin
   if v_actor is null or not public.is_referral_finance_admin() then
@@ -52,7 +52,7 @@ begin
     jsonb_build_object('verified',p_verified,'note',left(coalesce(p_note,''),250)));
   return true;
 end;
-$;
+$$;
 revoke all on function public.admin_verify_referral_reward_country(uuid,boolean,text) from public,anon;
 grant execute on function public.admin_verify_referral_reward_country(uuid,boolean,text) to authenticated;
 
@@ -62,7 +62,7 @@ language plpgsql
 stable
 security definer
 set search_path = ''
-as $
+as $$
 begin
   if not public.is_referral_finance_admin() then
     raise exception 'Owner/Admin permission required';
@@ -86,7 +86,7 @@ begin
       and p.referral_reward_country_verified=false
   ),'[]'::jsonb);
 end;
-$;
+$$;
 revoke all on function public.get_admin_referral_country_review_queue() from public,anon;
 grant execute on function public.get_admin_referral_country_review_queue() to authenticated;
 
