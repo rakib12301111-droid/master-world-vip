@@ -13,5 +13,5 @@ for key in ["bd-national-emergency","bd-fire-102","bd-fire-16163","bd-disaster",
 assert ids["bd-national-emergency"]["number"]=="999"
 assert ids["bd-desco"]["number"]=="16120"
 assert ids["bd-desco-turag"]["number"]=="01324-435978"
-assert "mwvip-pwa-v33" in sw
+assert "mwvip-pwa-v34" in sw
 print("All official helpline directory checks passed.")
