@@ -27,7 +27,7 @@ The approved direct-referral reward remains **৳৫০ BDT once per eligible di
 - The compensation tables are private; direct client table writes are revoked. Owner-only SECURITY DEFINER RPCs enforce access and write audit events.
 - The Owner dashboard is embedded in the existing Admin & Security page. Only a verified `owner` role can load it.
 - Monthly entries are generated idempotently from the policy start month when the Owner opens/refreshes the dashboard; missed calendar months are backfilled. This is on-demand accrual, not a background scheduler.
-- The Owner records the actual settled commission and source/reference manually. The ledger computes the minimum top-up and outstanding amount.
+- The Owner records the actual settled commission and source/reference manually. The ledger computes the minimum top-up and outstanding amount. The scheduled workflow creates missing monthly minimum entries; it does not calculate revenue commission.
 - A real payment must be made outside the app first; the Owner then records the amount and actual transfer reference. No bKash/Nagad or bank transfer API is connected by this feature.
 
 ## Deployment and verification gates
