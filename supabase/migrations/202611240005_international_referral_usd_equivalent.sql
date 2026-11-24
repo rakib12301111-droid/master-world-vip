@@ -16,6 +16,46 @@ create table if not exists public.referral_reward_fx_settings (
 insert into public.referral_reward_fx_settings(singleton)
 values (true) on conflict (singleton) do nothing;
 
+alter table public.profiles
+  add column if not exists referral_reward_country_verified boolean not null default false,
+  add column if not exists referral_reward_country_verified_at timestamptz,
+  add column if not exists referral_reward_country_verified_by uuid references auth.users(id);
+
+create or replace function public.admin_verify_referral_reward_country(
+  p_member_id uuid,
+  p_verified boolean,
+  p_note text default null
+)
+returns boolean
+language plpgsql
+security definer
+set search_path = ''
+as $
+declare v_actor uuid := auth.uid();
+begin
+  if v_actor is null or not public.is_referral_finance_admin() then
+    raise exception 'Owner/Admin permission required';
+  end if;
+  if p_member_id is null or not exists (
+    select 1 from public.profiles
+    where id=p_member_id and country is not null and char_length(btrim(country)) > 0
+  ) then
+    raise exception 'Member profile country is missing';
+  end if;
+  update public.profiles
+  set referral_reward_country_verified=p_verified,
+      referral_reward_country_verified_at=case when p_verified then now() else null end,
+      referral_reward_country_verified_by=case when p_verified then v_actor else null end
+  where id=p_member_id;
+  insert into public.admin_audit_logs(actor_user_id,target_user_id,action,details)
+  values(v_actor,p_member_id,'referral_reward_country_verification_changed',
+    jsonb_build_object('verified',p_verified,'note',left(coalesce(p_note,''),250)));
+  return true;
+end;
+$;
+revoke all on function public.admin_verify_referral_reward_country(uuid,boolean,text) from public,anon;
+grant execute on function public.admin_verify_referral_reward_country(uuid,boolean,text) to authenticated;
+
 alter table public.referral_wallet_ledger
   add column if not exists reward_country text,
   add column if not exists base_amount_usd numeric(12,2),
@@ -126,7 +166,7 @@ begin
   from public.referral_reward_fx_settings where singleton=true;
 
   for v_row in
-    select r.id,r.referrer_id,r.referred_user_id,r.status,p.country
+    select r.id,r.referrer_id,r.referred_user_id,r.status,inviter_profile.country
     from public.referrals r
     join auth.users u on u.id=r.referred_user_id
     join public.profiles p on p.id=u.id
@@ -138,7 +178,7 @@ begin
       and char_length(btrim(coalesce(p.display_name,''))) > 0
       and r.referrer_id <> u.id
       and inviter_profile.country is not null
-      and char_length(btrim(inviter_profile.country)) > 0
+      and char_length(btrim(inviter_profile.country)) > 0\n      and inviter_profile.referral_reward_country_verified=true
     order by r.created_at asc
     for update of r skip locked
   loop
@@ -200,7 +240,7 @@ begin
     and u.created_at <= now() - interval '24 hours'
     and u.confirmed_at is not null
     and (u.banned_until is null or u.banned_until <= now())
-    and (inviter_profile.country is null or char_length(btrim(inviter_profile.country))=0);
+    and (inviter_profile.country is null or char_length(btrim(inviter_profile.country))=0\n      or inviter_profile.referral_reward_country_verified is distinct from true);
 
   return jsonb_build_object(
     'qualified',v_qualified,'rewarded',v_rewarded,'paused',false,
