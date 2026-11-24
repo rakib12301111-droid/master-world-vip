@@ -1,0 +1,45 @@
+name: MASTER WORLD VIP - Referral Wallet Two Member Test
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: master-world-vip-referral-wallet-test
+  cancel-in-progress: false
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate database and two distinct test members
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+          MEMBER_A: ${{ secrets.RLS_TEST_MEMBER_A_UUID }}
+          MEMBER_B: ${{ secrets.RLS_TEST_MEMBER_B_UUID }}
+        run: |
+          set -euo pipefail
+          test -n "${SUPABASE_DB_URL:-}" || { echo "::error::Missing SUPABASE_DB_URL (IPv4-compatible Session Pooler URL)."; exit 1; }
+          test -n "${MEMBER_A:-}" || { echo "::error::Missing RLS_TEST_MEMBER_A_UUID."; exit 1; }
+          test -n "${MEMBER_B:-}" || { echo "::error::Missing RLS_TEST_MEMBER_B_UUID."; exit 1; }
+          [[ "$MEMBER_A" =~ ^[0-9a-fA-F-]{36}$ ]] || { echo "::error::Member A UUID format invalid."; exit 1; }
+          [[ "$MEMBER_B" =~ ^[0-9a-fA-F-]{36}$ ]] || { echo "::error::Member B UUID format invalid."; exit 1; }
+          test "$MEMBER_A" != "$MEMBER_B" || { echo "::error::Two different member accounts are required."; exit 1; }
+      - name: Install PostgreSQL client
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes postgresql-client
+      - name: Run referral wallet privacy assertions
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+          MEMBER_A: ${{ secrets.RLS_TEST_MEMBER_A_UUID }}
+          MEMBER_B: ${{ secrets.RLS_TEST_MEMBER_B_UUID }}
+        run: |
+          set -euo pipefail
+          psql "$SUPABASE_DB_URL" --no-psqlrc --set=ON_ERROR_STOP=1 \
+            --set=member_a="$MEMBER_A" --set=member_b="$MEMBER_B" \
+            --file=supabase/audits/referral-wallet-two-member-test.sql
