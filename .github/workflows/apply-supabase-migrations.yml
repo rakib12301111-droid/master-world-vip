@@ -32,6 +32,11 @@ on:
         required: false
         type: string
         default: ""
+      apply_confirmation:
+        description: "Type exactly APPLY-MASTER-WORLD-VIP-MIGRATIONS to authorize production apply"
+        required: false
+        type: string
+        default: ""
 
 permissions:
   contents: read
@@ -99,14 +104,18 @@ jobs:
           set -euo pipefail
           supabase db push --dry-run --db-url "$SUPABASE_DB_URL"
 
-      - name: Require backup confirmation before production changes
+      - name: Require backup and exact authorization before production changes
         if: inputs.apply_migrations == 'yes'
+        env:
+          APPLY_CONFIRMATION: ${{ inputs.apply_confirmation }}
+          BACKUP_REFERENCE: ${{ inputs.backup_reference }}
         run: |
           set -euo pipefail
           test "${{ inputs.confirm_recoverable_backup }}" = "yes" || { echo "::error::Production migration blocked: confirm a recoverable Supabase backup first."; exit 1; }
           test "${{ inputs.confirm_restore_tested }}" = "yes" || { echo "::error::Production migration blocked: confirm the backup restore procedure was tested."; exit 1; }
-          test -n "${{ inputs.backup_reference }}" || { echo "::error::Production migration blocked: provide a non-secret backup reference."; exit 1; }
-          echo "Backup and restore-test confirmations recorded; reference value is not echoed."
+          test -n "$BACKUP_REFERENCE" || { echo "::error::Production migration blocked: provide a non-secret backup reference."; exit 1; }
+          test "$APPLY_CONFIRMATION" = "APPLY-MASTER-WORLD-VIP-MIGRATIONS" || { echo "::error::Production migration blocked: exact authorization phrase is required."; exit 1; }
+          echo "Backup, restore-test and exact authorization confirmations passed; references are not echoed."
 
       - name: Capture pre-migration schema snapshot
         if: inputs.apply_migrations == 'yes' && inputs.confirm_recoverable_backup == 'yes' && inputs.confirm_restore_tested == 'yes' && inputs.backup_reference != ''
@@ -144,5 +153,5 @@ jobs:
         run: echo "Preview only. No database changes were applied."
 
       - name: Report backup confirmation required
-        if: inputs.apply_migrations == 'yes' && (inputs.confirm_recoverable_backup != 'yes' || inputs.confirm_restore_tested != 'yes' || inputs.backup_reference == '')
+        if: inputs.apply_migrations == 'yes' && (inputs.confirm_recoverable_backup != 'yes' || inputs.confirm_restore_tested != 'yes' || inputs.backup_reference == '' || inputs.apply_confirmation != 'APPLY-MASTER-WORLD-VIP-MIGRATIONS')
         run: echo "Production migration was blocked because backup, restore-test, or backup-reference confirmation was incomplete."
