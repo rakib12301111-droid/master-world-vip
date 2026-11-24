@@ -484,12 +484,21 @@
   <div class="field"><label for="refFundSource">Funding Source</label><input id="refFundSource" maxlength="80" placeholder="যেমন: Owner marketing fund"></div>
   <div class="field"><label for="refFundReference">Payment / Ledger Reference</label><input id="refFundReference" maxlength="120" placeholder="ব্যাংক/লেনদেনের রেফারেন্স"></div>
  </div>
+ <h3 class="section">বিদেশি Referral — USD/BDT হিসাব</h3>
+ <p class="small muted">বাংলাদেশ: ৳৫০। বিদেশ: US$৫০ × নির্ধারিত BDT/USD rate। উদাহরণ ১৩০ হলে ৳৬,৫০০। Rate অবশ্যই নির্ভরযোগ্য উৎস ও তারিখ/reference-সহ Owner সেট করবেন; এটি live automatic rate নয়।</p>
+ <div class="grid">
+  <div class="field"><label for="refUsdBdtRate">১ USD = কত BDT?</label><input id="refUsdBdtRate" type="number" min="0.0001" max="10000" step="0.0001" placeholder="যেমন 130"></div>
+  <div class="field"><label for="refUsdBdtSource">Rate Source</label><input id="refUsdBdtSource" maxlength="80" placeholder="যেমন: ব্যাংক / নির্ভরযোগ্য FX source"></div>
+  <div class="field"><label for="refUsdBdtReference">Rate date / Reference</label><input id="refUsdBdtReference" maxlength="160" placeholder="তারিখ ও source reference"></div>
+ </div>
+ <div class="feature"><strong>বর্তমান সংরক্ষিত USD/BDT Rate</strong><div class="stat" id="refUsdBdtCurrent">সেট করা হয়নি</div><div class="small muted" id="refUsdBdtDetails">Rate source ও reference এখনো নেই।</div></div>
+ <div class="actions"><button class="btn secondary" id="saveReferralFxRate" type="button">USD/BDT Rate সংরক্ষণ</button></div>
  <div class="actions"><button class="btn" id="addReferralFunds" type="button">নিশ্চিত Fund যোগ করুন</button><button class="btn secondary" id="toggleReferralRewards" type="button">Reward চালু / বন্ধ</button><button class="btn secondary" id="refreshReferralFinance" type="button">Finance Refresh</button></div>
  <div class="notice" id="refAdminFinanceStatus">Owner permission ও migration যাচাই হচ্ছে…</div>
  <h3 class="section">Withdrawal Requests</h3>
  <div id="adminReferralWithdrawals" class="feature-list">অনুরোধ লোড হচ্ছে…</div>
 </div></article>
-<article class="card"><h2>Global Growth</h2><div class="feature-list"><div class="feature"><strong>Multilingual website</strong><div class="status">BN/EN foundation</div></div><div class="feature"><strong>Google Play release</strong><div class="status">Build, policy review & approval required</div></div><div class="feature"><strong>Transparent referral rewards</strong><div class="status">৳৫০/যোগ্য Referral, ২৪ ঘণ্টা, no-deposit policy; server workflow ও funding setup pending</div></div></div><div class="notice">রেফারেল গণনা নতুন অ্যাকাউন্ট তৈরির সময় সার্ভার থেকে হবে। নিজে নিজের লিংকে নিবন্ধন গণনা হবে না। কোনো নগদ পুরস্কার এখনো প্রতিশ্রুত নয়।</div></article></section>
+<article class="card"><h2>Global Growth</h2><div class="feature-list"><div class="feature"><strong>Multilingual website</strong><div class="status">BN/EN foundation</div></div><div class="feature"><strong>Google Play release</strong><div class="status">Build, policy review & approval required</div></div><div class="feature"><strong>Transparent referral rewards</strong><div class="status">বাংলাদেশে ৳৫০; বিদেশে US$৫০-এর BDT সমমূল্য, ২৪ ঘণ্টা, no-deposit policy; production setup pending</div></div></div><div class="notice">রেফারেল গণনা নতুন অ্যাকাউন্ট তৈরির সময় সার্ভার থেকে হবে। নিজে নিজের লিংকে নিবন্ধন গণনা হবে না। কোনো নগদ পুরস্কার এখনো প্রতিশ্রুত নয়।</div></article></section>
 
 <section class="page" id="admin"><article class="card"><h2>⚙ Admin & Security Center</h2>
 <p class="muted">Owner-controlled administration · Server-side role verification</p>
@@ -2671,10 +2680,12 @@ async function loadAdminReferralFinance(){
  if(!client||!currentUser)return;
  const status=$('refAdminFinanceStatus');
  try{
-  const [{data:finance,error:financeError},{data:requests,error:requestError}]=await Promise.all([
-   client.rpc('get_admin_referral_finance_overview'),client.rpc('get_admin_referral_withdrawals')
+  const [{data:finance,error:financeError},{data:requests,error:requestError},{data:fx,error:fxError}]=await Promise.all([
+   client.rpc('get_admin_referral_finance_overview'),client.rpc('get_admin_referral_withdrawals'),client.rpc('get_admin_referral_fx_rate')
   ]);
-  if(financeError)throw financeError;if(requestError)throw requestError;
+  if(financeError)throw financeError;if(requestError)throw requestError;if(fxError)throw fxError;
+  $('refUsdBdtCurrent').textContent=fx.bdt_per_usd?('১ USD = '+Number(fx.bdt_per_usd).toLocaleString('en-US')+' BDT'):'সেট করা হয়নি';
+  $('refUsdBdtDetails').textContent=fx.bdt_per_usd?('Source: '+(fx.rate_source||'—')+' · Reference: '+(fx.rate_reference||'—')+' · Updated: '+(fx.updated_at?new Date(fx.updated_at).toLocaleString('bn-BD'):'—')):'বিদেশি reward rate না বসানো পর্যন্ত আটকে থাকবে।';
   $('refAdminFunded').textContent=moneyBDT(finance.funded_total);
   $('refAdminCredited').textContent=moneyBDT(finance.credited_total);
   $('refAdminBudget').textContent=moneyBDT(finance.remaining_budget);
@@ -2715,7 +2726,7 @@ async function loadReferralDashboard(){
   const link=new URL(location.pathname,location.origin);link.searchParams.set('ref',code);if(linkInput)linkInput.value=link.toString();
   const {data:stats,error:statsError}=await client.rpc('get_my_referral_stats');if(statsError)throw statsError;
   $('myReferralTotal').textContent=stats?.total??0;$('myReferralRegistered').textContent=stats?.registered??0;$('myReferralQualified').textContent=stats?.qualified??0;$('myReferralRewarded').textContent=stats?.rewarded??0;
-  if(status)status.textContent='আপনার ব্যক্তিগত Referral Link প্রস্তুত। যোগ্য হলে ৳৫০ Wallet-এ যোগ হবে।';
+  if(status)status.textContent='আপনার Referral Link প্রস্তুত। বাংলাদেশে যোগ্য reward ৳৫০; বিদেশি সদস্যের ক্ষেত্রে US$৫০-এর BDT সমমূল্য (rate অনুযায়ী)।';
  }catch(error){if(status)status.textContent='Referral system এখনো প্রস্তুত নয়: '+(error?.message||String(error))+'। প্রয়োজনীয় migration apply হয়েছে কি না দেখুন।';}
  await loadReferralWallet();
  try{
@@ -2751,6 +2762,20 @@ $('toggleReferralRewards')?.addEventListener('click',async()=>{
  try{const enabled=button.dataset.enabled!=='true';const {error}=await client.rpc('admin_set_referral_rewards_enabled',{p_enabled:enabled});if(error)throw error;
   status.textContent=enabled?'Referral Reward চালু হয়েছে।':'Referral Reward বন্ধ করা হয়েছে।';await loadAdminReferralFinance();
  }catch(e){status.textContent='Reward status বদলানো যায়নি: '+(e.message||String(e));}
+ finally{button.disabled=false;}
+});
+$('saveReferralFxRate')?.addEventListener('click',async()=>{
+ const status=$('refAdminFinanceStatus'),button=$('saveReferralFxRate');
+ if(!client||!currentUser){status.textContent='আগে Owner account দিয়ে লগইন করুন।';return;}
+ const rate=Number($('refUsdBdtRate').value),source=$('refUsdBdtSource').value.trim(),reference=$('refUsdBdtReference').value.trim();
+ button.disabled=true;
+ try{
+  const {error}=await client.rpc('admin_set_referral_usd_bdt_rate',{p_rate:rate,p_source:source,p_reference:reference});
+  if(error)throw error;
+  status.textContent='USD/BDT rate নিরাপদভাবে সংরক্ষিত হয়েছে। নতুন reward এই rate ব্যবহার করবে।';
+  $('refUsdBdtRate').value='';$('refUsdBdtReference').value='';
+  await loadAdminReferralFinance();
+ }catch(e){status.textContent='Rate সংরক্ষণ হয়নি: '+(e.message||String(e));}
  finally{button.disabled=false;}
 });
 $('refreshReferralFinance')?.addEventListener('click',loadAdminReferralFinance);
