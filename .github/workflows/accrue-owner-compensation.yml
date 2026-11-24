@@ -1,0 +1,41 @@
+name: MASTER WORLD VIP — Monthly Owner Compensation Accrual
+
+on:
+  schedule:
+    - cron: "10 0 1 * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: mwvip-owner-compensation-monthly-accrual
+  cancel-in-progress: false
+
+jobs:
+  accrue-monthly-ledger:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate database connection secret
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: |
+          set -euo pipefail
+          test -n "${SUPABASE_DB_URL:-}" || { echo "::error::Missing SUPABASE_DB_URL repository Actions secret."; exit 1; }
+          echo "Database connection secret is present; its value will not be printed."
+
+      - name: Install PostgreSQL client
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes postgresql-client
+
+      - name: Create missing monthly Owner compensation entries
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: |
+          set -euo pipefail
+          inserted="$(psql "$SUPABASE_DB_URL" --no-psqlrc --set=ON_ERROR_STOP=1 --tuples-only --no-align --command="select public.service_accrue_owner_compensation_months();")"
+          case "$inserted" in
+            ''|*[!0-9]*) echo "::error::Monthly accrual RPC returned an invalid result."; exit 1 ;;
+          esac
+          echo "Monthly accrual completed; $inserted missing month row(s) created."
