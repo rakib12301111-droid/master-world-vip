@@ -47,7 +47,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: deploy
     steps:
-      - name: Check published website, startup flow, email OTP, and PWA cache
+      - name: Check published website content, Update Center audit link, manifest, and PWA cache
         env:
           PAGE_URL: ${{ needs.deploy.outputs.page_url }}
         run: |
@@ -57,6 +57,7 @@ jobs:
           echo "Checking $SITE_URL"
           curl --fail --silent --show-error --location --retry 12 --retry-all-errors --retry-delay 10 "$SITE_URL" -o /tmp/mwvip-live.html
           grep -q "GLOBAL AI-POWERED WORKSPACE" /tmp/mwvip-live.html
+          grep -q "START_TO_FINISH_AUDIT_BN.md" /tmp/mwvip-live.html
           grep -q "applySafeSetup" /tmp/mwvip-live.html
           grep -q "continueStartup" /tmp/mwvip-live.html
           grep -q "laterSetup" /tmp/mwvip-live.html
@@ -80,4 +81,6 @@ jobs:
           grep -q "mwvip-pwa-v34" /tmp/mwvip-sw.js
           curl --fail --silent --show-error --location "$BASE_URL/docs/START_TO_FINISH_AUDIT_BN.md" -o /tmp/mwvip-audit.md
           grep -q "বাধ্যতামূলক কাজের ক্রম" /tmp/mwvip-audit.md
-          echo "PASS: live website, signup/login, in-app email OTP verification, and Owner compensation dashboard foundation and PWA cache v33, international referral FX controls, and pending/Owner network reward controls are published."
+          curl --fail --silent --show-error --location "$BASE_URL/www/update-manifest.json" -o /tmp/mwvip-update-manifest.json
+          grep -q "start-to-finish-audit" /tmp/mwvip-update-manifest.json
+          echo "PASS: live Pages HTML is reachable; expected signup/login/OTP code markers, Owner/referral UI markers, Update Center audit link, audit document, update-manifest audit stage, and PWA cache v34 are published. These are static deployment checks only; they do not prove real email OTP delivery, Supabase authentication, database migrations, or end-to-end feature behavior."
