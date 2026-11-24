@@ -17,20 +17,30 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Validate test account secrets and database credentials
+      - name: Validate pooler URL and test account secrets without printing values
         env:
-          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
           MEMBER_A: ${{ secrets.RLS_TEST_MEMBER_A_UUID }}
           MEMBER_B: ${{ secrets.RLS_TEST_MEMBER_B_UUID }}
         run: |
           set -euo pipefail
-          test -n "${SUPABASE_DB_PASSWORD:-}" || { echo "::error::Missing SUPABASE_DB_PASSWORD"; exit 1; }
+          test -n "${SUPABASE_DB_URL:-}" || { echo "::error::Missing SUPABASE_DB_URL"; exit 1; }
+          python3 - <<'PY'
+          import os
+          from urllib.parse import urlsplit
+          parsed = urlsplit(os.environ["SUPABASE_DB_URL"].strip())
+          if parsed.scheme not in ("postgres", "postgresql") or not parsed.hostname or not parsed.hostname.endswith(".pooler.supabase.com"):
+              raise SystemExit("::error::SUPABASE_DB_URL must be a valid Supabase Session Pooler PostgreSQL URI.")
+          if parsed.port != 5432 or parsed.path.lstrip("/") != "postgres" or not parsed.username or not parsed.password:
+              raise SystemExit("::error::Session Pooler URI must include credentials, port 5432 and database /postgres.")
+          print("Session Pooler URI structure is valid; credentials were not printed.")
+          PY
           test -n "${MEMBER_A:-}" || { echo "::error::Missing RLS_TEST_MEMBER_A_UUID"; exit 1; }
           test -n "${MEMBER_B:-}" || { echo "::error::Missing RLS_TEST_MEMBER_B_UUID"; exit 1; }
           [[ "$MEMBER_A" =~ ^[0-9a-fA-F-]{36}$ ]] || { echo "::error::Member A UUID format invalid"; exit 1; }
           [[ "$MEMBER_B" =~ ^[0-9a-fA-F-]{36}$ ]] || { echo "::error::Member B UUID format invalid"; exit 1; }
           test "$MEMBER_A" != "$MEMBER_B" || { echo "::error::Two different test accounts are required"; exit 1; }
-          echo "Two test account identifiers are present; values are not printed."
+          echo "Two distinct test account identifiers are present; values are not printed."
 
       - name: Install PostgreSQL client
         run: |
@@ -39,16 +49,11 @@ jobs:
 
       - name: Run transactional two-member RLS assertions
         env:
-          PGPASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
-          PGHOST: db.lztbbrzeuyjkuiyzrsxp.supabase.co
-          PGPORT: "5432"
-          PGDATABASE: postgres
-          PGUSER: postgres
-          PGSSLMODE: require
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
           MEMBER_A: ${{ secrets.RLS_TEST_MEMBER_A_UUID }}
           MEMBER_B: ${{ secrets.RLS_TEST_MEMBER_B_UUID }}
         run: |
           set -euo pipefail
-          psql --no-psqlrc --set=ON_ERROR_STOP=1 \
+          psql --no-psqlrc --dbname="$SUPABASE_DB_URL" --set=ON_ERROR_STOP=1 \
             --set=member_a="$MEMBER_A" --set=member_b="$MEMBER_B" \
             --file=supabase/audits/two-member-rls-integration-test.sql
