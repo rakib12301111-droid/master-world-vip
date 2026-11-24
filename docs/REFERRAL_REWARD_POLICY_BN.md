@@ -38,6 +38,15 @@
 7. Tests with two separate accounts: valid referral, invalid code, self-referral, duplicate attribution, less-than-24-hours, exactly-after-24-hours, unverified email, suspended account, insufficient budget, duplicate job execution, member privacy and non-admin access denial.
 8. Verify actual payout reconciliation before marking any reward as paid.
 
-## Truthful status
+## Implementation status — 2026-11-24
 
-The repository already contains referral code/attribution, basic stats and an Owner/Admin overview foundation. This policy document records the approved reward terms; it does **not** itself implement qualification, create funds, credit a wallet, transfer money, or activate payouts. The production database migrations and acceptance tests remain pending. Do not advertise the ৳৫০ reward as live until the server workflow, funded reward budget, ledger, migration, security tests and payout process are verified.
+Repository code now includes:
+- Additive SQL migration 202611240003_referral_wallet_rewards.sql for the 24-hour server qualification, funded BDT 50 reward ledger, one-credit-per-referral constraint, member wallet reads, withdrawal requests, Owner-only funding and reward enable/disable, Admin review and audit records.
+- Server-only process-referral-rewards Edge Function and a 15-minute scheduled GitHub Actions workflow.
+- Member Wallet and bKash/Nagad withdrawal-request UI; Owner/Admin reward-budget and withdrawal-review UI.
+- Two-member wallet privacy/permission SQL test and dedicated GitHub Actions workflow.
+- Deployment and acceptance instructions in REFERRAL_SYSTEM_ACCEPTANCE_TEST_BN.md.
+
+**Not live yet:** the production migration has not been confirmed applied; Edge Function deployment and REFERRAL_CRON_SECRET / SUPABASE_URL Actions secrets are not verified; no real reward fund has been deposited/recorded; no two-member test has passed against the target Supabase project. The withdrawal flow currently supports requests and manual Admin payout reconciliation only. It is **not automatic bKash/Nagad cashout**; official merchant/API access, provider credentials, webhook verification and reconciliation remain necessary.
+
+Do not advertise the ৳৫০ reward as available until the migration, secure processor, funded budget, two-member acceptance tests and real payout process are verified.
