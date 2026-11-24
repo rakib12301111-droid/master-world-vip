@@ -107,8 +107,11 @@ as $$
 declare
   v_result jsonb;
 begin
-  if not public.has_role('admin') then
-    raise exception 'Admin permission required';
+  if not exists (
+    select 1 from public.app_user_roles r
+    where r.user_id = auth.uid() and r.role in ('owner','super_admin','admin')
+  ) then
+    raise exception 'Owner/Admin permission required';
   end if;
 
   select jsonb_build_object(
