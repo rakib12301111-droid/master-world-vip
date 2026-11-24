@@ -73,3 +73,26 @@ Referral reward processor-এর জন্য আলাদা integration পর
 **নিরাপত্তা সিদ্ধান্ত:** চারটি ধাপের কোনোটিই সফল হয়েছে বলে চিহ্নিত করা হয়নি। Production migration চালানো হয়নি এবং চালানো যাবে না। আগের কোনো authorization phrase থাকলেও তা এই নতুন run-এর backup/restore/preview evidence-এর বিকল্প নয়।
 
 **করণীয়:** GitHub → Settings → Secrets and variables → Actions-এ `SUPABASE_DB_URL` (IPv4-compatible Session Pooler, port 5432, database `/postgres`) এবং `BACKUP_ENCRYPTION_PASSPHRASE` secret যোগ/যাচাই করুন। Secret value chat-এ দেবেন না। তারপর Actions → “MASTER WORLD VIP - Encrypted Backup, Restore Test & Migration Preview” → Run workflow চালান। Artifact ৭ দিনের মধ্যে GitHub-এর বাইরে নিরাপদ encrypted storage-এ সংরক্ষণ করুন।
+
+
+## Update 2026-11-25 — নতুন Backup Workflow Run যাচাই
+
+Commit `64350b9922e1ef493e5dd89aa02827f639f89e44`-এর পর স্বয়ংক্রিয়ভাবে চালু হওয়া Run `45468408735` পরীক্ষা করা হয়েছে।
+
+- Workflow: `.github/workflows/backup-restore-preview.yml`
+- Run result: **FAILED**
+- Secret presence validation: PASS
+- Session Pooler URI syntax validation: PASS
+- Supabase database authentication / backup creation: FAIL — PostgreSQL `password authentication failed`
+- Encrypted backup artifact: তৈরি হয়নি
+- Disposable restore test: SKIPPED
+- Migration dry-run: SKIPPED
+- Production migration: NOT RUN
+
+### জরুরি credential remediation
+
+আগের run log-এ extracted database credential প্রকাশিত হওয়ার ঝুঁকি শনাক্ত হয়েছে। তাই সংশ্লিষ্ট Supabase database password-কে compromised হিসেবে বিবেচনা করতে হবে। Owner-কে Supabase Dashboard থেকে database password rotate করে GitHub Actions secret `SUPABASE_DB_URL`-এ নতুন সম্পূর্ণ Session Pooler URI দিতে হবে। পুরোনো password আর ব্যবহার করা যাবে না। নতুন credential chat, issue, commit বা screenshot-এ প্রকাশ করা যাবে না।
+
+Workflow-তে extracted username/password mask করার code যোগ হয়েছে; তবে এটি আগের log থেকে তথ্য মুছে দেয় না এবং authentication failure ঠিকও করে না।
+
+**পরবর্তী gate:** Owner password rotate করে Secret update নিশ্চিত না করা পর্যন্ত backup workflow পুনরায় চালাবেন না। নতুন run-এ backup, restore, dry-run ও artifact upload—সব PASS না হওয়া পর্যন্ত ধাপ ১–৩ অসম্পন্ন থাকবে। Production migration সম্পূর্ণ নিষিদ্ধ থাকবে।
