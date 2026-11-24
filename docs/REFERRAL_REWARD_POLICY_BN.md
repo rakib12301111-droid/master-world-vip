@@ -51,7 +51,7 @@
 
 - সাধারণ সদস্য কেবল নিজের সরাসরি আমন্ত্রণে আসা প্রত্যেক যোগ্য সদস্যের জন্য standard reward-এর ১০০% পাবেন।
 - একমাত্র verified `owner` role account পুরো referral tree-র প্রতিটি eligible referral event-এর জন্য অতিরিক্ত standard reward-এর ১০০% পাবে—direct, second level, third level বা আরও গভীর স্তর নির্বিশেষে। অন্য admin account-এ global commission যাবে না।
-- Owner network reward-টি সাধারণ সদস্যের direct reward-এর অতিরিক্ত; তাই প্রতি referral event-এ মোট reward liability ২০০%। বাংলাদেশি referrer-এর উদাহরণে সদস্য ৳৫০ + Owner ৳৫০ = মোট ৳১০০; বিদেশি referrer-এর উদাহরণে ১ USD=৳১৩০ হলে সদস্য ৳৬,৫০০ + Owner ৳৬,৫০০ = মোট ৳১৩,০০০।
+- Owner network reward-টি সাধারণ সদস্যের direct reward-এর অতিরিক্ত; এর BDT/USD amount সংশ্লিষ্ট direct referrer-এর verified country অনুযায়ী একই standard reward হবে; তাই প্রতি referral event-এ মোট reward liability ২০০%। বাংলাদেশি referrer-এর উদাহরণে সদস্য ৳৫০ + Owner ৳৫০ = মোট ৳১০০; বিদেশি referrer-এর উদাহরণে ১ USD=৳১৩০ হলে সদস্য ৳৬,৫০০ + Owner ৳৬,৫০০ = মোট ৳১৩,০০০।
 - Referral processor প্রথমে দুই beneficiary-র Pending entitlement তৈরি করবে। পুরো দুই reward-এর সমান cleared funding না থাকলে কোনো wallet credit হবে না। পর্যাপ্ত funding থাকলে দুই credit একই transaction-এ তৈরি হবে।
 - Exactly one verified Owner account না থাকলে processor reward release করবে না। একই referral-এর জন্য একই reward kind একবারই তৈরি হবে; repeat job duplicate credit করবে না।
 - Admin network reward-কে network report ও Owner wallet-এ আলাদাভাবে দেখাতে হবে। এটি Owner-এর মাসিক compensation ledger থেকে পৃথক।
