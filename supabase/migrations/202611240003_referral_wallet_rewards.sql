@@ -388,13 +388,14 @@ begin
   if coalesce(auth.role(),'') <> 'service_role' then
     raise exception 'Service role required';
   end if;
+  perform pg_advisory_xact_lock(hashtextextended('mwvip-referral-reward-processor',0));
   select reward_amount into v_reward from public.referral_reward_settings where singleton=true;
   if not exists(select 1 from public.referral_reward_settings where singleton=true and rewards_enabled=true) then
     return jsonb_build_object('qualified',0,'rewarded',0,'paused',true);
   end if;
 
   for v_row in
-    select r.id,r.referrer_id,r.referred_user_id
+    select r.id,r.referrer_id,r.referred_user_id,r.status
     from public.referrals r
     join auth.users u on u.id=r.referred_user_id
     join public.profiles p on p.id=u.id
@@ -406,9 +407,11 @@ begin
     order by r.created_at asc
     for update of r skip locked
   loop
-    update public.referrals set status='qualified',qualified_at=coalesce(qualified_at,now())
-      where id=v_row.id and status='registered';
-    v_qualified := v_qualified + 1;
+    if v_row.status='registered' then
+      update public.referrals set status='qualified',qualified_at=coalesce(qualified_at,now())
+        where id=v_row.id and status='registered';
+      v_qualified := v_qualified + 1;
+    end if;
 
     if exists(select 1 from public.referral_wallet_ledger where referral_id=v_row.id) then
       update public.referrals set status='rewarded' where id=v_row.id;
