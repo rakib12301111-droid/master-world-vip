@@ -89,3 +89,18 @@ Repository-তে `.github/workflows/backup-restore-preview.yml` যোগ ক�
 এই secret-গুলোর মান কখনো chat/issue/commit-এ দেবেন না। Workflow run সফল না হওয়া পর্যন্ত backup বা restore test সফল হয়েছে বলা যাবে না। Restore step PostgreSQL 17-এ কোনো Supabase-specific extension/role/schema incompatibility পেলে fail করবে; সেটিকে সফল restore হিসেবে গণ্য করা যাবে না এবং Production Apply gate খোলা যাবে না।
 
 এই pipeline Production migration apply করে না। সফল backup+restore+preview-এর পরে আলাদা অনুমোদিত migration workflow এবং দুই সদস্যের RLS integration test চালাতে হবে। `RLS_TEST_MEMBER_A_UUID`, `RLS_TEST_MEMBER_B_UUID`, এবং ঐ workflow-এর প্রয়োজনীয় DB credential secrets আগে থেকেই নিরাপদে configured থাকতে হবে।
+
+
+## Update 2026-11-24 — Secret checklist ও artifact retention স্পষ্টীকরণ
+
+Workflow অনুযায়ী secret-গুলোর প্রয়োজন আলাদা:
+
+- `backup-restore-preview.yml`: `SUPABASE_DB_URL` এবং `BACKUP_ENCRYPTION_PASSPHRASE`।
+- `database-migration-dry-run.yml`: `SUPABASE_ACCESS_TOKEN` এবং `SUPABASE_DB_PASSWORD`।
+- `secure-supabase-db-update.yml`: `SUPABASE_ACCESS_TOKEN` এবং `SUPABASE_DB_URL`; production apply gate-এর non-secret backup/restore references ও exact authorization-ও প্রয়োজন।
+- `test-two-member-rls.yml`: `SUPABASE_DB_PASSWORD`, `RLS_TEST_MEMBER_A_UUID`, `RLS_TEST_MEMBER_B_UUID`।
+- `test-referral-wallet-two-members.yml`: `SUPABASE_DB_URL`, `RLS_TEST_MEMBER_A_UUID`, `RLS_TEST_MEMBER_B_UUID`।
+
+Backup workflow encrypted artifact ও restore table-count report GitHub Actions artifact হিসেবে ৭ দিন রাখে। Artifact download করে GitHub-এর বাইরে নিরাপদ দীর্ঘমেয়াদি storage-এ কপি করুন; ৭ দিনের artifact-কে একমাত্র backup মনে করবেন না। Encryption passphrase আলাদা নিরাপদ জায়গায় রাখুন।
+
+Repository read access দিয়ে GitHub Secret-এর মান বা secret configured আছে কি না দেখা যায় না। GitHub Settings → Secrets and variables → Actions-এ secret names manually যাচাই করতে হবে; values প্রকাশ করবেন না। বিস্তারিত তালিকা: [DB Safety Execution Status](DB_SAFETY_EXECUTION_STATUS_BN.md)।
