@@ -78,7 +78,7 @@ begin
   select v_owner, gs::date, 1000.00, 0.00, 1000.00, 1000.00, 0.00
   from generate_series(
     date '2026-11-01',
-    date_trunc('month',current_date)::date,
+    date_trunc('month',now() at time zone 'Asia/Dhaka')::date,
     interval '1 month'
   ) as gs
   on conflict(owner_user_id,period_start) do nothing;
@@ -110,7 +110,7 @@ begin
     select v_owner.user_id,gs::date,1000.00,0.00,1000.00,1000.00,0.00
     from generate_series(
       date '2026-11-01',
-      date_trunc('month',current_date)::date,
+      date_trunc('month',now() at time zone 'Asia/Dhaka')::date,
       interval '1 month'
     ) as gs
     on conflict(owner_user_id,period_start) do nothing;
@@ -182,7 +182,7 @@ begin
     raise exception 'Verified Owner permission required';
   end if;
   if p_period_start is null or extract(day from p_period_start)<>1
-     or p_period_start > date_trunc('month',current_date)::date then
+     or p_period_start > date_trunc('month',now() at time zone 'Asia/Dhaka')::date then
     raise exception 'Select a valid current or past month';
   end if;
   if p_eligible_commission is null or p_eligible_commission < 0 then
