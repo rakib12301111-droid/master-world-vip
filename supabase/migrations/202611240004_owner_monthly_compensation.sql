@@ -86,6 +86,43 @@ end;
 $$;
 revoke all on function public.ensure_owner_compensation_months() from public,anon,authenticated;
 
+create or replace function public.service_accrue_owner_compensation_months()
+returns integer
+language plpgsql
+security definer
+set search_path = ''
+as $
+declare
+  v_owner record;
+  v_inserted integer := 0;
+  v_count integer := 0;
+begin
+  -- This entry point is callable only by service_role (or the database owner).
+  for v_owner in
+    select distinct r.user_id
+    from public.app_user_roles r
+    where r.role='owner'
+  loop
+    insert into public.owner_compensation_months(
+      owner_user_id,period_start,minimum_amount,eligible_commission,
+      minimum_top_up,amount_due,amount_paid
+    )
+    select v_owner.user_id,gs::date,1000.00,0.00,1000.00,1000.00,0.00
+    from generate_series(
+      date '2026-11-01',
+      date_trunc('month',current_date)::date,
+      interval '1 month'
+    ) as gs
+    on conflict(owner_user_id,period_start) do nothing;
+    get diagnostics v_count = row_count;
+    v_inserted := v_inserted + v_count;
+  end loop;
+  return v_inserted;
+end;
+$;
+revoke all on function public.service_accrue_owner_compensation_months() from public,anon,authenticated;
+grant execute on function public.service_accrue_owner_compensation_months() to service_role;
+
 create or replace function public.get_my_owner_compensation()
 returns jsonb
 language plpgsql
