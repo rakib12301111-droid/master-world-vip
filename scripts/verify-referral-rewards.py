@@ -18,6 +18,8 @@ checks = {
  'international migration is included in guarded preflight': '202611240005_international_referral_usd_equivalent.sql' in migration_workflow and 'admin_set_referral_usd_bdt_rate' in international_sql,
  'Bangladesh BDT 50 and foreign USD 50 equivalent are calculated in BDT': 'v_reward := 50.00' in international_sql and 'v_reward := round(50.00 * v_rate,2)' in international_sql and 'base_amount_usd' in international_sql and 'fx_rate_bdt_per_usd' in international_sql,
  'foreign awards wait for missing FX rate or country': 'v_waiting_for_rate' in international_sql and 'v_waiting_for_country' in international_sql,
+ 'country must be verified by Owner/Admin before referral reward': 'referral_reward_country_verified' in international_sql and 'admin_verify_referral_reward_country' in international_sql and 'referral_reward_country_verified=true' in international_sql,
+ 'Admin country verification queue and UI controls exist': 'get_admin_referral_country_review_queue' in international_sql and 'referralCountryReviewQueue' in ui and 'admin_verify_referral_reward_country' in ui,
  'FX source and reference are audited': 'rate_source' in international_sql and 'rate_reference' in international_sql and 'referral_usd_bdt_rate_updated' in international_sql,
  'reward processing requires verified email and complete profile': 'u.confirmed_at is not null' in sql and "char_length(btrim(coalesce(p.display_name,''))) > 0" in sql,
  'currently banned accounts are excluded': 'u.banned_until is null or u.banned_until <= now()' in sql,
