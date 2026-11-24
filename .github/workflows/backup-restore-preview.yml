@@ -87,6 +87,10 @@ jobs:
           password = unquote(parsed.password or "")
           if not username or not password or any(ch in username + password for ch in "\r\n"):
               raise SystemExit("::error::Session Pooler URI is missing valid username/password credentials.")
+          # The full URI secret is masked by GitHub, but extracted credentials
+          # are separate values and must be masked before any later command.
+          print(f"::add-mask::{password}", flush=True)
+          print(f"::add-mask::{username}", flush=True)
           values = {
               "PGHOST": parsed.hostname,
               "PGPORT": str(parsed.port),
