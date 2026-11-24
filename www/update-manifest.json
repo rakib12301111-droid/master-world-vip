@@ -1,9 +1,17 @@
 {
   "schema_version": 1,
   "app": "MASTER WORLD VIP",
-  "updated_at": "2026-11-23",
-  "note": "Global Internet rollout checklist is displayed in the app and Update Center. GitHub Pages deployment of the previous UI foundation succeeded; provider, contract/API, terminal, gateway/backhaul, funding and real-world service tests remain pending. No satellite internet service is live.",
+  "updated_at": "2026-11-25",
+  "note": "Start-to-finish audit is linked from Update Center. Current DB Safety Pipeline is blocked at SUPABASE_DB_URL URI preflight; backup, restore and migration preview have not run. No production migration is applied. PWA cache v34 is the current release candidate pending Pages verification.",
   "stages": [
+    {
+      "id": "start-to-finish-audit",
+      "title": "Stage 0.9 — শুরু থেকে শেষ পর্যন্ত যাচাই",
+      "status": "testing",
+      "summary": "সম্পূর্ণ feature inventory, DB safety gate, dependency order, external approvals, two-member tests এবং Android/Play release-এর ধারাবাহিক audit guide যুক্ত হয়েছে।",
+      "requires": "Update Center থেকে Start-to-Finish Audit খুলে প্রতিটি gate ক্রমানুসারে সম্পন্ন করুন। DB URL preflight, encrypted backup, isolated restore, migration dry-run, explicit approval ও acceptance tests ছাড়া dependent feature Live হবে না।",
+      "page": "updates"
+    },
     {
       "id": "global-internet",
       "title": "Stage 0.8 — MW VIP FREE GLOBAL INTERNET",
@@ -75,8 +83,8 @@
       "id": "release-center",
       "title": "Stage 0.4 — Version 3.3.0 Update Center",
       "status": "testing",
-      "summary": "App and Edge Function version-comparison flow, app-supplied current_version validation, PWA waiting-worker prompt and user-approved activation are in the repository. Service worker cache v25 includes verified core branding assets and preserves caches outside the MW VIP namespace.",
-      "requires": "Deploy through GitHub Pages; deploy check-updates; apply 20261119200000_update_releases.sql; test update/no-update paths and offline navigation on Android. Confirm deployment workflow success.",
+      "summary": "App and Edge Function version-comparison flow, PWA waiting-worker prompt and user-approved activation are in the repository. Service worker cache v34 is the current release candidate; Pages verification is required.",
+      "requires": "Deploy through GitHub Pages; deploy check-updates; apply 20261119200000_update_releases.sql only after the production safety gate; test update/no-update paths and offline navigation on Android. Confirm deployment workflow success.",
       "page": "updates"
     },
     {
