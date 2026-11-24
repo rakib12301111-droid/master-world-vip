@@ -55,3 +55,16 @@
 - Referral processor প্রথমে দুই beneficiary-র Pending entitlement তৈরি করবে। পুরো দুই reward-এর সমান cleared funding না থাকলে কোনো wallet credit হবে না। পর্যাপ্ত funding থাকলে দুই credit একই transaction-এ তৈরি হবে।
 - Exactly one verified Owner account না থাকলে processor reward release করবে না। একই referral-এর জন্য একই reward kind একবারই তৈরি হবে; repeat job duplicate credit করবে না।
 - Admin network reward-কে network report ও Owner wallet-এ আলাদাভাবে দেখাতে হবে। এটি Owner-এর মাসিক compensation ledger থেকে পৃথক।
+
+
+## শূন্য-ব্যক্তিগত-খরচ নীতি — ২০২৬-১১-২৪
+
+- Owner-এর ব্যক্তিগত অর্থ থেকে Reward Fund-এ টাকা জমা দেওয়া **বাধ্যতামূলক নয়**; ৳১০,০০০ বা অন্য কোনো minimum seed funding শর্ত নয়।
+- সদস্যদের registration, referral, account use বা reward পাওয়ার যোগ্যতা অর্জনের জন্য কোনো fee, deposit, purchase বা paid package লাগবে না।
+- Owner-এর অনুমোদিত ১০০% network reward এবং সদস্যের ১০০% direct reward-এর নিয়ম অপরিবর্তিত থাকবে; বাংলাদেশে প্রতিটি যোগ্য referral-এর মোট হিসাব সদস্য ৳৫০ + Owner ৳৫০ = ৳১০০।
+- Cash reward কেবল MASTER WORLD VIP-এর প্রকৃত আয়, স্বেচ্ছা sponsor/donor contribution বা অন্য নিশ্চিত ও বৈধ third-party fund থেকে release হবে। কোনো আয়/স্পনসর ফান্ড না থাকলে reward processor cash credit বন্ধ রাখবে; Owner বা সদস্য কাউকেই ব্যক্তিগতভাবে fund করতে বাধ্য করা যাবে না।
+- Confirmed funding না থাকলে UI-তে cash available/withdrawable দেখানো যাবে না এবং কোনো cash payout-এর প্রতিশ্রুতি দেওয়া যাবে না। Pending status কেবল প্রকৃত যোগ্য কিন্তু এখনো unfunded entitlement বোঝাবে।
+- ফ্রি hosting/ফ্রি tier যতটুকু অনুমোদন করে ততটুকু ব্যবহার হবে; paid API, paid merchant account, subscription বা paid infrastructure বাধ্যতামূলক dependency করা যাবে না। কোনো provider-এর free tier সীমা অতিক্রম করলে ফিচারটি fallback/paused হবে, গোপনে খরচ তৈরি করবে না।
+- Owner/Admin-এর বিদ্যমান role, security controls, network reward reporting এবং administrative access অক্ষুণ্ণ থাকবে।
+
+**বাস্তব সীমা:** কোনো software update নিজে থেকে টাকা, ইন্টারনেট ডেটা, SMS/email delivery, bKash/Nagad transfer বা paid provider capacity তৈরি করতে পারে না। স্বয়ংক্রিয় cash payout কেবল অনুমোদিত provider integration ও প্রকৃত payout balance থাকলে সম্ভব।
