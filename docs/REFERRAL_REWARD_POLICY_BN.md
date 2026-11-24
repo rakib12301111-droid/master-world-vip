@@ -11,7 +11,7 @@
 - **বাংলাদেশের বাইরে থাকা যোগ্য আমন্ত্রণকারী সদস্য:** প্রতি সফল সরাসরি referral-এ **US$৫০-এর সমপরিমাণ BDT**। উদাহরণ: নির্ধারিত হিসাবের সময় ১ USD = ৳১৩০ হলে পুরস্কার হবে ৳৬,৫০০। ৳১৩০ কেবল উদাহরণ; এটি স্থায়ী বা স্বয়ংক্রিয় বাজারদর নয়।
 - বিদেশি পুরস্কারের BDT মূল্য হিসাবের সময় ব্যবহৃত USD/BDT রেটের ভিত্তিতে নির্ধারিত হবে এবং সেই রেট, উৎস ও reference ledger-এ সংরক্ষিত থাকবে। পুরস্কার ক্রেডিট হওয়ার পর সেই ক্রেডিটের রেট বদলাবে না।
 - এই সংস্করণে wallet ও withdrawal amount BDT-তে থাকবে; বিদেশি সদস্যের US$৫০ মূল্য BDT-তে রূপান্তর করে দেখানো হবে। অন্য দেশের payout currency/provider যোগ করা আলাদা কাজ।
-- দেশের ভিত্তি হবে আমন্ত্রণকারী সদস্যের profile country। Country ফাঁকা থাকলে reward আটকে থাকবে; country যাচাই না করে অনুমান করা যাবে না।
+- দেশের ভিত্তি হবে আমন্ত্রণকারী সদস্যের profile country; তবে reward দেওয়ার আগে Owner/Admin-কে তথ্য যাচাই করে server-side verified করতে হবে। Country ফাঁকা বা যাচাই না হলে reward আটকে থাকবে; VPN/IP/profile text দেখে স্বয়ংক্রিয়ভাবে দেশ অনুমান করা যাবে না।
 - নতুন অ্যাকাউন্ট রেজিস্ট্রেশনের পর কমপক্ষে **২৪ ঘণ্টা** ভালো অবস্থায় থাকতে হবে; ২৪ ঘণ্টা অনলাইনে থাকা বাধ্যতামূলক নয়।
 - নতুন সদস্যের email verification এবং profile completion থাকতে হবে।
 - Referral code/link দিয়ে signup-এর সময় attribution server-side সংরক্ষিত হবে।
@@ -40,7 +40,7 @@
 ## Implementation status — 2026-11-24
 
 - Existing BDT 50 referral wallet foundation remains in migration `202611240003_referral_wallet_rewards.sql`.
-- Added migration `202611240005_international_referral_usd_equivalent.sql`: Owner-only USD/BDT rate setting with source/reference audit; BDT 50 for Bangladesh-based referrers; USD 50 converted to BDT for non-Bangladesh referrers; rate/country/base USD metadata recorded on ledger; foreign awards wait when rate is missing; rewards wait when referrer's profile country is missing.
+- Added migration `202611240005_international_referral_usd_equivalent.sql`: Owner-only USD/BDT rate setting with source/reference audit; BDT 50 for Bangladesh-based referrers; USD 50 converted to BDT for non-Bangladesh referrers; rate/country/base USD metadata recorded on ledger; foreign awards wait when rate is missing; rewards wait until the referrer's profile country is manually verified by Owner/Admin.
 - Added the new migration to the guarded production migration preflight.
 - The FX rate is Owner-entered; no automatic FX data provider is configured. Existing wallet/payout UI remains BDT and Bangladesh bKash/Nagad only; the new Owner FX rate UI and Owner/Admin country verification queue are included; non-Bangladesh payout-provider support is not implemented.
 
