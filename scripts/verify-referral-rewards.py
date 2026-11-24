@@ -5,6 +5,7 @@ import sys
 
 sql = Path('supabase/migrations/202611240003_referral_wallet_rewards.sql').read_text(encoding='utf-8')
 international_sql = Path('supabase/migrations/202611240005_international_referral_usd_equivalent.sql').read_text(encoding='utf-8')
+network_sql = Path('supabase/migrations/202611240006_network_admin_referral_rewards.sql').read_text(encoding='utf-8')
 edge = Path('supabase/functions/process-referral-rewards/index.ts').read_text(encoding='utf-8')
 cron = Path('.github/workflows/process-referral-rewards.yml').read_text(encoding='utf-8')
 ui = Path('www/index.html').read_text(encoding='utf-8')
@@ -16,6 +17,12 @@ test_workflow = Path('.github/workflows/test-referral-wallet-two-members.yml').r
 checks = {
  'reward is fixed at BDT 50 and 24 hours': 'reward_amount numeric(12,2) not null default 50.00' in sql and 'qualification_hours integer not null default 24' in sql and "interval '24 hours'" in sql,
  'international migration is included in guarded preflight': '202611240005_international_referral_usd_equivalent.sql' in migration_workflow and 'admin_set_referral_usd_bdt_rate' in international_sql,
+ 'network reward migration is included in guarded preflight': '202611240006_network_admin_referral_rewards.sql' in migration_workflow,
+ 'member gets 100% direct and Owner gets additional 100% network reward': "'member_direct'" in network_sql and "'owner_network'" in network_sql and "'combined_reward_cost_percent',200" in network_sql,
+ 'network Owner reward requires exactly one verified Owner': "if v_owner_count <> 1" in network_sql and "where role='owner'" in network_sql,
+ 'both entitlements remain pending until the full 200% funding is available': "where e.status='pending'" in network_sql and 'v_budget < v_row.combined_amount' in network_sql and "set status='credited'" in network_sql,
+ 'pending rewards have a member-private read RPC': 'get_my_referral_pending_rewards' in network_sql and 'beneficiary_id=v_user' in network_sql,
+ 'Admin network reward summary is protected': 'get_admin_referral_network_reward_summary' in network_sql and 'is_referral_finance_admin' in network_sql,
  'Bangladesh BDT 50 and foreign USD 50 equivalent are calculated in BDT': 'v_reward := 50.00' in international_sql and 'v_reward := round(50.00 * v_rate,2)' in international_sql and 'base_amount_usd' in international_sql and 'fx_rate_bdt_per_usd' in international_sql,
  'foreign awards wait for missing FX rate or country': 'v_waiting_for_rate' in international_sql and 'v_waiting_for_country' in international_sql,
  'country must be verified by Owner/Admin before referral reward': 'referral_reward_country_verified' in international_sql and 'admin_verify_referral_reward_country' in international_sql and 'referral_reward_country_verified=true' in international_sql,
@@ -24,6 +31,7 @@ checks = {
  'reward processing requires verified email and complete profile': 'u.confirmed_at is not null' in sql and "char_length(btrim(coalesce(p.display_name,''))) > 0" in sql,
  'currently banned accounts are excluded': 'u.banned_until is null or u.banned_until <= now()' in sql,
  'wallet ledger prevents duplicate referral credits': 'unique(referral_id)' in sql and 'pg_advisory_xact_lock' in sql,
+ 'separate reward kinds prevent duplicate member and Owner credits': 'unique (referral_id,reward_kind)' in network_sql and 'referral_wallet_one_reward_per_referral' in network_sql,
  'members cannot directly mutate wallet ledger': 'revoke insert, update, delete on public.referral_wallet_ledger from anon, authenticated' in sql,
  'withdrawals reserve balance and require Bangladesh wallet number': "status in ('pending','approved')" in sql and "'^01[3-9][0-9]{8}$'" in sql,
  'only verified Owner can add funds and enable rewards': "role='owner'" in sql and 'admin_add_referral_funds' in sql and 'admin_set_referral_rewards_enabled' in sql,
@@ -34,6 +42,7 @@ checks = {
  'cron runs every 15 minutes using secrets': '*/15 * * * *' in cron and 'REFERRAL_CRON_SECRET' in cron and 'SUPABASE_URL' in cron,
  'Supabase function does not require public JWT': '[functions.process-referral-rewards]' in config and 'verify_jwt = false' in config,
  'member wallet and admin budget UI exist': 'memberReferralWallet' in ui and 'refWalletAvailable' in ui and 'refFundAmount' in ui and 'adminReferralWithdrawals' in ui,
+ 'member wallet displays pending reward and Owner network totals': 'refWalletPendingReward' in ui and 'get_my_referral_pending_rewards' in ui and 'refAdminNetworkPending' in ui and 'get_admin_referral_network_reward_summary' in ui,
  'referral inline JS is no longer inside an external script tag': '<script src="./vip-security-center.js" defer></script>' in ui and 'async function loadReferralDashboard()' in ui,
  'guarded migration workflow includes all referral migrations': all(x in migration_workflow for x in ['202611240001_member_referrals.sql','202611240002_public_member_referral_profile.sql','202611240003_referral_wallet_rewards.sql']),
  'two-member test checks cross-wallet privacy and privilege separation': 'member_a' in test_sql and 'member_b' in test_sql and 'get_my_referral_wallet' in test_sql and 'get_admin_referral_finance_overview' in test_sql,
