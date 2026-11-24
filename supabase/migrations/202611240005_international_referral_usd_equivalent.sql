@@ -56,6 +56,40 @@ $;
 revoke all on function public.admin_verify_referral_reward_country(uuid,boolean,text) from public,anon;
 grant execute on function public.admin_verify_referral_reward_country(uuid,boolean,text) to authenticated;
 
+create or replace function public.get_admin_referral_country_review_queue()
+returns jsonb
+language plpgsql
+stable
+security definer
+set search_path = ''
+as $
+begin
+  if not public.is_referral_finance_admin() then
+    raise exception 'Owner/Admin permission required';
+  end if;
+  return coalesce((
+    select jsonb_agg(jsonb_build_object(
+      'user_id',p.id,
+      'display_name',coalesce(p.display_name,'Member'),
+      'country',p.country,
+      'pending_referrals',q.pending_referrals,
+      'verified',p.referral_reward_country_verified
+    ) order by q.pending_referrals desc,p.display_name)
+    from public.profiles p
+    join (
+      select referrer_id,count(*) as pending_referrals
+      from public.referrals
+      where status in ('registered','qualified')
+      group by referrer_id
+    ) q on q.referrer_id=p.id
+    where p.country is not null and char_length(btrim(p.country)) > 0
+      and p.referral_reward_country_verified=false
+  ),'[]'::jsonb);
+end;
+$;
+revoke all on function public.get_admin_referral_country_review_queue() from public,anon;
+grant execute on function public.get_admin_referral_country_review_queue() to authenticated;
+
 alter table public.referral_wallet_ledger
   add column if not exists reward_country text,
   add column if not exists base_amount_usd numeric(12,2),
