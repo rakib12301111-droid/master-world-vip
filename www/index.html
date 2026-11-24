@@ -445,11 +445,51 @@
 <div class="field"><label for="myReferralLink">আপনার Referral Link</label><input id="myReferralLink" readonly placeholder="লগইন করলে লিংক তৈরি হবে"></div>
 <div class="actions"><button class="btn" id="copyReferralLink" type="button">লিংক কপি করুন</button><button class="btn secondary" id="shareReferralLink" type="button">Share</button><button class="btn secondary" id="refreshReferral" type="button">Refresh</button></div>
 <div id="myReferralStatus" class="notice">Referral Link দেখতে লগইন করুন।</div>
+<article class="card section" id="memberReferralWallet">
+ <h2>💰 Referral Wallet</h2>
+ <p class="muted">শুধু যাচাইকৃত Referral-এর প্রকৃত পুরস্কার এখানে দেখাবে। Pending অনুরোধ Available Balance থেকে সাময়িকভাবে সংরক্ষিত থাকবে।</p>
+ <div class="grid">
+  <div class="feature"><strong>মোট অর্জিত</strong><div class="stat" id="refWalletEarned">৳০</div></div>
+  <div class="feature"><strong>উত্তোলনযোগ্য</strong><div class="stat" id="refWalletAvailable">৳০</div></div>
+  <div class="feature"><strong>Pending Withdrawal</strong><div class="stat" id="refWalletPending">৳০</div></div>
+ </div>
+ <div class="section">
+  <h3>Withdrawal Request</h3>
+  <p class="small muted">সর্বনিম্ন ৳৫০। bKash/Nagad নম্বর দিন। এখন আবেদন Admin-এর মাধ্যমে ম্যানুয়ালি যাচাই ও পরিশোধ হবে; স্বয়ংক্রিয় পেমেন্ট API এখনো যুক্ত নয়।</p>
+  <div class="grid">
+   <div class="field"><label for="refWithdrawAmount">পরিমাণ (BDT)</label><input id="refWithdrawAmount" type="number" min="50" step="0.01" placeholder="50"></div>
+   <div class="field"><label for="refWithdrawMethod">পেমেন্ট মাধ্যম</label><select id="refWithdrawMethod"><option value="bkash">bKash</option><option value="nagad">Nagad</option></select></div>
+   <div class="field"><label for="refWithdrawAccount">bKash/Nagad নম্বর</label><input id="refWithdrawAccount" inputmode="numeric" maxlength="11" placeholder="01XXXXXXXXX"></div>
+  </div>
+  <div class="actions"><button class="btn" id="submitReferralWithdrawal" type="button">উত্তোলনের আবেদন</button><button class="btn secondary" id="refreshReferralWallet" type="button">Wallet Refresh</button></div>
+  <div class="notice" id="refWithdrawStatus">যোগ্য ব্যালেন্স না থাকলে আবেদন করা যাবে না।</div>
+ </div>
+ <div class="section"><h3>Withdrawal History</h3><div id="refWalletHistory" class="feature-list">লগইন করলে ইতিহাস দেখা যাবে।</div></div>
+</article>
 <div class="grid section"><div class="feature"><strong>মোট রেফারেল</strong><div class="stat" id="myReferralTotal">—</div></div><div class="feature"><strong>নতুন নিবন্ধন</strong><div class="stat" id="myReferralRegistered">—</div></div><div class="feature"><strong>যোগ্য রেফারেল</strong><div class="stat" id="myReferralQualified">—</div></div><div class="feature"><strong>পুরস্কারপ্রাপ্ত</strong><div class="stat" id="myReferralRewarded">—</div></div></div></article>
 <article class="card" id="adminReferralPanel" hidden><h2>👑 Owner / Admin — সব Referral</h2><p class="muted">শুধু অনুমোদিত Admin account এই সামগ্রিক পরিসংখ্যান দেখতে পারবে।</p>
 <div class="grid"><div class="feature"><strong>মোট রেফারেল</strong><div class="stat" id="adminReferralTotal">—</div></div><div class="feature"><strong>নতুন নিবন্ধন</strong><div class="stat" id="adminReferralRegistered">—</div></div><div class="feature"><strong>যোগ্য</strong><div class="stat" id="adminReferralQualified">—</div></div><div class="feature"><strong>পুরস্কারপ্রাপ্ত</strong><div class="stat" id="adminReferralRewarded">—</div></div></div>
-<div id="adminReferralMembers" class="feature-list section">Admin access যাচাই হচ্ছে…</div><div id="adminReferralStatus" class="notice">Admin report লোড হচ্ছে…</div></article>
-<article class="card"><h2>Global Growth</h2><div class="feature-list"><div class="feature"><strong>Multilingual website</strong><div class="status">BN/EN foundation</div></div><div class="feature"><strong>Google Play release</strong><div class="status">Build, policy review & approval required</div></div><div class="feature"><strong>Transparent referral rewards</strong><div class="status">পুরস্কারের নিয়ম ও server-side qualification এখনো নির্ধারণ/পরীক্ষা বাকি</div></div></div><div class="notice">রেফারেল গণনা নতুন অ্যাকাউন্ট তৈরির সময় সার্ভার থেকে হবে। নিজে নিজের লিংকে নিবন্ধন গণনা হবে না। কোনো নগদ পুরস্কার এখনো প্রতিশ্রুত নয়।</div></article></section>
+<div id="adminReferralMembers" class="feature-list section">Admin access যাচাই হচ্ছে…</div><div id="adminReferralStatus" class="notice">Admin report লোড হচ্ছে…</div>
+<div class="section" id="adminReferralFinance">
+ <h3>💳 Reward Budget & Payout Management</h3>
+ <p class="small muted">শুধু প্রকৃতপক্ষে বরাদ্দ ও নিশ্চিত করা টাকা Reward Budget-এ যোগ করুন। Funding reference audit log-এ থাকবে।</p>
+ <div class="grid">
+  <div class="feature"><strong>মোট Funded</strong><div class="stat" id="refAdminFunded">৳০</div></div>
+  <div class="feature"><strong>Reward Credited</strong><div class="stat" id="refAdminCredited">৳০</div></div>
+  <div class="feature"><strong>অবশিষ্ট Budget</strong><div class="stat" id="refAdminBudget">৳০</div></div>
+  <div class="feature"><strong>Pending Withdrawal</strong><div class="stat" id="refAdminPending">০</div></div>
+ </div>
+ <div class="field"><label for="refFundAmount">নতুন নিশ্চিত Funding (BDT)</label><input id="refFundAmount" type="number" min="50" step="0.01" placeholder="কমপক্ষে 50"></div>
+ <div class="grid">
+  <div class="field"><label for="refFundSource">Funding Source</label><input id="refFundSource" maxlength="80" placeholder="যেমন: Owner marketing fund"></div>
+  <div class="field"><label for="refFundReference">Payment / Ledger Reference</label><input id="refFundReference" maxlength="120" placeholder="ব্যাংক/লেনদেনের রেফারেন্স"></div>
+ </div>
+ <div class="actions"><button class="btn" id="addReferralFunds" type="button">নিশ্চিত Fund যোগ করুন</button><button class="btn secondary" id="toggleReferralRewards" type="button">Reward চালু / বন্ধ</button><button class="btn secondary" id="refreshReferralFinance" type="button">Finance Refresh</button></div>
+ <div class="notice" id="refAdminFinanceStatus">Owner permission ও migration যাচাই হচ্ছে…</div>
+ <h3 class="section">Withdrawal Requests</h3>
+ <div id="adminReferralWithdrawals" class="feature-list">অনুরোধ লোড হচ্ছে…</div>
+</div></article>
+<article class="card"><h2>Global Growth</h2><div class="feature-list"><div class="feature"><strong>Multilingual website</strong><div class="status">BN/EN foundation</div></div><div class="feature"><strong>Google Play release</strong><div class="status">Build, policy review & approval required</div></div><div class="feature"><strong>Transparent referral rewards</strong><div class="status">৳৫০/যোগ্য Referral, ২৪ ঘণ্টা, no-deposit policy; server workflow ও funding setup pending</div></div></div><div class="notice">রেফারেল গণনা নতুন অ্যাকাউন্ট তৈরির সময় সার্ভার থেকে হবে। নিজে নিজের লিংকে নিবন্ধন গণনা হবে না। কোনো নগদ পুরস্কার এখনো প্রতিশ্রুত নয়।</div></article></section>
 
 <section class="page" id="admin"><article class="card"><h2>⚙ Admin & Security Center</h2>
 <p class="muted">Owner-controlled administration · Server-side role verification</p>
@@ -2478,33 +2518,116 @@ $('submitWorkApplication')?.addEventListener('click',async()=>{
 window.mwvipGetClient=()=>client;
 window.mwvipGetUser=()=>currentUser;
 </script>
-<script src="./vip-security-center.js" defer>
+<script src="./vip-security-center.js" defer></script>\n<script>
 // MW VIP Global Internet: honest connectivity diagnostics; no simulated satellite access.
 $('mwProviderConnect')?.addEventListener('click',()=>{const n=$('mwInternetNotice');if(n)n.textContent='সংযোগ স্থাপন করা যায়নি: কোনো অনুমোদিত স্যাটেলাইট/নেটওয়ার্ক প্রোভাইডার API বা হার্ডওয়্যার এখনো কনফিগার করা হয়নি।';});
 $('mwCheckInternet')?.addEventListener('click',async()=>{const state=$('mwNetState'),detail=$('mwNetDetail'),notice=$('mwInternetNotice'),btn=$('mwCheckInternet');btn.disabled=true;if(state)state.textContent='পরীক্ষা চলছে…';try{if(!navigator.onLine)throw new Error('এই ডিভাইসে নেটওয়ার্ক সংযোগ নেই।');const response=await fetch('./manifest.webmanifest?mwvip_health='+Date.now(),{cache:'no-store'});if(!response.ok)throw new Error('অ্যাপ সার্ভার পরীক্ষা ব্যর্থ হয়েছে।');if(state)state.textContent='APP ONLINE';if(detail)detail.textContent='অ্যাপ সার্ভারের সঙ্গে সংযোগ পাওয়া গেছে; এটি স্যাটেলাইট সংযোগের প্রমাণ নয়।';if(notice)notice.textContent='বর্তমান ডিভাইসে ইন্টারনেট পাওয়া যাচ্ছে। এটি বিদ্যমান Wi-Fi/মোবাইল নেটওয়ার্ক হতে পারে; MW VIP স্যাটেলাইট সেবা এখনো সক্রিয় নয়।';}catch(e){if(state)state.textContent='OFFLINE';if(detail)detail.textContent=e.message;if(notice)notice.textContent='লাইভ সংযোগ পাওয়া যায়নি: '+e.message;}finally{btn.disabled=false;}});
 
+function moneyBDT(v){return '৳'+Number(v||0).toLocaleString('en-BD',{minimumFractionDigits:2,maximumFractionDigits:2});}
+function safeNode(tag,cls,txt){const n=document.createElement(tag);if(cls)n.className=cls;if(txt!==undefined)n.textContent=String(txt);return n;}
+async function loadReferralWallet(){
+ const status=$('refWithdrawStatus');
+ if(!client||!currentUser)return;
+ try{
+  const {data,error}=await client.rpc('get_my_referral_wallet');if(error)throw error;
+  $('refWalletEarned').textContent=moneyBDT(data.earned_total);
+  $('refWalletAvailable').textContent=moneyBDT(data.available_balance);
+  $('refWalletPending').textContent=moneyBDT(data.pending_withdrawal);
+  const host=$('refWalletHistory');host.replaceChildren();
+  const rows=data.withdrawals||[];
+  if(!rows.length)host.append(safeNode('div','muted small','এখনো কোনো Withdrawal আবেদন নেই।'));
+  rows.forEach(w=>{const item=safeNode('div','feature');item.append(safeNode('strong','',moneyBDT(w.amount)+' · '+String(w.method||'').toUpperCase()));item.append(safeNode('div','status','অবস্থা: '+w.status+' · '+new Date(w.requested_at).toLocaleString('bn-BD')));if(w.admin_note)item.append(safeNode('div','small muted','Admin note: '+w.admin_note));if(w.payment_reference)item.append(safeNode('div','small muted','Payment ref: '+w.payment_reference));host.append(item);});
+  if(status)status.textContent='Wallet সফলভাবে আপডেট হয়েছে।';
+ }catch(e){if(status)status.textContent='Wallet লোড হয়নি: '+(e.message||String(e))+'। Referral Wallet migration apply হয়েছে কি না দেখুন।';}
+}
+async function loadAdminReferralFinance(){
+ if(!client||!currentUser)return;
+ const status=$('refAdminFinanceStatus');
+ try{
+  const [{data:finance,error:financeError},{data:requests,error:requestError}]=await Promise.all([
+   client.rpc('get_admin_referral_finance_overview'),client.rpc('get_admin_referral_withdrawals')
+  ]);
+  if(financeError)throw financeError;if(requestError)throw requestError;
+  $('refAdminFunded').textContent=moneyBDT(finance.funded_total);
+  $('refAdminCredited').textContent=moneyBDT(finance.credited_total);
+  $('refAdminBudget').textContent=moneyBDT(finance.remaining_budget);
+  $('refAdminPending').textContent=String(finance.pending_withdrawals||0);
+  $('toggleReferralRewards').textContent=finance.rewards_enabled?'Reward বন্ধ করুন':'Reward চালু করুন';
+  $('toggleReferralRewards').dataset.enabled=finance.rewards_enabled?'true':'false';
+  const host=$('adminReferralWithdrawals');host.replaceChildren();
+  if(!(requests||[]).length)host.append(safeNode('div','muted small','কোনো Pending/Approved আবেদন নেই।'));
+  (requests||[]).forEach(w=>{
+   const item=safeNode('div','feature');
+   item.append(safeNode('strong','',moneyBDT(w.amount)+' · '+String(w.method||'').toUpperCase()));
+   item.append(safeNode('div','status','সদস্য: '+(w.display_name||'Member')+' · '+w.account+' · '+w.status));
+   item.append(safeNode('div','small muted','Request: '+new Date(w.requested_at).toLocaleString('bn-BD')));
+   const note=document.createElement('input');note.placeholder='Admin note (ঐচ্ছিক)';note.maxLength=500;note.setAttribute('aria-label','Admin note');
+   const payref=document.createElement('input');payref.placeholder='বাস্তব transfer reference (Paid করার সময় আবশ্যক)';payref.maxLength=120;payref.setAttribute('aria-label','Actual transfer reference');
+   item.append(note,payref);
+   const actions=safeNode('div','actions');
+   const actionButton=(label,action,kind='secondary')=>{const b=safeNode('button','btn '+kind,label);b.type='button';b.addEventListener('click',async()=>{
+    b.disabled=true;
+    try{const {error}=await client.rpc('admin_review_referral_withdrawal',{p_withdrawal_id:w.id,p_action:action,p_note:note.value,p_payment_reference:payref.value});if(error)throw error;
+     if(status)status.textContent=action==='paid'?'Paid হিসেবে নথিভুক্ত হয়েছে; transfer reference সংরক্ষিত।':'Withdrawal request আপডেট হয়েছে।';
+     await loadReferralWallet();await loadAdminReferralFinance();
+    }catch(e){if(status)status.textContent='Action ব্যর্থ: '+(e.message||String(e));b.disabled=false;}
+   });return b;};
+   if(w.status==='pending'){actions.append(actionButton('Approve','approve',''),actionButton('Reject','reject','secondary'));}
+   if(w.status==='approved')actions.append(actionButton('Mark Paid','paid',''));
+   item.append(actions);host.append(item);
+  });
+  if(status)status.textContent='Admin Finance data সার্ভার থেকে এসেছে। Fund যোগ ও Reward চালু করার জন্য verified Owner permission প্রয়োজন।';
+ }catch(e){if(status)status.textContent='Admin Finance লোড হয়নি: '+(e.message||String(e));}
+}
 async function loadReferralDashboard(){
  const status=$('myReferralStatus'),linkInput=$('myReferralLink');
  if(!client||!currentUser){if(status)status.textContent='Referral Link ও হিসাব দেখতে আগে লগইন করুন।';if(linkInput)linkInput.value='';return;}
- if(status)status.textContent='আপনার Referral Link তৈরি ও হিসাব লোড হচ্ছে…';
+ if(status)status.textContent='আপনার Referral Link ও হিসাব লোড হচ্ছে…';
  try{
   const {data:code,error}=await client.rpc('get_my_referral_code');if(error)throw error;
   const link=new URL(location.pathname,location.origin);link.searchParams.set('ref',code);if(linkInput)linkInput.value=link.toString();
   const {data:stats,error:statsError}=await client.rpc('get_my_referral_stats');if(statsError)throw statsError;
   $('myReferralTotal').textContent=stats?.total??0;$('myReferralRegistered').textContent=stats?.registered??0;$('myReferralQualified').textContent=stats?.qualified??0;$('myReferralRewarded').textContent=stats?.rewarded??0;
-  if(status)status.textContent='আপনার ব্যক্তিগত Referral Link প্রস্তুত। নতুন সদস্য নিবন্ধন করলে হিসাব এখানে দেখা যাবে।';
+  if(status)status.textContent='আপনার ব্যক্তিগত Referral Link প্রস্তুত। যোগ্য হলে ৳৫০ Wallet-এ যোগ হবে।';
  }catch(error){if(status)status.textContent='Referral system এখনো প্রস্তুত নয়: '+(error?.message||String(error))+'। প্রয়োজনীয় migration apply হয়েছে কি না দেখুন।';}
+ await loadReferralWallet();
  try{
   const {data:overview,error}=await client.rpc('get_admin_referral_overview');if(error)throw error;
   $('adminReferralPanel').hidden=false;$('adminReferralTotal').textContent=overview?.total??0;$('adminReferralRegistered').textContent=overview?.registered??0;$('adminReferralQualified').textContent=overview?.qualified??0;$('adminReferralRewarded').textContent=overview?.rewarded??0;
   const host=$('adminReferralMembers');host.replaceChildren();
-  (overview?.members||[]).forEach(member=>{const item=document.createElement('div');item.className='feature';const name=document.createElement('strong');name.textContent=member.display_name||'Member';const count=document.createElement('div');count.className='status';count.textContent='রেফারেল: '+(member.referral_count||0);item.append(name,count);host.appendChild(item);});
+  (overview?.members||[]).forEach(member=>{const item=safeNode('div','feature');item.append(safeNode('strong','',member.display_name||'Member'),safeNode('div','status','রেফারেল: '+(member.referral_count||0)));host.append(item);});
   $('adminReferralStatus').textContent='Admin report সার্ভার থেকে লোড হয়েছে।';
+  await loadAdminReferralFinance();
  }catch(_error){$('adminReferralPanel').hidden=true;}
 }
-$('copyReferralLink')?.addEventListener('click',async()=>{const value=$('myReferralLink')?.value||'';if(!value){$('myReferralStatus').textContent='আগে লগইন করে Referral Link তৈরি করুন।';return;}try{await navigator.clipboard.writeText(value);$('myReferralStatus').textContent='Referral Link কপি হয়েছে।';}catch(_e){$('myReferralLink').focus();$('myReferralLink').select();$('myReferralStatus').textContent='লিংকটি নির্বাচন করা হয়েছে; Copy চাপুন।';}});
-$('shareReferralLink')?.addEventListener('click',async()=>{const value=$('myReferralLink')?.value||'';if(!value){$('myReferralStatus').textContent='আগে লগইন করে Referral Link তৈরি করুন।';return;}const shareData={title:'Join MASTER WORLD VIP',text:'আমার Referral Link দিয়ে MASTER WORLD VIP-এ যোগ দিন:',url:value};if(navigator.share){try{await navigator.share(shareData);}catch(_e){}}else{try{await navigator.clipboard.writeText(value);$('myReferralStatus').textContent='এই ডিভাইসে Share নেই; লিংক কপি হয়েছে।';}catch(_e){$('myReferralStatus').textContent='লিংক কপি করা যায়নি; লিংকটি হাতে কপি করুন।';}}});
-$('refreshReferral')?.addEventListener('click',loadReferralDashboard);
+$('submitReferralWithdrawal')?.addEventListener('click',async()=>{
+ const status=$('refWithdrawStatus');if(!client||!currentUser){status.textContent='আবেদন করতে আগে লগইন করুন।';return;}
+ const amount=Number($('refWithdrawAmount').value),method=$('refWithdrawMethod').value,account=$('refWithdrawAccount').value.trim();
+ const button=$('submitReferralWithdrawal');button.disabled=true;
+ try{const {data,error}=await client.rpc('request_referral_withdrawal',{p_amount:amount,p_method:method,p_account:account,p_note:null});if(error)throw error;
+  status.textContent='Withdrawal আবেদন জমা হয়েছে। Request ID: '+data+' · Admin যাচাইয়ের অপেক্ষায়।';$('refWithdrawAmount').value='';await loadReferralWallet();
+ }catch(e){status.textContent='আবেদন জমা হয়নি: '+(e.message||String(e));}
+ finally{button.disabled=false;}
+});
+$('refreshReferralWallet')?.addEventListener('click',loadReferralWallet);
+$('addReferralFunds')?.addEventListener('click',async()=>{
+ const status=$('refAdminFinanceStatus');if(!client||!currentUser){status.textContent='আগে Owner account দিয়ে লগইন করুন।';return;}
+ const amount=Number($('refFundAmount').value),source=$('refFundSource').value.trim(),reference=$('refFundReference').value.trim();
+ const button=$('addReferralFunds');button.disabled=true;
+ try{const {data,error}=await client.rpc('admin_add_referral_funds',{p_amount:amount,p_source:source,p_reference:reference});if(error)throw error;
+  status.textContent='নিশ্চিত Funding record যোগ হয়েছে। অবশিষ্ট Reward Budget: '+moneyBDT(data.remaining_budget);$('refFundAmount').value='';$('refFundReference').value='';await loadAdminReferralFinance();
+ }catch(e){status.textContent='Funding যোগ হয়নি: '+(e.message||String(e));}
+ finally{button.disabled=false;}
+});
+$('toggleReferralRewards')?.addEventListener('click',async()=>{
+ const status=$('refAdminFinanceStatus'),button=$('toggleReferralRewards');button.disabled=true;
+ try{const enabled=button.dataset.enabled!=='true';const {error}=await client.rpc('admin_set_referral_rewards_enabled',{p_enabled:enabled});if(error)throw error;
+  status.textContent=enabled?'Referral Reward চালু হয়েছে।':'Referral Reward বন্ধ করা হয়েছে।';await loadAdminReferralFinance();
+ }catch(e){status.textContent='Reward status বদলানো যায়নি: '+(e.message||String(e));}
+ finally{button.disabled=false;}
+});
+$('refreshReferralFinance')?.addEventListener('click',loadAdminReferralFinance);
+
 
 </script>
 </body></html>
