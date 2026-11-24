@@ -493,6 +493,9 @@
  </div>
  <div class="feature"><strong>বর্তমান সংরক্ষিত USD/BDT Rate</strong><div class="stat" id="refUsdBdtCurrent">সেট করা হয়নি</div><div class="small muted" id="refUsdBdtDetails">Rate source ও reference এখনো নেই।</div></div>
  <div class="actions"><button class="btn secondary" id="saveReferralFxRate" type="button">USD/BDT Rate সংরক্ষণ</button></div>
+ <h3 class="section">Referral Country Verification</h3>
+ <p class="small muted">দেশের তথ্য যাচাই না হওয়া পর্যন্ত সেই সদস্যের referral reward আটকে থাকবে। Admin/Owner প্রমাণ দেখে যাচাই করবেন।</p>
+ <div id="referralCountryReviewQueue" class="feature-list">Country review queue লোড হচ্ছে…</div>
  <div class="actions"><button class="btn" id="addReferralFunds" type="button">নিশ্চিত Fund যোগ করুন</button><button class="btn secondary" id="toggleReferralRewards" type="button">Reward চালু / বন্ধ</button><button class="btn secondary" id="refreshReferralFinance" type="button">Finance Refresh</button></div>
  <div class="notice" id="refAdminFinanceStatus">Owner permission ও migration যাচাই হচ্ছে…</div>
  <h3 class="section">Withdrawal Requests</h3>
@@ -2680,12 +2683,33 @@ async function loadAdminReferralFinance(){
  if(!client||!currentUser)return;
  const status=$('refAdminFinanceStatus');
  try{
-  const [{data:finance,error:financeError},{data:requests,error:requestError},{data:fx,error:fxError}]=await Promise.all([
-   client.rpc('get_admin_referral_finance_overview'),client.rpc('get_admin_referral_withdrawals'),client.rpc('get_admin_referral_fx_rate')
+  const [{data:finance,error:financeError},{data:requests,error:requestError},{data:fx,error:fxError},{data:countryQueue,error:countryError}]=await Promise.all([
+   client.rpc('get_admin_referral_finance_overview'),client.rpc('get_admin_referral_withdrawals'),client.rpc('get_admin_referral_fx_rate'),client.rpc('get_admin_referral_country_review_queue')
   ]);
-  if(financeError)throw financeError;if(requestError)throw requestError;if(fxError)throw fxError;
+  if(financeError)throw financeError;if(requestError)throw requestError;if(fxError)throw fxError;if(countryError)throw countryError;
   $('refUsdBdtCurrent').textContent=fx.bdt_per_usd?('১ USD = '+Number(fx.bdt_per_usd).toLocaleString('en-US')+' BDT'):'সেট করা হয়নি';
   $('refUsdBdtDetails').textContent=fx.bdt_per_usd?('Source: '+(fx.rate_source||'—')+' · Reference: '+(fx.rate_reference||'—')+' · Updated: '+(fx.updated_at?new Date(fx.updated_at).toLocaleString('bn-BD'):'—')):'বিদেশি reward rate না বসানো পর্যন্ত আটকে থাকবে।';
+  const countryHost=$('referralCountryReviewQueue');countryHost.replaceChildren();
+  if(!(countryQueue||[]).length)countryHost.append(safeNode('div','muted small','এখন কোনো country verification অপেক্ষমাণ নেই।'));
+  (countryQueue||[]).forEach(member=>{
+   const item=safeNode('div','feature');
+   item.append(safeNode('strong','',member.display_name||'Member'));
+   item.append(safeNode('div','status','Profile country: '+member.country+' · Pending referrals: '+member.pending_referrals));
+   const actions=safeNode('div','actions');
+   const approve=safeNode('button','btn','দেশ যাচাই অনুমোদন');approve.type='button';
+   approve.addEventListener('click',async()=>{
+    approve.disabled=true;
+    try{const {error}=await client.rpc('admin_verify_referral_reward_country',{p_member_id:member.user_id,p_verified:true,p_note:'Country evidence reviewed by Admin'});if(error)throw error;status.textContent='Country verification সংরক্ষিত হয়েছে।';await loadAdminReferralFinance();}
+    catch(e){status.textContent='Country verify ব্যর্থ: '+(e.message||String(e));approve.disabled=false;}
+   });
+   const reject=safeNode('button','btn secondary','যাচাই বাতিল');reject.type='button';
+   reject.addEventListener('click',async()=>{
+    reject.disabled=true;
+    try{const {error}=await client.rpc('admin_verify_referral_reward_country',{p_member_id:member.user_id,p_verified:false,p_note:'Country verification denied'});if(error)throw error;status.textContent='Country verification বাতিল করা হয়েছে।';await loadAdminReferralFinance();}
+    catch(e){status.textContent='Action ব্যর্থ: '+(e.message||String(e));reject.disabled=false;}
+   });
+   actions.append(approve,reject);item.append(actions);countryHost.append(item);
+  });
   $('refAdminFunded').textContent=moneyBDT(finance.funded_total);
   $('refAdminCredited').textContent=moneyBDT(finance.credited_total);
   $('refAdminBudget').textContent=moneyBDT(finance.remaining_budget);
