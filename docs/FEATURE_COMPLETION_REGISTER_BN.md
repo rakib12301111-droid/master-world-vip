@@ -129,3 +129,13 @@ This register tracks the existing repository. A feature is **not live** merely b
 - Added a direct referral join URL so visitors can open MASTER WORLD VIP and register with the referring member's code.
 - New migration: `202611240002_public_member_referral_profile.sql` (depends on the base profiles and referral-code migrations, including `202611240001_member_referrals.sql`).
 - Pending: apply migrations in the approved order after backup/dry-run/explicit authorization; verify anonymous public-profile access, privacy toggle behavior, referral attribution, and two-account registration. GitHub commits do not by themselves deploy or activate the feature.
+
+
+## Update 10 — 2026-11-24: Admin/Owner compensation and revenue-share requirement
+
+- Recorded the Owner/Admin compensation request as a separate business-policy item; it is distinct from the approved ৳৫০ direct-referral reward.
+- Being an Admin, or a member using the site for one month, does **not** automatically create a commission entitlement unless the platform's published terms, an approved Owner agreement and the implemented billing/revenue ledger explicitly provide it.
+- Proposed accounting basis for future approval: calculate any Owner share only from actually collected, settled platform revenue; exclude free usage, unpaid invoices, refunds, chargebacks, taxes and payment-provider fees; show the calculation period, source transaction, rate, adjustments and payout status in an auditable Owner ledger.
+- Do not invent or activate a commission percentage, monthly fee, member charge or payout schedule. These remain **Owner decision pending** and require confirmation of the intended revenue model and rate, plus applicable legal/tax/payment-provider review.
+- The ৳৫০ referral reward remains a separate, pre-funded marketing reward with its existing eligibility rules; it must not be counted as Owner commission or funded from member deposits.
+- **Status: requirement documented only — no commission has been configured, accrued or paid.** No new paid subscription or fee is being introduced by this documentation update.
