@@ -2668,10 +2668,11 @@ async function loadReferralWallet(){
  const status=$('refWithdrawStatus');
  if(!client||!currentUser)return;
  try{
-  const {data,error}=await client.rpc('get_my_referral_wallet');if(error)throw error;
+  const [{data,error},{data:pending,error:pendingError}]=await Promise.all([client.rpc('get_my_referral_wallet'),client.rpc('get_my_referral_pending_rewards')]);if(error)throw error;if(pendingError)throw pendingError;
   $('refWalletEarned').textContent=moneyBDT(data.earned_total);
   $('refWalletAvailable').textContent=moneyBDT(data.available_balance);
   $('refWalletPending').textContent=moneyBDT(data.pending_withdrawal);
+  $('refWalletPendingReward').textContent=moneyBDT(pending?.pending_total);
   const host=$('refWalletHistory');host.replaceChildren();
   const rows=data.withdrawals||[];
   if(!rows.length)host.append(safeNode('div','muted small','এখনো কোনো Withdrawal আবেদন নেই।'));
@@ -2683,10 +2684,10 @@ async function loadAdminReferralFinance(){
  if(!client||!currentUser)return;
  const status=$('refAdminFinanceStatus');
  try{
-  const [{data:finance,error:financeError},{data:requests,error:requestError},{data:fx,error:fxError},{data:countryQueue,error:countryError}]=await Promise.all([
-   client.rpc('get_admin_referral_finance_overview'),client.rpc('get_admin_referral_withdrawals'),client.rpc('get_admin_referral_fx_rate'),client.rpc('get_admin_referral_country_review_queue')
+  const [{data:finance,error:financeError},{data:requests,error:requestError},{data:fx,error:fxError},{data:countryQueue,error:countryError},{data:network,error:networkError}]=await Promise.all([
+   client.rpc('get_admin_referral_finance_overview'),client.rpc('get_admin_referral_withdrawals'),client.rpc('get_admin_referral_fx_rate'),client.rpc('get_admin_referral_country_review_queue'),client.rpc('get_admin_referral_network_reward_summary')
   ]);
-  if(financeError)throw financeError;if(requestError)throw requestError;if(fxError)throw fxError;if(countryError)throw countryError;
+  if(financeError)throw financeError;if(requestError)throw requestError;if(fxError)throw fxError;if(countryError)throw countryError;if(networkError)throw networkError;
   $('refUsdBdtCurrent').textContent=fx.bdt_per_usd?('১ USD = '+Number(fx.bdt_per_usd).toLocaleString('en-US')+' BDT'):'সেট করা হয়নি';
   $('refUsdBdtDetails').textContent=fx.bdt_per_usd?('Source: '+(fx.rate_source||'—')+' · Reference: '+(fx.rate_reference||'—')+' · Updated: '+(fx.updated_at?new Date(fx.updated_at).toLocaleString('bn-BD'):'—')):'বিদেশি reward rate না বসানো পর্যন্ত আটকে থাকবে।';
   const countryHost=$('referralCountryReviewQueue');countryHost.replaceChildren();
@@ -2714,6 +2715,8 @@ async function loadAdminReferralFinance(){
   $('refAdminCredited').textContent=moneyBDT(finance.credited_total);
   $('refAdminBudget').textContent=moneyBDT(finance.remaining_budget);
   $('refAdminPending').textContent=String(finance.pending_withdrawals||0);
+  $('refAdminNetworkPending').textContent=moneyBDT(network?.owner_network_pending);
+  $('refAdminNetworkCredited').textContent=moneyBDT(network?.owner_network_credited);
   $('toggleReferralRewards').textContent=finance.rewards_enabled?'Reward বন্ধ করুন':'Reward চালু করুন';
   $('toggleReferralRewards').dataset.enabled=finance.rewards_enabled?'true':'false';
   const host=$('adminReferralWithdrawals');host.replaceChildren();
