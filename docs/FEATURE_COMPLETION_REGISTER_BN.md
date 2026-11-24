@@ -1,6 +1,6 @@
 # MASTER WORLD VIP — Feature Completion Register
 
-Last reviewed: 2026-11-23
+Last reviewed: 2026-11-24
 
 This register tracks the existing repository. A feature is **not live** merely because its UI, SQL migration, or Edge Function exists. Mark a feature live only after its migration/function is deployed and its acceptance tests pass in the target project.
 
@@ -48,6 +48,17 @@ This register tracks the existing repository. A feature is **not live** merely b
 - The previous UI foundation's GitHub Pages deployment workflow completed successfully. The new checklist changes still require their own deployment and browser verification.
 - **Status: UI foundation deployed; checklist update pending deployment. Satellite provider/API/contract, terminal, gateway, funded data capacity and actual satellite internet remain NOT connected and NOT live.** The diagnostic cannot create internet access and cannot test connectivity with no network.
 
+## Update 7 progress — 2026-11-24: Referral Wallet & Reward implementation foundation
+
+- Added `202611240003_referral_wallet_rewards.sql`: fixed BDT 50 reward, 24-hour account-age qualification, email-confirmed/profile-complete/currently-not-banned eligibility, unique reward per referral, append-only wallet ledger, funding records, member withdrawal requests and Owner/Admin review RPCs.
+- Reward processor is server-only. A service-role-only database RPC is called by `process-referral-rewards` Edge Function; a 15-minute GitHub Actions schedule invokes it with a protected cron secret. Rewards default to paused and cannot be enabled until at least ৳৫০ confirmed budget is recorded.
+- Added Member Referral Wallet UI, bKash/Nagad withdrawal-request UI, Admin reward funding/pause controls, and withdrawal approval/rejection/manual-paid workflow. A withdrawal can only be marked paid with an actual transfer reference.
+- Added `referral-wallet-two-member-test.sql` and a dedicated manual GitHub Actions test workflow; added the referral migration files to the guarded migration preflight.
+- Fixed the referral UI's inline script being placed inside an external-script tag, and refreshed the PWA cache version to v29.
+- **Current verification:** Node inline-JavaScript syntax check passed in the GitHub Actions run. The broader static safety workflow currently failed on a stale cache-version assertion (expected v25 while the app cache was v28); the assertion was updated to v29. A fresh run is required to confirm the full suite.
+- **Not live:** production migration not applied/verified; Edge Function deployment and cron secrets not confirmed; reward fund not actually funded; two-member test not yet run; no automatic bKash/Nagad API payout. Until these gates pass, do not show cash as available or advertise the referral reward as live.
+- Detailed rollout steps: [Referral System Acceptance Test (Bangla)](REFERRAL_SYSTEM_ACCEPTANCE_TEST_BN.md).
+
 ## Feature register
 
 | Feature | Repository foundation | Remaining work before Live |
@@ -60,7 +71,7 @@ This register tracks the existing repository. A feature is **not live** merely b
 | AI Image Search + License | AI Center UI placeholder | Select a licensed image/search provider; configure server-side credentials; return attribution, source URL, license and permitted-use metadata; test rights/attribution display |
 | Facebook Public Discovery | Facebook Center UI and consent/privacy notes | Create Meta app; use only approved Graph API permissions and permitted public data; complete Meta review where required; never scrape private data or collect Facebook passwords/OTPs |
 | Active User Finder | Consent-based AI/manual workflow concept | Implement explicit opt-in availability state, expiry, block/report controls and rate limits; never infer activity from phone/SIM or expose precise location without consent |
-| Global Promotion & Referrals | Member Referral Center UI, unique per-member code RPC, signup metadata attribution trigger, member stats and Owner/Admin aggregate report added in `202611240001_member_referrals.sql` | Apply migration after reviewing the full dry-run; verify Owner bootstrap; test signup via valid/invalid/self referral links, duplicate attribution, member isolation and Owner/Admin-only aggregate access. Reward qualification, fraud review, analytics consent and payout policy remain pending |
+| Global Promotion & Referrals | Referral codes/attribution and stats; approved BDT 50/24-hour policy; migration `202611240003_referral_wallet_rewards.sql` for server qualification, funded wallet ledger, Owner funding/pause controls, member withdrawals and Admin review; scheduled processor Edge Function/workflow; member/admin UI; two-member security test | Production migrations and Edge Function deploy; configure `REFERRAL_CRON_SECRET` in Supabase and GitHub Actions plus `SUPABASE_URL`; add only real confirmed reward funding; run two-member privacy and 24-hour end-to-end acceptance tests; bKash/Nagad automatic payout still requires official merchant/API integration. **Not live/verified yet.** |
 | Admin, Roles & Audit Logs | RBAC/owner-control and audit migrations, admin UI and server-side function foundation | Verify intended owner account before bootstrap; apply migrations; audit all privileged RPC/RLS paths; test member/admin separation, role escalation denial and audit completeness |
 | Privacy, GDPR & Consent | Privacy rights/consent migration and UI foundation | Publish accurate privacy/cookie/retention policy; implement access/export/correction/deletion workflow and consent withdrawal; appoint contact/processors; obtain jurisdiction-specific legal review. Do not claim GDPR certification |
 | Notifications & Support | Inbox/read markers/push subscription foundation, helpdesk schema and UI | Apply migrations; configure VAPID/Web Push sender secrets and database webhook; test Android Chrome/PWA delivery; native APK push requires separate FCM integration |
