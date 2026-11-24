@@ -95,6 +95,9 @@ jobs:
             202611240001_member_referrals.sql \
             202611240002_public_member_referral_profile.sql \
             202611240003_referral_wallet_rewards.sql; do
+            test -f "supabase/migrations/$migration" || { echo "::error::Missing migration file: $migration"; exit 1; }
+          done
+
       - name: Preview pending production migrations
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
