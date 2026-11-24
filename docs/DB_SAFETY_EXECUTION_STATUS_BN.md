@@ -58,3 +58,18 @@ Referral reward processor-এর জন্য আলাদা integration পর
 - Production migration চালানো এবং backup/restore পরীক্ষা আলাদা কাজ।
 - কোনো secret value, OTP, database password, signed URL বা encryption key chat-এ দেবেন না।
 - Backup/restore ও dry-run PASS হলেও Production Apply স্বয়ংক্রিয়ভাবে হবে না।
+
+## Update 2026-11-25 — চার ধাপের বর্তমান অগ্রগতি
+
+এই তারিখে repository workflow ও পূর্ববর্তী execution evidence পুনরায় পর্যালোচনা করা হয়েছে। আগের Database Safety Pipeline Run #1–#4 ব্যর্থ হয়েছিল; সর্বশেষ Run #4-এ `SUPABASE_DB_URL` এবং `BACKUP_ENCRYPTION_PASSPHRASE` অনুপস্থিত ছিল। তাই backup তৈরি হয়নি, restore test চলেনি, এবং migration preview-ও সম্পন্ন হয়নি। কোনো non-secret backup reference বা restore-test reference পাওয়া যায়নি।
+
+| ক্রম | বাধ্যতামূলক ধাপ | 2026-11-25 অবস্থা | প্রমাণ/পরবর্তী পদক্ষেপ |
+|---|---|---|---|
+| ১ | Recoverable encrypted full backup | BLOCKED | GitHub Actions Secrets-এ `SUPABASE_DB_URL` ও `BACKUP_ENCRYPTION_PASSPHRASE` নিরাপদে configure করতে হবে; তারপর `backup-restore-preview.yml` সফলভাবে চালাতে হবে। |
+| ২ | আলাদা disposable PostgreSQL-এ restore test | NOT RUN | ধাপ ১-এর backup তৈরি হওয়ার পর একই workflow-এর restore step PASS এবং restored table count যাচাই করতে হবে। |
+| ৩ | Production migration dry-run | NOT RUN | একই workflow-এর `supabase db push --dry-run` সফল হতে হবে; pending migration list review করতে হবে। |
+| ৪ | নির্দিষ্ট Owner authorization | NOT GIVEN FOR THIS APPLY | প্রথম তিন ধাপ সফল ও review হওয়ার পরই exact phrase `APPLY-MASTER-WORLD-VIP-MIGRATIONS` দিয়ে আলাদা guarded production apply অনুমোদন চাইতে হবে। |
+
+**নিরাপত্তা সিদ্ধান্ত:** চারটি ধাপের কোনোটিই সফল হয়েছে বলে চিহ্নিত করা হয়নি। Production migration চালানো হয়নি এবং চালানো যাবে না। আগের কোনো authorization phrase থাকলেও তা এই নতুন run-এর backup/restore/preview evidence-এর বিকল্প নয়।
+
+**করণীয়:** GitHub → Settings → Secrets and variables → Actions-এ `SUPABASE_DB_URL` (IPv4-compatible Session Pooler, port 5432, database `/postgres`) এবং `BACKUP_ENCRYPTION_PASSPHRASE` secret যোগ/যাচাই করুন। Secret value chat-এ দেবেন না। তারপর Actions → “MASTER WORLD VIP - Encrypted Backup, Restore Test & Migration Preview” → Run workflow চালান। Artifact ৭ দিনের মধ্যে GitHub-এর বাইরে নিরাপদ encrypted storage-এ সংরক্ষণ করুন।
