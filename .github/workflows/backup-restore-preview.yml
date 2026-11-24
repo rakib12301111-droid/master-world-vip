@@ -58,7 +58,7 @@ jobs:
           if len(raw) >= 2 and raw[0] == raw[-1] and raw[0] in ('"', "'"):
               raw = raw[1:-1].strip()
           if raw.startswith("SUPABASE_DB_URL="):
-    raw = raw.split("=", 1)[1].strip().strip("\"'")
+              raw = raw.split("=", 1)[1].strip().strip("\"'")
           parsed = urlsplit(raw)
           if parsed.scheme not in ("postgres", "postgresql") or not parsed.hostname:
               raise SystemExit("::error::SUPABASE_DB_URL must be a PostgreSQL URI. Check for a copied label, extra text, or missing postgresql:// prefix.")
