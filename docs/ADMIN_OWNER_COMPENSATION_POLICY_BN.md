@@ -19,7 +19,7 @@ The Owner approved a monthly minimum Admin/Owner compensation target of **৳১
 
 ## Separate referral reward
 
-The approved direct-referral reward remains **৳৫০ BDT once per eligible direct referral**, subject to its 24-hour good-standing period, verified email and completed profile, and only when backed by a pre-funded reward budget. It is not recurring monthly commission and must not be merged with Owner compensation.
+The approved direct-referral reward is **৳৫০ BDT for Bangladesh-based referrers** and **US$৫০ equivalent in BDT for referrers outside Bangladesh**, subject to the 24-hour good-standing period, verified email, completed profile and a pre-funded reward budget. It is a separate one-time referral reward, not recurring monthly commission, and must not be merged with Owner compensation.
 
 ## Technical implementation
 
