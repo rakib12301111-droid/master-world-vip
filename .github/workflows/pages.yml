@@ -69,6 +69,8 @@ jobs:
           grep -q "resetPasswordForEmail(" /tmp/mwvip-live.html
           grep -q 'id="ownerCompensationPanel"' /tmp/mwvip-live.html
           grep -q "get_my_owner_compensation" /tmp/mwvip-live.html
+          grep -q 'id="refUsdBdtRate"' /tmp/mwvip-live.html
+          grep -q "admin_set_referral_usd_bdt_rate" /tmp/mwvip-live.html
           curl --fail --silent --show-error --location "$BASE_URL/www/sw.js" -o /tmp/mwvip-sw.js
-          grep -q "mwvip-pwa-v31" /tmp/mwvip-sw.js
-          echo "PASS: live website, signup/login, in-app email OTP verification, and Owner compensation dashboard foundation and PWA cache v31 are published."
+          grep -q "mwvip-pwa-v32" /tmp/mwvip-sw.js
+          echo "PASS: live website, signup/login, in-app email OTP verification, and Owner compensation dashboard foundation and PWA cache v32 and international referral FX controls are published."
