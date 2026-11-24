@@ -73,6 +73,9 @@ jobs:
           grep -q "admin_set_referral_usd_bdt_rate" /tmp/mwvip-live.html
           grep -q 'id="referralCountryReviewQueue"' /tmp/mwvip-live.html
           grep -q "get_admin_referral_country_review_queue" /tmp/mwvip-live.html
+          grep -q "get_my_referral_pending_rewards" /tmp/mwvip-live.html
+          grep -q "get_admin_referral_network_reward_summary" /tmp/mwvip-live.html
+          grep -q "Owner Network Reward Pending" /tmp/mwvip-live.html
           curl --fail --silent --show-error --location "$BASE_URL/www/sw.js" -o /tmp/mwvip-sw.js
-          grep -q "mwvip-pwa-v32" /tmp/mwvip-sw.js
-          echo "PASS: live website, signup/login, in-app email OTP verification, and Owner compensation dashboard foundation and PWA cache v32 and international referral FX controls are published."
+          grep -q "mwvip-pwa-v33" /tmp/mwvip-sw.js
+          echo "PASS: live website, signup/login, in-app email OTP verification, and Owner compensation dashboard foundation and PWA cache v33, international referral FX controls, and pending/Owner network reward controls are published."
