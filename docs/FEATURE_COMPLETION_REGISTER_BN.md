@@ -59,6 +59,14 @@ This register tracks the existing repository. A feature is **not live** merely b
 - **Not live:** production migration not applied/verified; Edge Function deployment and cron secrets not confirmed; reward fund not actually funded; two-member test not yet run; no automatic bKash/Nagad API payout. Until these gates pass, do not show cash as available or advertise the referral reward as live.
 - Detailed rollout steps: [Referral System Acceptance Test (Bangla)](REFERRAL_SYSTEM_ACCEPTANCE_TEST_BN.md).
 
+## Update 8 — 2026-11-24: In-app Gmail OTP verification and deployment checks
+
+- Registration UI now includes a Gmail verification-code input, a Verify button and a Resend code action. It uses Supabase Auth `verifyOtp({ type: 'signup' })` and `resend({ type: 'signup' })`; verification codes stay with the member and must never be sent to chat or an Admin.
+- Supabase Dashboard setup is documented in the app: enable Email provider, set Site URL/Redirect URLs, and configure Authentication → Email Templates → Confirm signup to display `{{ .Token }}`. Until the template is configured and a real inbox test passes, OTP delivery is not verified.
+- Fixed the guarded migration preflight's migration-file loop so it checks each required migration file before dry-run.
+- Added deployment verification for the in-app OTP UI and PWA cache v30. Static migration-safety workflow passed on commit `afbc12fd54a316335fe3b1f08bc63d246c6a9b2a`; latest Pages deployment for the newer commit is still in progress.
+- **Still blocked/not live:** Production Supabase migration requires configured GitHub Actions secrets, a verified restorable backup and explicit authorization; no real reward funds have been added; two distinct test-member accounts and their end-to-end test are not yet available; bKash/Nagad payout remains manual until official API/merchant integration. Do not advertise rewards as live.
+ 
 ## Feature register
 
 | Feature | Repository foundation | Remaining work before Live |
