@@ -40,6 +40,7 @@ psql "$SUPABASE_DB_URL" \
 6. Commission আবার ৳৪০০ করলে due ৳১,০০০ এবং top-up ৳৬০০ হওয়া উচিত।
 7. বাস্তব টাকা পাঠানো হয়নি এমন অবস্থায় payment record করবেন না। Test database হলে আলাদা test reference ব্যবহার করুন এবং transaction rollback/cleanup নিশ্চিত করুন।
 8. Past months backfill, duplicate month prevention, partial payment, overpayment rejection এবং audit log যাচাই করুন।
+9. GitHub Actions-এর Monthly Owner Compensation Accrual workflow-এ প্রথমে manual run করুন; migration এবং SUPABASE_DB_URL secret ঠিক থাকলে সফল হওয়া উচিত। এরপর পরবর্তী মাসের ১ তারিখে scheduled run যাচাই করুন।
 
 ## Ordinary member test
 
