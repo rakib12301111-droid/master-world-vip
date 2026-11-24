@@ -13,7 +13,7 @@ checks={
  "offline games center exists": 'data-page="games"' in ui and 'id="games"' in ui,
  "tic tac toe and number guessing exist": "ticTacToeBoard" in ui and "guessTarget" in ui,
  "satellite not falsely advertised": "স্যাটেলাইট সংযোগ বা সরকারি Cell Broadcast" in ui,
- "PWA cache version incremented": "mwvip-pwa-v30" in sw,
+ "PWA cache version incremented": "mwvip-pwa-v33" in sw,
  "capability boundaries documented": "No satellite link" in doc and "No automatic earthquake" in doc,
 }
 for k,v in checks.items(): print(("PASS" if v else "FAIL")+" — "+k)
