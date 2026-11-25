@@ -1,0 +1,82 @@
+# MASTER WORLD VIP — Admin-only Referral & Work-to-Earn Policy (বাংলা)
+
+Last updated: 2026-11-25
+
+## Owner-এর সর্বশেষ সিদ্ধান্ত: প্রথম ৬–৭ মাস Admin-only referral
+
+এই নথি আগের সাধারণ সদস্যের direct referral reward এবং Owner network referral reward নীতিকে প্রতিস্থাপন করে। পুরোনো নথি/মাইগ্রেশনে ৳৫০ member_direct এবং ৳৫০ owner_network-এর উল্লেখ থাকলে, এই নতুন নীতির সঙ্গে সাংঘর্ষিক অংশগুলো superseded হিসেবে গণ্য হবে; production database-এ পরিবর্তন কার্যকর করতে আলাদা reviewed migration ও acceptance test লাগবে।
+
+### ১. সাধারণ সদস্য
+- Registration ও কাজের সুযোগ বিনামূল্যে থাকবে।
+- সাধারণ সদস্য Work & Earn, digital service, marketplace এবং অনুমোদিত partner/sponsor task করতে পারবে।
+- কাজ সম্পন্ন, যাচাই এবং client/sponsor payment settlement হলে প্রকাশিত task rate অনুযায়ী পারিশ্রমিক পাবে।
+- সাধারণ সদস্য কোনো referral bonus বা referral commission পাবে না।
+- সাধারণ সদস্যের UI-তে referral code, referral wallet, referral leaderboard বা referral bonus promotion দেখানো হবে না।
+
+### ২. Admin
+- অনুমোদিত Admin-রা নিজেরাও সাধারণ সদস্যের মতো eligible কাজ করতে পারবে এবং একই প্রকাশিত task-rate/quality rules অনুযায়ী কাজের পারিশ্রমিক পাবে।
+- Admin-only Admin Referral Center থাকবে: campaign/source link, attributable signups, qualification status, approved bonus, pending/funded/paid history এবং audit trail।
+- Admin referral bonus কেবল নির্দিষ্ট campaign/role-এর জন্য Owner কর্তৃক আগে থেকে প্রকাশিত ও অনুমোদিত শর্তে অর্জিত হবে। Bonus amount/rate এখনো নির্ধারিত নয়; কোনো rate অনুমান করে চালু করা যাবে না।
+- Self-referral, fake/duplicate account, bot, forced signup, misleading promotion, spam এবং attribution manipulation নিষিদ্ধ।
+
+### ৩. MASTER WORLD VIP link ও attribution
+- Admin সাধারণ MASTER WORLD VIP website/app link শেয়ার করতে পারবে; UI-তে সেটি সাধারণ platform invite/onboarding link হিসেবে দেখানো যেতে পারে, “Referral link” নামে প্রচার করা বাধ্যতামূলক নয়।
+- Link-এ campaign/admin attribution identifier থাকলে তা privacy notice-এ স্পষ্টভাবে জানাতে হবে; signup-এর সময় প্রয়োজনীয় notice/consent দিতে হবে। গোপন fingerprinting, device/IP tracking দিয়ে ব্যক্তিকে শনাক্ত করা বা সম্মতি ছাড়া গোপনে attribution করা যাবে না।
+- Signup যেখান থেকেই শুরু হোক, কেবল documented, consented এবং server-verified attribution rule মেনে Admin referral হিসেবে গণনা হবে। Attribution source, timestamp, campaign, rule version এবং reviewer audit log-এ থাকবে।
+- একই signup-কে একাধিক Admin-এর নামে গণনা করা যাবে না। Attribution dispute-এর জন্য Owner review থাকবে।
+
+### ৪. Owner কমিশন
+- Owner কমিশন Admin-এর eligible, verified এবং বাস্তবে settled কাজ/কোম্পানির আয় থেকে আলাদা Owner commission ledger-এ গণনা হবে।
+- Owner rate, calculation basis, tax/refund/processor-fee treatment, payment timing এবং approval rule লিখিতভাবে নির্ধারণ না হওয়া পর্যন্ত commission accrual/withdrawal চালু হবে না।
+- Admin-এর কাজের পুরো gross amount-কে Owner commission বলা যাবে না। কেবল প্রকাশিত agreement-এ নির্ধারিত net basis থেকে হিসাব হবে।
+- Admin referral bonus, Admin work payment, Owner commission এবং Company Revenue—চারটি আলাদা ledger/line item হবে; double counting চলবে না।
+
+### ৫. ৬–৭ মাস পর সাধারণ referral পুনর্বিবেচনা
+- প্রথম ৬–৭ মাস referral privileges Admin-only থাকবে।
+- সময় শেষে Owner সদস্যসংখ্যা, retention, genuine settled revenue, fraud/abuse rate, support capacity, reward-fund solvency এবং legal/provider review দেখে সিদ্ধান্ত নেবেন।
+- Review পাস করলেই সাধারণ referral স্বয়ংক্রিয়ভাবে চালু হবে না; নতুন লিখিত policy, UI, migration, funding proof এবং acceptance tests ছাড়া member referral বন্ধই থাকবে।
+
+## আয়ের জন্য Work & Earn ও নতুন feature roadmap
+
+সব কাজের পারিশ্রমিক বাস্তব client order, sponsor funding, partner contract বা কোম্পানির settled revenue-এর বিপরীতে হবে। কাজের availability বা income guaranteed নয়।
+
+1. **Micro-task board:** Bengali/English typing, data entry, spreadsheet cleanup, transcription, proofreading, translation।
+2. **Creative services:** poster/banner, social-media post, thumbnail, CV/resume, PDF formatting, basic logo and video editing।
+3. **Facebook Creator Support:** caption writing, content calendar, thumbnail/post design, subtitle/editing support; fake engagement, fake accounts, credential collection বা Meta policy violation নয়।
+4. **Digital products & services shop:** templates, document formatting, design packages এবং platform-approved digital deliverables।
+5. **Marketplace:** member service listings, order milestones, buyer/seller dispute flow, completion proof, refund/chargeback controls এবং disclosed platform commission।
+6. **Sponsor-funded task campaigns:** sponsor-approved brief, budget cap, task instructions, evidence review, fraud checks এবং funded payout reserve।
+7. **Partner offers:** written partner agreement, eligible action definition, attribution window, commission terms, reversal/refund rules and settlement reference।
+8. **Admin work & referral center:** Admin task queue এবং separate Admin-only referral reporting/bonus panel।
+9. **Skill ladder:** free learning modules, sample tasks, quality score, verified skill tags and higher-value task eligibility; no paid unlock or mandatory deposit।
+10. **Trust & anti-fraud:** duplicate detection using proportionate signals, human review, rate limits, evidence retention limits, appeals and audit log. Never expose private device/IP data to other members.
+
+## Financial and member-protection rules
+
+- Signup, job application and access to ordinary tasks must not require member deposit, activation fee or mandatory purchase.
+- Never advertise “সহজে নিশ্চিত বেশি টাকা”; show actual task rate, estimated effort, eligibility, deadline and payment conditions before a member accepts a task.
+- Unfunded tasks must not be published as payable. Sponsor/client funds or approved company budget must be reserved before promising a payout.
+- Pending is not cash and not withdrawable. Mark Paid only after actual transfer and non-secret transaction reference reconciliation.
+- Customer promotional spend first enters Company Revenue Ledger; it is not automatically Admin or Owner personal income.
+- Do not ask for Facebook passwords, OTPs, recovery codes, session cookies, NID scans unless a separately justified lawful verification flow exists, or access to personal accounts.
+- Admin roles are server-side RBAC protected; hiding a menu is not authorization.
+
+## Implementation status — policy only
+
+This document records the latest product and business policy in the existing MASTER WORLD VIP repository. It does NOT yet:
+- disable existing member referral UI, attribution, reward processor or old SQL reward rules;
+- implement the Admin-only referral attribution/bonus workflow;
+- implement new task categories, sponsor campaign funding, marketplace checkout or partner integrations;
+- calculate Owner commission automatically;
+- apply Supabase migrations, deploy Edge Functions, configure provider secrets, collect funds or send payouts.
+
+Required next engineering sequence:
+1. Inventory all existing referral UI, RPCs, Edge Functions, cron jobs, policies, migrations and tests.
+2. Design a safe additive migration that disables member rewards and supersedes old direct-member/Owner-network credits without deleting audit history or silently confiscating already-paid/earned entitlements. Owner must decide how any previously earned but unpaid balances are handled before migration.
+3. Implement Admin-only attribution with privacy notice/consent, server-side role checks, anti-fraud and audit.
+4. Implement funded task budgets and Admin task payment records; no unfunded task payouts.
+5. Implement separate Company Revenue, Admin Work Pay, Admin Referral Bonus and Owner Commission ledgers, with a documented non-overlapping calculation basis.
+6. Add role-separated UI, RLS/RPC tests, two-member + Admin + Owner acceptance tests, Pages deployment verification and guarded production migration only after backup/restore/dry-run and explicit authorization.
+7. Connect real advertisers, sponsors, clients and partners only after agreements, lawful payment collection, provider approval and server-side secret setup.
+
+No real revenue, reward funding, task payment or referral payout is created by this policy document.
