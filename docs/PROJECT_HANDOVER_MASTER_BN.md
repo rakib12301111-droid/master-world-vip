@@ -183,3 +183,46 @@ Supporting details are kept in `docs/FEATURE_COMPLETION_REGISTER_BN.md`, `docs/S
 - Income readiness requires production DB safety, Owner/RBAC setup, actual worker and approved providers, real customer-funded work, wage protection, server-verified settlement, and real withdrawal acceptance. Never fabricate earnings or simulate payouts.
 
 **Current exact resume point:** GitHub `SUPABASE_DB_URL` secret edit form, `Value` field; first priority when the user returns.
+
+
+## 11. সর্বোচ্চ অগ্রাধিকারপ্রাপ্ত ফিচার — MASTER WORLD VIP 24/7 Automatic Work & Earning System
+
+### Owner-এর সিদ্ধান্ত
+- Owner এই ফিচারটিকে MASTER WORLD VIP-এর অন্যতম সেরা এবং সর্বোচ্চ অগ্রাধিকারপ্রাপ্ত feature হিসেবে স্বীকৃতি দিয়েছেন।
+- লক্ষ্য: সদস্যকে সারাক্ষণ অনলাইনে থাকতে হবে না; নিরাপদ server-side automation ২৪ ঘণ্টা eligible, অনুমোদিত ও যাচাইকৃত কাজের queue পর্যবেক্ষণ/সম্পাদন করবে। সদস্য offline বা ঘুমিয়ে থাকলেও কাজ সম্পন্ন হতে পারে।
+- আয় কেবল বাস্তব client/provider কাজের deliverable গ্রহণ এবং সংশ্লিষ্ট অর্থ server-to-server যাচাই করে settle হওয়ার পর হিসাব হবে। Queue item, AI output, API call, job success বা free quota নিজে আয় নয়।
+- এটি একটি product goal/approved design direction; production deployment বা earnings-এর দাবি নয়।
+
+### এই session-এ পুনরায় যাচাই করা repository foundation (main HEAD `132fef12c3a425e5dfbfc82c13b6f9cebedc1b85`)
+1. `www/index.html`-এ বিদ্যমান Admin & Security Center-এর ভিতরে `#adminAutoWorkPanel` আছে। এটি শুরুতে hidden এবং server-verified Owner/Super Admin/Admin role ছাড়া দেখানো হয়। Panel শুধু read-only overview; Start/Run action নয়।
+2. `supabase/migrations/20261125100000_admin_auto_work_control_plane.sql`-এ পাঁচটি module, provider registry, job queue, audit table, RLS, Admin RPC, worker claim/finish RPC এবং default-disabled module setup আছে।
+3. একই migration-এ `admin_auto_work_one_running_per_module_idx` নামে partial unique index আছে; এটি একই module-এ একাধিক running job ঠেকানোর database-level guard। অতএব এই নির্দিষ্ট index আবার যোগ/একই কাজের migration তৈরি করবেন না।
+4. `supabase/migrations/20261125130000_admin_auto_work_claim_concurrency_fix.sql` worker claim query-তে চলমান job পরীক্ষা যোগ করে; এটি বিদ্যমান partial unique index-এর অতিরিক্ত hardening।
+5. `docs/ADMIN_AUTO_WORK_EARN_IMPLEMENTATION_BN.md`, `docs/ADMIN_AUTO_WORK_FREE_STORAGE_BN.md`, `docs/ADMIN_AUTO_WORK_ROLLOUT_STATUS_BN.md`, `docs/MEMBER_AUTO_WORK_OWNER_COMMISSION_POLICY_BN.md`-এ architecture, free-tier policy, storage, member isolation ও launch gates নথিভুক্ত।
+6. Supabase README এবং guarded migration workflow-এ Auto Work migrations তালিকাভুক্ত আছে।
+
+### Current status — PARTIAL FOUNDATION / NOT LIVE
+- এই audit-এ কোনো নতুন production DB migration apply, worker deployment, provider connection, customer contract, file storage setup, real job execution, customer settlement বা payout test করা হয়নি।
+- পূর্বের confirmed blocker বহাল: live DB-তে Owner RBAC RPC/schema-cache access configured নয়; DB backup/restore pipeline-এর secret correction ও successful restore এখনও prerequisite। Migration source file থাকা মানে production DB-তে apply হওয়া নয়।
+- কোনো server-side worker/scheduler deployed নয়। Browser/PWA বা সদস্যের ফোনকে 24/7 execution host হিসেবে ধরা যাবে না।
+- কোনো provider adapter/API, approved client contract, private object-storage bucket, independent backup destination, server-side provider secrets, live customer-funded work source বা real bKash/Nagad/bank payout integration verified নয়।
+- পাঁচটি module disabled by default; `admin_auto_work_overview()` ইচ্ছাকৃতভাবে `execution_ready=false` ফেরত দেয়।
+- Member Auto Work execution/package checkout DISABLED; shared Admin/Owner capacity, credentials, queue বা quota ব্যবহার করা যাবে না। Human-reviewed Work & Earn আলাদা feature।
+- Free-tier quota শেষ হলে fail-closed/pause/queue; paid service-এ silent fallback নয়। Free plan 24/7 uptime বা নির্দিষ্ট দৈনিক কাজ/আয় নিশ্চিত করে না।
+
+### Implementation plan — এই feature-এর জন্য পরবর্তী ক্রম
+1. **Safety prerequisite:** বর্তমান DB safety sequence সম্পন্ন করুন—Owner-এর secure `SUPABASE_DB_URL` correction confirmation, encrypted backup, decrypt, disposable restore (table count > 0), migration dry-run। কোনো secret chat-এ নয়। এই gate পাস না হলে production migration নয়।
+2. Correct Supabase project ref, verified Owner Auth identity এবং migration history নিশ্চিত করুন। RBAC/Owner bootstrap, তারপর Auto Work migrations dependency order-এ review করুন। Production apply-এর আগে exact required authorization phrase এবং non-secret backup reference বাধ্যতামূলক।
+3. Staging-এ server-side worker design/implementation: durable queue poller, worker heartbeat, per-module concurrency, lease timeout/reclaim, idempotency, bounded retry/backoff, cancellation, provider timeout, sanitized error log, quota/cost enforcement, global emergency stop এবং module-level pause/resume।
+4. Five module-এর প্রত্যেকটির জন্য আলাদা approved provider/client adapter, documented API/terms, Bangladesh eligibility, contract/permission reference, server-side secret, acceptance criteria এবং customer-funded rate যাচাই করুন। Provider না থাকলে ওই module disabled থাকবে।
+5. Private object storage + signed short-lived access, MIME/size/quota/checksum/retention controls এবং independent encrypted backup/restore test ছাড়া customer file processing চালু নয়।
+6. Settlement pipeline: client acceptance → provider/server-to-server payment verification → fees/tax/refund/chargeback handling → protected payable ledger → actual payout reconciliation। Job succeeded মানেই member/admin earning settled নয়।
+7. Staging acceptance tests: একই module-এ concurrent duplicate claim আটকানো; পাঁচ module-এ সর্বোচ্চ পাঁচ running job; retry/idempotency; worker restart/lease expiry; provider outage; quota exhaustion; budget cap; global stop; unauthorized access; private file cross-user denial; duplicate webhook/refund/chargeback; settled-only ledger. Evidence PASS না হলে production নয়।
+8. সব gates PASS, legal/privacy/provider review এবং Owner approval-এর পর সীমিত canary; পর্যবেক্ষণ শেষে ধাপে ধাপে চালু। কোনো দৈনিক আয় বা 24/7 uptime guarantee নয়।
+
+### Exact resume point for this feature
+- সর্বোচ্চ অগ্রাধিকার feature: **MASTER WORLD VIP – 24/7 Automatic Work & Earning System**।
+- Database backup/restore + Owner/RBAC production safety gate হলো এই feature-এর deployment prerequisite; এটি পাস না হওয়া পর্যন্ত worker/production migration চালু নয়।
+- প্রথমে আগের section 10-এ বর্ণিত GitHub `SUPABASE_DB_URL` secret edit/save confirmation থেকে resume করতে হবে; user save নিশ্চিত করলে workflow history আগে inspect করুন, successful run থাকলে পুনরাবৃত্তি নয়।
+- এরপর এই section 11-এর ক্রমে staging worker/provider implementation করুন। Existing UI, migrations, unique index, docs এবং completed static checks পুনরায় বানাবেন/চালাবেন না; শুধু source/config change হলে affected tests।
+- এই session-এ নতুন completed test evidence তৈরি হয়নি; তাই `COMPLETED_WORK_NO_REPEAT_REGISTER_BN.md`-এ নতুন PASS entry যোগ করা হয়নি।
