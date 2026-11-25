@@ -209,3 +209,12 @@ This register tracks the existing repository. A feature is **not live** merely b
 - The existing referral reward entitlement/funding workflow remains distinct. A referral entitlement can remain Pending when confirmed reward funds are unavailable; Pending is not cash or withdrawable balance.
 - **Status: separation policy documented only — Company Revenue Ledger, revenue-provider integrations, revenue dashboard, allocation bridge, production migration and acceptance tests are NOT implemented/live by this documentation change.** No advertiser, sponsor, marketplace customer or partner payment was collected. Do not claim the company currently earns income from these sources.
 - Next technical stage: build the Owner-only Company Revenue Ledger and dashboard, then a separately approved, audited allocation bridge from settled company revenue into the existing Referral Reward Fund. Provider choice, legal/tax review and actual collection setup are required before income can be recorded.
+
+
+## Update 18 — 2026-11-25: Revenue funding map and earning roadmap
+
+- Updated the Admin-only referral/Work & Earn policy with a clear payer map for client tasks, sponsor campaigns, marketplace commissions, partner commissions and advertising settlements.
+- Clarified that the company pays approved Admin referral bonuses and Owner commission only from actually settled, legally usable funds allocated to the relevant ledger/reserve; Owner personal funding is not mandatory. Unfunded amounts remain Pending and non-withdrawable.
+- Owner commission rate and calculation basis remain unset pending a written schedule; no percentage is invented and gross revenue is not double-counted.
+- Added future earning features: funded microtasks, digital service storefront, templates/document services, sponsor challenges, partner offers, creator-support packages, free skill progression, marketplace commission, repeat-client quality tiers and Admin-only referral analytics.
+- **Documentation only — NOT live:** no advertiser/sponsor/client/partner integrations, payment collection, Company Revenue Ledger, commission calculator or Admin-only referral code workflow was implemented or activated by this update. No revenue or payouts were created.
