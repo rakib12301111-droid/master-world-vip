@@ -52,6 +52,7 @@ jobs:
           PAGE_URL: ${{ needs.deploy.outputs.page_url }}
         run: |
           set -euo pipefail
+          trap 'status=$?; echo "FAILED at line ${LINENO}: ${BASH_COMMAND} (exit ${status})" >&2; exit "$status"' ERR
           BASE_URL="${PAGE_URL%/}"
           SITE_URL="$BASE_URL/www/index.html"
           echo "Checking $SITE_URL"
@@ -96,6 +97,8 @@ jobs:
           curl --fail --silent --show-error --location "$BASE_URL/docs/START_TO_FINISH_AUDIT_BN.md" -o /tmp/mwvip-audit.md
           grep -q "বাধ্যতামূলক কাজের ক্রম" /tmp/mwvip-audit.md
           curl --fail --silent --show-error --location "$BASE_URL/www/update-manifest.json" -o /tmp/mwvip-update-manifest.json
+          python -m json.tool /tmp/mwvip-update-manifest.json > /dev/null
           grep -q "start-to-finish-audit" /tmp/mwvip-update-manifest.json
           grep -q "anti-theft-phone-recovery" /tmp/mwvip-update-manifest.json
+          grep -q "mwvip-pwa-v37" /tmp/mwvip-update-manifest.json
           echo "PASS: live Pages HTML is reachable; expected signup/login/OTP code markers, Owner/referral UI markers, Update Center audit link, audit document, update-manifest audit stage, and PWA cache v37 are published. These are static deployment checks only; they do not prove real email OTP delivery, Supabase authentication, database migrations, or end-to-end feature behavior."
