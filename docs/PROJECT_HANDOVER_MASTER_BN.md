@@ -12,7 +12,7 @@
 Next actions, in order:
 
 1. First check the newest Actions runs for the current main-branch HEAD; never assume an old SHA is still HEAD. The handover-only updates also trigger Pages workflows, so inspect their latest run status.
-2. The Pages verifier now validates manifest JSON, checks cache v37, and prints the exact failed line/command. Run the newest Pages workflow and use that diagnostic if it still fails; compare published HTML, Update Center audit link, manifest and service-worker cache version with source.
+2. The Pages verifier now validates manifest JSON, checks cache v37, prints exact failed line/command, and its Owner-only marker was corrected in commit `306318f71473e3f94862fcd7449ad81cc386849a`. Run the newest Pages workflow and confirm all Build/Deploy/Verify jobs pass.
 3. The known PWA cache assertion mismatch was corrected: `scripts/verify-global-communication.py` now expects `mwvip-pwa-v37`, matching `www/sw.js`. Verify the affected workflow run; do not rerun unrelated PASS checks.
 4. Run only the affected verification workflows once after the targeted fixes. Reuse the finance 22/22, Community readiness, Owner health 9/9 and membership-helper PASS evidence unless relevant source/validator changes.
 5. Only after static and Pages live-release verification pass, continue with the guarded database backup/restore/dry-run gates. Do not apply production migrations automatically.
@@ -137,7 +137,7 @@ At every session:
 
 # 8. পূর্ণ প্রকল্প ইতিহাস — শুরু থেকে 2026-11-25 পর্যন্ত
 
-এই অংশটি আগের Feature Completion Register, Start-to-Finish Audit, Continuity Handover, বর্তমান repository tree এবং Git commit history মিলিয়ে তৈরি। GitHub commit history-তে 2026-11-13-এর Initial commit থেকে 2026-11-25-এর বর্তমান HEAD পর্যন্ত 683টি commit entry পর্যালোচনা করা হয়েছে। একই কাজের ছোট corrective commit আলাদা করে পুনরাবৃত্তি না করে সম্পন্ন কাজগুলো feature/phase অনুযায়ী একত্র করা হয়েছে। এটি repository-তে সংরক্ষিত কাজের ইতিহাস; কথোপকথনের বাইরে কোনো অদৃশ্য কাজ সম্পন্ন হয়েছে—এমন দাবি নয়।
+এই অংশটি আগের Feature Completion Register, Start-to-Finish Audit, Continuity Handover, বর্তমান repository tree এবং Git commit history মিলিয়ে তৈরি। GitHub commit history-তে 2026-11-13-এর Initial commit থেকে 2026-11-25-এর বর্তমান HEAD পর্যন্ত 694টি commit record (pages 1–7) গণনা/ইনভেন্টরি করা হয়েছে; individual micro-commit তালিকাভুক্ত না করে feature/phase অনুযায়ী একত্র করা হয়েছে। একই কাজের ছোট corrective commit আলাদা করে পুনরাবৃত্তি না করে সম্পন্ন কাজগুলো feature/phase অনুযায়ী একত্র করা হয়েছে। এটি repository-তে সংরক্ষিত কাজের ইতিহাস; কথোপকথনের বাইরে কোনো অদৃশ্য কাজ সম্পন্ন হয়েছে—এমন দাবি নয়।
 
 ## 8.1 শুরু — 2026-11-13 থেকে 2026-11-14
 
@@ -488,4 +488,63 @@ Workflow file থাকা মানে তার schedule/secret/provider integ
 4. Pages workflow এখন manifest JSON parse করবে এবং ব্যর্থ হলে exact line/command log করবে। নতুন workflow run না হওয়া পর্যন্ত deployment verification pending।
 5. Feature Register-এ `Last reviewed: 2026-11-24` এবং Update Center manifest-এ পুরোনো status text রয়েছে; এই master handover-ই সর্বশেষ consolidated source of truth। Feature Register ও manifest-এর পরবর্তী maintenance-এ একই status sync করতে হবে।
 6. Production Supabase backup/restore/preview/apply, Auth real OTP, two-member RLS, provider integration, payout, native Android/iOS, Play Store, Global Internet এবং Auto Work worker-এর কোনো pending gate-কে এই static source audit complete করে না।
+
+
+
+## 8.11 পূর্বের অনুমোদিত কিন্তু আগের handover-এ অনুল্লেখিত Facebook feature requirement
+
+**নির্ধারিত feature name (অ্যাপের ভেতরের নাম):** `MASTER WORLD VIP Lifetime Facebook Security & Recovery System`
+
+- 2026-11-25-এর user-approved requirement: feature-টি existing MASTER WORLD VIP app/website-এর ভেতরে থাকবে; বাইরের app/project name পরিবর্তন করা যাবে না এবং নতুন app/website তৈরি করা যাবে না।
+- Member-দের জন্য free support/service হিসেবে পরিকল্পনা করা হয়েছিল।
+- Existing app-এর Facebook area-তে Facebook account connection/creation entry point থাকবে, কিন্তু কেবল Meta-এর official authorization/API/Terms যতটুকু অনুমতি দেয় ততটুকুই। Unauthorized account creation, private data scraping, password/OTP/session-cookie collection বা Meta login/recovery bypass নয়।
+- Dedicated helpline, in-app Inbox announcements/messages, homepage/banner promotion এবং Facebook/YouTube/অন্যান্য external advertising placement অন্তর্ভুক্ত করার requirement আছে।
+- Existing Facebook Setup Assistance order/payment/feedback UI হলো আলাদা foundation; সেটি এই named Lifetime Facebook Security & Recovery System-এর implementation complete প্রমাণ করে না।
+- **Status: requirement approved and recorded; named service-এর full UI/helpline/inbox promotion/external campaign/Meta-authorized account workflow এখনো separately implemented and acceptance-tested বলে প্রমাণ নেই।**
+- “Lifetime” নামটি user-approved product label হলেও Facebook account কখনো suspend হবে না, সব পরিস্থিতিতে ফেরত পাওয়া যাবে, বা MASTER WORLD VIP Meta-এর সিদ্ধান্ত override করতে পারবে—এমন guarantee দেওয়া যাবে না। Account control/recovery final authority Meta; support কেবল official recovery ও permitted assistance পর্যন্ত সীমাবদ্ধ।
+
+## 9.6 আগের handover-এ বাদ পড়া historical successful evidence
+
+### Android APK build — পাঁচটি ধারাবাহিক successful run
+
+- `Build MASTER WORLD VIP APK` workflow runs #14–#18 সবগুলো **SUCCESS**:
+  - #14: https://github.com/rakib12301111-droid/master-world-vip/actions/runs/44888286358
+  - #15: https://github.com/rakib12301111-droid/master-world-vip/actions/runs/44888327031
+  - #16: https://github.com/rakib12301111-droid/master-world-vip/actions/runs/44889976997
+  - #17: https://github.com/rakib12301111-droid/master-world-vip/actions/runs/44889983610
+  - #18: https://github.com/rakib12301111-droid/master-world-vip/actions/runs/44890002887
+- Run #18-এর সব ধাপ PASS: source checkout, Java, Android SDK setup/packages, Gradle, debug APK build এবং artifact upload।
+- Run #18 artifact: `master-world-vip-debug-apk`, artifact ID `14700719014`, SHA-256 `84f9c2725dd5c5d8c530a6758eb49ccb8e96675cacf7073f3462deff21427cc6`; GitHub metadata অনুযায়ী expiry 2026-12-05 09:32 UTC।
+- **সঠিক সীমা:** এটি installable **debug APK build artifact**-এর প্রমাণ; production-signed release APK/AAB, physical Android install/security test, Play Store upload বা approval-এর প্রমাণ নয়। Artifact download/install আলাদাভাবে verify না করা পর্যন্ত user device-এ app installed বলা যাবে না।
+
+### Update system automated checks
+
+- `Check MASTER WORLD VIP update system` run #166: **SUCCESS**, run ID `45608007267` — https://github.com/rakib12301111-droid/master-world-vip/actions/runs/45608007267
+- Repository history-তে এই workflow-এর 114টি recorded run-ই success; এটি update-system lint/unit validation evidence, full Pages live-release or production Supabase acceptance test নয়।
+
+### Secure Edge Function deployment workflow
+
+- `MASTER WORLD VIP - Deploy Secure Update Functions` run #31, ID `45405963963`: all jobs/steps SUCCESS, including deployment-secret validation, Supabase CLI setup, “Deploy all MASTER WORLD VIP Edge Functions”, and deployment command completion.
+- Run link: https://github.com/rakib12301111-droid/master-world-vip/actions/runs/45405963963
+- **সঠিক সীমা:** এটি ওই commit-এ deployment command সফল হওয়ার evidence; সব Edge Function-এর real provider configuration, production database schema compatibility, secret freshness, runtime health ও end-to-end behavior এখনো পৃথকভাবে verify করতে হবে।
+
+## 9.7 PWA cache validator correction — সব stale reference audit
+
+একই PWA service worker source `mwvip-pwa-v37` হলেও কয়েকটি independent static validator পুরোনো `v34` ধরে রেখেছিল। এগুলো targetedভাবে align করা হয়েছে:
+
+- `scripts/verify-global-communication.py` — commit `2278383df96dbd85caa9d5520af2164381e18ad2`
+- `scripts/verify-emergency-games.py` — commit `85a3f073719a510f5adfb41e863e4d2667bb43b5`
+- `scripts/verify-crisis-alerts.py` — commit `3485ac600c28637dd89e906ff1d6e3cbc65235ac`
+- `scripts/verify-helpline-directory.py` — commit `f78b1d05dd9d2d7f378436286de4998b9ed7f089`
+- `scripts/verify-global-country-directory.py` — commit `f4a063d1cd7ae04b2f37e77d6768b91d42d50809`
+
+Latest migration safety run `45608178784` on source commit `f4a063d1cd7ae04b2f37e77d6768b91d42d50809` **SUCCESS**. All 17 steps passed, including JavaScript syntax, membership helper, Community readiness, Owner health, global communication, offline emergency/games, official helplines, crisis alerts, all-country directory, push sender, referral rewards, Owner compensation and Work & Earn finance. Run link: https://github.com/rakib12301111-droid/master-world-vip/actions/runs/45608178784
+
+## 9.8 Latest Pages verification blocker and targeted correction
+
+- Pages run `45608178700` on source commit `f4a063d1cd7ae04b2f37e77d6768b91d42d50809`: Build SUCCESS, Deploy SUCCESS, final live verification FAIL.
+- New diagnostic trap identified the exact mismatch: workflow expected literal `Owner-only Recovery`, while actual page heading is `Anti-Theft Recovery — হারানো / চুরি হওয়া ফোন (Owner-only)`. This is a case/text mismatch in the verifier, not proof that the recovery backend is live or incomplete.
+- Corrected verifier to check the actual source marker `Owner-only)` in commit `306318f71473e3f94862fcd7449ad81cc386849a`.
+- **Pending:** a fresh Pages build/deploy/live verification for the corrected current HEAD must finish SUCCESS before the website release is called fully verified.
+- The earlier manifest syntax defect has been repaired; current repository copy parses as valid JSON and has 17 top-level stages. Live published copy still requires the new Pages verification.
 
