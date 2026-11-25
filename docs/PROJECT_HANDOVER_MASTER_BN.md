@@ -283,3 +283,42 @@ Supporting details are kept in `docs/FEATURE_COMPLETION_REGISTER_BN.md`, `docs/S
 - Wait for Owner to confirm the already-open GitHub `SUPABASE_DB_URL` secret edit was saved. Do not ask for the secret itself.
 - After confirmation, inspect backup workflow history first. Reuse a successful post-correction run if it already exists; otherwise execute the gated backup/restore preview once and stop on any failure.
 - Continue only after that gate passes. The 14 Auto Work static checks are already complete and must not be repeated without source/config changes.
+
+
+## 14. Owner requirements — Global Customer Marketplace & Lifetime Work System (2026-11-26)
+
+### Authoritative requirements document
+- New document: `docs/GLOBAL_CUSTOMER_MARKETPLACE_LIFETIME_WORK_SYSTEM_BN.md`.
+- Progressive commission and detailed policy are also recorded in `docs/MEMBER_AUTO_WORK_OWNER_COMMISSION_POLICY_BN.md` Section 15.
+- Treat these as the current Owner-requested product requirements. The prior fixed 20% commission rule in Section 13 of the policy is superseded as a future design request by the 20%/35% progressive model; it is NOT yet live.
+
+### Owner's requested product goals
+1. Customer Order Portal: domestic and international customers register, submit lawful work, upload private files, receive transparent quotes, pay through verified providers, track orders, receive deliverables, accept/revise/dispute and obtain receipts.
+2. Customer acquisition ambition: 10,000,000+ real global customers over time. This is a target, not current customer count or guaranteed acquisition.
+3. Catalogue ambition: 2,000+ genuine work/project categories and authorized brand/client programmes. Each must have real deliverables, actual demand/contract/permission, price/cost model, acceptance criteria and operating capacity. Never invent active brands or jobs.
+4. Repeat/unlimited order ambition: customers may submit repeat orders, subject to fair-use, capacity, queue, budget, provider quota, law and published SLA. This does not mean unlimited compute, unlimited free resources, guaranteed lifetime work or guaranteed member income.
+5. Smart Member Assignment: only eligible funded orders go to members; skill, language, verification, availability, fairness, quality, deadline and eligibility drive matching. Disclose exact payable and terms before member accepts.
+6. 24/7 server-side Auto Work: durable queues/workers, idempotency, lease/recovery, retries, cost caps, quota tracking, monitoring and emergency stop. Never use member phones as worker infrastructure. Separate member resources from Owner/Admin reserved infrastructure.
+7. Strong Security: server-side RBAC/MFA, tenant isolation/RLS, private encrypted files, signed payment webhooks, anti-fraud, audit, dispute/appeal, privacy and recovery controls.
+8. Admin Free/Paid plan choice: Free Admin Plan default; optional Paid Admin Plan only after explicit selection, displayed price/terms, secure payment, approved spend cap and audit. No silent paid fallback; never charge member wages or restricted funds.
+9. Member no-loss rule: no member deposit/mandatory paid plan; reject/requote jobs whose unit economics cannot cover member payable, costs, fees, taxes and reserves. Protect accepted member wages. “৳100 cost → ৳1,000+ income” is aspirational only, never guaranteed or advertised without proven economics and settled receipts.
+10. Progressive Admin commission: 20% on lower-value work, 35% on higher-value work, both only on Distributable Net Platform Revenue after member payable, direct costs, tax/fees, refunds/chargebacks and required reserves. BDT tier threshold is unspecified; do not invent it or hard-code. Rate change prospective, disclosed before acceptance and audited. Until approved threshold, implementation and tests, existing production behavior does not change.
+
+### Scaling and release sequence
+- Start with secure customer portal/payment staging, one real client/provider and one paid pilot, one human-reviewed member category and successful payout.
+- Then one isolated server-side worker/provider module; add catalogue categories only with real demand/permission and viable unit economics.
+- Grow catalogue in stages (20 → 100 → 500 → 2,000+). Scale simultaneous execution separately based on load tests, provider quotas, database/worker capacity and approved spend.
+- A 2,000+ catalogue does not prove 2,000 customer orders; customer acquisition is a separate continuous business operation. No guarantee of 10 million customers, unlimited lifetime work, continuous uptime or earnings.
+
+### Current status — DOCUMENTED REQUIREMENTS ONLY / NOT LIVE
+- The documentation and policy baseline have been added/updated in the existing repository.
+- Customer Portal, global acquisition, live 2,000+ projects, unlimited orders, server workers, provider integrations, commission tier engine, Admin plan checkout and member payouts are NOT confirmed deployed/live by this documentation change.
+- The database safety blocker remains unchanged: user must confirm secure GitHub `SUPABASE_DB_URL` secret correction/save; then inspect backup workflow history, and only if needed run encrypted backup → decrypt → disposable restore with table count > 0 → migration dry-run. Production migration requires all safety gates and exact existing authorization phrase. Never request or reveal the secret value.
+- Existing Member Auto Work execution/package sales remain disabled until dedicated isolation, funding, reserve, provider, legal, security and acceptance gates pass.
+- Do not repeat already-passed Auto Work 14-check static suite unless tested source/config changes.
+
+### Exact next starting point
+1. Continue from the already-open GitHub `SUPABASE_DB_URL` secret edit/save step. Ask only whether the Owner saved the corrected secret; never ask for its value.
+2. If confirmed, inspect latest backup workflow history before starting any run; reuse valid successful evidence and do not repeat completed checks.
+3. Resume the database backup/restore gate; no production migration before all prerequisites and explicit authorization.
+4. After DB safety, implement the customer portal in staging, secure payment state machine and first real paid customer pilot before claiming member order supply.
