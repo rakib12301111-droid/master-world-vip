@@ -254,3 +254,14 @@ Repository migration `20261125160000_work_earn_wallet_owner_profit.sql` now defi
 
 ### J. Status and non-guarantees
 এই document update কোনো Customer Portal, payment gateway, worker, provider contract, 10-million customer base, 2,000 live projects, unlimited work, 24/7 service, commission engine, Admin plan purchase বা payout চালু করে না। এগুলো requirements/targets. Production DB safety prerequisite (including secure DB URL correction, encrypted backup/restore/dry-run and explicit migration authorization) অপরিবর্তিত থাকবে। Until evidence passes, relevant features remain PARTIAL / BLOCKED / NOT LIVE.
+
+
+## ১৬. High-value USD project priority and BDT payout (2026-11-26)
+
+- Owner-এর নির্দেশ অনুযায়ী 2,000+ genuine project catalogue-এর মধ্যে **High-Value USD Projects** গুরুত্বপূর্ণ priority পাবে। Target customer price examples: **US$30 / US$50 / US$100 / US$150+**। এগুলো price-band ambition; কোনো live order, guaranteed member income, Admin profit বা ROI নয়।
+- প্রতিটি high-value listing বাস্তব client demand/contract, lawful deliverable, market-based scope/quote, verified customer funding, clear acceptance/revision/dispute terms, effort estimate, provider capacity, quality review এবং positive unit economics দ্বারা সমর্থিত না হলে active/funded হিসেবে দেখানো যাবে না।
+- Bangladesh member-কে accept করার আগেই exact **BDT payable** দেখাতে হবে। USD equivalent, trusted FX source, conversion snapshot/time, fees/taxes/withholding, payout fee ও quote expiry আলাদা disclose করতে হবে। Accepted BDT payable পরে FX movement-এর কারণে কমানো যাবে না; re-quote হলে নতুন consent আবশ্যক।
+- Customer USD gross receipt থেকে tax, gateway/FX charges, refund/chargeback obligations, direct/provider/compute costs, required reserves এবং member-এর সম্পূর্ণ disclosed payable সুরক্ষিত করার পরই অবশিষ্ট Distributable Net Platform Revenue নির্ণয় হবে। Admin-এর অনুমোদিত 20%/35% tier কেবল এই net base-এ প্রযোজ্য—US$30/50/100/150 gross order price-এর ওপর সরাসরি নয়। Member wage বা customer restricted funds কখনো Admin commission-এর উৎস নয়।
+- High-value priority scheduler-এ verified funding, skill/quality/eligibility, fairness, workload, deadline ও member consent একসঙ্গে মানতে হবে। Dollar value বেশি বলে unsuitable member-কে assign করা যাবে না বা accepted member rate কমানো যাবে না।
+- Suspicious/unfunded/unlawful/negative-margin orders reject, pause বা re-quote হবে। Enhanced client verification, fraud/chargeback screening, evidence-based delivery acceptance, dispute/appeal এবং provider settlement reconciliation আবশ্যক। Fake clients/brands/orders, fabricated dollar balances বা guaranteed daily income নিষিদ্ধ।
+- এই requirement-এর বাস্তবায়ন status: USD customer checkout, FX locking, BDT member payout, real high-value client orders, priority scheduler ও Admin commission settlement **NOT VERIFIED / NOT LIVE**। এটি policy/documentation মাত্র; DB backup/restore ও migration safety gates অপরিবর্তিত।
