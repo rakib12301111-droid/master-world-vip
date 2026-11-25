@@ -200,3 +200,12 @@ This register tracks the existing repository. A feature is **not live** merely b
 - Extended `scripts/verify-referral-rewards.py` with regression checks for balanced SQL function delimiters and malformed escaped line breaks.
 - Corrected `.github/workflows/apply-supabase-migrations.yml`: its expected-migration loop now checks that every listed migration file actually exists, and fixed a malformed shell line continuation in the migration list.
 - **Code updated in the existing GitHub repository. Not yet production-live:** this commit does not apply Supabase migrations, deploy the Edge Function, configure secrets, add real reward funding, run the two-member acceptance test, or transfer money. The automated verification run and deployment evidence must be checked before calling the code update validated; production still requires the documented recoverable backup, successful restore test, dry-run review and exact authorization.
+
+
+## Update 17 — 2026-11-25: Separate Company Revenue and Referral Reward accounts
+
+- Owner direction confirmed: Company Revenue and Referral Rewards must be two separate financial systems. Company revenue sources are advertising/sponsorship, the platform's own digital services, completed marketplace commissions, and approved partner commissions.
+- Added `docs/COMPANY_REVENUE_AND_REFERRAL_SEPARATION_BN.md` defining separate Company Revenue, Referral Reward Fund, and Owner/Admin Compensation ledgers; source references and reconciliation; explicit Owner-approved allocation; no mandatory personal Owner funding; no member deposits/hidden fees; and no automatic diversion of customer promotional spend to Admin.
+- The existing referral reward entitlement/funding workflow remains distinct. A referral entitlement can remain Pending when confirmed reward funds are unavailable; Pending is not cash or withdrawable balance.
+- **Status: separation policy documented only — Company Revenue Ledger, revenue-provider integrations, revenue dashboard, allocation bridge, production migration and acceptance tests are NOT implemented/live by this documentation change.** No advertiser, sponsor, marketplace customer or partner payment was collected. Do not claim the company currently earns income from these sources.
+- Next technical stage: build the Owner-only Company Revenue Ledger and dashboard, then a separately approved, audited allocation bridge from settled company revenue into the existing Referral Reward Fund. Provider choice, legal/tax review and actual collection setup are required before income can be recorded.
