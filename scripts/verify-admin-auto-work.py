@@ -34,7 +34,7 @@ checks = {
             "'website_monitoring_reporting'", "enabled boolean not null default false"
         ]),
     "provider activation requires contract and Owner approval metadata":
-        "status <> 'active' or (contract_reference is not null and approved_by is not null and approved_at is not null)" in base
+        "status <> 'active') or (contract_reference is not null and approved_by is not null and approved_at is not null)" in base
         and "Only the Owner can approve an Auto Work provider" in base,
     "all Auto Work tables enable RLS and deny direct browser-role table access":
         all(x in base for x in [
