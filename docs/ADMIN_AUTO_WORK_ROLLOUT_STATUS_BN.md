@@ -60,3 +60,15 @@ Examples checked from official provider documentation:
 Free quota itself generates **৳0**. Revenue is counted only after a real customer accepts the deliverable and payment settles. Example only: if accepted customer work settles ৳500 and direct fees/costs are ৳30, net before other company overhead is ৳470. This is an illustration, not an earnings forecast. With no paying customer, settled income is ৳0 even if all free quota is used.
 
 The dashboard must report separately: free quota consumed, jobs processed, customer-accepted jobs, invoiced amount, settled receipts, direct costs, and net settled revenue. Never convert API calls, AI outputs or queued jobs into income.
+
+
+## Owner-এর deployment choice: Free first + five-module parallel (2026-11-25)
+
+- **Server:** শুরুতে free-tier backend/queue only; future paid server requires explicit Owner approval and a separate spend cap.
+- **Paid APIs:** disabled by default. No silent paid fallback when a free quota is exhausted. Provider billing mode and Owner approval must be enforced server-side before paid requests.
+- **Parallelism:** five modules may run simultaneously, initially one active job per module (up to five jobs total). A second job for the same module waits in that module's queue. This matches the existing partial unique index that allows only one running job per work_type.
+- **Independent controls:** each module has its own enable/pause state, queue visibility, last-run time and error/audit trail; a global emergency pause is also required.
+- **Free-tier limits:** free plans are quota-limited and may sleep, throttle or suspend workloads. This is not guaranteed 24/7 hosting. Jobs remain queued or pause safely when compute/request/time quotas are exhausted.
+- **File storage:** plan a private object-storage bucket for customer files, with per-file/per-client quotas, MIME/size checks, checksum, retention expiry and access audit. GitHub is for code/docs only, not customer file storage. No storage provider is connected or verified yet; free quota and retention are provider-specific, so unlimited/permanent free storage is not promised.
+- **Paid protection:** a paid server/API must require a server-side Owner approval record, explicit BDT spend cap, and audit event. Quota exhaustion must pause rather than switch to paid.
+- **Not live:** these are implementation requirements. No free server, queue worker, file bucket or provider connector has been deployed or verified by this documentation update.
