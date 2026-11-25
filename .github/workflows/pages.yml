@@ -80,6 +80,9 @@ jobs:
           grep -q "get_my_owner_compensation" /tmp/mwvip-live.html
           grep -q 'id="refUsdBdtRate"' /tmp/mwvip-live.html
           grep -q "admin_set_referral_usd_bdt_rate" /tmp/mwvip-live.html
+          grep -q 'id="adminAutoWorkPanel"' /tmp/mwvip-live.html
+          grep -q "admin_auto_work_overview" /tmp/mwvip-live.html
+          grep -q "NOT READY" /tmp/mwvip-live.html
           grep -q 'id="referralCountryReviewQueue"' /tmp/mwvip-live.html
           grep -q "get_admin_referral_country_review_queue" /tmp/mwvip-live.html
           grep -q "get_my_referral_pending_rewards" /tmp/mwvip-live.html
