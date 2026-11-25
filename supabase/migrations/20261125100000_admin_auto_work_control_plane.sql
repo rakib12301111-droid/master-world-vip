@@ -137,7 +137,7 @@ create or replace function public.admin_register_auto_work_provider(
 )
 returns uuid
 language plpgsql security definer set search_path=''
-as $
+as $$
 declare v_id uuid;
 begin
  if not public.is_admin_auto_work_admin() then raise exception 'Admin access required'; end if;
@@ -149,14 +149,14 @@ begin
  values(auth.uid(),'provider_registered',jsonb_build_object('provider_id',v_id,'provider_key',lower(p_provider_key)));
  return v_id;
 end;
-$;
+$$;
 
 create or replace function public.owner_review_auto_work_provider(
  p_provider_id uuid,p_work_type text,p_approve boolean
 )
 returns boolean
 language plpgsql security definer set search_path=''
-as $
+as $$
 begin
  if not exists(select 1 from public.app_user_roles where user_id=auth.uid() and role='owner') then
    raise exception 'Only the Owner can approve an Auto Work provider';
@@ -180,7 +180,7 @@ begin
         jsonb_build_object('provider_id',p_provider_id));
  return true;
 end;
-$;
+$$;
 
 create or replace function public.admin_set_auto_work_module(
  p_work_type text,p_enabled boolean,p_daily_budget_bdt numeric default 0
