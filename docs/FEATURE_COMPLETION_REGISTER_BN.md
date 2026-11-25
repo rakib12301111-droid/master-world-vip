@@ -218,3 +218,14 @@ This register tracks the existing repository. A feature is **not live** merely b
 - Owner commission rate and calculation basis remain unset pending a written schedule; no percentage is invented and gross revenue is not double-counted.
 - Added future earning features: funded microtasks, digital service storefront, templates/document services, sponsor challenges, partner offers, creator-support packages, free skill progression, marketplace commission, repeat-client quality tiers and Admin-only referral analytics.
 - **Documentation only — NOT live:** no advertiser/sponsor/client/partner integrations, payment collection, Company Revenue Ledger, commission calculator or Admin-only referral code workflow was implemented or activated by this update. No revenue or payouts were created.
+
+
+## Update 19 — 2026-11-25: Owner-earned revenue funding and Admin Auto Work
+
+- Recorded the Owner's proposed operating model: where the Owner performs genuine client work under a company contract and the payment actually settles to the company, net receipts may be allocated to the Referral Reward Fund under a separately approved budget. Owner's personal earnings are not automatically Company Revenue; any voluntary allocation must be explicit and documented.
+- Reaffirmed that ordinary member work pay, customer refund reserves, sponsor-restricted funds and member deposits cannot be used for Admin referral bonuses. A 24-hour account-good-standing period is not 24 hours of continuous online use; a referred member is not required to work unless separately and transparently stated in an approved policy.
+- Added the **Admin Auto Work & Earn** proposal, restricted to authorized Admin roles. It may automate only genuine, permitted, paid client/sponsor/partner tasks with written scope, budget, acceptance criteria and output verification. Internet connectivity or an attempted/running job does not itself create revenue.
+- Prohibited fake ad impressions/clicks/views, artificial engagement, fake signups, CAPTCHA bypass, unauthorized account activity and provider-policy violations.
+- Continuous execution on Android/PWA cannot be guaranteed while the app is closed, device sleeps or battery optimization intervenes. Reliable continuous jobs require an authorized server-side queue/worker; the phone app can monitor/control jobs. Add Pause/Resume/Stop, status, logs, consent and resource-use indicators.
+- Earnings are recorded only after deliverables are accepted and client/sponsor/partner funds actually settle. Record each receipt in the correct Company Revenue or Admin Work Payment ledger; keep Admin Referral Bonus and Owner Commission separate.
+- **Status: policy/roadmap only — NOT implemented or live.** No Auto Work UI, background worker, paid task API, provider integration, billing, ledger automation, mobile background guarantee, deployment or acceptance test was created by this documentation update. No money was generated or paid.
