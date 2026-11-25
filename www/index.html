@@ -254,6 +254,18 @@
 <h2>💼 Work & Earn — কাজ ও আয়</h2>
 <p class="muted">সদস্যরা কাজের সুযোগ পোস্ট করতে, কাজ খুঁজতে এবং আবেদন করতে পারবেন। কাজের শর্ত ও পারিশ্রমিক সরাসরি কাজদাতা ও কর্মীর মধ্যে যাচাই করুন।</p>
 <div id="workEarnStatus" class="notice">কাজ দেখতে বা পোস্ট করতে আগে লগইন করুন। Supabase Work & Earn migration চালু থাকতে হবে।</div>
+<div class="item section" id="memberWorkWallet">
+ <h3>💰 আমার Work & Earn Wallet</h3>
+ <p class="muted small">শুধু যাচাইকৃত ও client-accepted কাজের সম্পূর্ণ প্রাপ্য এখানে দেখা যাবে। Wallet credit মানে নগদ bKash/Nagad payout সম্পন্ন হয়েছে—এমন নয়।</p>
+ <div class="grid">
+  <div class="feature"><strong>মোট অর্জিত</strong><div class="stat" id="workWalletEarned">৳০</div></div>
+  <div class="feature"><strong>উত্তোলনযোগ্য Ledger Balance</strong><div class="stat" id="workWalletAvailable">৳০</div></div>
+  <div class="feature"><strong>প্রকৃত উত্তোলন/ডেবিট</strong><div class="stat" id="workWalletWithdrawn">৳০</div></div>
+ </div>
+ <button class="btn secondary" id="refreshWorkEarnWallet" type="button">Wallet Refresh</button>
+ <div class="notice" id="workWalletStatus">লগইন করলে নিজের Wallet দেখাবে।</div>
+ <div id="workWalletHistory" class="feature-list">লেনদেনের ইতিহাস লোড হয়নি।</div>
+</div>
 <div class="grid">
 <div class="card"><div class="label">সক্রিয় কাজ</div><div class="stat" id="workOpenCount">—</div></div>
 <div class="card"><div class="label">আমার পোস্ট</div><div class="stat" id="workMyPostCount">—</div></div>
@@ -328,7 +340,7 @@
 <p><strong>চূড়ান্ত হার: বণ্টনযোগ্য নিট Platform Revenue-এর ২০% আপনার Admin Profit।</strong> এটি gross client payment বা সদস্যের পারিশ্রমিকের ২০% নয়। Client কাজ গ্রহণ করে payment settle করার পর member payable, tax/fees, refund/chargeback, provider/operations cost এবং সব সুরক্ষিত দায়/রিজার্ভ পূরণ করে যে প্রকৃত নিট platform revenue অবশিষ্ট থাকবে, তার ২০% আপনার Admin Profit হবে।</p>
 <ul><li>৳৫০০ নিট বণ্টনযোগ্য আয় → ৳১০০ Admin Profit</li><li>৳১,০০০ → ৳২০০</li><li>৳৫,০০০ → ৳১,০০০</li><li>৳১০,০০০ → ৳২,০০০</li></ul>
 <p>যাচাইকৃত settlement-এর পর একই atomic ও duplicate-safe transaction-এ সদস্যের সম্পূর্ণ earned payable Member Wallet Ledger-এ এবং আপনার ২০% যোগ্য profit Admin Profit Ledger-এ নথিভুক্ত হবে। সদস্যের মজুরি, refund reserve বা অন্যের অর্থ থেকে কমিশন কাটা যাবে না। হিসাব/রিজার্ভে ঘাটতি বা reconciliation mismatch থাকলে Admin profit posting বন্ধ থাকবে; সদস্যের অর্জিত পাওনা অক্ষত থাকবে।</p>
-<p class="muted small">Admin Settings-এ Owner/Super Admin ভবিষ্যতে হার পরিবর্তন করতে পারবেন; ডিফল্ট ২০%, পরিবর্তন audit হবে এবং retroactive হবে না। বর্তমান Work & Earn peer-to-peer listing নিজে থেকে payment collection/payout পরিচালনা করে না। কমিশন ইঞ্জিন, ওয়ালেট ledger posting ও Admin payout integration এখনো live নয়; Member Auto Work package sale/checkout/execution-ও বন্ধ।</p>
+<p class="muted small">Admin Settings-এ শুধু verified Owner হার পরিবর্তন করতে পারবেন; ডিফল্ট ২০%, পরিবর্তন audit হবে এবং retroactive হবে না। বর্তমান Work & Earn peer-to-peer listing নিজে থেকে payment collection/payout পরিচালনা করে না। কমিশন ইঞ্জিন, ওয়ালেট ledger posting ও Admin payout integration এখনো live নয়; Member Auto Work package sale/checkout/execution-ও বন্ধ।</p>
 </div>
 <div class="item">
 <h3>🛡️ Owner-এর কাজের সুরক্ষা</h3>
@@ -620,6 +632,21 @@
  </div>
  <button class="btn secondary" id="recordOwnerCompPayment" type="button">প্রকৃত পরিশোধ নথিভুক্ত করুন</button>
  <h3 class="section">মাসভিত্তিক হিসাব</h3><div id="ownerCompHistory" class="feature-list">হিসাব লোড হচ্ছে…</div>
+ <div class="section item" id="ownerWorkProfitSettings">
+  <h3>📊 Owner Work Profit — ২০% কমিশন</h3>
+  <p class="muted small">শুধু বণ্টনযোগ্য নিট platform revenue-এর ওপর হার প্রযোজ্য। সদস্যের মজুরি, refund reserve, package fee বা gross client payment-এর ওপর নয়। পরিবর্তন নতুন settlement-এ কার্যকর হবে; পুরোনো হিসাব বদলাবে না।</p>
+  <div class="grid">
+   <div class="feature"><strong>বর্তমান হার</strong><div class="stat" id="ownerWorkProfitRate">২০%</div></div>
+   <div class="feature"><strong>মোট Accrued Profit</strong><div class="stat" id="ownerWorkProfitTotal">৳০</div></div>
+   <div class="feature"><strong>এখনো পরিশোধ হয়নি</strong><div class="stat" id="ownerWorkProfitUnpaid">৳০</div></div>
+   <div class="feature"><strong>বাস্তবে পরিশোধ</strong><div class="stat" id="ownerWorkProfitPaid">৳০</div></div>
+  </div>
+  <div class="field"><label for="ownerWorkProfitNewRate">নতুন কমিশন হার (%)</label><input id="ownerWorkProfitNewRate" type="number" min="0" max="50" step="0.01" value="20"></div>
+  <div class="field"><label for="ownerWorkProfitReason">হার পরিবর্তনের কারণ</label><input id="ownerWorkProfitReason" maxlength="500" placeholder="পরিবর্তনের কারণ লিখুন"></div>
+  <div class="actions"><button class="btn" id="saveOwnerWorkProfitRate" type="button">হার সংরক্ষণ</button><button class="btn secondary" id="refreshOwnerWorkProfit" type="button">Profit Ledger Refresh</button></div>
+  <div class="notice" id="ownerWorkProfitStatus">Owner role ও finance migration যাচাই হলে হিসাব দেখাবে।</div>
+  <div id="ownerWorkProfitHistory" class="feature-list">Profit history লোড হয়নি।</div>
+ </div>
 </section>
 <div class="section item"><h3>সদস্যের Admin অনুমতি পরিচালনা</h3>
 <p class="muted small">শুধু Owner role server-side যাচাই হওয়ার পরই এই অপারেশন অনুমোদিত হবে। সদস্যের Supabase User UUID দিন।</p>
@@ -1021,7 +1048,7 @@ async function connect(){
   if(new URLSearchParams(location.search).has('member')){showPage('publicProfile');await loadPublicMemberProfile();}
   else if(currentUser){await loadProfile();startMessagingSync();showPage('overview');}
   else if(localStorage.getItem('mwvip_setup_completed')==='true'||localStorage.getItem('mwvip_setup_skipped')==='true'){showPage('account');}
-  client.auth.onAuthStateChange((_event,session)=>{currentUser=session?.user||null;$('dashAuth').textContent=currentUser?'Logged in':'Connected';if(currentUser){showPage('overview');startMessagingSync();$('memberstatus').textContent='লগইন আছে: '+currentUser.email;setTimeout(()=>{loadProfile();loadPrivacyRequests();if(typeof loadVerificationRequests==='function')loadVerificationRequests();if(typeof refreshAdminAccess==='function')refreshAdminAccess();},0)}else{stopMessagingSync();$('memberstatus').textContent='লগইন করুন।';$('profileResult').textContent='লগইন করা নেই।';$('privacyRequestList').textContent='অনুরোধ দেখতে লগইন করুন।'}});
+  client.auth.onAuthStateChange((_event,session)=>{currentUser=session?.user||null;$('dashAuth').textContent=currentUser?'Logged in':'Connected';if(currentUser){showPage('overview');startMessagingSync();$('memberstatus').textContent='লগইন আছে: '+currentUser.email;setTimeout(()=>{loadProfile();loadPrivacyRequests();if(typeof loadVerificationRequests==='function')loadVerificationRequests();if(typeof refreshAdminAccess==='function')refreshAdminAccess();if(typeof loadMyWorkEarnWallet==='function')loadMyWorkEarnWallet();},0)}else{stopMessagingSync();$('memberstatus').textContent='লগইন করুন।';$('profileResult').textContent='লগইন করা নেই।';$('privacyRequestList').textContent='অনুরোধ দেখতে লগইন করুন।'}});
  }catch(e){client=null;setStatus('সংযোগে সমস্যা: '+e.message)}
 }
 $('jumpAccountConnection').onclick=()=>$('account-connect').scrollIntoView({behavior:'smooth',block:'start'});
@@ -2007,7 +2034,7 @@ async function refreshAdminAccess(){
   const canViewAutoWork=['owner','super_admin','admin'].includes(data);
   if(autoPanel)autoPanel.hidden=!canViewAutoWork;
   if(canViewAutoWork)await loadAdminAutoWorkOverview();
-  if(data==='owner')await loadOwnerCompensation();
+  if(data==='owner'){await loadOwnerCompensation();await loadOwnerWorkProfit();}
 }
 async function loadAdminAutoWorkOverview(){
  const status=$('adminAutoWorkStatus'),modules=$('adminAutoWorkModules'),jobs=$('adminAutoWorkJobs');
@@ -2042,6 +2069,40 @@ async function loadAdminAutoWorkOverview(){
  }
 }
 $('refreshAdminAutoWork')?.addEventListener('click',loadAdminAutoWorkOverview);
+async function loadOwnerWorkProfit(){
+ if(!client||!currentUser)return;
+ const status=$('ownerWorkProfitStatus'),host=$('ownerWorkProfitHistory');
+ try{
+  const {data,error}=await client.rpc('get_my_work_earn_profit_ledger');if(error)throw error;
+  $('ownerWorkProfitRate').textContent=String(data.rate??20)+'%';
+  $('ownerWorkProfitNewRate').value=String(data.rate??20);
+  $('ownerWorkProfitTotal').textContent=moneyBDT(data.profit_total||0);
+  $('ownerWorkProfitUnpaid').textContent=moneyBDT(data.unpaid_accrued||0);
+  $('ownerWorkProfitPaid').textContent=moneyBDT(data.paid_total||0);
+  host.replaceChildren();
+  const rows=data.entries||[];
+  if(!rows.length)host.append(safeNode('div','muted small','এখনো কোনো verified settlement থেকে Owner profit accrual হয়নি।'));
+  rows.forEach(x=>{
+   const row=safeNode('div','feature');
+   row.append(safeNode('strong','',moneyBDT(x.profit)+' · '+String(x.rate)+'%'));
+   row.append(safeNode('div','small muted','নিট বণ্টনযোগ্য আয় '+moneyBDT(x.net_revenue)+' · '+String(x.status||'accrued')));
+   row.append(safeNode('div','small muted',x.created_at?new Date(x.created_at).toLocaleString('bn-BD'):''));
+   host.append(row);
+  });
+  if(status)status.textContent='Owner-only profit ledger লোড হয়েছে। Accrued মানে ledger-এ হিসাব; ব্যাংক/bKash/Nagad-এ টাকা পাঠানো সম্পন্ন নয়।';
+ }catch(e){if(status)status.textContent='Owner Profit Ledger এখনো প্রস্তুত নয়: '+(e.message||String(e))+'। Finance migration apply না হওয়া পর্যন্ত এটি স্বাভাবিক।';}
+}
+$('refreshOwnerWorkProfit')?.addEventListener('click',loadOwnerWorkProfit);
+$('saveOwnerWorkProfitRate')?.addEventListener('click',async()=>{
+ const rate=Number($('ownerWorkProfitNewRate').value),reason=$('ownerWorkProfitReason').value.trim(),btn=$('saveOwnerWorkProfitRate');
+ if(!Number.isFinite(rate)||rate<0||rate>50||!reason||reason.length<4){$('ownerWorkProfitStatus').textContent='০–৫০% এর মধ্যে হার এবং কমপক্ষে ৪ অক্ষরের কারণ দিন।';return;}
+ btn.disabled=true;
+ try{const {error}=await client.rpc('owner_set_work_earn_profit_rate',{p_rate:rate,p_reason:reason});if(error)throw error;
+  $('ownerWorkProfitReason').value='';await loadOwnerWorkProfit();
+  $('ownerWorkProfitStatus').textContent='নতুন হার সংরক্ষিত হয়েছে। এটি শুধু পরবর্তী settlement-এ প্রযোজ্য হবে।';
+ }catch(e){$('ownerWorkProfitStatus').textContent='হার পরিবর্তন হয়নি: '+(e.message||String(e));}
+ finally{btn.disabled=false;}
+});
 async function loadOwnerCompensation(){
  if(!client||!currentUser)return;
  const status=$('ownerCompStatus');
@@ -2671,6 +2732,22 @@ $('lookupMemberLocation')?.addEventListener('click',async()=>{
 
 
 /* Work & Earn — member job board. All writes are authenticated and RLS-protected. */
+async function loadMyWorkEarnWallet(){
+ const status=$('workWalletStatus'),host=$('workWalletHistory');
+ if(!client||!currentUser){if(status)status.textContent='আগে লগইন করুন।';return;}
+ try{
+  const {data,error}=await client.rpc('get_my_work_earn_wallet');if(error)throw error;
+  $('workWalletEarned').textContent=moneyBDT(data.earned_total||0);
+  $('workWalletAvailable').textContent=moneyBDT(data.available_balance||0);
+  $('workWalletWithdrawn').textContent=moneyBDT(data.withdrawn_total||0);
+  host.replaceChildren();
+  const rows=data.transactions||[];
+  if(!rows.length)host.append(safeNode('div','muted small','এখনো কোনো Work & Earn payment ledger entry নেই।'));
+  rows.forEach(x=>host.append(safeNode('div','feature',(x.entry_type==='credit'?'+ ':'− ')+moneyBDT(x.amount)+' · '+String(x.description||'')+' · '+(x.created_at?new Date(x.created_at).toLocaleString('bn-BD'):''))));
+  if(status)status.textContent='আপনার ব্যক্তিগত Work & Earn Wallet ledger লোড হয়েছে। এটি cash payout confirmation নয়।';
+ }catch(e){if(status)status.textContent='Wallet এখনো প্রস্তুত নয়: '+(e.message||String(e))+'। Finance migration apply না হওয়া পর্যন্ত এটি স্বাভাবিক।';}
+}
+$('refreshWorkEarnWallet')?.addEventListener('click',loadMyWorkEarnWallet);
 const WORK_CATEGORIES=['Typing & Data Entry','Design & Creative','Writing & Translation','Marketing & Sales','Development & IT','Education & Tutoring','Other'];
 function workStatus(message,ok=false){const el=$('workEarnStatus');if(el){el.className='notice'+(ok?' success':'');el.textContent=message;}}
 function workText(value){return String(value??'');}
