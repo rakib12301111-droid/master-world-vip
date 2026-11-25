@@ -292,6 +292,34 @@
 <button class="btn" id="submitWorkApplication" type="button">আবেদন পাঠান</button><button class="btn secondary" id="cancelWorkApplication" type="button">বাতিল</button>
 <div id="workApplyStatus" class="notice">আবেদন পাঠানোর আগে কাজের শর্ত যাচাই করুন।</div>
 </div>
+<div class="section item" id="memberAutoWorkInfo">
+<h3>🤖 Member Auto Work — সাধারণ সদস্যদের জন্য (পরিকল্পিত)</h3>
+<p class="muted">সাধারণ সদস্যরাও Admin-এর অনুমোদিত automated task-এ সম্পূর্ণ ফ্রিতে অংশ নিতে পারবেন। কোনো deposit, subscription, purchase, referral fee বা upfront payment লাগবে না। অংশগ্রহণ ঐচ্ছিক—আপনি যেকোনো সময় বন্ধ করতে পারবেন।</p>
+<div class="grid">
+<div class="feature"><strong>১. AI Data Processing</strong><div class="status">অনুমোদিত data cleanup, validation ও formatting tasks</div></div>
+<div class="feature"><strong>২. Translation & Documents</strong><div class="status">Translation, proofreading, transcript ও document review</div></div>
+<div class="feature"><strong>৩. PDF Automation</strong><div class="status">PDF conversion, formatting, extraction ও quality check</div></div>
+<div class="feature"><strong>৪. Image Processing</strong><div class="status">Resize, compression, format conversion ও approved image tasks</div></div>
+<div class="feature"><strong>৫. Website Monitoring</strong><div class="status">Authorized checks, report preparation ও error review</div></div>
+</div>
+<div class="notice"><strong>অবস্থা: এখনো চালু নয়।</strong> Backend, worker, customer/provider connection, task review ও payment ledger তৈরি এবং পরীক্ষা না হওয়া পর্যন্ত এই তালিকা কেবল পরিকল্পনা; এখানে এখনো task গ্রহণ বা আয় করা যাবে না।</div>
+<div class="item">
+<h3>💰 সদস্যের আয় ও Owner Commission</h3>
+<p>প্রতিটি কাজ গ্রহণের আগে কাজের rate, effort, deadline, eligibility, acceptance criteria, member payout ও platform commission পরিষ্কারভাবে দেখানো হবে। সদস্যের কাজ customer/partner গ্রহণ করে payment settle হওয়ার পরই ledger-এ আয় হবে। Owner commission কেবল প্রকৃত settled revenue থেকে প্রকাশিত commission rate অনুযায়ী; member-এর unpaid wages বা unsettled payment থেকে নয়। Commission rate এখনো নির্ধারিত হয়নি।</p>
+<p class="muted small">কাজ বা আয় নিশ্চিত নয়। Free quota শেষ হলে task queue/pause হবে—কোনো member charge বা paid API/server fallback হবে না।</p>
+</div>
+<div class="item">
+<h3>🛡️ আপনার কাজ ও Owner/Admin কাজ সুরক্ষা</h3>
+<ul>
+<li>Member Auto Work-এর queue Admin/Owner queue থেকে আলাদা থাকবে।</li>
+<li>Owner/Admin-এর কাজের capacity reserve থাকবে; সীমা/চাপ এলে member jobs আগে slow বা pause হবে।</li>
+<li>প্রতি member/module/global concurrency, task size, storage ও API quota limit থাকবে।</li>
+<li>Members অন্য সদস্য, Owner বা client-এর private file/credentials দেখতে পারবে না।</li>
+<li>Admin যেকোনো offer বা module pause/বন্ধ করতে পারবেন; abuse review ও audit থাকবে।</li>
+<li>Member-এর ফোন, mobile data বা bandwidth initial system-এ distributed compute হিসেবে ব্যবহার হবে না।</li>
+</ul>
+</div>
+</div>
 <div class="notice">⚠️ সতর্কতা: MASTER WORLD VIP কোনো চাকরি বা আয়ের নিশ্চয়তা দেয় না এবং সদস্যদের মধ্যে টাকা লেনদেন পরিচালনা করে না। চাকরি পেতে আগাম টাকা, OTP, পাসওয়ার্ড, NID-এর ছবি বা ব্যাংক তথ্য দেবেন না। সন্দেহজনক কাজ Admin Helpdesk-এ জানান।</div>
 </article>
 </section>
