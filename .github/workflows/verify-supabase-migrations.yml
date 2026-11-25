@@ -18,6 +18,7 @@ on:
       - "scripts/verify-push-sender.py"
       - "scripts/verify-referral-rewards.py"
       - "scripts/verify-owner-compensation.py"
+      - "scripts/verify-work-earn-finance.py"
       - "www/data/helplines-BD.json"
       - "www/index.html"
       - "www/sw.js"
@@ -102,3 +103,5 @@ jobs:
         run: python scripts/verify-referral-rewards.py
       - name: Verify Owner compensation ledger security
         run: python scripts/verify-owner-compensation.py
+      - name: Verify Work & Earn wallet and Owner profit security
+        run: python scripts/verify-work-earn-finance.py
