@@ -83,3 +83,33 @@ The dashboard must report separately: free quota consumed, jobs processed, custo
 - **Recommended zero-cost-first design:** static website/control panel + lightweight serverless endpoints + durable queue where eligible + short, bounded jobs. ভারী/দীর্ঘ AI, video বা document processing free runtime-এ সবসময় চালানোর প্রতিশ্রুতি নয়; সীমা এলে queue/pause।
 - **Owner-only spending lock:** paid server, API, storage, backup, domain add-on বা bandwidth—কোনোটিই Owner-এর named-service approval, BDT budget cap ও audit record ছাড়া চালু করা যাবে না। Budget cap না থাকলে paid feature disabled থাকবে।
 - **Not deployed:** এই সিদ্ধান্ত/ডকুমেন্টেশন মাত্র। কোনো R2 bucket, backup destination, free compute server, worker বা provider connector এই commit-এ deploy/connect করা হয়নি।
+
+## Implementation update — Admin status panel and worker-claim hardening (2026-11-25)
+
+### Added to the existing app
+- www/index.html now contains an Admin Auto Work status panel inside the existing Admin & Security Center.
+- Only server-verified owner, super_admin or admin roles can see the panel.
+- The panel reads admin_auto_work_overview() and displays the five module states, provider state, daily budget/use, last run and last-seven-day job counts.
+- It explicitly displays NOT READY / control-plane-only when execution_ready is false. It does not pretend to start or execute jobs.
+- Refresh is read-only. No module can be enabled from the browser until a real reviewed connector and worker are deployed.
+
+### Database migration inventory
+- 20261125100000_admin_auto_work_control_plane.sql creates the control-plane schema and RPCs.
+- 20261125130000_admin_auto_work_claim_concurrency_fix.sql prevents multiple workers from claiming two running jobs in the same module. The intended limit remains one active job in each of five modules (maximum five total).
+- The guarded production migration workflow now includes both Auto Work migrations in its expected-file preflight list.
+- The Supabase README migration order now lists the Work & Earn, referral and Auto Work migrations.
+
+### Still not deployed / not complete
+- No Auto Work migration has been applied to Supabase by this code update.
+- No server-side Auto Work worker or provider-specific job connector has been deployed.
+- No Cloudflare R2 bucket, independent backup destination, signed upload/download flow or storage connector has been created.
+- No customer contracts, provider approvals, API credentials or payout integrations have been verified.
+- All five modules remain disabled by default; no income is generated or promised.
+
+### Required next gates
+1. Confirm a recoverable backup and successful restore test.
+2. Review the exact pending migration list and run the guarded staging/production workflow. Production apply requires the existing exact confirmation phrase and backup gates.
+3. Build/test actual provider adapters and the server-side worker in staging; ensure secrets stay server-side.
+4. Connect R2 and an independent backup only after Owner-controlled account setup, quotas, access policies and restore tests.
+5. Verify the Admin panel against the live database and test role isolation with separate Owner/Admin/member accounts.
+6. Keep all paid APIs/server/storage disabled unless separately approved with a BDT spend cap.
