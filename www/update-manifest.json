@@ -2,7 +2,7 @@
   "schema_version": 1,
   "app": "MASTER WORLD VIP",
   "updated_at": "2026-11-25",
-  "note": "Added Anti-Theft & Phone Recovery guidance panel for Android/iPhone to the existing Live Location area. Official Find Hub/Find My shortcuts are available; native tracking, device registry, IP event logging and backend are not implemented. PWA cache v36 is a release candidate pending live verification.",
+  "note": "MASTER WORLD VIP release manifest: JSON structure corrected during repository audit. Service worker source cache is mwvip-pwa-v37; release remains pending successful live Pages verification and real feature acceptance tests.",
   "stages": [
     {
       "id": "anti-theft-phone-recovery",
@@ -16,6 +16,7 @@
         "iOS"
       ],
       "migration": "supabase/migrations/20261125120000_anti_theft_device_recovery.sql"
+    },
     {
       "id": "member-premium-dashboard",
       "title": "Stage 0.95 — Premium Member Dashboard",
