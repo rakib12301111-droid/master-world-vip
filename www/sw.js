@@ -1,4 +1,4 @@
-const CACHE = 'mwvip-pwa-v36';
+const CACHE = 'mwvip-pwa-v37';
 const CACHE_PREFIX = 'mwvip-pwa-';
 const CORE = [
   './',
