@@ -25,6 +25,7 @@ create table if not exists public.admin_auto_work_modules (
   provider_id uuid references public.admin_auto_work_providers(id),
   daily_budget_bdt numeric(12,2) not null default 0 check (daily_budget_bdt >= 0),
   daily_cost_bdt numeric(12,2) not null default 0 check (daily_cost_bdt >= 0),
+  daily_cost_date date not null default current_date,
   last_run_at timestamptz,
   updated_by uuid references auth.users(id),
   updated_at timestamptz not null default now(),
@@ -128,6 +129,56 @@ begin
 end;
 $$;
 
+create or replace function public.admin_register_auto_work_provider(
+ p_provider_key text,p_display_name text,p_contract_reference text
+)
+returns uuid
+language plpgsql security definer set search_path=''
+as $
+declare v_id uuid;
+begin
+ if not public.is_admin_auto_work_admin() then raise exception 'Admin access required'; end if;
+ if coalesce(length(btrim(p_contract_reference)),0)=0 then raise exception 'Contract reference required'; end if;
+ insert into public.admin_auto_work_providers(provider_key,display_name,contract_reference,status)
+ values(lower(p_provider_key),p_display_name,p_contract_reference,'pending')
+ returning id into v_id;
+ insert into public.admin_auto_work_audit(actor_user_id,action,details)
+ values(auth.uid(),'provider_registered',jsonb_build_object('provider_id',v_id,'provider_key',lower(p_provider_key)));
+ return v_id;
+end;
+$;
+
+create or replace function public.owner_review_auto_work_provider(
+ p_provider_id uuid,p_work_type text,p_approve boolean
+)
+returns boolean
+language plpgsql security definer set search_path=''
+as $
+begin
+ if not exists(select 1 from public.app_user_roles where user_id=auth.uid() and role='owner') then
+   raise exception 'Only the Owner can approve an Auto Work provider';
+ end if;
+ if not exists(select 1 from public.admin_auto_work_providers where id=p_provider_id and status='pending' and contract_reference is not null) then
+   raise exception 'Pending provider with contract reference not found';
+ end if;
+ if p_approve then
+   update public.admin_auto_work_providers
+   set status='active',approved_by=auth.uid(),approved_at=now(),updated_at=now()
+   where id=p_provider_id;
+   update public.admin_auto_work_modules
+   set provider_id=p_provider_id,updated_by=auth.uid(),updated_at=now()
+   where work_type=p_work_type;
+   if not found then raise exception 'Unknown Auto Work module'; end if;
+ else
+   update public.admin_auto_work_providers set status='revoked',updated_at=now() where id=p_provider_id;
+ end if;
+ insert into public.admin_auto_work_audit(actor_user_id,work_type,action,details)
+ values(auth.uid(),p_work_type,case when p_approve then 'provider_approved' else 'provider_rejected' end,
+        jsonb_build_object('provider_id',p_provider_id));
+ return true;
+end;
+$;
+
 create or replace function public.admin_set_auto_work_module(
  p_work_type text,p_enabled boolean,p_daily_budget_bdt numeric default 0
 )
@@ -208,7 +259,7 @@ begin
  join public.admin_auto_work_providers p on p.id=m.provider_id and p.status='active'
  where j.status='queued' and j.available_at<=now()
    and j.attempts<j.max_attempts
-   and m.daily_cost_bdt<m.daily_budget_bdt
+   and (case when m.daily_cost_date<current_date then 0 else m.daily_cost_bdt end)<m.daily_budget_bdt
    and j.actual_cost_bdt<j.budget_cap_bdt
  order by j.created_at
  for update of j skip locked limit 1;
@@ -233,7 +284,9 @@ begin
  select work_type,budget_cap_bdt into v_type,v_cap
  from public.admin_auto_work_jobs where id=p_job_id and status='running' for update;
  if not found then raise exception 'Running job not found'; end if;
- if p_actual_cost_bdt>v_cap then raise exception 'Job cost exceeds its cap'; end if;
+ if p_actual_cost_bdt + (select actual_cost_bdt from public.admin_auto_work_jobs where id=p_job_id) > v_cap then
+   raise exception 'Cumulative job cost exceeds its cap';
+ end if;
  update public.admin_auto_work_jobs
  set status=case when p_success then 'succeeded' else
    case when attempts<max_attempts then 'queued' else 'failed' end end,
@@ -244,7 +297,8 @@ begin
    updated_at=now()
  where id=p_job_id;
  update public.admin_auto_work_modules
- set daily_cost_bdt=daily_cost_bdt+p_actual_cost_bdt,updated_at=now()
+ set daily_cost_bdt=(case when daily_cost_date<current_date then 0 else daily_cost_bdt end)+p_actual_cost_bdt,
+     daily_cost_date=current_date,updated_at=now()
  where work_type=v_type;
  insert into public.admin_auto_work_audit(job_id,work_type,action,details)
  values(p_job_id,v_type,case when p_success then 'job_processed' else 'job_attempt_failed' end,
@@ -255,12 +309,16 @@ $$;
 
 revoke all on function public.is_admin_auto_work_admin() from public,anon;
 revoke all on function public.admin_auto_work_overview() from public,anon;
+revoke all on function public.admin_register_auto_work_provider(text,text,text) from public,anon;
+revoke all on function public.owner_review_auto_work_provider(uuid,text,boolean) from public,anon;
 revoke all on function public.admin_set_auto_work_module(text,boolean,numeric) from public,anon;
 revoke all on function public.admin_enqueue_auto_work_job(text,text,text,text,jsonb,text,numeric) from public,anon;
 revoke all on function public.worker_claim_admin_auto_work_job() from public,anon,authenticated;
 revoke all on function public.worker_finish_admin_auto_work_job(uuid,boolean,text,numeric,text) from public,anon,authenticated;
 
 grant execute on function public.admin_auto_work_overview() to authenticated;
+grant execute on function public.admin_register_auto_work_provider(text,text,text) to authenticated;
+grant execute on function public.owner_review_auto_work_provider(uuid,text,boolean) to authenticated;
 grant execute on function public.admin_set_auto_work_module(text,boolean,numeric) to authenticated;
 grant execute on function public.admin_enqueue_auto_work_job(text,text,text,text,jsonb,text,numeric) to authenticated;
 grant execute on function public.worker_claim_admin_auto_work_job() to service_role;
