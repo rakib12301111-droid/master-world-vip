@@ -37,3 +37,26 @@ To make it operational:
 
 ## Safety
 No fake ad clicks/views, auto-surf, traffic exchange, fake engagement, fake signups, CAPTCHA bypass, unauthorized scraping, account takeover or provider-terms violations.
+
+
+## Free-quota policy and income estimate (2026-11-25)
+
+### No universal "one free limit"
+A free allowance belongs to each provider and often varies by model, endpoint, account, region and date. It must be read from that provider's official quota/billing page or API response; do not hard-code one shared request count for all five modules.
+
+Examples checked from official provider documentation:
+- Cloudflare Workers AI: 10,000 Neurons per day on the Free allocation; excess requires a Paid plan. This is compute usage, not 10,000 guaranteed jobs. [Official pricing](https://developers.cloudflare.com/workers-ai/platform/pricing/).
+- Gemini API: free access is limited to selected models and has model-specific rate limits; there is no single universal daily request quota. [Official pricing](https://ai.google.dev/gemini-api/docs/pricing).
+
+### Safe default for MASTER WORLD VIP
+- Start in **FREE-ONLY / zero-paid-spend** mode.
+- Track usage separately for each provider, model and module.
+- Warn at 80%; pause at 100% of the confirmed free allowance, or earlier on provider quota/rate-limit errors.
+- Never fall back to a paid endpoint automatically.
+- Paid usage stays disabled until the Owner explicitly approves a separate budget.
+- Local PDF formatting, image resize/compression and basic website checks may not need an AI API, but hosting, storage, bandwidth and monitoring providers may still impose limits or charges.
+
+### Income: no guaranteed amount from free quota
+Free quota itself generates **৳0**. Revenue is counted only after a real customer accepts the deliverable and payment settles. Example only: if accepted customer work settles ৳500 and direct fees/costs are ৳30, net before other company overhead is ৳470. This is an illustration, not an earnings forecast. With no paying customer, settled income is ৳0 even if all free quota is used.
+
+The dashboard must report separately: free quota consumed, jobs processed, customer-accepted jobs, invoiced amount, settled receipts, direct costs, and net settled revenue. Never convert API calls, AI outputs or queued jobs into income.
