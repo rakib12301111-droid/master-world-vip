@@ -143,3 +143,20 @@ Possible lawful revenue streams (only after real contracts, service delivery and
 ## 14. Resume instruction for future sessions
 
 “MASTER WORLD VIP — প্রথমে docs/PROJECT_HANDOVER_MASTER_BN.md, docs/COMPLETED_WORK_NO_REPEAT_REGISTER_BN.md, এবং docs/MASTER_WORLD_VIP_MASTER_OWNER_REQUIREMENTS_BN.md পড়ুন। Current main HEAD ও latest relevant workflow inspect করুন। Owner/Admin-এর USD revenue-এর 100% eligible entitlement, automatic real USD→BDT conversion ও verified account credit requirement অগ্রাধিকার দিন; কোনো কৃত্রিম income/guarantee নয়। আগে database backup blocker-এর saved-secret confirmation নিন; secret value চাইবেন না। Completed checks repeat করবেন না।”
+
+
+## 13. Global Master Account & Sustainable Goldmine Blueprint — 2026-11-26
+
+Owner-এর নতুন নির্দেশ: MASTER WORLD VIP-কে “পৃথিবীর Master Account” হিসেবে গড়ে তুলতে হবে; এক account-এর মধ্যে সব Master Plan ও বৈধ income engine থাকবে। এর পূর্ণ কৌশল, revenue model, account/workspace architecture, customer acquisition, profit controls, legal gates, rollout roadmap এবং KPI আলাদা authoritative strategy document-এ রাখা হয়েছে:
+
+- `docs/GLOBAL_MASTER_ACCOUNT_GOLDMINE_BLUEPRINT_BN.md`
+
+মূল সিদ্ধান্ত:
+- Positioning: **One Global Master Account for the World**; একটি পরিচয়, কিন্তু Personal/Customer/Creator/Worker/Merchant/Developer/Agency/Enterprise workspace ও permissions আলাদা।
+- আয়: recurring SaaS/subscriptions, বাস্তব customer marketplace, AI usage services, business automation, enterprise/API/white-label, digital products/learning, creator services, labelled advertising/sponsorship, disclosed affiliate partnerships, managed services, local commerce/booking এবং signed distribution partnerships।
+- প্রতিটি revenue engine-এর real customer demand, price, delivery, provider settlement, cost, refund, tax, security ও positive unit economics না থাকলে সেটি OFF থাকবে।
+- Bangladesh-first pilot; প্রমাণিত demand ও country-specific compliance ছাড়া global rollout নয়।
+- “Goldmine” একটি business ambition; guaranteed profit/customer/job/member income নয়। কোনো fake order, fake traffic, pyramid scheme, member deposit বা guaranteed return নয়।
+- Master Account implementation-এর আগে existing Auth/RLS schema audit করতে হবে; duplicate migration বা production change নয়। Existing DB backup/restore safety blocker এবং Owner RBAC blocker আগের মতোই unresolved থাকবে যতক্ষণ evidence PASS না হয়।
+
+এই strategy document requirements only; কোনো revenue engine, payment, bank credit বা global account production-live হয়েছে—এমন দাবি নয়।
