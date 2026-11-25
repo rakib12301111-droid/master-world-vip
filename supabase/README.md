@@ -30,6 +30,16 @@ This repository contains the database foundation, community, privacy, admin/broa
 16. `20261121180000_member_verification_helpdesk.sql` — private member verification/helpdesk requests and staff workflow.
 17. `20261121190000_member_live_location.sql` — consent-based live location sharing and lookup foundation.
 18. `20261122100000_messaging_realtime.sql` — realtime publication and messaging delivery support.
+19. `20261123100000_work_earn_job_board.sql` — member work board and applications.
+20. `202611240001_member_referrals.sql` — referral foundation.
+21. `202611240002_public_member_referral_profile.sql` — public referral profile support.
+22. `202611240003_referral_wallet_rewards.sql` — referral wallet and reward qualification.
+23. `202611240004_owner_monthly_compensation.sql` — Owner monthly compensation ledger.
+24. `202611240005_international_referral_usd_equivalent.sql` — international referral currency equivalent.
+25. `202611240006_network_admin_referral_rewards.sql` — Admin referral reward controls.
+26. `202611240007_referral_payout_reference_hardening.sql` — payout reference validation.
+27. `20261125100000_admin_auto_work_control_plane.sql` — Admin-only five-module Auto Work control plane; modules start disabled.
+28. `20261125130000_admin_auto_work_claim_concurrency_fix.sql` — ensures at most one running job per module when multiple workers poll concurrently.
 
 **Important:** Repository files and this checklist do not prove that any migration has been applied to your Supabase project. SQL is not run by the website automatically. Keep a record of each successfully applied migration. Do not rerun a migration blindly if the project already has part or all of its schema; inspect the database first.
 
