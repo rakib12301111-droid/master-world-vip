@@ -142,3 +142,5 @@
  window.showPage=(id)=>{if(typeof oldPageHandler==='function')oldPageHandler(id);else{document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active',p.id===id));}if(id==='security'){refreshFactors();refreshDevicePanels();attachSecurityAuthListener();}};
  setTimeout(()=>{attachSecurityAuthListener();if(document.getElementById('security')){refreshFactors();refreshDevicePanels();}},900);
 })();
+/* Load the additive member dashboard without replacing existing app modules. */
+(()=>{const s=document.createElement('script');s.src='./member-dashboard.js?v=20261125-1';s.defer=true;document.head.appendChild(s);})();
