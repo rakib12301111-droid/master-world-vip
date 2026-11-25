@@ -7,12 +7,11 @@
 
 ## 1. Exact resume point — start here next time
 
-**Do not restart the project or rerun all checks.** Continue from the current repository HEAD:
-`2284d46eeb65301f1219ab201f856301a4c82c84` (this commit expands this handover only; latest application-code baseline is `ade8cf030a92d95214be2b6fc2087bb4cb5418cd`).
+**Do not restart the project or rerun all checks.** Continue from the latest commit on the existing default branch (main). At every resume, read the current branch HEAD and compare it with the evidence recorded in this file. The historical application-code baseline for the 2026-11-25 finance verification is `ade8cf030a92d95214be2b6fc2087bb4cb5418cd`.
 
 Next actions, in order:
 
-1. First check the newest Actions runs for current HEAD `2284d46eeb65301f1219ab201f856301a4c82c84`; at the time of this handover update, its Pages deployment and verification runs were queued.
+1. First check the newest Actions runs for the current main-branch HEAD; never assume an old SHA is still HEAD. The handover-only updates also trigger Pages workflows, so inspect their latest run status.
 2. Fix the latest live Pages verification failure recorded in section 9.2 by identifying the exact failed assertion and comparing the published HTML, Update Center audit link, manifest and service-worker cache version with the committed source.
 3. Fix the known PWA cache assertion failure in `scripts/verify-global-communication.py` / `www/sw.js` recorded in section 9.2. Update the real source cache version or stale validator expectation correctly; do not merely force a passing result.
 4. Run only the affected verification workflows once after the targeted fixes. Reuse the finance 22/22, Community readiness, Owner health 9/9 and membership-helper PASS evidence unless relevant source/validator changes.
