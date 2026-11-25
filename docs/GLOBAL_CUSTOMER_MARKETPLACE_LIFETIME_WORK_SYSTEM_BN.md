@@ -1,0 +1,82 @@
+# MASTER WORLD VIP — Global Customer Marketplace & Lifetime Work System
+**Version:** 1.0  
+**Date:** 2026-11-26  
+**Status:** OWNER-REQUESTED PRODUCT REQUIREMENTS / NOT LIVE  
+**Repository:** `rakib12301111-droid/master-world-vip`
+
+## 1. Vision
+Build MASTER WORLD VIP as a global marketplace where customers in Bangladesh and other countries submit legitimate paid work, pay through verified payment providers, receive accepted deliverables, and create ongoing opportunities for ordinary members.
+
+The Owner's ambition is to reach 10,000,000+ customers, maintain a catalogue of 2,000+ real project/service categories and verified brand/client programmes, and support repeat/unlimited order submissions over the long term. These are growth and product goals—not current metrics, guaranteed customer demand, guaranteed lifetime work, or guaranteed income.
+
+## 2. Customer Order Portal
+Required customer journey:
+1. Customer registration, verification and account security.
+2. Browse searchable, country/language-aware service catalogue.
+3. Submit a job brief, scope, files, budget, currency, deadline and acceptance criteria.
+4. Receive a transparent quote including taxes/fees and expected delivery window.
+5. Accept terms and pay through an approved payment provider.
+6. Track order status, assigned work, questions, delivery and revisions.
+7. Review/accept deliverable, open a dispute if needed, and receive invoice/receipt and final files.
+
+Only server-to-server verified payment settlement can mark an order paid. Redirect pages, screenshots and user-entered transaction references are not proof. Files must be private, encrypted, tenant-isolated, validated, retention-controlled and audited.
+
+## 3. Real projects, categories and brands
+- Build 2,000+ categories/modules progressively; every active category must have a clear lawful deliverable, real customer demand or verified client/provider contract, price and cost model, quality/acceptance criteria, skill requirements, permission and operational owner.
+- A brand/client programme may be listed as active only with authorization/contract or verifiable public programme terms. Do not imply brand endorsement or invent active projects.
+- Customers may submit repeat orders without an arbitrary lifetime count promise, but intake and execution remain subject to fair-use rules, queue capacity, provider quotas, security, budgets, legal scope and disclosed service levels.
+- Do not display fabricated customers, orders, brands, project activity, income or availability.
+
+## 4. Smart Member Assignment
+Route only eligible, funded orders to ordinary members. Matching inputs: skills, language, location eligibility, verification, availability, workload fairness, quality, deadline, conflict checks and member-selected preferences.
+
+Before acceptance, show the full scope, exact member payable, currency, effort estimate, deadline, acceptance/revision criteria, payment status, commission/fees, dispute route and payout timing. Do not lower an accepted payable retroactively. Scope changes require a new quote and member consent. No real funded customer order means no work assignment and no earning claim.
+
+## 5. 24/7 Server-side Auto Work
+Use durable server-side queues and workers, not member phones or browsers as always-on compute. Required controls: idempotent job claims, leases/heartbeats/recovery, bounded retries/backoff, timeouts, cancellation, fair scheduling, per-customer/per-module concurrency, cost caps, provider quota tracking, monitoring, sanitized logs, backup/restore and global emergency stop.
+
+Admin/Owner work and member work must use separate infrastructure, queues, credentials, storage namespaces and budgets. Member jobs cannot consume Owner/Admin reserved capacity. Quota exhaustion or provider outage must pause/queue safely; no silent paid fallback. 24/7 operation is an engineering target, not a guarantee of uninterrupted lifetime uptime.
+
+2,000+ modules and 2,000 simultaneous jobs are separate scaling dimensions. Concurrent execution must grow only after real order demand, load/failure/isolation tests, infrastructure capacity, provider permission and an explicit spend cap. Do not turn on 2,000 concurrency by changing a single setting.
+
+## 6. Security and anti-fraud
+Enforce server-side RBAC, MFA for privileged roles, least privilege, tenant-isolated RLS, secure sessions, input/output validation, rate limiting, abuse detection, encryption, secret rotation, dependency review, backup/restore and incident response.
+
+Order, payment, job, acceptance, refund, settlement and payout are server-authoritative state machines with signed provider webhooks, unique idempotency keys, audit evidence and reconciliation. Include customer/member verification as legally required, dispute/appeal workflows, chargeback review, privacy controls and retention/deletion. No credential theft, fake traffic/engagement, CAPTCHA bypass, unauthorized scraping or provider-terms violations.
+
+## 7. No-loss member protection
+- No joining fee, deposit, mandatory purchase, paid task unlock or requirement to buy a plan.
+- Calculate unit economics before accepting a job. If member payable, direct costs, provider/payment fees, tax, refund/chargeback exposure and required reserves cannot be funded with a sustainable margin, reject, re-quote or pause the job.
+- Protect the full disclosed member payable after accepted work. Never fund platform loss, admin commission, refunds or chargebacks by taking earned wages or member wallet balances.
+- Earnings become payable only after deliverable acceptance and actual customer payment settlement. A wallet entry is not a completed cash withdrawal.
+- The example “৳100 cost → ৳1,000+ income” is an aspiration, not a forecast or guarantee. Never advertise or promise this return without proven per-task economics and actual settled customer revenue.
+
+## 8. Progressive Admin commission: 20% / 35%
+Owner requests 20% for lower-value/smaller work and 35% for higher-value work. The BDT threshold separating the two tiers has not yet been specified; do not invent or hard-code it. Make it configurable only after explicit Owner approval, public disclosure and audited prospective activation.
+
+Both rates apply solely to Distributable Net Platform Revenue after member payable, taxes, payment/provider fees, direct/compute/operating costs, refunds/chargebacks and required reserves/restricted liabilities are fully accounted for. Never calculate commission on gross customer payments, member wages, unsettled/disputed funds or refund reserves. If net base is zero/negative or reconciliation/reserve/member-pay gates fail, commission is zero and fails closed.
+
+The prior fixed 20% policy is superseded as the requested future tier design, but the existing production behavior must not change until the approved threshold, implementation, legal review and end-to-end tests are complete. Rate changes are prospective only and must be disclosed before order acceptance and audited.
+
+## 9. Admin Free Plan and Paid Plan
+Admin dashboard must offer:
+- **Free Admin Plan** (default), with clearly displayed provider-defined quotas and limits.
+- **Paid Admin Plan** (optional), enabled only after Admin's explicit selection, displayed price/terms, secure payment, approved budget cap and audit record.
+
+No silent paid upgrade or paid fallback. Paid plan costs cannot be taken from member wages, member wallet, customer restricted funds or refund reserve. These are Admin-only options; members must not be required to purchase a plan to access legitimate work.
+
+## 10. Scale-up roadmap
+1. Secure customer portal and verified payment flow in staging.
+2. One real client/provider contract and one paid pilot order.
+3. One human-reviewed member task category with disclosed pay, acceptance and successful payout.
+4. One isolated server worker and approved provider module.
+5. Add categories only with real demand, contract/permission, unit economics and quality controls.
+6. Grow catalogue in stages (20 → 100 → 500 → 2,000+); scale concurrency separately using measured load tests.
+7. Complete legal/privacy/security, refund/dispute, disaster-recovery and controlled production-canary gates.
+
+## 11. Current blockers and release rule
+This document is a product requirements baseline only. It does not deploy or activate the portal, real customer acquisition, 10-million customer base, 2,000 live projects, unlimited work, workers, providers, payments, commission tiers, Admin plan checkout or member payouts.
+
+Existing database safety gate remains mandatory: secure correction of the GitHub `SUPABASE_DB_URL` secret, encrypted backup, decrypt, disposable restore with nonzero table count, migration dry-run and explicit authorization before production migration. No secret or password belongs in chat or documentation.
+
+Mark a feature LIVE only after code, required deployment, production configuration, security review, provider/client permission and real end-to-end acceptance all pass. Until then use PARTIAL / BLOCKED / NOT LIVE.
