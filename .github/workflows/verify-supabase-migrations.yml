@@ -104,4 +104,5 @@ jobs:
       - name: Verify Owner compensation ledger security
         run: python scripts/verify-owner-compensation.py
       - name: Verify Work & Earn wallet and Owner profit security
+        if: always()
         run: python scripts/verify-work-earn-finance.py
