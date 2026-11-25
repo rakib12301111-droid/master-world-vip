@@ -90,3 +90,25 @@ No real revenue, reward funding, task payment or referral payout is created by t
 - Added earning roadmap candidates: (1) verified microtasks and client task escrow/reserve; (2) digital service storefront with order milestones; (3) reusable digital templates and document services; (4) sponsor-funded challenge/campaign tasks; (5) approved partner lead-generation and affiliate offers; (6) creator support service packages; (7) skill badges and free training-to-task progression; (8) transparent marketplace commission; (9) client repeat-order and quality tiers; (10) admin-only campaign/referral analytics. All task rates and availability must be shown before acceptance and backed by reserved funds.
 - Added payment-source reconciliation requirements: payer identity/category, contract/order/campaign ID, gross receipt, tax/processor/refund adjustments, settled net amount, restricted/unrestricted designation, reserve allocation, payout reference and reviewer audit. Never treat impressions, clicks, unpaid invoices, pending partner reports or chargeback-prone receipts as spendable cash.
 - **Status: policy/roadmap documentation only.** No revenue provider, sponsor, client checkout, marketplace payment, partner API, Company Revenue Ledger, Owner commission calculator or Admin-only referral workflow has been connected or made live by this update. No money has been collected or paid.
+
+
+## Update 19 — 2026-11-25: Owner-earned revenue funding and Admin Auto Work
+
+### Owner কাজ করে কোম্পানির আয় তৈরি করলে
+- Owner নিজে কোনো বাস্তব client task/service সম্পন্ন করে আয় করলে, client-এর contract/invoice অনুযায়ী টাকা Owner নাকি কোম্পানির পাওনা—তা আগে নির্ধারণ করতে হবে। কোম্পানির নামে কাজ/চুক্তি হলে এবং টাকা কোম্পানির হিসাবে বাস্তবে settled হলে সেটি Company Revenue Ledger-এ যাবে।
+- Owner-এর ব্যক্তিগতভাবে সম্পন্ন কাজের পারিশ্রমিক স্বয়ংক্রিয়ভাবে কোম্পানির আয় নয়। Owner চাইলে লিখিতভাবে নিজের প্রাপ্ত আয়ের নির্দিষ্ট অংশ কোম্পানির Referral Reward Fund-এ বরাদ্দ করতে পারেন; এটি ঐচ্ছিক, বাধ্যতামূলক ব্যক্তিগত deposit নয়।
+- উদাহরণ: কোম্পানির নামে করা বাস্তব কাজ থেকে ৳১,০০০ net settled revenue এলে এবং অনুমোদিত allocation ৳৫০০ হলে, সর্বোচ্চ ৳৫০০ Referral Reward Fund-এ যাবে। বাকি অর্থ কোম্পানির অন্য খরচ/রিজার্ভে থাকবে। এটি কেবল প্রকৃত অর্থ পাওয়া ও settlement সম্পন্ন হওয়ার পর।
+- সাধারণ সদস্যের earned work payment, customer refund reserve, sponsor-restricted funds বা অন্যের জমা/আমানত থেকে Admin referral bonus দেওয়া নিষিদ্ধ।
+- Referral bonus policy-তে ২৪ ঘণ্টার account-good-standing qualification থাকতে পারে; এটি continuous online time নয়। কোনো নতুন সদস্যকে কাজ করতে বাধ্য করা যাবে না, যদি Owner আলাদাভাবে প্রকাশিত শর্তে সেটি অনুমোদন না করেন।
+- Owner/Admin bonus rate, eligibility, maximum budget, payment timing ও legal/tax treatment লিখিতভাবে প্রকাশ/অনুমোদন না হওয়া পর্যন্ত নতুন cash liability/withdrawal promise চালু করা যাবে না। Unfunded amount-কে Available বা withdrawable দেখানো যাবে না।
+
+### Admin-only Auto Work & Earn
+- নতুন প্রস্তাবিত সুবিধার নাম: **Admin Auto Work & Earn**; এটি কেবল অনুমোদিত Admin role-এর জন্য। সাধারণ সদস্যের UI বা account-এ এই সুবিধা থাকবে না।
+- এটি কেবল বাস্তব, অনুমোদিত ও পারিশ্রমিক-নির্ধারিত client/sponsor/partner কাজের বৈধ automation করবে—যেমন অনুমোদিত API-তে data processing, scheduled report preparation, file conversion/formatting, বা client-অনুমোদিত batch processing।
+- ফোনে internet চালু থাকলেই আয় তৈরি হয় না। প্রতিটি automated job-এর জন্য task owner/client, written permission, scope, rate, acceptance criteria, deadline, budget/funded status এবং output verification থাকতে হবে।
+- ভুয়া ad impression/click/view, auto-like/follow/comment, fake account/signup, traffic inflation, bot engagement, CAPTCHA/verification bypass, অন্যের account-এ অননুমোদিত কাজ, অথবা provider terms ভঙ্গ করে কোনো আয় করা যাবে না।
+- Android/PWA app বন্ধ থাকলে বা ফোন sleep/battery optimization-এ গেলে background execution থেমে যেতে পারে। তাই নির্ভরযোগ্য continuous processing দরকার হলে অনুমোদিত server-side queue/worker ব্যবহার করতে হবে; ফোনের internet-কে শুধু status/monitoring/control হিসেবে ধরা যাবে। App-এ Pause/Resume, job status, estimated resource use, last run, logs, consent এবং Stop control থাকতে হবে।
+- টাকা কেবল client/sponsor/partner কাজের output গ্রহণ ও বাস্তব payment settlement-এর পর earned হিসেবে রেকর্ড হবে। Job চলা, ফোন online থাকা, বা task attempt করা নিজে কোনো আয় বা withdrawable balance নয়।
+- Admin Auto Work-এর আয় Admin Work Payment/Company Revenue—চুক্তি অনুযায়ী সঠিক ledger-এ যাবে; Referral Bonus ও Owner Commission-এর সঙ্গে মেশানো যাবে না।
+
+**Implementation status:** এই আপডেট কেবল নীতি ও পরিকল্পনা। Auto Work UI, job queue/worker, provider/API integrations, billing, ledger posting, role checks, mobile background behavior, deployment ও acceptance tests এখনো implement/live হয়নি। কোনো স্বয়ংক্রিয় আয় বা payout চালু হয়নি।
