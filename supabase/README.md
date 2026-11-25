@@ -116,3 +116,18 @@ Before enabling for members, test with two consenting accounts and a test device
 ## 8. Android WebView limitation
 
 The current APK is a WebView shell. Web Push through a browser Service Worker is not guaranteed to work inside Android WebView, and this project has not yet added Firebase Cloud Messaging (FCM) native integration. Validate push in Chrome/PWA separately; native Android push requires FCM registration, a secure device-token table and a trusted FCM sender before claiming APK push support.
+## 9. Admin Auto Work — deployment status and remaining requirements
+
+The Auto Work control plane consists of:
+- 20261125100000_admin_auto_work_control_plane.sql
+- 20261125130000_admin_auto_work_claim_concurrency_fix.sql
+
+The existing Admin & Security page contains a read-only Admin Auto Work overview panel. It calls admin_auto_work_overview() and is visible only after server-side role verification. If the migration is not applied, the panel will show a migration/RPC error. If the RPC reports execution_ready: false, the system is control-plane-only.
+
+DO NOT ENABLE THE FIVE MODULES YET. A real server-side worker and reviewed provider-specific connectors do not exist in this repository as deployed services. Before any job can execute, implement and deploy the worker, connect the actual provider APIs using server-side secrets, validate client permission/contract and acceptance criteria, and test idempotency, retries, timeouts, cost caps, provider outages and queue isolation in staging.
+
+Storage decision: Cloudflare R2 Standard is the primary storage candidate, with an independent encrypted backup and an Owner-downloadable copy. No R2 bucket or backup connector is currently connected. Do not put customer files in GitHub.
+
+The guarded workflow .github/workflows/apply-supabase-migrations.yml includes both Auto Work migrations in its migration inventory. Production migration apply remains blocked unless the workflow's recoverable-backup confirmation, restore-test confirmation, non-secret backup reference and exact authorization phrase are supplied. A documentation/code commit does not apply a database migration.
+
+CURRENT STATUS: Admin overview UI code added; migration files and guarded workflow inventory updated; Supabase migrations, worker, connectors, R2 storage and end-to-end execution remain NOT DEPLOYED.
