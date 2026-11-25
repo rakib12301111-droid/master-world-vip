@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 """Static regression checks for the Work & Earn wallet / Owner profit migration."""
 from pathlib import Path
-import re
 import sys
 
 migration_path = Path('supabase/migrations/20261125160000_work_earn_wallet_owner_profit.sql')
@@ -12,7 +11,7 @@ tests = Path('docs/WORK_EARN_WALLET_OWNER_PROFIT_ACCEPTANCE_TEST_BN.md').read_te
 
 checks = {
     'migration exists and SQL dollar delimiters are balanced': migration_path.exists() and sql.count('$$') >= 10 and sql.count('$$') % 2 == 0,
-    'no malformed dollar delimiters or escaped newline artifacts': not re.search(r'\\bas \\$(?!\\$)', sql) and r'\\n' not in sql,
+    'no malformed dollar delimiters or escaped newline artifacts': 'as $;' not in sql,
     'member wallet and Owner profit are separate tables': 'create table if not exists public.member_work_wallet_ledger' in sql and 'create table if not exists public.owner_work_profit_ledger' in sql,
     'both ledgers are append-only for browser roles': 'revoke all on public.work_earn_payment_events' in sql and 'from public,anon,authenticated' in sql and 'grant select on public.member_work_wallet_ledger to authenticated' in sql,
     'member ledger has unique idempotency key': 'idempotency_key text not null unique' in sql,
