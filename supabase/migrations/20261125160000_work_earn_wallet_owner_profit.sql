@@ -292,8 +292,9 @@ begin
     raise exception 'Financial reconciliation, 100% refund reserves or operating budget gate failed/stale';
   end if;
 
-  select count(*),min(user_id) into v_owner_count,v_owner from public.app_user_roles where role='owner';
-  if v_owner_count <> 1 or v_owner is null then raise exception 'Exactly one verified Owner account is required'; end if;
+  select count(*) into v_owner_count from public.app_user_roles where role='owner';
+  if v_owner_count <> 1 then raise exception 'Exactly one verified Owner account is required'; end if;
+  select user_id into v_owner from public.app_user_roles where role='owner';
   select owner_profit_rate into v_rate from public.work_earn_commission_settings where singleton=true for update;
   v_net := greatest(0,p_platform_fee_gross-p_tax_amount-p_provider_fee-p_operating_cost-p_restricted_liability);
   v_profit := round(v_net*v_rate/100,2);
