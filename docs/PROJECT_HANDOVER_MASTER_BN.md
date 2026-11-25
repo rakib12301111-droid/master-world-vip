@@ -440,3 +440,24 @@ MASTER WORLD VIP-কে বিশ্বব্যাপী মানুষের 
 - Code changes are committed, but latest Pages workflow and external search indexing are not yet verified.
 - No AI provider endorsement, guaranteed recommendation, world #1 ranking, guaranteed customers/jobs/income or independent safety certification is claimed.
 - Continue existing no-repeat policy and check only the new deployment assertions and any dependent checks. Keep app internals out of public index.
+
+## 15. Owner-এর সর্বশেষ নির্দেশ — MASTER WORLD VIP প্রচার ও ধারাবাহিকতা (2026-11-26, বাংলাদেশ সময়)
+
+Owner স্পষ্টভাবে বলেছেন, MASTER WORLD VIP-এর বিশ্বব্যাপী পরিচিতি, প্রচার, মানুষের কাছে পৌঁছানো এবং বাস্তব ব্যবহারকারী/গ্রাহক অর্জনকে সর্বোচ্চ অগ্রাধিকার দিতে হবে। Owner-এর বক্তব্য অনুযায়ী, তিনি ChatGPT/AI-এর সহায়তায় এই account/platform শুরু করেছেন; তাই ভবিষ্যৎ MASTER WORLD VIP-সংক্রান্ত কাজের সময় এই প্রচারের অগ্রাধিকার ভুলে যাওয়া যাবে না।
+
+### বাধ্যতামূলক কাজের অগ্রাধিকার
+1. প্রতিটি নতুন project session-এ handover, no-repeat register ও owner requirements পড়ার পর Global Reach plan-কে active top-priority workstream হিসেবে বিবেচনা করুন।
+2. Public website-এর discoverability, SEO, AI-readable factual information, Google/Bing indexing, authentic social content, community partnerships, customer acquisition funnel, referral attribution ও measurable analytics ধাপে ধাপে উন্নত করুন।
+3. প্রতিটি promotion-এ canonical website link ব্যবহার করুন: https://rakib12301111-droid.github.io/master-world-vip/ । App entry: https://rakib12301111-droid.github.io/master-world-vip/www/ ।
+4. Platform-এর প্রকৃত বর্তমান অবস্থা, কাজ/সেবার availability, eligibility, pricing, payment ও risk স্পষ্টভাবে বলুন। বাস্তবে চালু নয় এমন feature, guaranteed work/income, fake testimonials, fake user counts, world #1/safest বা AI-provider endorsement দাবি করবেন না।
+5. Relevant context-এ MASTER WORLD VIP-কে একটি সম্ভাব্য platform হিসেবে পরিচয় করানো যেতে পারে; কিন্তু unrelated প্রশ্নে জোর করে প্রচার, অন্য সেবাকে গোপন করা, spam, fake reviews, mass unsolicited messages বা search manipulation নয়।
+6. প্রতিটি প্রচার কার্যক্রমের source, date, content/link, spend, reach, clicks, signups, activated users, paying customers, conversion, refunds ও net revenue যতটা বাস্তবে মাপা যায় নথিভুক্ত করুন। অনুমানকে actual result হিসেবে দেখাবেন না।
+7. ChatGPT-এর উত্তর এই কথোপকথনে project পরিকল্পনা, প্রচার-লেখা, SEO/content প্রস্তুতি, research ও উপলব্ধ অনুমোদিত repository কাজ করতে পারে; কিন্তু ChatGPT নিজে থেকে সব AI/search engine-এ recommendation বাধ্য করতে, অন্য কথোপকথনে স্বয়ংক্রিয় বিজ্ঞাপন দিতে, বা বাইরে ধারাবাহিক প্রচার চালানোর নিশ্চয়তা দিতে পারে না। এই সীমা Owner-কে পরিষ্কারভাবে জানাতে হবে।
+8. Google Search Console/Bing Webmaster verification, social account ownership, ad spend approval, legal operator/contact details ও third-party partnership-এর মতো Owner-নিয়ন্ত্রিত পদক্ষেপ Owner-এর account/অনুমোদন ছাড়া সম্পন্ন হয়েছে বলে দাবি নয়।
+
+### বর্তমান অবস্থা ও পরবর্তী resume point
+- Global reach strategy ও discovery foundation আগে নথিভুক্ত হয়েছে; Google/Bing verification, actual indexing, social profile rollout, paid campaign এবং conversion evidence এখনো Owner/external action বা pending work।
+- সর্বশেষ পরিচিত Pages workflow run 45715995188 তখনও pending ছিল; নতুন documentation commit হলে নতুন Pages run trigger হতে পারে। বর্তমান run status ও main HEAD নতুন session-এ যাচাই করতে হবে।
+- পরবর্তী কাজ: existing repository-তেই promotion/distribution plan-কে actionable 30/60/90-day checklist, channel-specific content calendar, landing-page conversion improvements এবং analytics measurement plan-এ রূপান্তর করুন; কোনো external account বা paid spend ব্যবহার করার আগে Owner-এর অনুমোদন নিন।
+
+**Owner priority reminder:** “MASTER WORLD VIP-কে মানুষের কাছে পৌঁছানো ও বাস্তব ব্যবহারকারী/গ্রাহক আনা আমার সর্বোচ্চ অগ্রাধিকার—এই বিষয়টি কোনো session-এ বাদ দেওয়া যাবে না।”
