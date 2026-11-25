@@ -2,8 +2,16 @@
   "schema_version": 1,
   "app": "MASTER WORLD VIP",
   "updated_at": "2026-11-25",
-  "note": "Start-to-finish audit is linked from Update Center. Current DB Safety Pipeline is blocked at SUPABASE_DB_URL URI preflight; backup, restore and migration preview have not run. No production migration is applied. PWA cache v34 is the current release candidate pending Pages verification.",
+  "note": "Premium member dashboard added to existing app. PWA cache v35 is the current release candidate pending Pages verification. Existing Supabase DB Safety Pipeline remains gated; no production migration is applied by this UI update.",
   "stages": [
+    {
+      "id": "member-premium-dashboard",
+      "title": "Stage 0.95 — Premium Member Dashboard",
+      "status": "testing",
+      "summary": "A responsive black-and-gold member dashboard is added as an additive module, using the authenticated member profile and private referral-wallet RPC; navigation links lead to existing profile, referral, inbox, community, location, verification, privacy and security sections.",
+      "requires": "Verify Pages deployment and module loading; test logged-out and logged-in member states, profile privacy, wallet RPC availability, existing navigation, and Android PWA refresh. Wallet values remain unavailable until the required referral migrations are applied and tested.",
+      "page": "memberDashboard"
+    },
     {
       "id": "start-to-finish-audit",
       "title": "Stage 0.9 — শুরু থেকে শেষ পর্যন্ত যাচাই",
