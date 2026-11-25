@@ -82,6 +82,9 @@ create index if not exists admin_auto_work_jobs_queue_idx
   where status='queued';
 create index if not exists admin_auto_work_jobs_type_created_idx
   on public.admin_auto_work_jobs(work_type,created_at desc);
+-- Serialize execution per module so concurrent workers cannot overspend the module's daily cap.
+create unique index if not exists admin_auto_work_one_running_per_module_idx
+  on public.admin_auto_work_jobs(work_type) where status='running';
 create index if not exists admin_auto_work_audit_created_idx
   on public.admin_auto_work_audit(created_at desc);
 
@@ -260,6 +263,8 @@ begin
  where j.status='queued' and j.available_at<=now()
    and j.attempts<j.max_attempts
    and (case when m.daily_cost_date<current_date then 0 else m.daily_cost_bdt end)<m.daily_budget_bdt
+   and (j.budget_cap_bdt-j.actual_cost_bdt) <=
+       (m.daily_budget_bdt-(case when m.daily_cost_date<current_date then 0 else m.daily_cost_bdt end))
    and j.actual_cost_bdt<j.budget_cap_bdt
  order by j.created_at
  for update of j skip locked limit 1;
