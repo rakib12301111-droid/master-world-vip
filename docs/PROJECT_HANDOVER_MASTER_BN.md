@@ -12,8 +12,8 @@
 Next actions, in order:
 
 1. First check the newest Actions runs for the current main-branch HEAD; never assume an old SHA is still HEAD. The handover-only updates also trigger Pages workflows, so inspect their latest run status.
-2. Fix the latest live Pages verification failure recorded in section 9.2 by identifying the exact failed assertion and comparing the published HTML, Update Center audit link, manifest and service-worker cache version with the committed source.
-3. Fix the known PWA cache assertion failure in `scripts/verify-global-communication.py` / `www/sw.js` recorded in section 9.2. Update the real source cache version or stale validator expectation correctly; do not merely force a passing result.
+2. The Pages verifier now validates manifest JSON, checks cache v37, and prints the exact failed line/command. Run the newest Pages workflow and use that diagnostic if it still fails; compare published HTML, Update Center audit link, manifest and service-worker cache version with source.
+3. The known PWA cache assertion mismatch was corrected: `scripts/verify-global-communication.py` now expects `mwvip-pwa-v37`, matching `www/sw.js`. Verify the affected workflow run; do not rerun unrelated PASS checks.
 4. Run only the affected verification workflows once after the targeted fixes. Reuse the finance 22/22, Community readiness, Owner health 9/9 and membership-helper PASS evidence unless relevant source/validator changes.
 5. Only after static and Pages live-release verification pass, continue with the guarded database backup/restore/dry-run gates. Do not apply production migrations automatically.
 
@@ -444,3 +444,48 @@ Workflow file থাকা মানে তার schedule/secret/provider integ
 8. প্রতিটি meaningful update-এর পর এই ফাইলের Last updated, HEAD SHA, workflow run URLs/status, completed/pending state এবং next action সংশোধন করুন।
 
 **Resume phrase:** “MASTER WORLD VIP — docs/PROJECT_HANDOVER_MASTER_BN.md সম্পূর্ণ পড়ে, বর্তমান GitHub HEAD ও workflow evidence মিলিয়ে, PASS হওয়া কাজ পুনরায় না করে, section 12-এর পরবর্তী কাজ থেকে শুরু করুন।”
+
+
+## 8.10 Feature Register-এর সব Stage-এর cross-check — কোনো module বাদ নয়
+
+আগের Feature Completion Register-এর `Feature register` table এবং Update Center manifest-এর stage list-এর সঙ্গে master handover মিলিয়ে নিচের সম্পূরক inventory যোগ করা হলো। এগুলো আলাদা feature/module; 8.7-এর 28টি area-র মধ্যে কয়েকটি আগে শুধু সংক্ষেপে উল্লেখ ছিল।
+
+| Feature / Stage | Repository-তে যা আছে | বাকি / সঠিক অবস্থা |
+|---|---|---|
+| One-Click Safe Setup / Workspace Settings | Yes / Review / Later consent flow, local preference store, Dashboard status card, Settings page | Browser/Android-এ save/reload, language/theme পুরো UI-তে সঠিকভাবে প্রয়োগ এবং Pages verification acceptance বাকি; optional analytics, OS permission, external connection ও legal consent default off |
+| Main Dashboard / PWA shell | Responsive dashboard, navigation, PWA manifest, icons, service worker, offline shell | Android real-device install/update/offline acceptance বাকি |
+| Supabase Auth / Registration / Login | Signup, login, password reset/logout, session/profile loading, email OTP UI + verify/resend wiring | Auth URL/provider/template, real inbox OTP, production migration ও two-account RLS acceptance বাকি |
+| Global Community | Member search, friend request accept/decline/cancel, accepted-friend-only direct chat RPC, public groups/group chat | Production migration, two-account privacy/membership test ও real message delivery acceptance বাকি |
+| Unified Inbox / Notifications / Push | Inbox, unread/read markers, per-user push subscription, service-worker notification display/click, send-push Edge Function foundation | VAPID/database webhook/Edge Function deployment, Android Chrome/PWA real push test; native APK-তে আলাদা FCM integration |
+| Admin Member Broadcast | Owner/Super Admin/Admin restricted broadcast UI, recipient inbox record, server-side permission and 3/hour rate-limit foundation | Migration apply, owner bootstrap and member-isolation/delivery acceptance বাকি |
+| Privacy / GDPR / Consent / Data Rights | Consent sync/events, privacy-rights request queue, access/correction/deletion request UI/backend foundation | Published privacy/cookie/retention policy, real request fulfilment, deletion/export/correction workflow, processor/contact/legal review বাকি; GDPR certification দাবি নয় |
+| AI Text & Voice Assistant | AI assistant Edge Function starter/foundation | Provider/model, server-side API secret, deploy, voice input/output, limits/abuse/error acceptance বাকি |
+| AI Image Search + License | AI Center placeholder/UI foundation | Licensed provider, source/attribution/license metadata, server-side integration and rights tests বাকি |
+| Facebook Public Discovery | Facebook Center UI and consent/privacy guidance | Meta app, approved Graph API permission/review and compliant public-data integration বাকি; scraping/password/OTP collection নিষিদ্ধ |
+| Active User Finder | Consent-based AI/manual workflow concept | Explicit opt-in availability, expiry, block/report, rate limit and privacy-safe implementation not complete; phone/SIM activity inference or covert location prohibited |
+| Referral / Global Promotion | Referral codes/attribution, public member referral profile, direct + Owner-network reward ledgers, FX/rate UI, pending reward wallet, Admin review/processor foundation | Production migrations, function/cron, confirmed funding, FX/country verification, two-member/deep-tree and 24-hour qualification acceptance, actual payout connector বাকি |
+| Owner/Admin Compensation | ৳1,000 monthly minimum policy and separate Owner compensation ledger/UI/scheduled accrual foundation | Migration, secret, Owner role, monthly live run, verified eligible settled income and actual transfer reconciliation bাকি |
+| Android APK / Release | WebView Android project, debug/release workflows, signing/checksum foundation | Signed release build, physical-device install/update/security test এবং release evidence বাকি |
+| Google Play Store | Roadmap only | Developer account, signed AAB, store listing, privacy/data safety declarations, screenshots, policy review and Play approval বাকি; app Play Store-এ published নয় |
+| Landing Page / Website | GitHub Pages site and PWA shell in repository | Current Pages live-release verification must pass; production feature acceptance separate |
+| Premium Member Dashboard | Black/gold dashboard UI/module, authenticated profile and private referral-wallet RPC integration | Current Pages deployment/module load, logged-out/logged-in state, profile privacy, RPC availability and Android refresh acceptance বাকি |
+| Start-to-Finish Audit / Update Center | Audit document link, update manifest, version comparison and user-approved PWA update activation | Live manifest must be valid JSON; published audit link, current cache version and Update Center behavior must pass deployment/browser tests |
+
+### Manifest ও release metadata audit finding — 2026-11-25
+
+- Full audit-এ `www/update-manifest.json`-এ একটি syntax defect পাওয়া যায়: Anti-Theft stage-এর object শেষ হওয়ার পরে পরবর্তী stage-এর আগে comma/closing brace অনুপস্থিত ছিল। ফলে manifest **valid JSON ছিল না**। এটি code update `4b5b3c1155670f30fcd0ce77792c8265c194dbb0`-এ ঠিক করা হয়েছে; JSON parse করে 17টি top-level stage যাচাই করা হয়েছে।
+- Manifest-এর note-এ PWA cache v36 লেখা ছিল, কিন্তু actual `www/sw.js` cache source ছিল `mwvip-pwa-v37`; manifest note v37-এর সঙ্গে align করা হয়েছে।
+- Pages verification workflow-এ manifest JSON parse validation, cache v37 marker check এবং failure line/command দেখানোর ERR trap যোগ হয়েছে — commit `c42438dcbecb661e4e933b7dcf9f3bd5bc475175`।
+- Global communication validator-এ stale expectation `mwvip-pwa-v34` পাওয়া যায়; actual service worker v37। Validator expectation v37-এ align করা হয়েছে — commit `2278383df96dbd85caa9d5520af2164381e18ad2`।
+- এই code fixes commit হয়েছে, কিন্তু সংশ্লিষ্ট নতুন GitHub Actions runs PASS না হওয়া পর্যন্ত full verification complete বলা যাবে না।
+- Repository-তে দুটি পুরোনো, মূল app-এর সঙ্গে যুক্ত নয় এমন HTML artefact পাওয়া গেছে: `www/index.html।` এবং `www/www/index.html`। Search-এ বর্তমান app code/workflow থেকে এগুলোর কোনো reference পাওয়া যায়নি। এগুলো stale duplicate/legacy candidate; কোনো live feature-এর source হিসেবে গণ্য করা যাবে না। আলাদা review ছাড়া delete করা হয়নি।
+
+## 9.5 এই পূর্ণ অডিটে নতুন পাওয়া correction ও verification queue
+
+1. `www/update-manifest.json` invalid JSON ছিল; উপরে উল্লেখিত commit-এ repair এবং JSON parse check করা হয়েছে।
+2. Manifest-এর cache note v36 ছিল, actual service worker v37; note v37 করা হয়েছে।
+3. `scripts/verify-global-communication.py` v34 খুঁজছিল, কিন্তু service worker v37; expectation v37 করা হয়েছে।
+4. Pages workflow এখন manifest JSON parse করবে এবং ব্যর্থ হলে exact line/command log করবে। নতুন workflow run না হওয়া পর্যন্ত deployment verification pending।
+5. Feature Register-এ `Last reviewed: 2026-11-24` এবং Update Center manifest-এ পুরোনো status text রয়েছে; এই master handover-ই সর্বশেষ consolidated source of truth। Feature Register ও manifest-এর পরবর্তী maintenance-এ একই status sync করতে হবে।
+6. Production Supabase backup/restore/preview/apply, Auth real OTP, two-member RLS, provider integration, payout, native Android/iOS, Play Store, Global Internet এবং Auto Work worker-এর কোনো pending gate-কে এই static source audit complete করে না।
+
