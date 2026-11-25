@@ -41,3 +41,25 @@ The five Admin modules remain Owner/Admin-only. Member task listings and human r
 
 ## Current implementation status
 The Work & Earn page now states that Member Auto Work is paused/disabled and describes the safe human-task alternative and conditional commission rule. This is a website/source update only. It does not activate member tasks, create customer revenue, calculate commissions, or enable withdrawals. The existing Admin Auto Work database migration is not deployed, no worker/provider integrations are live, and no payout integration is verified.
+
+
+## ভবিষ্যৎ বিকল্প: Member Auto Work Protected Packages (এখনো চালু নয়)
+সদস্যদের নিজ খরচে প্যাকেজ কিনে আলাদা Member Auto Work infrastructure ব্যবহার করার বিকল্প ভবিষ্যতে রাখা হবে। বর্তমান সিদ্ধান্তে এটি **পরিকল্পিত/বন্ধ**, কোনো প্যাকেজ বিক্রি, পেমেন্ট গ্রহণ বা Auto Work execution এখন চালু নয়।
+
+### প্যাকেজ বিক্রির আগে বাধ্যতামূলক সুরক্ষা
+1. **সম্পূর্ণ আলাদা অবকাঠামো:** Member-এর server/worker pool, queue, database/storage namespace, API credentials, provider account এবং খরচের budget Admin/Owner Auto Work থেকে পৃথক হবে। Member load কখনো Admin-এর reserved capacity ব্যবহার করবে না।
+2. **আগাম শর্ত প্রকাশ:** প্যাকেজ কেনার আগে মূল্য, মেয়াদ, অন্তর্ভুক্ত job/credits, allowed work, provider cost, quota, সম্ভাব্য আয় অনিশ্চিত—এই সতর্কতা, কাজের acceptance rule, settlement window, refund trigger, refund method/time এবং অভিযোগের পদ্ধতি বাংলায় দেখাতে হবে। কোনো আয় বা নির্দিষ্ট লাভের গ্যারান্টি নয়।
+3. **100% আলাদা refund reserve:** যদি কোনো প্যাকেজে “যোগ্য কাজের আয় না হলে প্যাকেজ মূল্য ফেরত” প্রতিশ্রুতি দেওয়া হয়, তবে প্রতিটি বিক্রির সমপরিমাণ 100% refund reserve আলাদা, liquid ও reconciliation-যোগ্য হিসাবে আগে থেকেই সংরক্ষিত থাকতে হবে। এই reserve compute/API খরচ, Owner profit, commission, referral বা অন্য সদস্যের refund-এ ব্যবহার করা যাবে না। Reserve ঘাটতি, payment-provider hold বা reserve যাচাই ব্যর্থ হলে নতুন package sale স্বয়ংক্রিয়ভাবে বন্ধ হবে।
+4. **Package funds ও operating funds আলাদা:** সদস্যের package payment-কে সঙ্গে সঙ্গে Owner-এর আয় বা profit হিসেবে গণ্য করা যাবে না। Provider/compute cost কেবল প্রকাশিত অনুমোদিত budget থেকে দেওয়া হবে; refund reserve অক্ষত থাকবে। Package price-এর কোন অংশ service fee, compute credit, tax/fee বা refundable—সব আগে প্রকাশ করতে হবে।
+5. **আয় গণনার কঠোর নিয়ম:** কাজ complete হলেই আয় নয়। Client deliverable গ্রহণ এবং payment বাস্তবে settle হওয়ার পরই gross receipt গণনা হবে। Fees, tax, refunds, chargebacks, provider cost ও member payable বাদ দিয়ে net settled result হিসাব হবে। Pending/estimated/disputed অর্থ আয় নয়।
+6. **Refund trigger:** প্যাকেজে নির্দিষ্ট evaluation period ও qualifying-net-earning threshold আগে প্রকাশ করতে হবে। সময় শেষে শর্ত পূরণ না হলে, অথবা সিস্টেম/প্ল্যাটফর্মের কারণে কাজ চালানো অসম্ভব হলে, প্রকাশিত refund policy অনুযায়ী original payment method-এ refund দিতে হবে। আংশিক আয় হলে refund formula আগে স্পষ্ট করতে হবে; অস্পষ্ট/পরিবর্তনশীল শর্ত ব্যবহার করা যাবে না।
+7. **No hidden deductions:** Member-এর কাজের পারিশ্রমিক, refund reserve বা customer-এর restricted funds থেকে Owner commission নেওয়া যাবে না। Owner profit কেবল বাস্তবে settle হওয়া platform revenue থেকে, সব member liability, refund, provider cost, fee/tax ও reserve পূরণের পরে আলাদা ledger-এ হিসাব হবে।
+8. **স্বয়ংক্রিয় সুরক্ষা:** প্রতি সদস্য ও প্যাকেজে hard spend cap, job/runtime/concurrency/rate limit, idempotency, audit log, abuse detection, pause/cancel এবং emergency stop থাকবে। budget/quota 80% হলে সতর্কতা; 100% বা provider error হলে সংশ্লিষ্ট member job pause। কোনো paid fallback বা অতিরিক্ত charge নয়।
+9. **বিরোধ ও প্রমাণ:** প্রতিটি job-এর input/output reference, permission/contract, timestamps, client acceptance, settlement reference, cost, member payable ও refund status audit করা হবে। Member-কে status ও appeal/helpdesk দেখাতে হবে।
+10. **আইন ও পেমেন্ট যাচাই:** বাংলাদেশে প্রযোজ্য consumer protection, e-commerce, tax, payment-provider/escrow ও refund requirements যাচাই এবং প্রয়োজনীয় provider support ছাড়া package sale চালু করা যাবে না।
+
+### প্রস্তাবিত হিসাবের ক্রম
+Customer payment settled → payment fees/tax/refund exposure reconcile → member payable reserve/pay → provider/compute costs settle → refund liabilities fully covered → তারপরই অবশিষ্ট প্রকৃত platform net revenue থেকে Owner commission/profit। Package payment নিজে profit নয়।
+
+### Launch gate
+Member package sale ও execution চালু করা যাবে কেবল: dedicated infrastructure deployed and isolated; separate cost cap and billing alerts tested; 100% refund reserve independently verified; refund/payment workflow tested; load/failure/security tests passed; terms and legal/payment review complete; Owner dashboard/audit/stop controls verified. এর কোনোটি অসম্পূর্ণ হলে package purchase button disabled থাকবে এবং সদস্যের কাছ থেকে টাকা নেওয়া হবে না.
