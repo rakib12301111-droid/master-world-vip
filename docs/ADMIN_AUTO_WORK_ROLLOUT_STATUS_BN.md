@@ -113,3 +113,12 @@ The dashboard must report separately: free quota consumed, jobs processed, custo
 4. Connect R2 and an independent backup only after Owner-controlled account setup, quotas, access policies and restore tests.
 5. Verify the Admin panel against the live database and test role isolation with separate Owner/Admin/member accounts.
 6. Keep all paid APIs/server/storage disabled unless separately approved with a BDT spend cap.
+
+
+## GitHub deployment and Supabase preflight observation (2026-11-25)
+
+- The existing GitHub Pages deployment workflow was triggered by the app update; the newest run was still in progress at the time of this check. The Pages workflow now also checks that the Admin Auto Work panel and overview RPC marker are present in the published HTML.
+- The Supabase backup/restore preview workflow reached its required-secret validation step and failed there. Therefore no recoverable Supabase backup, restore test or migration dry-run was confirmed in this run.
+- Repository Actions secrets needed for the backup preview are SUPABASE_DB_URL (IPv4-compatible Supabase Session Pooler URI) and BACKUP_ENCRYPTION_PASSPHRASE. The guarded migration apply workflow also requires SUPABASE_ACCESS_TOKEN. Configure these only in GitHub repository Settings → Secrets and variables → Actions; never paste their values into chat or commit them.
+- After the secrets are configured, rerun the backup/restore preview and confirm a successful disposable restore. Only then review pending migrations in the guarded workflow. Production apply additionally requires the exact phrase APPLY-MASTER-WORLD-VIP-MIGRATIONS, a non-secret backup reference and explicit confirmation of backup and restore test.
+- No Supabase migration was applied by the commits in this update.
