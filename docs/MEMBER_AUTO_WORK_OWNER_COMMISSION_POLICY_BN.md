@@ -182,3 +182,75 @@ Refund path: refund_requested → eligibility_review → refund_approved → pro
 Repository migration `20261125160000_work_earn_wallet_owner_profit.sql` now defines separate Member Work Wallet and Owner Work Profit ledgers, Owner-only audited rate settings (default 20%), server-only verified-payment and financial-reconciliation inputs, and a service-role-only atomic/idempotent settlement RPC. It calculates Owner profit only from the distributable net platform fee after tax, provider fees, operating costs and restricted liabilities, and posts the member's full payable plus Owner profit in one transaction. Duplicate event/key collisions, unverified/unaccepted payments, stale/failed reconciliation gates, mismatched amounts, and zero/multiple Owner roles fail closed.
 
 **Status remains NOT LIVE:** this is a committed database schema/RPC foundation only. The migration has not been applied to production; no provider webhook/Edge Function, merchant account, actual reserve custody, reconciliation service, payout connector, or end-to-end test has been deployed. Do not show wallet credits as cash withdrawn. Keep paid Member Auto Work packages disabled. Acceptance checklist: `docs/WORK_EARN_WALLET_OWNER_PROFIT_ACCEPTANCE_TEST_BN.md`.
+
+
+## ১৫. Owner-এর নতুন Global Marketplace ও progressive commission সিদ্ধান্ত (2026-11-26)
+
+এই অংশটি Section ১৩-এর আগের fixed 20% rule-কে **পরিবর্তন/সুপersede** করে। এটি Owner-এর নতুন product requirement ও policy proposal; production code বা live commission setting নয়।
+
+### A. Global Customer Order Portal
+- MASTER WORLD VIP-এ দেশি ও আন্তর্জাতিক customer portal থাকবে: customer account, identity/risk checks, service catalogue, quote/price disclosure, task brief, file upload, deadline, terms acceptance, order tracking, secure payment, delivery review, accept/revision/dispute এবং invoice/receipt।
+- গ্রাহক কেবল বৈধ, অনুমোদিত ও আইনসম্মত কাজ জমা দিতে পারবেন। নিষিদ্ধ/ঝুঁকিপূর্ণ কাজ, fake engagement, fake traffic, CAPTCHA bypass, credential theft, unauthorized scraping, malware, impersonation বা platform/provider terms লঙ্ঘনকারী কাজ block/review হবে।
+- Customer payment status কেবল payment provider-এর server-to-server verified webhook/API ও reconciliation দিয়ে settled হবে; browser redirect, screenshot বা manual transaction ID যথেষ্ট নয়।
+- Customer files private encrypted storage-এ, tenant-scoped authorization, malware/type/size validation, short-lived signed access, retention/deletion ও audit trail-সহ থাকবে।
+
+### B. 10 million+ global customer ambition and lifetime-work objective
+- Owner-এর লক্ষ্য: বিশ্বব্যাপী ১ কোটি (10,000,000) বা তার বেশি গ্রাহক অর্জন এবং দীর্ঘমেয়াদে নিয়মিত/সারাজীবন কাজের সুযোগ গড়ে তোলা। এটি growth target; বর্তমান customer count বা guaranteed future demand নয়।
+- 2,000+ genuine project/service categories/modules এবং প্রয়োজনে verified client/brand programmes-এর catalogue গড়ে তোলা হবে। প্রতিটি module বাস্তব deliverable, customer demand, permission/contract, price/cost model, quality criteria, eligibility, risk review ও provider capacity দ্বারা সমর্থিত হতে হবে। শুধু নামের তালিকা বা কৃত্রিম project-কে real/active বলা যাবে না।
+- “Unlimited customer work/orders” হবে customer-এর পুনরাবৃত্ত অর্ডার জমা দেওয়ার product ambition; এটি unlimited compute, unlimited storage, guaranteed instant execution, unlimited free usage বা guaranteed member income বোঝায় না। Queue, fair-use, concurrency, budget, provider quota, legal scope ও SLA অনুযায়ী গ্রহণ/প্রক্রিয়াকরণ হবে; capacity না থাকলে transparent queue/ETA বা order intake pause।
+- কোনো গ্রাহক, অর্ডার, project, revenue বা lifetime availability সংখ্যা বানিয়ে dashboard-এ দেখানো যাবে না। Actual verified metrics-ই প্রকাশ করতে হবে।
+
+### C. Smart Member Assignment
+- Paid/verified eligible order-ই member assignment queue-তে যাবে। Skill, language, country eligibility, verified profile, availability, workload fairness, quality history, deadline, rate ও conflict-of-interest বিবেচনায় matching হবে।
+- Member কাজ accept করার আগে scope, exact payable amount/currency, estimated effort, deadline, acceptance criteria, revision policy, client payment/settlement status, platform fee/commission, dispute path ও expected payout timing দেখতে পাবেন।
+- Member-এর কাজের rate task অনুযায়ী নির্ধারিত হবে; একক fixed percentage বা অযৌক্তিক low rate নয়। কাজ গ্রহণের পর প্রকাশিত member payable কমানো যাবে না। Customer scope পরিবর্তন হলে নতুন quote ও member consent আবশ্যক।
+- No real funded order = no task allocation and no earning claim. Queue/AI/API execution alone is not earning.
+
+### D. 24/7 server-side Auto Work
+- Automation server-side durable queue/worker দিয়ে চলবে; member phone/browser/PWA-কে always-on compute হিসেবে ব্যবহার করা যাবে না।
+- Idempotent claims, lease/heartbeat/reclaim, bounded retries/backoff, timeout/cancellation, per-module and per-customer concurrency, fair scheduling, cost caps, provider quota tracking, monitoring, sanitized logs, disaster recovery ও global emergency stop আবশ্যক।
+- Admin/Owner workload ও member workload আলাদা infrastructure/queue/credentials/storage/budgets-এ isolate হবে। Member workload Owner/Admin reserved capacity ব্যবহার করতে পারবে না।
+- 24/7 architecture লক্ষ্য; provider free-tier, outages, maintenance ও quota-র কারণে uninterrupted lifetime uptime guarantee নয়। Quota/capacity শেষ হলে pause/queue; explicit approval + spend cap ছাড়া paid fallback নয়।
+- 2,000+ modules ও 2,000 simultaneous jobs কেবল staged load test, real demand, database/worker/provider capacity, budget approval ও failure/recovery acceptance pass হলে ধাপে ধাপে চালু হবে; একসঙ্গে 2,000 job চালানো এখনই enabled নয়।
+
+### E. Strong Security and anti-fraud
+- Server-side RBAC/MFA for privileged roles, least privilege, RLS/tenant isolation, secure session lifecycle, CSRF/XSS/SQLi protections, rate limiting, bot/abuse detection, risk scoring, audit trail, encryption in transit/at rest, secret rotation, dependency scanning, backups and tested restore।
+- Order/payment/job/settlement/payout transitions হবে server-authoritative state machine; unique idempotency keys, signed provider webhooks, reconciliation ও duplicate/fraud detection থাকবে।
+- Customer/member identity, sanctions/eligibility where legally required, suspicious activity review, chargeback/dispute evidence, appeal, privacy/retention/deletion এবং incident response process লাগবে।
+- Admin cannot read private customer/member files without explicit authorized support/audit purpose; members cannot access other clients' or members' records. No password/OTP/payment PIN collection in chat or logs.
+
+### F. Member no-loss / wage protection
+- কোনো সদস্যকে deposit, joining fee, mandatory paid plan বা task unlock fee দিতে হবে না। Paid plan member-এর কাজ পাওয়ার শর্ত হবে না।
+- Job গ্রহণের আগে expected costs, member payable ও platform margin হিসাব হবে। Direct costs, payment fees, tax, refunds/chargebacks, required reserves ও provider cost বাদ দিয়ে sustainable margin না থাকলে order reject/requote/pause; member wage বা member wallet থেকে platform loss পূরণ নয়।
+- Member payable accepted scope-এর জন্য protected liability; platform commission, refund বা chargeback-এর নামে earned wage clawback/offset নয়, কেবল প্রমাণিত fraud এবং আইনসম্মত human-reviewed process ব্যতীত।
+- Customer payment settle ও deliverable acceptance verify হওয়ার পরই member earning payable/withdrawable হবে; cash payout provider reconciliation আলাদা করে দেখাতে হবে।
+- “৳100 খরচে ৳1,000 বা তার বেশি আয়” একটি aspirational business target/উদাহরণ, কোনো বাস্তবসম্মত বা নিশ্চিত return নয়। প্রতিটি কাজের unit economics প্রমাণ ছাড়া এমন claim, guarantee বা marketing নিষিদ্ধ। প্রকৃত গ্রাহক মূল্য, কাজের সময়/দক্ষতা, খরচ ও বাজারদর অনুযায়ী আয় নির্ধারিত হবে।
+
+### G. Progressive Owner/Admin commission — requested 20% / 35% tiers
+- Owner-এর নতুন নির্দেশ: কম আয়ের/ছোট কাজের ক্ষেত্রে Admin commission 20%; বেশি আয়ের/বড় কাজের ক্ষেত্রে 35%।
+- 20% বনাম 35% নির্ধারণের **BDT threshold এখনও Owner-এর কাছ থেকে নির্দিষ্ট হয়নি**। তাই threshold অনুমান করে code-এ hard-code করা যাবে না। Admin Settings-এ tier threshold configurable হতে পারে, কিন্তু production activation-এর আগে Owner approval, প্রকাশিত terms ও audit আবশ্যক।
+- উভয় হার কেবল **Distributable Net Platform Revenue**-এর ওপর প্রয়োগ হবে; customer gross payment, member payable, tax, payment fees, refund/chargeback reserve, provider/compute/operating costs, restricted/unsettled funds-এর ওপর নয়।
+- Formula: distributable net base > 0 হলে applicable_rate = approved 20% বা 35%; admin commission = round_half_up(net base × applicable_rate). Net base শূন্য/ঋণাত্মক, payment unsettled, reconciliation stale/mismatch, reserve shortfall বা member payable unfunded হলে commission = ৳0 / fail-closed।
+- Member-এর প্রকাশিত payable আগে সম্পূর্ণ সুরক্ষিত থাকবে। Admin rate কখনো member wage কমিয়ে, member wallet থেকে কেটে, customer restricted funds ব্যবহার করে বা unpaid liability বাদ দিয়ে বাড়ানো যাবে না।
+- Rate/threshold changes prospective only; কাজ/অর্ডার গ্রহণের আগে customer/member-কে applicable rate/fee disclosure; audit actor, old/new rate, threshold, reason, timestamp, effective_at। Retroactive change নিষিদ্ধ।
+- পূর্বের Section ১৩-এর fixed 20% policy এই progressive rule দ্বারা superseded; তবে 35% rate/threshold বাস্তবে অনুমোদিত, funded ও tested না হওয়া পর্যন্ত production default 20% policy থেকে নিজে নিজে পরিবর্তিত হবে না।
+
+### H. Admin-only Free Plan and Paid Plan choices
+- Owner/Admin dashboard-এ দুইটি internal option থাকবে: (1) Free Admin Plan, default; (2) Paid Admin Plan, optional purchase/upgrade।
+- Free plan-এ provider-defined quota, execution/time/storage/concurrency limits স্পষ্ট থাকবে; unlimited resources বা lifetime uptime দাবি নয়।
+- Paid plan কেবল Admin-এর explicit selection, provider price/terms display, secure payment, budget cap, approval and audit-এর পর চালু হবে। Auto-renew default off; cancellation and receipt history থাকবে।
+- Admin paid plan-এর খরচ Member wallet, member wages, customer restricted money বা refund reserve থেকে নেওয়া যাবে না। Free plan quota শেষ হলে pause/queue; silent paid upgrade নয়।
+- এই দুই plan option Admin-only; সাধারণ সদস্যের জন্য বাধ্যতামূলক নয় এবং সদস্যকে paid plan কিনতে বাধ্য করে কাজ দেওয়া যাবে না।
+
+### I. Release stages and proof gates
+1. Customer Portal + secure order/payment state machine in staging.
+2. At least one legitimate customer/provider contract and one real paid pilot order.
+3. One human-reviewed member task category with disclosed rate, acceptance, settlement and successful payout.
+4. Server-side worker for one approved module; isolated queue, budget, private storage and recovery tests.
+5. Add categories only when each has real demand/provider/legal permission and unit economics.
+6. Scale 20 → 100 → 500 → 2,000+ categories; concurrency scale separately by load-test evidence and approved budget.
+7. Security/privacy/legal review, fraud/dispute/refund acceptance, backup/restore, monitoring and controlled canary.
+8. Only features passing deployment + production config + real end-to-end acceptance may be marked LIVE.
+
+### J. Status and non-guarantees
+এই document update কোনো Customer Portal, payment gateway, worker, provider contract, 10-million customer base, 2,000 live projects, unlimited work, 24/7 service, commission engine, Admin plan purchase বা payout চালু করে না। এগুলো requirements/targets. Production DB safety prerequisite (including secure DB URL correction, encrypted backup/restore/dry-run and explicit migration authorization) অপরিবর্তিত থাকবে। Until evidence passes, relevant features remain PARTIAL / BLOCKED / NOT LIVE.
