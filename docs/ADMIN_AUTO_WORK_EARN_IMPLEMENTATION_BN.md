@@ -79,3 +79,11 @@ This document is a design specification only. It does not connect a client/provi
 5. Free quota শেষ হলে job pause হবে; paid endpoint/server-এ fallback হবে না।
 6. Paid provider/server চালাতে Owner approval record + explicit spend cap আবশ্যক।
 7. Private file access cross-user/cross-client denied; expired file retention policy অনুযায়ী delete হবে।
+
+## Implementation status update (2026-11-25)
+
+- The existing Admin & Security page now includes an Admin Auto Work overview panel. It calls the server-side admin_auto_work_overview() RPC and shows module/provider state, daily budget usage, last run and recent queue counts only to server-verified Admin roles.
+- The panel is read-only and reports NOT READY until the database RPC, provider connector and worker are actually available. It does not enqueue or execute jobs.
+- Added 20261125130000_admin_auto_work_claim_concurrency_fix.sql as an additive migration so concurrent workers cannot claim a second running job in a module. Maximum intended parallelism is five total: one job per each of five modules.
+- The guarded migration workflow and Supabase migration README now include both Auto Work migrations.
+- NOT LIVE: the database migrations are not applied, no Auto Work worker or provider adapters are deployed, and no R2 bucket/backup connector is connected. The modules remain disabled. The UI change alone does not create work, income or storage.
