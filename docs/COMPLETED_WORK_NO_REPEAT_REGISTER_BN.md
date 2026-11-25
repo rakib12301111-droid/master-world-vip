@@ -117,3 +117,10 @@ At the 2026-11-25 audit snapshot, the Pages release, static safety suite and upd
 - All 14 checks PASS, covering: both migration files and SQL delimiter balance; five approved modules/default-disabled state; provider contract + Owner approval metadata; RLS and browser-role table denial; service-role-only worker RPCs; one-running-job-per-module partial unique index; concurrency claim guard; Admin/contract/permission/idempotency/budget checks; active provider + positive budget before module enable; fail-closed execution readiness; role-gated read-only UI; no browser invocation of worker-only RPCs; guarded migration/README inventory; and documentation disclaimers/member Auto Work disabled status.
 - This is repository static validation only. It does not prove production migration, live worker/scheduler, provider/client contract, storage, 24/7 uptime, real jobs, customer settlement or payout.
 - Do not rerun while the tested source/configuration is unchanged. Rerun only when an affected file changes or evidence becomes invalid.
+
+## 2026-11-26 — Owner priority continuity note (not a completed feature)
+
+- Added authoritative promotion continuity document: `docs/OWNER_PRIORITY_GLOBAL_PROMOTION_CONTINUITY_BN.md`.
+- Handover section 15 and Master Owner Requirements section 15 now preserve the Owner's instruction that global promotion and real customer acquisition are the highest business priority.
+- This is a requirements/documentation update only. It does not mean search indexing, social campaigns, advertising, customer acquisition or revenue are completed.
+- No successful test is being claimed here; latest known Pages run 45715995188 was pending before this documentation update. Verify the new run after the latest main HEAD is known.
