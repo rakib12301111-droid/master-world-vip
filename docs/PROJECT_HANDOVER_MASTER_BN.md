@@ -435,16 +435,20 @@ Workflow file থাকা মানে তার schedule/secret/provider integ
 11. একই feature আবার নতুন করে বানাবেন না; আগে এই handover, feature register ও existing code/migrations দেখুন।
 12. নতুন project/repository তৈরি করবেন না; current repository-তে additive, reviewed changes করুন।
 
-# 12. পরবর্তী কাজের সুনির্দিষ্ট ক্রম — বর্তমান HEAD থেকে
+# 12. পরবর্তী কাজের সুনির্দিষ্ট ক্রম — সর্বশেষ re-audit অনুযায়ী
 
-1. Current HEAD 6da0d818a4d7af265596a7a4972b00b84fdbbaa0-এর পরে নতুন commit হয়েছে কি না আগে যাচাই করুন।
-2. Pages run 45605229377-এর failed job-এর exact assertion শনাক্ত করুন; live published www/index.html, Update Center audit link, www/update-manifest.json, www/sw.js cache version এবং expected markers source commit-এর সঙ্গে তুলনা করুন। Build/Deploy step ইতিমধ্যে PASS—ওগুলো অকারণে পুনরায় পরীক্ষা নয়।
-3. Migration safety run 45603357136-এর একমাত্র known failing assertion—PWA cache version refreshed—scripts/verify-global-communication.py ও actual www/sw.js version মিলিয়ে targeted fix করুন। Source version ঠিক না করে শুধু validator pass করাবেন না।
-4. সংশ্লিষ্ট source/validator change হলে affected verification workflow একবার চালান; finance code না বদলালে 22/22 finance static test evidence reuse করুন।
-5. Backup blocker: Owner database password rotate ও GitHub secret update নিশ্চিত না হওয়া পর্যন্ত backup workflow চালাবেন না। এরপর encrypted backup → disposable restore → migration dry-run → artifact preservation সব PASS করে evidence লিখুন।
-6. Complete ordered pending migration list, project ref এবং Owner bootstrap identity review করুন; দুটি আলাদা test member দিয়ে staging/RLS acceptance tests চালান।
-7. কেবল তখনই user-এর exact authorization phrase APPLY-MASTER-WORLD-VIP-MIGRATIONS নিয়ে guarded production apply gate বিবেচনা করুন। Phrase ছাড়া apply নয়।
-8. প্রতিটি meaningful update-এর পর এই ফাইলের Last updated, HEAD SHA, workflow run URLs/status, completed/pending state এবং next action সংশোধন করুন।
+**সর্বশেষ main HEAD (2026-11-25):** `b58263f8f3cb8a2973812b98a9cecd5585b6d667`  
+**এই handover-এর বর্তমান blob SHA (update-এর আগে):** `5fb93aef07482f695899de6501c6babb9254e999`
+
+1. প্রথমে বর্তমান main HEAD ও এই handover-এর সর্বশেষ commit মিলিয়ে নিন। এই audit-এর সময় current HEAD ছিল `b58263f8f3cb8a2973812b98a9cecd5585b6d667`; এর combined commit status API-তে কোনো status entry ফেরত আসেনি। **এটি PASS নয় এবং current-head workflow success-এর প্রমাণও নয়।**
+2. সর্বশেষ প্রমাণিত Pages release হলো run `45608470948`, commit `aa45363d713909d0a5829dc35a0550cc9b72b5ca`: Build PASS, Deploy PASS, final live verification PASS। কিন্তু Pages workflow main-এর প্রতিটি push-এ চলে; পরবর্তী documentation/evidence commits-এর পর current HEAD-এর Pages run status এখানে নিশ্চিত করা যায়নি। GitHub Actions-এ current HEAD-এর Pages run খুঁজে Build, Deploy ও Verify—তিনটিই PASS কি না নিশ্চিত করুন। পুরোনো PASS-কে current HEAD-এর PASS হিসেবে পুনরায় লেবেল করবেন না।
+3. সর্বশেষ প্রমাণিত migration safety static workflow হলো run `45608178784`, commit `f4a063d1cd7ae04b2f37e77d6768b91d42d50809`: 17 steps SUCCESS। এই run-এর পরে PWA validator fixes-সহ সংশ্লিষ্ট source/validator আর পরিবর্তিত না হলে এই checks পুনরায় চালাবেন না। Finance static validator-এর 22/22 PASS evidence-ও অক্ষত রাখুন।
+4. Backup blocker অমীমাংসিত। Run `45468408735`-এ Session Pooler URI validation PASS হলেও PostgreSQL password authentication FAIL হয়েছিল; encrypted backup তৈরি হয়নি, restore ও migration dry-run skipped। পরবর্তী run `45480161082` FAILED এবং GitHub API-তে 0 job ফেরত দিয়েছে; তাই ওই run থেকে backup/restore execution-এর কোনো প্রমাণ নেই। Password rotation ও নতুন secret update Owner নিরাপদে নিশ্চিত না করা পর্যন্ত backup workflow চালাবেন না।
+5. Secret rotation নিশ্চিত হওয়ার পর কেবল encrypted backup → decrypt → disposable PostgreSQL restore → restored table count > 0 → migration dry-run → encrypted artifact preservation—সব ধাপের বাস্তব PASS evidence সংগ্রহ করুন। Artifact retention 7 দিন; encrypted artifact নিরাপদ off-platform storage-এ সংরক্ষণ করতে হবে। কোনো secret value chat বা handover-এ নয়।
+6. Complete ordered pending migration inventory এবং pinned Supabase project ref `lztbbrzeuyjkuiyzrsxp` review করুন; Owner bootstrap identity যাচাই করুন; পৃথক staging/test member দিয়ে RLS, privacy, messaging, referral ও helpdesk acceptance চালান। 30টি migration repository-তে থাকা মানেই production-এ applied নয়।
+7. সব backup/restore/dry-run gate পাস, target project/Owner যাচাই এবং test evidence review হওয়ার পরেই exact authorization phrase `APPLY-MASTER-WORLD-VIP-MIGRATIONS` চেয়ে guarded production apply বিবেচনা করা যাবে। এই phrase ছাড়া production apply নয়; workflow dispatch বা migration file উপস্থিতি authorization নয়।
+8. এরপর Auth real inbox OTP, Edge Function/provider deployment, payment settlement/refund, push/FCM, referral funding/payout, Owner compensation, Auto Work worker, anti-theft native enrollment, Global Internet provider, Meta-approved integration, Android signed release/physical-device tests ও Play Store—প্রতিটি পৃথক gate অনুযায়ী চালান। প্রমাণ ছাড়া LIVE নয়।
+9. প্রতিটি meaningful change-এর পর এই handover-এ HEAD SHA, file blob SHA, exact run URLs/status, changed features, failures, skipped checks, blockers এবং পরবর্তী একটিমাত্র next action লিখুন। কোনো অজানা status-কে অনুমান করে পূরণ করবেন না।
 
 **Resume phrase:** “MASTER WORLD VIP — docs/PROJECT_HANDOVER_MASTER_BN.md সম্পূর্ণ পড়ে, বর্তমান GitHub HEAD ও workflow evidence মিলিয়ে, PASS হওয়া কাজ পুনরায় না করে, section 12-এর পরবর্তী কাজ থেকে শুরু করুন।”
 
@@ -552,3 +556,91 @@ Latest migration safety run `45608178784` on source commit `f4a063d1cd7ae04b2f37
   Run link: https://github.com/rakib12301111-droid/master-world-vip/actions/runs/45608470948
 - The repository manifest parses as valid JSON and contains 17 top-level stages. The Pages run verifies the published copy's syntax/markers; it does not prove Supabase migrations, email OTP delivery, provider services or end-to-end feature acceptance.
 
+
+
+---
+
+## 13. 2026-11-25 — তৃতীয় পূর্ণাঙ্গ start-to-finish re-audit ও handover correction
+
+**Audit time:** 2026-11-25, Bangladesh time, আনুমানিক 17:55  
+**Repository:** `rakib12301111-droid/master-world-vip`  
+**Audit baseline HEAD:** `b58263f8f3cb8a2973812b98a9cecd5585b6d667`
+
+### 13.1 কী কী সরাসরি মিলিয়ে দেখা হয়েছে
+
+- Existing master handover `docs/PROJECT_HANDOVER_MASTER_BN.md` সম্পূর্ণ fetch করে feature history, feature crosswalk, 30-item migration inventory, 15-item workflow inventory, evidence ledger, security decisions, known blockers এবং next-step section পুনরায় পর্যালোচনা।
+- GitHub repository search থেকে exact handover path `docs/PROJECT_HANDOVER_MASTER_BN.md` নিশ্চিত করা হয়েছে; এটি root-এ নয়, `docs/` directory-তে।
+- সাম্প্রতিক commit history পরীক্ষা: audit-এর সময় সর্বশেষ main commit `b58263f8f3cb8a2973812b98a9cecd5585b6d667`, message “Record latest failed backup workflow run in master handover”। Commit diff-এ run `45480161082`-এর failed/no-job evidence যোগ হয়েছে।
+- Current HEAD combined commit status query-তে কোনো status entries পাওয়া যায়নি। **Empty status response-কে CI PASS হিসেবে গণ্য করা হয়নি।**
+- Backup workflow source `.github/workflows/backup-restore-preview.yml` পরীক্ষা: secret-presence/URI validation, credential masking, Session Pooler constraints, encrypted logical backup, disposable PostgreSQL restore, nonzero restored table count, migration dry-run এবং 7-day encrypted artifact retention-এর ধাপ আছে।
+- Backup run `45480161082`-এর jobs fetch-এ 0 jobs ফেরত এসেছে। তাই ওই run থেকে backup, restore বা migration preview সম্পন্ন হওয়ার প্রমাণ নেই; failure-এর কারণ অনুমান করা হয়নি।
+- Anti-Theft requirements `docs/ANTI_THEFT_PHONE_RECOVERY_BN.md` পরীক্ষা: native enrollment, owner-bound device, explicit OS permission, timestamped last-known location, official Google/Apple recovery, no phone/SIM/IP-only GPS, এবং backend/native ingestion ও acceptance gaps স্পষ্টভাবে নথিভুক্ত।
+- Pages workflow source পরীক্ষা: main-এ প্রতিটি push-এ Build → Deploy → live Verify চলে। ফলে latest verified Pages run-এর পরের documentation commits-ও workflow trigger করে; current HEAD-এর পরবর্তী run status আলাদা করে নিশ্চিত করা আবশ্যক।
+
+### 13.2 সর্বশেষ প্রমাণিত positive checks — আগের evidence অক্ষুণ্ণ
+
+| Check | প্রমাণিত run / commit | সঠিক ফল |
+|---|---|---|
+| Migration safety static workflow | Run [45608178784](https://github.com/rakib12301111-droid/master-world-vip/actions/runs/45608178784), commit `f4a063d1cd7ae04b2f37e77d6768b91d42d50809` | 17 steps SUCCESS |
+| Pages live release | Run [45608470948](https://github.com/rakib12301111-droid/master-world-vip/actions/runs/45608470948), commit `aa45363d713909d0a5829dc35a0550cc9b72b5ca` | Build SUCCESS, Deploy SUCCESS, final live Verify SUCCESS |
+| Work & Earn finance static security | Run 45603357136-এর finance validator | 22/22 PASS; finance source/validator অপরিবর্তিত থাকলে reuse |
+| Owner-only service health | Run 45603357136 | 9/9 PASS; সংশ্লিষ্ট code/config বদলালে তবেই repeat |
+| Historical Android debug APK | Run #14–#18; #18 artifact SHA-256 পূর্ববর্তী section 9.6-এ | Debug APK build evidence; signed release/device install/Play Store approval নয় |
+| Update system automated checks | Run 45608007267 | SUCCESS; Pages live release বা backend acceptance-এর বিকল্প নয় |
+
+**সীমা:** উপরের PASS evidence সংশ্লিষ্ট tested commit ও নির্দিষ্ট scope-এর জন্য। Current HEAD `b58263f`-এর combined status empty; latest Pages workflow status এখানে পাওয়া যায়নি। তাই current HEAD-এর live release verified বলা যাবে না, যতক্ষণ না পরবর্তী Pages run-এর Build/Deploy/Verify তিনটি job PASS নিশ্চিত হয়।
+
+### 13.3 Backup/DB safety — এখনো BLOCKED, কোনো bypass নয়
+
+- Run `45468408735`: secret/URI checks PASS; PostgreSQL password authentication FAIL; encrypted backup artifact তৈরি হয়নি; restore ও dry-run skipped।
+- Run `45480161082`: FAILED; GitHub API jobs result 0; backup/restore step execution প্রমাণিত নয়।
+- আগের credential exposure concern-এর কারণে database password rotation এবং Actions secret `SUPABASE_DB_URL` update অপরিহার্য। Secret value এখানে লিখবেন না বা চাইবেন না।
+- `BACKUP_ENCRYPTION_PASSPHRASE`-ও কেবল GitHub Actions secret-এ থাকবে।
+- Encrypted backup, disposable restore, nonzero restored table count, migration dry-run এবং artifact preservation—সব PASS না হওয়া পর্যন্ত production migration NOT DONE এবং নিষিদ্ধ।
+- Exact authorization phrase `APPLY-MASTER-WORLD-VIP-MIGRATIONS` ছাড়া guarded production apply নয়।
+
+### 13.4 Start-to-finish completeness crosswalk
+
+আগের inventory-র কোনো module বাদ না দিয়ে পরবর্তী handover-এ নিচের scope-গুলো একই status distinction-এ রাখতে হবে:
+
+1. Repository/branding/PWA/manifest/service worker/Update Center ও GitHub Pages।
+2. Android WebView/debug build/signed release/Play Store।
+3. Supabase Auth/Registration/Login/email OTP/profile।
+4. Member Hub/public discovery/friends/direct chat/groups/group chat।
+5. Inbox/read state/notifications/Web Push/FCM/broadcast।
+6. Owner/Admin RBAC/Security Center/audit/server code tools/live health।
+7. Privacy/consent/data rights/GDPR-related legal review।
+8. AI text/voice/image provider/license/secret/deployment।
+9. Facebook setup assistance, named Lifetime Facebook Security & Recovery System, Meta-approved API boundary, helpline/inbox announcements/ads।
+10. Helpdesk/member verification/private staff workflow।
+11. Consent-based live location এবং Anti-Theft Android/iOS recovery/native enrollment।
+12. Emergency helplines/offline guidance/games/voice drafts/country news/crisis alerts/country directory।
+13. SSLCommerz/payment callback/settlement/refund/chargeback acceptance।
+14. Work & Earn job board/member wage protection/member wallet/Owner 20% net profit।
+15. Referral attribution/direct and network rewards/FX/country verification/funding/wallet/manual payout।
+16. Owner monthly compensation/ledger/scheduled accrual/actual transfer reconciliation।
+17. Admin Auto Work five modules/queue/worker/provider/storage/budget।
+18. Member Auto Work paused package policy/100% liquid refund reserve/isolated infrastructure।
+19. Company Revenue vs Referral Reward Fund separation and funding bridge।
+20. Global Internet provider/contract/hardware/gateway/funding/regulatory/real connectivity।
+21. Supabase migration inventory, backup/restore, dry-run, RLS/index audit, two-member tests।
+22. External provider integrations, real-device tests, legal/policy and final acceptance.
+
+আগের 8.10 feature-stage table, 8.7 feature foundation list, 8.8 migration list, 8.9 workflow list, 9.4 external integration gaps এবং 10–11 স্থায়ী policy/no-repeat rules এই crosswalk-এর বিস্তারিত authoritative content হিসেবে বহাল থাকবে।
+
+### 13.5 এই re-audit-এ নিশ্চিত সংশোধন
+
+- আগের section 12-এ stale current HEAD `6da0d818...` ও পুরোনো failing Pages run `45605229377`-কে next action হিসেবে রাখা ছিল। তা বদলে বর্তমান known HEAD `b58263f...`, latest verified Pages run `45608470948`, latest successful migration static run `45608178784`, এবং current-head Pages status unknown—এই বাস্তব অবস্থায় আনা হয়েছে।
+- Backup run `45480161082`-এর no-job/failed evidence ও password-rotation blocker পরবর্তী নির্দেশনায় স্পষ্ট করা হয়েছে।
+- Combined status empty-কে PASS না বলার সতর্কতা যোগ করা হয়েছে।
+- Pages workflow প্রতিটি main push-এ trigger হওয়ায় latest evidence commit ও current HEAD-এর পার্থক্য স্পষ্ট করা হয়েছে।
+- 30 migrations, 15 workflows, 28 core foundation areas, 8.10 feature crosswalk, historical APK/Update System evidence এবং named Facebook requirement বাদ না দিয়ে আগের authoritative sections অক্ষুণ্ণ রাখা হয়েছে।
+
+### 13.6 চূড়ান্ত প্রকল্প সিদ্ধান্ত
+
+**Project repository সংরক্ষিত থাকবে:** `rakib12301111-droid/master-world-vip`। কোনো নতুন repository/project নয়।  
+**Master handover:** এই ফাইলই একমাত্র primary continuity document; আলাদা duplicate handover তৈরি করবেন না।  
+**Project status:** Repository foundation ও বহু static/deployment check সম্পন্ন; কিন্তু current HEAD Pages re-verification, DB backup/restore, production migration, real integrations, two-member acceptance এবং Android/iOS/Play Store release-এর gates এখনো পৃথকভাবে বাকি।  
+**এটি project completion নয়; এটি audited, evidence-linked handover checkpoint।** Project “fully complete” বা সব service LIVE ঘোষণা করা যাবে না, যতক্ষণ না প্রতিটি প্রাসঙ্গিক production ও acceptance gate প্রমাণসহ PASS করে।
+
+**পরবর্তী session-এর একমাত্র starting point:** section 12-এর ধাপ 1—বর্তমান main HEAD-এর পরবর্তী GitHub Actions Pages run status যাচাই; তারপর backup credential rotation confirmation না পাওয়া পর্যন্ত DB backup workflow স্থগিত রাখা।
