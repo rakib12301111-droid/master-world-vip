@@ -8,14 +8,15 @@
 ## 1. Exact resume point — start here next time
 
 **Do not restart the project or rerun all checks.** Continue from the current repository HEAD:
-`6da0d818a4d7af265596a7a4972b00b84fdbbaa0` (handover-only update; underlying application code evidence remains at `ade8cf030a92d95214be2b6fc2087bb4cb5418cd`).
+`2284d46eeb65301f1219ab201f856301a4c82c84` (this commit expands this handover only; latest application-code baseline is `ade8cf030a92d95214be2b6fc2087bb4cb5418cd`).
 
 Next actions, in order:
 
-1. Fix the single known failing assertion in `.github/workflows/verify-supabase-migrations.yml`: the Offline/Voice/Country News validator reports **“PWA cache version is refreshed”** as FAIL. Inspect the validator's expected cache version and the actual current `www/sw.js` / app cache version; update only the stale expectation or actual version as appropriate. Do not rerun successful unrelated feature validators manually.
-2. Fix the post-deployment verification failure in `.github/workflows/deploy-pages.yml` (or the actual workflow file that defines the named “Verify live GitHub Pages release” job). Build and Deploy jobs succeeded; only the final published-content/cache assertion failed. Inspect the exact failed command/assertion and compare deployed files against commit `ade8cf...`. Do not assume the deployment itself failed.
-3. After those targeted fixes, run the two affected workflows once against the new commit. Preserve run URLs and results here. Reuse already-passed Work & Earn finance static result unless its migration/validator code changes.
-4. Only after static workflow and Pages release verification pass, continue with the **guarded database preview/backup/restore/production migration gates** described below. Do not apply production migrations automatically.
+1. First check the newest Actions runs for current HEAD `2284d46eeb65301f1219ab201f856301a4c82c84`; at the time of this handover update, its Pages deployment and verification runs were queued.
+2. Fix the latest live Pages verification failure recorded in section 9.2 by identifying the exact failed assertion and comparing the published HTML, Update Center audit link, manifest and service-worker cache version with the committed source.
+3. Fix the known PWA cache assertion failure in `scripts/verify-global-communication.py` / `www/sw.js` recorded in section 9.2. Update the real source cache version or stale validator expectation correctly; do not merely force a passing result.
+4. Run only the affected verification workflows once after the targeted fixes. Reuse the finance 22/22, Community readiness, Owner health 9/9 and membership-helper PASS evidence unless relevant source/validator changes.
+5. Only after static and Pages live-release verification pass, continue with the guarded database backup/restore/dry-run gates. Do not apply production migrations automatically.
 
 ## 2. Latest verified GitHub workflow evidence (2026-11-25)
 
