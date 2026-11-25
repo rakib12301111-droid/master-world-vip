@@ -392,3 +392,25 @@ Supporting details are kept in `docs/FEATURE_COMPLETION_REGISTER_BN.md`, `docs/S
 2. Inspect actual main HEAD and latest relevant Pages/CI workflows.
 3. Wait for secure DB URL save confirmation; do not request secret value.
 4. After DB safety, prioritize staging Admin USD revenue ledger → real FX quote → USD-to-BDT conversion → verified Admin account settlement.
+
+
+## 10. Session update — Global Master Account & sustainable revenue blueprint (2026-11-26)
+
+### Owner direction
+- MASTER WORLD VIP-কে “পৃথিবীর Master Account” / **One Global Master Account for the World** হিসেবে গড়ে তোলা; একই account-এর মধ্যে সব Master Plan, global service, business workspace ও বৈধ earning model থাকবে।
+- “Goldmine” হলো long-term business ambition, guaranteed profit বা income claim নয়। বাস্তব customer, funded demand, delivered value, collected settlement ও positive unit economics ছাড়া কোনো earning module active নয়।
+
+### New authoritative strategy document
+- `docs/GLOBAL_MASTER_ACCOUNT_GOLDMINE_BLUEPRINT_BN.md`
+- Linked from `docs/MASTER_WORLD_VIP_MASTER_OWNER_REQUIREMENTS_BN.md`.
+- Covers Global Master Account/workspaces; subscriptions/SaaS; marketplace; AI usage; business automation; enterprise/API/white-label; digital products/learning; creator services; ads/sponsorship; affiliate; managed services; local commerce/booking; partnerships; acquisition/retention; finance/profit controls; compliance; phased rollout and KPIs.
+
+### Current implementation status / next gates
+- This is documentation/strategy only, not implementation or LIVE proof.
+- Continue existing DB backup/restore safety blocker: do not run until Owner confirms secure DB password rotation and corrected GitHub secret; never request secret value.
+- Continue Owner RBAC/RPC visibility blocker from this handover's prior session note.
+- Before Master Account coding, audit existing Auth/RLS and workspace-related migrations; avoid duplicate schema or unsafe production migrations.
+- Begin with one Bangladesh-first customer segment and a small set of real funded services; validate margin and repeat demand before expanding catalogue or countries.
+- No-repeat policy remains in force; inspect actual main HEAD and relevant workflows, do not rerun successful unchanged checks.
+
+**Current truth:** Project remains IN PROGRESS / NOT FULLY LIVE. No new customers, revenue, payment provider, bank conversion, automatic worker or global service became live from this documentation update.
