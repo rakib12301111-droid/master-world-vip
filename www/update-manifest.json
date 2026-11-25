@@ -2,8 +2,20 @@
   "schema_version": 1,
   "app": "MASTER WORLD VIP",
   "updated_at": "2026-11-25",
-  "note": "Premium member dashboard added to existing app. PWA cache v35 is the current release candidate pending Pages verification. Existing Supabase DB Safety Pipeline remains gated; no production migration is applied by this UI update.",
+  "note": "Added Anti-Theft & Phone Recovery guidance panel for Android/iPhone to the existing Live Location area. Official Find Hub/Find My shortcuts are available; native tracking, device registry, IP event logging and backend are not implemented. PWA cache v36 is a release candidate pending live verification.",
   "stages": [
+    {
+      "id": "anti-theft-phone-recovery",
+      "title": "Stage 0.96 — Anti-Theft & Phone Recovery (Android + iPhone)",
+      "status": "planned",
+      "summary": "Existing Live Location page now includes a recovery guidance panel and official Google Find Hub / Apple Find My links for a member's own device. It explicitly distinguishes IP connection metadata from GPS location and warns that prior setup is required.",
+      "requires": "Build and review native Android and iOS apps; implement owner-only device registry and authenticated lost-device reports; implement minimal server-side connection/IP event logging with retention and privacy controls; implement consent-visible native location sharing with platform-compliant background behavior; add secure account recovery and audit logs. Do not claim IP-based GPS, remote lock/erase, or live tracking until supported APIs and real-device tests exist.",
+      "page": "location",
+      "platforms": [
+        "Android",
+        "iOS"
+      ]
+    },
     {
       "id": "member-premium-dashboard",
       "title": "Stage 0.95 — Premium Member Dashboard",
