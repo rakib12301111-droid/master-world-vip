@@ -87,3 +87,14 @@ This document is a design specification only. It does not connect a client/provi
 - Added 20261125130000_admin_auto_work_claim_concurrency_fix.sql as an additive migration so concurrent workers cannot claim a second running job in a module. Maximum intended parallelism is five total: one job per each of five modules.
 - The guarded migration workflow and Supabase migration README now include both Auto Work migrations.
 - NOT LIVE: the database migrations are not applied, no Auto Work worker or provider adapters are deployed, and no R2 bucket/backup connector is connected. The modules remain disabled. The UI change alone does not create work, income or storage.
+
+
+## নতুন সিদ্ধান্ত: সাধারণ সদস্যদের Auto Work + Owner Commission
+
+- Admin Auto Work ছাড়াও সাধারণ সদস্যদের জন্য আলাদা opt-in Auto Work opportunity থাকবে। Registration, join, task view/accept—সব ফ্রি; deposit, subscription, purchase, referral fee বা upfront charge নয়।
+- Member offer কেবল বৈধ client/provider contract ও permission-যুক্ত পাঁচ category-এর task থেকে। Member আগে rate, effort, deadline, eligibility, acceptance/payment terms দেখে accept করবে; কাজের পর client acceptance ও settled payment হলে payout.
+- Owner/platform commission শুধু member-এর accepted deliverable-এর real settled customer/partner receipt থেকে, আগে প্রকাশিত rate অনুযায়ী। Rate এখনও নির্ধারিত নয়। Member payout, platform commission, fees/costs/refunds/reserve আলাদা ledger; unpaid wages বা unsettled funds থেকে commission নয়।
+- Member task queue Admin queue থেকে আলাদা; per-member/per-module/global limits, quota, isolated data/file access, Owner/Admin reserved capacity, emergency pause. Resource pressure হলে member jobs আগে throttle/pause হবে; Owner/Admin work যেন member jobs দ্বারা blocked না হয়.
+- Free-only mode; quota exhaustion queue/pause. Paid API/server fallback OFF; member-কে charge নয়, Owner-কে silent bill নয়. Members' phone, mobile data, bandwidth বা electricity distributed compute হিসেবে ব্যবহার হবে না.
+- Fraud review, permission, audit, dispute/report/appeal, privacy, task output checks mandatory. নিষিদ্ধ fake clicks/views/traffic, auto-surf, fake engagement/signup, CAPTCHA bypass, unauthorized scraping.
+- Member Auto Work এখনও live নয়; UI, database/queue/ledger, worker, customer source, settlement/payout ও isolation tests বাস্তবায়ন এবং deploy করতে হবে.
