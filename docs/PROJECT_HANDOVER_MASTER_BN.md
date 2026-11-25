@@ -161,3 +161,25 @@ Supporting details are kept in `docs/FEATURE_COMPLETION_REGISTER_BN.md`, `docs/S
 - No new completed test evidence was created in this session. Do not add this diagnosis to the completed-work register as a PASS. Keep it here and in the rollout status document as BLOCKED.
 
 **Next exact starting point:** ask whether the Owner can access the correct Supabase Dashboard/SQL Editor; then follow the database backup/restore gate above. Do not make production DB changes until all gates and explicit authorization are satisfied.
+
+
+## 10. Session pause / next highest priority — GitHub SUPABASE_DB_URL secret (2026-11-25, Bangladesh time)
+
+### User request and exact resume point
+- User paused work and explicitly requested that this task be the **first item / highest priority** when resuming.
+- Exact UI state: GitHub repository `Settings → Secrets and variables → Actions → Repository secrets → SUPABASE_DB_URL → pencil/Edit → Update secret`. The user reports the edit form is open and the `Value` field is blank/ready for input. Do not ask them to repeat the prior navigation.
+- User previously reported updating `SUPABASE_DB_PASSWORD` and `SUPABASE_DB_URL` yesterday. The secrets list showed `SUPABASE_DB_URL` last updated 18 hours ago and `SUPABASE_DB_PASSWORD` 4 days ago. A timestamp does not prove the stored URI is correct.
+- Supabase Connect screen confirmed this project's Session Pooler structure: `postgresql://`, host `aws-0-ap-south-1.pooler.supabase.com`, port `5432`, database `postgres`, username `postgres.lztbbrzeuyjkuiyzrsxp`. Replace the password placeholder locally with the current DB password; URL-encode special characters. Never put the actual URI/password in chat or repository docs.
+- Latest inspected backup workflow run #69 failed at initial URI validation with `SUPABASE_DB_URL must be a PostgreSQL URI`; no artifact was created and backup/restore/migration dry-run did not run. User has not yet confirmed saving the corrected URI.
+
+### First action on resume
+1. Resume at the already-open GitHub `Update secret` form. In `Value`, enter the complete Session Pooler URI using the current DB password (URL-encode special characters if needed), then save. Do not type “Session Pooler Connection String” as the value. Do not share the secret.
+2. After user confirms save, inspect latest backup workflow history before launching anything. If a successful post-correction run exists, verify its jobs and encrypted artifact; do not duplicate it.
+3. If no successful run exists, run the backup/restore/migration-preview workflow once. Require encrypted dump, decrypt, disposable restore with table count > 0, migration dry-run and encrypted artifact upload. Stop on failure; production migrations remain prohibited until all safety gates pass and explicit authorization plus non-secret backup reference are provided.
+
+### Income / automatic work — honest current status
+- Project remains **IN PROGRESS / NOT FULLY LIVE**. Admin Auto Work remains **NOT READY / CONTROL-PLANE ONLY**; live Owner RBAC RPC/migrations are not verified/applied, and worker/provider/storage/budget/settlement integrations are not deployed and accepted.
+- There is currently no verified live job execution, confirmed revenue stream, or payout path. The platform cannot currently be represented as generating or paying income. No income amount, date, or job availability can be promised. Do not rely on expected platform income for living expenses or stop other work based on it.
+- Income readiness requires production DB safety, Owner/RBAC setup, actual worker and approved providers, real customer-funded work, wage protection, server-verified settlement, and real withdrawal acceptance. Never fabricate earnings or simulate payouts.
+
+**Current exact resume point:** GitHub `SUPABASE_DB_URL` secret edit form, `Value` field; first priority when the user returns.
