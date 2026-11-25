@@ -1,65 +1,43 @@
-# MASTER WORLD VIP — Member Auto Work & Owner Commission Policy
+# MASTER WORLD VIP — Member Auto Work Pause & Owner Commission Policy
 
 Updated: 2026-11-25
 
-## Owner decision
-Member Auto Work is intended to be open to ordinary registered members as an optional, free-to-join earning opportunity. Members may opt in, view eligible automated task offers, accept a task, and submit/review its result. Admin retains provider, job-source, safety, queue and budget control. The Owner may earn a platform commission only from genuine, customer/partner-funded, settled revenue attributable to accepted member work.
+## Final current decision
+**Member Auto Work execution is DISABLED for ordinary members.** This is a deliberate safety decision, not a technical failure. A shared or insufficiently isolated worker could consume CPU/RAM, queue slots, database connections, storage, bandwidth or API quota and slow or interrupt the Owner/Admin's own Auto Work. The platform must protect Owner/Admin workloads first.
 
-This policy is approved as a product design; it is **not live** until backend, worker, UI, provider/customer source, settlement ledger and tests are deployed.
+Ordinary members can still use the existing Work & Earn marketplace for human-reviewed tasks (typing, data entry, translation, proofreading, PDF formatting, design, image editing and similar legitimate work). They do not receive worker execution access, Admin queue access, Owner capacity, provider credentials or background execution on their phones.
 
-## Member access and free participation
-- Registration, viewing offers, joining/opt-in and accepting a task must not require a deposit, subscription, purchase, referral payment or upfront fee.
-- No member is charged for API usage, storage, task failure or platform operation.
-- A member may decline, pause participation or leave without penalty.
-- Member task pay, rate, estimated effort, eligibility, deadline, acceptance criteria and payment timing are shown before acceptance.
-- No payment for merely being online, installing an app, clicking ads, watching artificial ads, fake traffic, fake engagement, or creating accounts.
-- Pay only for verified deliverables accepted by the real customer/partner and backed by settled funds; no guaranteed income or guaranteed task volume.
-- If a task is unpaid, it must be explicitly labelled voluntary and never disguised as an earning task.
+## What would be required to reconsider member automation
+Do not enable it merely by increasing a shared concurrency setting. Reconsider only after all conditions are met:
+1. Dedicated separate infrastructure/account/worker pool for member jobs, with separate database queue, storage namespace, API credentials and budgets from Owner/Admin.
+2. Hard CPU, memory, concurrency, request, storage, bandwidth, runtime and per-member quotas enforced server-side.
+3. Owner/Admin reserved capacity and priority cannot be consumed by member jobs; resource-pressure circuit breaker pauses member jobs first.
+4. Independent load, failure, abuse, isolation and recovery tests prove member jobs cannot slow, read, modify or block Owner/Admin work.
+5. Genuine client/provider contract and permitted data/API scope for each task type.
+6. Free-tier quota and billing behavior verified. No paid fallback, no silent charges; if separate infrastructure is not available free within safe limits, keep the feature disabled. Any future paid use needs a specific budget cap recorded in secure project settings.
+7. Admin emergency stop, audit trail, abuse review, privacy and dispute process.
 
-## Five member automation categories
-Member access can be offered only to task types enabled by Admin and covered by a documented client/provider contract and permitted API:
-1. AI data processing / structured data cleanup.
-2. Translation, document processing, proofreading and caption/transcript review.
-3. PDF formatting, conversion, extraction and quality checking.
-4. Image resize, compression, format conversion and permitted production.
-5. Website monitoring/report verification and report preparation.
+Until all gates pass, do not display member automated tasks as available, do not enqueue member automation and do not run member code on Owner/Admin workers.
 
-Members must not be given account credentials, client secrets, unrestricted data, Admin controls, or the Owner's private jobs/files. Access is scoped to the task's minimum required data.
+## Member Work & Earn (available direction)
+- Registration and access to ordinary task listings are free; no deposit, subscription, purchase, referral fee or upfront payment.
+- Offer human-reviewed tasks such as Bengali/English typing, data entry, translation, proofreading, PDF formatting, design and image editing.
+- Show task description, eligibility, effort estimate, rate, deadline, acceptance criteria and payment terms before a member accepts.
+- Payment only for verified deliverables accepted by a real customer/employer and backed by actual settled funds. No guaranteed task volume or income.
+- No payment for simply being online, installing an app, clicking ads, fake traffic/engagement or creating accounts.
+- No use of members' phones, battery, mobile data or bandwidth as distributed compute.
+- Protect member privacy and client files; provide reporting, dispute and appeal routes.
 
-## Owner platform commission and ledger
-- Commission is calculated from the actual settled payment for a valid accepted member deliverable, under the displayed terms.
-- Suggested formula for each settled task: settled customer receipt minus refunds/chargebacks, payment/provider fees, directly attributable API/compute/storage costs, and required tax/reserve = net distributable task proceeds.
-- Member task payment and Owner platform commission are separate ledger entries. Commission rate and member payment amount must be shown before a task is accepted; rates remain configurable and are not set by this document.
-- The Owner's commission is payable only when customer/partner funds have settled and the task passes acceptance; never take commission from unpaid member wages or another member's payment.
-- No duplicate revenue: same receipt is recorded once, then allocated to the appropriate ledgers.
-- If payment is refunded, disputed, reversed, fraudulent or not settled, the task payout/commission remains pending or is reversed according to published terms and law. Never claw back earned member pay unlawfully.
-- Owner personal commission is tracked separately from company revenue and Admin work pay.
+## Owner commission — only on real platform-mediated revenue
+- The Owner may receive a platform commission only where MASTER WORLD VIP has a legitimate customer order/contract, the member's deliverable is accepted, and the customer's payment has actually settled.
+- Commission rate, member payout, fees, cost allocation and timing must be disclosed before task acceptance and recorded separately.
+- The commission is not deducted from unpaid member wages and is never calculated from pending, estimated, disputed or unsettled money.
+- Reconcile refunds, chargebacks, payment fees, provider costs and required reserves. A receipt is recorded once only.
+- If the current Work & Earn listing is merely a peer-to-peer job board and the platform does not receive/settle the customer payment, the platform must not claim commission or promise payout through its own ledger.
+- Commission rate and payment integration are not currently set or live. No customer/settled revenue means commission is ৳0.
 
-## Protect the Owner's own work and the platform
-Member jobs must not harm or block Owner/Admin work:
-- Separate queues and per-member quotas; never share private jobs, files, credentials or datasets.
-- Owner/Admin queue priority and reserved capacity. Member jobs use only capacity explicitly allocated for members; when capacity is unavailable, members' jobs wait or are not offered.
-- Initially, strict limits: one active job per member, global member concurrency cap, per-module member concurrency cap, daily quota, task-size and timeout limits. Exact caps must be set after load tests.
-- One active task per module for Admin remains independent; member tasks cannot claim Admin queue slots. Global emergency pause and per-module/member pause.
-- Member work is FREE-ONLY: paid API/server fallback is off. Quota exhaustion pauses/queues member tasks; never charges members or silently bills Owner.
-- Admin can close offers, pause member auto-work, revoke access, quarantine output and investigate abuse; audit all administrative actions.
-- Test CPU, memory, queue, database, storage, API quotas and rate limits under simulated member load before public launch. If resource pressure affects Owner/Admin tasks, automatically throttle or pause member tasks first.
-- Customer SLA, contract scope, provider terms, privacy and geographic eligibility must be verified before offering the task.
-- Do not use members' devices, mobile data, electricity or bandwidth as a distributed compute network unless a separate transparent opt-in, risk review and compensation model is designed; this feature is not part of the initial rollout.
+## Admin Auto Work remains separate
+The five Admin modules remain Owner/Admin-only. Member task listings and human review must not use Admin execution queues, worker slots, credentials, private files or reserved compute. Keep Admin's existing maximum of one running job per module (five total) as a separate control-plane design.
 
-## Anti-abuse and privacy
-- Verified accounts, rate limits, duplicate/fraud detection, task-specific permissions and output checks.
-- Keep only required data; private storage; short-lived access links; retention/deletion rules.
-- Prohibit fake ad activity, click/view farming, auto-surf, fake signups/engagement, CAPTCHA bypass, unauthorized scraping, malware, account takeover, and tasks that violate provider terms.
-- Provide report/dispute and appeal routes. Record accepted/rejected reason and audit history.
-
-## Launch sequence
-1. Build member-facing Auto Work offer list, opt-in, task acceptance, task progress and submission/review UI.
-2. Add member-specific database roles/policies, queue, limits, ledger and separate commission allocation.
-3. Use test/sandbox jobs; prove members cannot read or affect Owner/Admin jobs.
-4. Load-test queue isolation, resource ceilings, emergency pause and quota exhaustion.
-5. Connect only legitimate customer/provider sources with documented permissions and settlement.
-6. Launch limited pilot with a small member cap; review incidents, cost and settled revenue before increasing limits.
-
-## Current status
-The existing Work & Earn page is an ordinary member job board. The Admin Auto Work status panel and control-plane migration are groundwork for Admin automation, not member automation. Member Auto Work, commission ledger, provider integrations, actual paid work sources and withdrawals are not deployed or verified. This document defines the intended policy only.
+## Current implementation status
+The Work & Earn page now states that Member Auto Work is paused/disabled and describes the safe human-task alternative and conditional commission rule. This is a website/source update only. It does not activate member tasks, create customer revenue, calculate commissions, or enable withdrawals. The existing Admin Auto Work database migration is not deployed, no worker/provider integrations are live, and no payout integration is verified.
