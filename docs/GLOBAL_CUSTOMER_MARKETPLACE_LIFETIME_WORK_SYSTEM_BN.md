@@ -80,3 +80,23 @@ This document is a product requirements baseline only. It does not deploy or act
 Existing database safety gate remains mandatory: secure correction of the GitHub `SUPABASE_DB_URL` secret, encrypted backup, decrypt, disposable restore with nonzero table count, migration dry-run and explicit authorization before production migration. No secret or password belongs in chat or documentation.
 
 Mark a feature LIVE only after code, required deployment, production configuration, security review, provider/client permission and real end-to-end acceptance all pass. Until then use PARTIAL / BLOCKED / NOT LIVE.
+
+
+## ১২. High-value USD projects and BDT member payouts (Owner priority, 2026-11-26)
+
+### High-value catalogue priority
+- Owner-এর নতুন অগ্রাধিকার: 2,000+ catalogue-এর মধ্যে বাস্তব চাহিদা ও লাভজনকতা যাচাই করে একটি গুরুত্বপূর্ণ **High-Value USD Projects** শ্রেণি গড়ে তুলতে হবে। উদাহরণ customer order price: **US$30, US$50, US$100, US$150 এবং তার বেশি**। এগুলো লক্ষ্য price bands/উদাহরণ—বর্তমান live order, নিশ্চিত কাজ, member earning বা Admin profit নয়।
+- প্রতিটি USD-priced project-এর জন্য বাস্তব customer/client, লিখিত scope ও deliverable, market-supported quote, lawful permission/contract, verified payment, acceptance criteria, effort estimate, provider capacity, refund/dispute terms এবং positive unit economics আবশ্যক। কোনো কাজের প্রকৃত বাজারদর/পরিশ্রমের সঙ্গে price না মিললে শুধু বড় dollar label দেওয়া যাবে না।
+- Catalogue-এ আলাদা priority/ranking থাকবে: verified funded high-value orders আগে eligible matching পেতে পারে; তবে skill/quality/eligibility, fairness, deadline, member workload এবং আগে-প্রকাশিত pay terms অগ্রাহ্য করা যাবে না। উচ্চ মূল্য মানেই অযোগ্য সদস্যকে কাজ দেওয়া বা কাজের মান কমানো নয়।
+
+### USD-to-BDT quote and payout
+- Customer USD-তে pay করতে পারবেন যেখানে অনুমোদিত payment provider/country support আছে। Bangladesh member-এর জন্য task accept করার আগেই **নির্দিষ্ট BDT payable** দেখাতে হবে; USD equivalent, conversion-rate source, rate timestamp, provider/FX fee, tax/withholding, payout fee ও rate-lock expiry আলাদা দেখাতে হবে।
+- FX calculation হবে server-side trusted provider/bank rate snapshot দিয়ে, order quote তৈরি/lock হওয়ার সময়। Member task accept করার পর প্রকাশিত BDT payable FX fluctuation-এর কারণে কমানো যাবে না। Platform currency risk নিতে না পারলে assignment-এর আগে quote পুনর্নির্ধারণ করে member-এর নতুন consent নিতে হবে; ইতিমধ্যে accepted payable retroactively কমানো যাবে না।
+- Customer-এর USD gross payment থেকে আগে tax, gateway/FX fees, refunds/chargebacks, verified delivery obligation, full member payable, direct provider/compute/operating cost এবং required reserve হিসাব হবে। কেবল এরপর অবশিষ্ট **Distributable Net Platform Revenue**-এ অনুমোদিত Admin 20%/35% tier প্রযোজ্য হবে। Admin commission কখনো US$30/50/100/150 gross customer price-এর সরাসরি 20%/35% নয়।
+- Customer, member ও Admin-এর জন্য আলাদা transparent breakdown/ledger ও settlement references রাখতে হবে। Customer যেন scope অনুযায়ী ন্যায্য deliverable পান; member যেন accepted BDT wage পান; Admin যেন কেবল বাস্তবে অর্জিত, settled এবং distributable net platform revenue থেকে আয় পান।
+
+### High-value safety and launch gates
+- High-value orders-এর জন্য enhanced client verification, fraud/chargeback screening, milestone/escrow or provider-supported payment protection where available, human review, evidence-based acceptance, dispute/appeal and payout reconciliation আবশ্যক।
+- Unfunded, suspicious, illegal, unrealistic-margin বা unverifiable $30–$150+ order queue-তে paid work হিসেবে যাবে না; pause/reject/requote হবে। Fake client, fake brand programme, fabricated dollar balance, guaranteed daily income বা artificial order volume নিষিদ্ধ।
+- $30/$50/$100/$150+ bands catalogue priority ও pricing target মাত্র। প্রকৃত আয় order volume, customer acquisition, delivery cost, quality, market demand, currency/fees এবং verified settlement-এর ওপর নির্ভরশীল; কোনো নির্দিষ্ট আয়/ROI guarantee নয়।
+- **Status:** এই high-value USD project policy নথিভুক্ত requirement; USD checkout, FX lock, BDT payout, real high-value clients/orders, priority scheduler বা settlement এখনও এই documentation update দ্বারা live/verified হয়নি। Database backup/restore safety blocker ও production migration approval gate অপরিবর্তিত।
