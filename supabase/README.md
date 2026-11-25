@@ -40,6 +40,7 @@ This repository contains the database foundation, community, privacy, admin/broa
 26. `202611240007_referral_payout_reference_hardening.sql` — payout reference validation.
 27. `20261125100000_admin_auto_work_control_plane.sql` — Admin-only five-module Auto Work control plane; modules start disabled.
 28. `20261125130000_admin_auto_work_claim_concurrency_fix.sql` — ensures at most one running job per module when multiple workers poll concurrently.
+29. `20261125160000_work_earn_wallet_owner_profit.sql` — separate member Work & Earn wallet and Owner profit ledgers, audited 20% default commission setting, provider-settlement intake and atomic idempotent posting RPC (backend foundation only; no payment gateway or payout is live).
 
 **Important:** Repository files and this checklist do not prove that any migration has been applied to your Supabase project. SQL is not run by the website automatically. Keep a record of each successfully applied migration. Do not rerun a migration blindly if the project already has part or all of its schema; inspect the database first.
 
@@ -143,3 +144,10 @@ CURRENT STATUS: Admin overview UI code added; migration files and guarded workfl
 Owner commission কেবল সব member payable, refund liability, provider cost, tax/fee ও restricted customer funds সুরক্ষিত/মেটানোর পর প্রকৃত settled platform net revenue থেকে; member wage, deposit বা refund reserve থেকে নয়। Dedicated member worker/queue/storage/API credentials/budget, strict resource isolation, per-member hard caps, emergency stop, payment-provider server verification, audit logs, privacy controls, load/failure/security tests এবং independent reconciliation—সব launch gate পাস না করলে package sales/execution বন্ধ থাকবে। বিস্তারিত authoritative rules: [MEMBER_AUTO_WORK_OWNER_COMMISSION_POLICY_BN.md](MEMBER_AUTO_WORK_OWNER_COMMISSION_POLICY_BN.md).
 
 **Implementation status:** policy/document/UI source update only. No member package catalog/checkout, actual refund reserve account, payment/refund integration, dedicated member worker or payout system is live. No member payments should be collected. GitHub Pages deployment and production database migration are separate and remain subject to their own verified gates.
+
+
+## 10. Work & Earn wallet and Owner profit settlement foundation
+
+Migration `20261125160000_work_earn_wallet_owner_profit.sql` adds separate append-only Member Work Wallet and Owner Work Profit ledgers, an Owner-only audited commission-rate setting (default 20%), server-only provider-verified payment-event and short-lived reconciliation-snapshot intake, member wallet/Owner profit read RPCs, and a service-role-only atomic/idempotent settlement RPC. The settlement RPC posts the member's full payable and the Owner's percentage of distributable net platform revenue in one database transaction; it rejects unverified/unaccepted payments, stale or failed financial gates, amount mismatches, duplicate/colliding events, and a missing/non-unique Owner.
+
+A trusted backend must independently validate provider signatures/status before inserting payment events and must create reconciliation snapshots from real provider/bank records. No Edge Function, merchant credentials, actual reserve custody, bank/bKash/Nagad payout connector, production migration apply, or live wallet funding is included by this schema migration. Internal wallet/accrual entries are not cash transfers. See `docs/WORK_EARN_WALLET_OWNER_PROFIT_ACCEPTANCE_TEST_BN.md`. Keep paid Member Auto Work packages disabled.
