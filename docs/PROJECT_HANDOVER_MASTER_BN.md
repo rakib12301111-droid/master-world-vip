@@ -322,3 +322,19 @@ Supporting details are kept in `docs/FEATURE_COMPLETION_REGISTER_BN.md`, `docs/S
 2. If confirmed, inspect latest backup workflow history before starting any run; reuse valid successful evidence and do not repeat completed checks.
 3. Resume the database backup/restore gate; no production migration before all prerequisites and explicit authorization.
 4. After DB safety, implement the customer portal in staging, secure payment state machine and first real paid customer pilot before claiming member order supply.
+
+
+## ১৫. Owner priority — High-Value USD Projects with BDT member pay (2026-11-26)
+
+- নতুন requirements `docs/GLOBAL_CUSTOMER_MARKETPLACE_LIFETIME_WORK_SYSTEM_BN.md` Section 12 এবং `docs/MEMBER_AUTO_WORK_OWNER_COMMISSION_POLICY_BN.md` Section 16-এ নথিভুক্ত।
+- 2,000+ genuine project catalogue-এর মধ্যে বাস্তব customer demand ও sustainable unit economics-সহ High-Value USD Projects priority পাবে। Target price examples: US$30, US$50, US$100, US$150+। এগুলো pricing targets/examples, live jobs বা guaranteed earnings নয়।
+- Bangladesh member-এর task accept করার আগে exact BDT payable, trusted FX rate/source/time, fees/taxes/payout charges এবং quote expiry দেখাতে হবে। Accepted BDT payable FX movement-এর কারণে কমানো যাবে না; re-quote হলে member-এর নতুন consent লাগবে।
+- USD customer gross receipt থেকে tax/FX/payment fees, refunds/chargebacks, direct/provider/compute costs, required reserves ও full member payable সুরক্ষার পর অবশিষ্ট Distributable Net Platform Revenue-এ approved Admin 20%/35% tier প্রযোজ্য হবে। Gross USD order price বা member wage থেকে commission নয়।
+- High-value order-এ verified client/funding, lawful scope, quality/acceptance criteria, fraud/dispute controls ও positive unit economics আবশ্যক। Fake projects/orders/income এবং guaranteed $30–$150 member earnings নিষিদ্ধ।
+- **Status: DOCUMENTED ONLY / NOT LIVE.** USD checkout, FX quote-lock, BDT payouts, actual high-value clients/orders, priority scheduler ও commission settlement deployed/verified নয়। Database backup/restore blocker, secure `SUPABASE_DB_URL` secret correction, restore/dry-run এবং explicit migration authorization gate অপরিবর্তিত।
+
+### Next starting point — unchanged
+1. Database backup কাজ Owner-এর নির্ধারিত পরবর্তী session পর্যন্ত স্থগিত; secret value কখনো চাইবেন না।
+2. পরবর্তী session-এ প্রথমে current `main` HEAD, latest Pages workflow এবং no-repeat register অনুযায়ী evidence inspect করুন; completed checks অকারণে repeat নয়।
+3. Owner-এর secure DB URL save confirmation না পাওয়া পর্যন্ত backup workflow চালাবেন না। Confirmation-এর পর workflow history inspect করে প্রয়োজন হলে একবার gated backup → decrypt → disposable restore (table count > 0) → migration dry-run।
+4. DB safety gate পাসের পরই staging customer portal, verified USD payment/FX quote, BDT member-pay disclosure এবং প্রথম real paid high-value pilot-এর কাজ শুরু হবে।
