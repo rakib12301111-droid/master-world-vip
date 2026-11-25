@@ -126,6 +126,8 @@ revoke all on public.work_earn_payment_events,public.finance_reconciliation_snap
   public.work_earn_commission_settings,public.work_earn_commission_settings_audit,
   public.member_work_wallet_ledger,public.owner_work_profit_ledger,public.work_earn_settlements
   from public,anon,authenticated;
+-- Only trusted server-side provider/reconciliation services may write verified source records.
+grant select,insert,update on public.work_earn_payment_events,public.finance_reconciliation_snapshots to service_role;
 grant select on public.member_work_wallet_ledger to authenticated;
 grant select on public.owner_work_profit_ledger to authenticated;
 
@@ -240,6 +242,7 @@ declare
   v_event public.work_earn_payment_events%rowtype;
   v_snapshot public.finance_reconciliation_snapshots%rowtype;
   v_owner uuid;
+  v_owner_count integer;
   v_rate numeric(5,2);
   v_net numeric(14,2);
   v_profit numeric(14,2);
@@ -289,8 +292,8 @@ begin
     raise exception 'Financial reconciliation, 100% refund reserves or operating budget gate failed/stale';
   end if;
 
-  select user_id into v_owner from public.app_user_roles where role='owner' order by user_id limit 1;
-  if v_owner is null then raise exception 'Verified Owner account missing'; end if;
+  select count(*),min(user_id) into v_owner_count,v_owner from public.app_user_roles where role='owner';
+  if v_owner_count <> 1 or v_owner is null then raise exception 'Exactly one verified Owner account is required'; end if;
   select owner_profit_rate into v_rate from public.work_earn_commission_settings where singleton=true for update;
   v_net := greatest(0,p_platform_fee_gross-p_tax_amount-p_provider_fee-p_operating_cost-p_restricted_liability);
   v_profit := round(v_net*v_rate/100,2);
