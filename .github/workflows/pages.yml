@@ -78,7 +78,10 @@ jobs:
           grep -q "get_admin_referral_network_reward_summary" /tmp/mwvip-live.html
           grep -q "Owner Network Reward Pending" /tmp/mwvip-live.html
           curl --fail --silent --show-error --location "$BASE_URL/www/sw.js" -o /tmp/mwvip-sw.js
-          grep -q "mwvip-pwa-v34" /tmp/mwvip-sw.js
+          grep -q "mwvip-pwa-v35" /tmp/mwvip-sw.js
+          curl --fail --silent --show-error --location "$BASE_URL/www/member-dashboard.js" -o /tmp/mwvip-member-dashboard.js
+          grep -q "MASTER WORLD VIP" /tmp/mwvip-member-dashboard.js
+          grep -q "get_my_referral_wallet" /tmp/mwvip-member-dashboard.js
           curl --fail --silent --show-error --location "$BASE_URL/docs/START_TO_FINISH_AUDIT_BN.md" -o /tmp/mwvip-audit.md
           grep -q "বাধ্যতামূলক কাজের ক্রম" /tmp/mwvip-audit.md
           curl --fail --silent --show-error --location "$BASE_URL/www/update-manifest.json" -o /tmp/mwvip-update-manifest.json
