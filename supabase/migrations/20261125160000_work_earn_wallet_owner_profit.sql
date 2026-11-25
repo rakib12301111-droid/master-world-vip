@@ -296,7 +296,22 @@ begin
   select count(*) into v_owner_count from public.app_user_roles where role='owner';
   if v_owner_count <> 1 then raise exception 'Exactly one verified Owner account is required'; end if;
   select user_id into v_owner from public.app_user_roles where role='owner';
-  select owner_profit_rate into v_rate from public.work_earn_commission_settings where singleton=true for update;
+  -- Resolve the rate that was effective when the client accepted the work.
+  -- A later Owner change must never alter commission for already accepted work.
+  select new_rate into v_rate
+    from public.work_earn_commission_settings_audit
+    where effective_from <= v_event.client_accepted_at
+    order by effective_from desc,id desc limit 1;
+  if v_rate is null then
+    select old_rate into v_rate
+      from public.work_earn_commission_settings_audit
+      where effective_from > v_event.client_accepted_at
+      order by effective_from asc,id asc limit 1;
+  end if;
+  if v_rate is null then
+    select owner_profit_rate into v_rate
+      from public.work_earn_commission_settings where singleton=true;
+  end if;
   v_net := greatest(0,p_platform_fee_gross-p_tax_amount-p_provider_fee-p_operating_cost-p_restricted_liability);
   v_profit := round(v_net*v_rate/100,2);
 
