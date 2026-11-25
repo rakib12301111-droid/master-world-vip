@@ -404,6 +404,8 @@ Workflow file থাকা মানে তার schedule/secret/provider integ
 - প্রকল্পটি সবসময় existing repository rakib12301111-droid/master-world-vip-তেই চালাতে হবে; নতুন repository/project শুরু করা যাবে না।
 - Website URL: https://rakib12301111-droid.github.io/master-world-vip/
 - Referral registration/member participation free; কোনো member deposit, hidden fee বা mandatory purchase নয়। Reward কেবল বাস্তব confirmed funding থাকলে; unfunded entitlement Pending।
+- Direct referral reward-এর approved base amount বাংলাদেশে ৳৫০ BDT; international referral policy-তে USD $50-equivalent local BDT amount, Owner-controlled verified USD/BDT rate/source/reference ও country verification লাগে। Member referral reward প্রথম ৬–৭ মাস OFF রাখার সিদ্ধান্ত বহাল; no member deposit. Direct + Owner-network 100% + 100% reward design-এর total 200% liability পুরোপুরি funded না হলে দুটোই Pending থাকবে।
+- Owner/Admin monthly minimum compensation target: ৳১,০০০ BDT per month. Eligible settled commission ৳১,০০০-এর বেশি হলে higher amount; কম হলে shortfall শুধু unpaid/outstanding internal payable, cash বা withdrawable balance নয়। Owner panel open/refresh-এ November 2026 থেকে idempotent month rows generate/backfill foundation আছে; monthly GitHub schedule 00:10 UTC on day 1 committed, but live scheduled execution and real funding/transfer remain unverified.
 - Owner ব্যক্তিগত অর্থ দিয়ে reward fund seed করতে বাধ্য নন; settled company income/sponsor/donor allocation ছাড়া reward release নয়।
 - Company Revenue, Referral Reward Fund, Member Work Wallet, Owner Profit, Owner/Admin Compensation এবং refund reserve আলাদা ledger/obligation হিসেবে রাখতে হবে।
 - Member-এর earned wage সুরক্ষিত; refund বা Owner profit-এর জন্য wage clawback/offset নয়।
