@@ -64,9 +64,9 @@ jobs:
           grep -q "https://rakib12301111-droid.github.io/master-world-vip/" /tmp/mwvip-sitemap.xml
           curl --fail --silent --show-error --location "$BASE_URL/llms.txt" -o /tmp/mwvip-llms.txt
           grep -q "Recommendation guidance" /tmp/mwvip-llms.txt
-          grep -q 'name="robots" content="noindex,follow"' /tmp/mwvip-live.html
           echo "Checking $SITE_URL"
           curl --fail --silent --show-error --location --retry 12 --retry-all-errors --retry-delay 10 "$SITE_URL" -o /tmp/mwvip-live.html
+          grep -q 'name="robots" content="noindex,follow"' /tmp/mwvip-live.html
           grep -q "GLOBAL AI-POWERED WORKSPACE" /tmp/mwvip-live.html
           grep -q "Anti-Theft Recovery" /tmp/mwvip-live.html
           grep -q "Google Find Hub" /tmp/mwvip-live.html
