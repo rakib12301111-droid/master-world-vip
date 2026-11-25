@@ -225,7 +225,7 @@ Supporting details are kept in `docs/FEATURE_COMPLETION_REGISTER_BN.md`, `docs/S
 - Database backup/restore + Owner/RBAC production safety gate হলো এই feature-এর deployment prerequisite; এটি পাস না হওয়া পর্যন্ত worker/production migration চালু নয়।
 - প্রথমে আগের section 10-এ বর্ণিত GitHub `SUPABASE_DB_URL` secret edit/save confirmation থেকে resume করতে হবে; user save নিশ্চিত করলে workflow history আগে inspect করুন, successful run থাকলে পুনরাবৃত্তি নয়।
 - এরপর এই section 11-এর ক্রমে staging worker/provider implementation করুন। Existing UI, migrations, unique index, docs এবং completed static checks পুনরায় বানাবেন/চালাবেন না; শুধু source/config change হলে affected tests।
-- এই session-এ নতুন completed test evidence তৈরি হয়নি; তাই `COMPLETED_WORK_NO_REPEAT_REGISTER_BN.md`-এ নতুন PASS entry যোগ করা হয়নি।
+- পরবর্তী Section 12-এ এই feature-এর জন্য নতুন ১৪টি static safety check-এর verified PASS evidence যোগ করা হয়েছে; no-repeat register-এর Section 2.5-এ তার run ID ও tested commit নথিভুক্ত। ওই একই ১৪টি check source/config অপরিবর্তিত থাকলে পুনরায় চালাবেন না.
 
 
 ## 12. নতুন Auto Work static safety check — verified PASS (2026-11-25)
@@ -244,3 +244,42 @@ Supporting details are kept in `docs/FEATURE_COMPLETION_REGISTER_BN.md`, `docs/S
 ### Current next action
 - Continue from section 10's already-open `SUPABASE_DB_URL` secret correction; wait for Owner confirmation that it was saved. Inspect backup workflow history before running it. Do not request or display secret values.
 - After DB safety/Owner gates, implement and test the real server-side worker and one approved provider in staging. Keep all modules disabled and no paid fallback until gates pass.
+
+
+## 13. Latest audit, completed-work index and realistic delivery estimate (2026-11-25)
+
+### Latest repository state
+- Latest main HEAD before this handover update: `2821cedea6c6c121ca37f86899b2d93820fc1361`.
+- Authoritative completed-work evidence is in `docs/COMPLETED_WORK_NO_REPEAT_REGISTER_BN.md`; use Sections 2.1–2.5 for existing verified release/static/code checks. Do not duplicate those entries or repeat their workflows without a relevant source/config change.
+- Auto Work-specific verified completion: Section 12 above and no-repeat register Section 2.5; isolated workflow run `45641251920`, tested commit `779ebcc1dec6b5bb763a6d6cb81b4abb57a84c1b`, all 14 static checks PASS.
+- Pages workflow run `45641382050` was pending at last inspection after documentation-only updates. Do not record it as deployed or complete. The latest successful Pages publication known before those documentation-only commits was run `45640956922` on commit `82fbe343d52beb5725ffab9d79470d47c9561ff7`.
+
+### Completed for 24/7 Auto Work (repository/source scope only)
+- Owner-approved product goal and priority recorded.
+- Existing Admin Auto Work read-only control-plane UI and role-gated visibility logic inspected.
+- Five module definitions, provider registry, queue/audit schema, RLS and service-role-only worker RPC source inspected.
+- Default-disabled modules and fail-closed `execution_ready=false` behavior inspected.
+- Existing per-module one-running-job unique index and additional claim concurrency guard inspected; do not recreate them.
+- Dedicated 14-check static safety validator and isolated GitHub Actions workflow added; latest run passed all 14.
+- Handover and no-repeat register updated to preserve exact evidence and avoid repeated work.
+
+### Still not complete / blocking real 24/7 earning
+- User confirmation that GitHub Actions `SUPABASE_DB_URL` secret has been securely corrected and saved.
+- Encrypted backup, decrypt, disposable restore with nonzero table count and migration dry-run.
+- Verified Owner Auth identity/RBAC bootstrap and production migrations (with explicit authorization).
+- Deployed server-side scheduler/worker with heartbeat, lease/reclaim, retry/idempotency, stop controls and monitoring.
+- At least one approved, available provider/client with contract, permission, Bangladesh eligibility and customer-funded real work.
+- Private storage, quota/cost caps, privacy/security review.
+- Server-to-server customer settlement, refund/chargeback handling, protected member payable ledger and successful real payout reconciliation.
+- Staging acceptance tests and controlled production canary. Until then all modules stay disabled; no passive/daily income promise.
+
+### Time estimate — planning only, not a delivery promise
+- A reliable calendar completion date cannot yet be calculated because the database safety gate, Owner authorization, provider/client contract, real job supply and payout path are external blockers not under repository coding control.
+- After the DB backup/restore gate passes, a first staging worker for one approved module may take roughly 1–3 weeks of focused engineering and testing, assuming provider documentation/access and test data are ready. This is a planning range only, not a guarantee.
+- Production-ready multi-module 24/7 operation may take longer (several additional weeks or more) depending on provider approvals, customer-funded demand, security/legal review, storage, settlement and payout acceptance. If no real provider/client contract exists, launch timing remains unknown and income remains zero/unverified.
+- Do not promise any daily income or ask the Owner to stop other work. Keep free-tier-only and fail-closed behavior; no paid fallback without explicit approval and a spend cap.
+
+### Exact next step — unchanged
+- Wait for Owner to confirm the already-open GitHub `SUPABASE_DB_URL` secret edit was saved. Do not ask for the secret itself.
+- After confirmation, inspect backup workflow history first. Reuse a successful post-correction run if it already exists; otherwise execute the gated backup/restore preview once and stop on any failure.
+- Continue only after that gate passes. The 14 Auto Work static checks are already complete and must not be repeated without source/config changes.
