@@ -98,3 +98,13 @@ This document is a design specification only. It does not connect a client/provi
 - Free-only mode; quota exhaustion queue/pause. Paid API/server fallback OFF; member-কে charge নয়, Owner-কে silent bill নয়. Members' phone, mobile data, bandwidth বা electricity distributed compute হিসেবে ব্যবহার হবে না.
 - Fraud review, permission, audit, dispute/report/appeal, privacy, task output checks mandatory. নিষিদ্ধ fake clicks/views/traffic, auto-surf, fake engagement/signup, CAPTCHA bypass, unauthorized scraping.
 - Member Auto Work এখনও live নয়; UI, database/queue/ledger, worker, customer source, settlement/payout ও isolation tests বাস্তবায়ন এবং deploy করতে হবে.
+
+
+## Final Owner decision: Member Auto Work paused for workload protection (2026-11-25)
+
+- Ordinary members will NOT execute automated jobs on the current shared infrastructure. Member Auto Work is DISABLED; no member job may enter the Admin/Owner queue or consume Owner-reserved worker slots, API quotas, private files or credentials.
+- Reason: shared worker/queue/database/storage/API capacity could slow or interrupt Owner/Admin Auto Work. Protecting the Owner's work takes priority over offering member automation prematurely.
+- Safe alternative: members may use the ordinary Work & Earn human-reviewed task marketplace (typing, data entry, translation, proofreading, PDF formatting, design, image editing, etc.). Show rate, eligibility, deadline, acceptance criteria and payment terms before acceptance. No deposit or upfront fee; no guaranteed income.
+- Owner commission is conditional: only on a legitimate platform-mediated client order where the deliverable is accepted and the customer's payment is actually settled. The rate and payment integration are not set/live. If the platform does not receive/settle the customer's money, it must not claim commission. No settlement means ৳0 commission.
+- Reconsider member automation only after dedicated isolated infrastructure/account, separate queue/storage/credentials/budget, hard quotas, reserved Owner/Admin capacity, automatic member-first pause, load/isolation/failure tests, genuine contracts, privacy/audit and emergency stop. If a safe separate free-tier setup is unavailable, keep member Auto Work disabled. No silent paid fallback or member charges.
+- www/index.html and docs/MEMBER_AUTO_WORK_OWNER_COMMISSION_POLICY_BN.md now reflect this decision. This is source/documentation update, not live execution or payment integration.
