@@ -22,6 +22,7 @@ checks = {
     'rate change is Owner-only and audited': 'owner_set_work_earn_profit_rate' in sql and 'work_earn_commission_settings_audit' in sql and 'work_earn_owner_profit_rate_changed' in sql,
     'settlement posting is service-role-only': "coalesce(auth.role(),'') <> 'service_role'" in sql and 'to service_role' in sql,
     'member full payable and Owner profit are posted in one RPC transaction': 'service_post_work_earn_settlement' in sql and 'member_work_wallet_ledger' in sql and 'owner_work_profit_ledger' in sql,
+    'commission rate is resolved at client acceptance and not retroactively': 'effective_from <= v_event.client_accepted_at' in sql and 'order by effective_from asc,id asc' in sql,
     'Owner profit is based on distributable net platform fee': 'v_net := greatest(0,p_platform_fee_gross-p_tax_amount-p_provider_fee-p_operating_cost-p_restricted_liability)' in sql and 'v_profit := round(v_net*v_rate/100,2)' in sql,
     'gross client receipt must equal member payable plus platform fee': 'gross_received = member_payable + platform_fee_gross' in sql and 'v_event.gross_amount <> p_member_payable+p_platform_fee_gross' in sql,
     'duplicate retries return original settlement and collisions fail': "'duplicate',true" in sql and 'already used by another settlement' in sql,
