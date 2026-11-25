@@ -20,7 +20,7 @@
 - Audit baseline main HEAD, handover rewrite-এর আগে: `57d0192bd8b7780bb8cf40f2faae51cf38e617fc`.
 - Baseline commit message: completed-only no-repeat register যোগ করা হয়েছে।
 - এই handover rewrite নিজেই main-এ নতুন commit তৈরি করবে; তাই উপরের SHA-কে পরবর্তী session-এর current HEAD ধরে নেওয়া যাবে না। প্রতিবার GitHub থেকে actual `main` HEAD পড়ুন।
-- Current audited tree inventory: **30 SQL migration**, **15 GitHub Actions workflow**, **28 docs/** supporting documents।
+- Current audited tree inventory: **30 SQL migration**, **15 GitHub Actions workflow**, **30 docs/** supporting documents (28 pre-existing documents plus the new no-repeat register and preserved history archive)।
 - Inventory count কেবল file existence বোঝায়; production database-এ migration apply বা feature LIVE বোঝায় না।
 - Existing repository-তেই additive, reviewed changes হবে। নতুন repo/project নয়।
 
