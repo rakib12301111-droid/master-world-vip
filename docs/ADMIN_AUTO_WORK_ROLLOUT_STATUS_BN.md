@@ -122,3 +122,14 @@ The dashboard must report separately: free quota consumed, jobs processed, custo
 - Repository Actions secrets needed for the backup preview are SUPABASE_DB_URL (IPv4-compatible Supabase Session Pooler URI) and BACKUP_ENCRYPTION_PASSPHRASE. The guarded migration apply workflow also requires SUPABASE_ACCESS_TOKEN. Configure these only in GitHub repository Settings → Secrets and variables → Actions; never paste their values into chat or commit them.
 - After the secrets are configured, rerun the backup/restore preview and confirm a successful disposable restore. Only then review pending migrations in the guarded workflow. Production apply additionally requires the exact phrase APPLY-MASTER-WORLD-VIP-MIGRATIONS, a non-secret backup reference and explicit confirmation of backup and restore test.
 - No Supabase migration was applied by the commits in this update.
+
+
+## Owner decision: Member Auto Work + platform commission (2026-11-25)
+
+- Ordinary registered members will also be offered optional, free-to-join automated tasks, alongside the existing Work & Earn board. No deposit, subscription, purchase, referral payment or upfront fee is required.
+- Member automation offers are limited to approved, legitimate customer/provider work in the five categories. Members opt in, see task rate/effort/eligibility/deadline/acceptance/payment terms before accepting, and may pause/leave freely. No guaranteed task volume or income.
+- Owner/platform commission is planned from genuine settled customer/partner receipts for accepted member deliverables only. The displayed commission and member payout terms must be fixed before task acceptance. Direct costs, fees, refunds/chargebacks and required reserves are accounted first; no commission from unpaid member wages or unsettled money. Rate is not set yet.
+- Member tasks must use a separate queue, per-member/module/global caps, quotas, isolated private files/data, and resource reservation for Owner/Admin jobs. Member workload is throttled or paused first if it threatens Owner/Admin tasks, server limits or quotas. Admin Auto Work remains separate and must never be blocked by member jobs.
+- Initial member automation is FREE-ONLY; quota exhaustion queues/pauses work. No paid API/server fallback, no member charges and no silent Owner charges. No distributed use of members' phones, data or bandwidth in this initial design.
+- Admin can disable all member offers, pause modules, limit access and review abuse. Audit and privacy protections are required.
+- NOT LIVE: this is a new product decision/specification. Member Auto Work UI/backend/worker/commission ledger/customer sources and settlement tests have not been deployed. See docs/MEMBER_AUTO_WORK_OWNER_COMMISSION_POLICY_BN.md.
