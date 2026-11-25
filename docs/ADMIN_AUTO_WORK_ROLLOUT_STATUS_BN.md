@@ -155,3 +155,32 @@ The dashboard must report separately: free quota consumed, jobs processed, custo
 Owner commission কেবল সব member payable, refund liability, provider cost, tax/fee ও restricted customer funds সুরক্ষিত/মেটানোর পর প্রকৃত settled platform net revenue থেকে; member wage, deposit বা refund reserve থেকে নয়। Dedicated member worker/queue/storage/API credentials/budget, strict resource isolation, per-member hard caps, emergency stop, payment-provider server verification, audit logs, privacy controls, load/failure/security tests এবং independent reconciliation—সব launch gate পাস না করলে package sales/execution বন্ধ থাকবে। বিস্তারিত authoritative rules: [MEMBER_AUTO_WORK_OWNER_COMMISSION_POLICY_BN.md](MEMBER_AUTO_WORK_OWNER_COMMISSION_POLICY_BN.md).
 
 **Implementation status:** policy/document/UI source update only. No member package catalog/checkout, actual refund reserve account, payment/refund integration, dedicated member worker or payout system is live. No member payments should be collected. GitHub Pages deployment and production database migration are separate and remain subject to their own verified gates.
+
+
+## Live-panel diagnosis update — Owner access not configured (2026-11-25)
+
+### Confirmed symptom
+The Owner reports being logged into the Owner account, but the Admin Auto Work panel is not visible. The Admin & Security Center displays **Access Not configured** and this PostgREST error:
+
+`Could not find the function public.get_my_admin_access without parameters in the schema cache`
+
+### Root cause indicated by the evidence
+- The existing app markup contains `#adminAutoWorkPanel`, initially hidden.
+- The browser calls `public.get_my_admin_access()`; the panel is revealed only if the database returns `owner`, `super_admin` or `admin`.
+- Therefore login to the website is not sufficient: the live Supabase database must have the RBAC function and the authenticated user must have the verified Owner role.
+- Existing RBAC migration: `20261119180000_admin_rbac_owner_control.sql`. Its Owner bootstrap email must be checked against the verified Auth user in the correct Supabase project; never assume the existing configured value is correct.
+- Apply dependency order only after database safety gates: RBAC/Owner bootstrap → `20261125100000_admin_auto_work_control_plane.sql` → `20261125130000_admin_auto_work_claim_concurrency_fix.sql`.
+
+### Status
+**BLOCKED / NOT LIVE.** This session diagnosed the missing live RPC/schema-cache function; it did not apply migrations or change production data. The panel source exists but has not passed live Owner-role verification. After migration, the panel remains a read-only control-plane view and execution remains NOT READY until actual server worker and provider connectors are deployed and accepted. All five modules remain disabled by default.
+
+### Safe next steps
+1. Verify correct Supabase project/ref and authenticated Owner identity.
+2. Do not rerun backup workflow until Owner securely rotates/corrects the DB connection secret; previous attempts failed URI validation and PostgreSQL password authentication.
+3. Complete encrypted backup + disposable restore + migration dry-run, with restored table count greater than zero.
+4. Verify Owner bootstrap email against Supabase Auth; then use guarded migration workflow with required exact production authorization and non-secret backup reference.
+5. Apply RBAC first, then the two Auto Work migrations in order; refresh schema cache if needed.
+6. Verify Owner RPC result and role isolation; then reload app and test panel visibility.
+7. Keep actual execution disabled until server worker, approved provider adapters/contracts, budget controls, storage, monitoring and settlement tests are complete. No paid fallback; Member Auto Work stays disabled.
+
+No new PASS evidence was produced by this diagnosis. This section is a status update, not a completed-work entry.
