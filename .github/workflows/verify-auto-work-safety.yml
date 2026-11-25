@@ -1,0 +1,42 @@
+name: MASTER WORLD VIP - Auto Work Static Safety
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "supabase/migrations/20261125100000_admin_auto_work_control_plane.sql"
+      - "supabase/migrations/20261125130000_admin_auto_work_claim_concurrency_fix.sql"
+      - "www/index.html"
+      - "scripts/verify-admin-auto-work.py"
+      - "docs/ADMIN_AUTO_WORK_EARN_IMPLEMENTATION_BN.md"
+      - "docs/MEMBER_AUTO_WORK_OWNER_COMMISSION_POLICY_BN.md"
+      - "supabase/README.md"
+      - ".github/workflows/verify-auto-work-safety.yml"
+  pull_request:
+    paths:
+      - "supabase/migrations/20261125100000_admin_auto_work_control_plane.sql"
+      - "supabase/migrations/20261125130000_admin_auto_work_claim_concurrency_fix.sql"
+      - "www/index.html"
+      - "scripts/verify-admin-auto-work.py"
+      - "docs/ADMIN_AUTO_WORK_EARN_IMPLEMENTATION_BN.md"
+      - "docs/MEMBER_AUTO_WORK_OWNER_COMMISSION_POLICY_BN.md"
+      - "supabase/README.md"
+      - ".github/workflows/verify-auto-work-safety.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  auto-work-static-safety:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+      - name: Verify Auto Work security and readiness invariants
+        run: python scripts/verify-admin-auto-work.py
