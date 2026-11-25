@@ -364,3 +364,31 @@ Supporting details are kept in `docs/FEATURE_COMPLETION_REGISTER_BN.md`, `docs/S
 - Previous 14-check Auto Work static safety suite must not be repeated unless tested source/configuration changes.
 
 **Pre-handover main HEAD:** `d16ca900c961c19a392c16a04dab7293d1d44c5d` (after VIP policy documentation updates; verify actual main HEAD after this handover commit).
+
+## ১৭. Master Owner Requirements & USD→BDT Automatic Account Credit (2026-11-26)
+
+### Single continuity document
+- নতুন comprehensive document: `docs/MASTER_WORLD_VIP_MASTER_OWNER_REQUIREMENTS_BN.md`.
+- এটি MASTER WORLD VIP-এর পূর্ববর্তী গুরুত্বপূর্ণ product goals, Admin USD/BDT income, automatic FX conversion/account credit, member 24/7 auto work, global customer marketplace, high-value USD projects, VIP random USD draw, Admin commission, plans, member protection, security/privacy, database blocker, no-repeat rules এবং exact next steps একত্র করেছে।
+- পরবর্তী প্রতিটি session-এ এই document-সহ handover ও no-repeat register প্রথমে পড়তে হবে; user-কে আগের সিদ্ধান্ত পুনরায় বলতে বলা যাবে না।
+
+### Owner's latest highest-priority financial requirement
+- Admin-এর USD আয় অত্যন্ত গুরুত্বপূর্ণ। USD ও BDT source-wise combined reporting থাকবে; বাস্তবে অর্জিত ও অনুমোদিত Admin USD entitlement 100% সঠিকভাবে ledger-এ record, convert এবং reconcile করতে হবে।
+- Admin USD স্বয়ংক্রিয়ভাবে real provider/bank FX quote-এ BDT-তে convert হয়ে nominated/verified Admin account-এ credit হবে—এটি target requirement। Show USD source amount, executable FX rate/source/time, fees/tax/spread, expected net BDT, quote expiry, provider transaction reference এবং actual settlement status.
+- USD source ledger এবং BDT credit ledger পৃথক; signed provider webhooks, idempotency, atomic posting, reconciliation এবং KYC/AML/tax/legal/bank authorization gates আবশ্যক। Provider settlement না হলে Pending/Manual; UI balance-কে cash বা completed bank transfer বলা যাবে না।
+- Free Plan নিজে free; plan active থাকলেই income তৈরি হয় না। Free Plan-এর অধীনে real customer-paid services/orders, sponsor/ad/partner settlements থেকে actual eligible revenue attributable হতে পারে। Paid Plan revenue-ও actual provider-verified settlement, refund/tax/fee/cost/member payable/reserve deductions-এর পর গণনা হবে।
+- “Admin 100% confirmed USD” = actual eligible settled net revenue থেকে approved Admin entitlement-এর 100% সঠিকভাবে record/reconcile/convert/credit করা; 100% gross sales, fixed dollar amount, self-purchase income বা free plan activation থেকে guaranteed profit নয়।
+- Admin-এর own Paid Admin Plan purchase is an operating expense, not income. No double counting.
+- No bank account credentials, password, OTP, PIN, card secret or API secret in chat/repository.
+
+### Status and blockers
+- Master requirements document committed: prior commit `574cdcb01f93c21b2242ea09db76ce8a93ec90eb`; verify actual main HEAD after this handover commit.
+- **Documentation only / NOT LIVE:** no automatic USD→BDT conversion, Admin bank/account credit, USD ledger UI, payment provider, plan checkout, USD draw or payout activated by this document.
+- Existing DB backup gate unchanged: wait for Owner confirmation that SUPABASE_DB_URL secret was securely corrected and saved; never ask for its value. Inspect workflow history first, reuse valid evidence, and only if needed perform encrypted backup → decrypt → disposable restore (table count > 0) → migration dry-run. Production migration requires all gates and exact authorization phrase.
+- No-repeat: prior 14-check Auto Work static suite remains complete for its recorded source; do not repeat without relevant source/config changes.
+
+### Exact resume order
+1. Read this handover, COMPLETED_WORK_NO_REPEAT_REGISTER_BN.md, and MASTER_WORLD_VIP_MASTER_OWNER_REQUIREMENTS_BN.md.
+2. Inspect actual main HEAD and latest relevant Pages/CI workflows.
+3. Wait for secure DB URL save confirmation; do not request secret value.
+4. After DB safety, prioritize staging Admin USD revenue ledger → real FX quote → USD-to-BDT conversion → verified Admin account settlement.
