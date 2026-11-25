@@ -72,3 +72,14 @@ The dashboard must report separately: free quota consumed, jobs processed, custo
 - **File storage:** plan a private object-storage bucket for customer files, with per-file/per-client quotas, MIME/size checks, checksum, retention expiry and access audit. GitHub is for code/docs only, not customer file storage. No storage provider is connected or verified yet; free quota and retention are provider-specific, so unlimited/permanent free storage is not promised.
 - **Paid protection:** a paid server/API must require a server-side Owner approval record, explicit BDT spend cap, and audit event. Quota exhaustion must pause rather than switch to paid.
 - **Not live:** these are implementation requirements. No free server, queue worker, file bucket or provider connector has been deployed or verified by this documentation update.
+
+
+## Owner-এর Storage ও zero-cost server নির্দেশনা (2026-11-25)
+
+- **Storage candidate:** Cloudflare R2 Standard primary; আলাদা provider-এ encrypted backup; Owner-এর নিয়ন্ত্রিত device-এ downloadable copy। বর্তমান R2 free allowance ও সীমা দেখুন [official pricing](https://developers.cloudflare.com/r2/pricing/)। 10 GB-month, 1M Class A এবং 10M Class B হলো বর্তমান প্রকাশিত monthly allowance—lifetime guarantee নয়।
+- **Backup independence:** একই R2 account-এর দ্বিতীয় bucket একা যথেষ্ট independent backup নয়। অন্য provider/অফলাইন Owner copy এবং নিয়মিত restore test প্রয়োজন।
+- **Zero-cost rule:** প্রথমে free-tier only. Free quota শেষ, service sleep/suspend বা provider limit এলে কাজ pause/queue হবে; কোনো paid plan বা API-তে automatic fallback হবে না।
+- **Server reality:** “শক্তিশালী, সবসময় চালু, unlimited, আজীবন free server” কোনো provider নিশ্চিত করে না। Free compute-এ request/CPU/time/storage/network সীমা, sleep/restart এবং plan পরিবর্তন হতে পারে। উদাহরণ হিসেবে Cloudflare Workers Free-এর published limits-এ 100,000 requests/day ও প্রতি invocation-এ 10 ms CPU time আছে; এটি unlimited long-running worker/server নয় ([official limits](https://developers.cloudflare.com/workers/platform/limits/))।
+- **Recommended zero-cost-first design:** static website/control panel + lightweight serverless endpoints + durable queue where eligible + short, bounded jobs. ভারী/দীর্ঘ AI, video বা document processing free runtime-এ সবসময় চালানোর প্রতিশ্রুতি নয়; সীমা এলে queue/pause।
+- **Owner-only spending lock:** paid server, API, storage, backup, domain add-on বা bandwidth—কোনোটিই Owner-এর named-service approval, BDT budget cap ও audit record ছাড়া চালু করা যাবে না। Budget cap না থাকলে paid feature disabled থাকবে।
+- **Not deployed:** এই সিদ্ধান্ত/ডকুমেন্টেশন মাত্র। কোনো R2 bucket, backup destination, free compute server, worker বা provider connector এই commit-এ deploy/connect করা হয়নি।
