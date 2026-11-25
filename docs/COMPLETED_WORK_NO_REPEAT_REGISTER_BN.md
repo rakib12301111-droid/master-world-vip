@@ -105,3 +105,15 @@ The following may have repository code, screens, SQL, workflow files, or policy 
 ## 6. Last no-repeat decision
 
 At the 2026-11-25 audit snapshot, the Pages release, static safety suite and update-system code validation above are complete for their recorded commits. Do not repeat them unless their relevant source changes. Database backup/restore, production migration, real provider integrations, two-member acceptance, Android/iOS device acceptance and final release gates remain incomplete.
+
+
+### 2.5 Admin Auto Work static safety regression — COMPLETE (source-only scope)
+
+- Dedicated validator: `scripts/verify-admin-auto-work.py`.
+- Isolated workflow: `.github/workflows/verify-auto-work-safety.yml`.
+- Latest verified workflow run ID: `45641251920`.
+- Tested commit: `779ebcc1dec6b5bb763a6d6cb81b4abb57a84c1b`.
+- Job `auto-work-static-safety`: SUCCESS.
+- All 14 checks PASS, covering: both migration files and SQL delimiter balance; five approved modules/default-disabled state; provider contract + Owner approval metadata; RLS and browser-role table denial; service-role-only worker RPCs; one-running-job-per-module partial unique index; concurrency claim guard; Admin/contract/permission/idempotency/budget checks; active provider + positive budget before module enable; fail-closed execution readiness; role-gated read-only UI; no browser invocation of worker-only RPCs; guarded migration/README inventory; and documentation disclaimers/member Auto Work disabled status.
+- This is repository static validation only. It does not prove production migration, live worker/scheduler, provider/client contract, storage, 24/7 uptime, real jobs, customer settlement or payout.
+- Do not rerun while the tested source/configuration is unchanged. Rerun only when an affected file changes or evidence becomes invalid.
