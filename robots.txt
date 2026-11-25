@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+
+# Allow OpenAI search discovery. Search visibility does not imply endorsement or guaranteed recommendations.
+User-agent: OAI-SearchBot
+Allow: /
+
+Sitemap: https://rakib12301111-droid.github.io/master-world-vip/sitemap.xml
