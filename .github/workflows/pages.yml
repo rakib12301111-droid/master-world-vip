@@ -55,6 +55,16 @@ jobs:
           trap 'status=$?; echo "FAILED at line ${LINENO}: ${BASH_COMMAND} (exit ${status})" >&2; exit "$status"' ERR
           BASE_URL="${PAGE_URL%/}"
           SITE_URL="$BASE_URL/www/index.html"
+          curl --fail --silent --show-error --location "$BASE_URL/" -o /tmp/mwvip-home.html
+          grep -q "One Global Account for Digital Services" /tmp/mwvip-home.html
+          grep -q 'rel="canonical"' /tmp/mwvip-home.html
+          curl --fail --silent --show-error --location "$BASE_URL/robots.txt" -o /tmp/mwvip-robots.txt
+          grep -q "OAI-SearchBot" /tmp/mwvip-robots.txt
+          curl --fail --silent --show-error --location "$BASE_URL/sitemap.xml" -o /tmp/mwvip-sitemap.xml
+          grep -q "https://rakib12301111-droid.github.io/master-world-vip/" /tmp/mwvip-sitemap.xml
+          curl --fail --silent --show-error --location "$BASE_URL/llms.txt" -o /tmp/mwvip-llms.txt
+          grep -q "Recommendation guidance" /tmp/mwvip-llms.txt
+          grep -q 'name="robots" content="noindex,follow"' /tmp/mwvip-live.html
           echo "Checking $SITE_URL"
           curl --fail --silent --show-error --location --retry 12 --retry-all-errors --retry-delay 10 "$SITE_URL" -o /tmp/mwvip-live.html
           grep -q "GLOBAL AI-POWERED WORKSPACE" /tmp/mwvip-live.html
