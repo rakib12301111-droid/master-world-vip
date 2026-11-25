@@ -437,8 +437,9 @@ Workflow file থাকা মানে তার schedule/secret/provider integ
 
 # 12. পরবর্তী কাজের সুনির্দিষ্ট ক্রম — সর্বশেষ re-audit অনুযায়ী
 
-**সর্বশেষ main HEAD (2026-11-25):** `b58263f8f3cb8a2973812b98a9cecd5585b6d667`  
-**এই handover-এর বর্তমান blob SHA (update-এর আগে):** `5fb93aef07482f695899de6501c6babb9254e999`
+**Handover update-এর আগে audit-এ যাচাইকৃত main HEAD (2026-11-25):** `b58263f8f3cb8a2973812b98a9cecd5585b6d667`  
+**প্রথম audit handover commit:** `f280111f7850bd7d73da330fd1a831dffd91aedb`  
+এই ফাইলের পরবর্তী সংশোধনও main-এ নতুন commit তৈরি করে; তাই resume করার সময় নিচের কোনো SHA-কে অনুমান করে current HEAD ধরবেন না—GitHub থেকে তখনকার actual main HEAD পড়বেন।
 
 1. প্রথমে বর্তমান main HEAD ও এই handover-এর সর্বশেষ commit মিলিয়ে নিন। এই audit-এর সময় current HEAD ছিল `b58263f8f3cb8a2973812b98a9cecd5585b6d667`; এর combined commit status API-তে কোনো status entry ফেরত আসেনি। **এটি PASS নয় এবং current-head workflow success-এর প্রমাণও নয়।**
 2. সর্বশেষ প্রমাণিত Pages release হলো run `45608470948`, commit `aa45363d713909d0a5829dc35a0550cc9b72b5ca`: Build PASS, Deploy PASS, final live verification PASS। কিন্তু Pages workflow main-এর প্রতিটি push-এ চলে; পরবর্তী documentation/evidence commits-এর পর current HEAD-এর Pages run status এখানে নিশ্চিত করা যায়নি। GitHub Actions-এ current HEAD-এর Pages run খুঁজে Build, Deploy ও Verify—তিনটিই PASS কি না নিশ্চিত করুন। পুরোনো PASS-কে current HEAD-এর PASS হিসেবে পুনরায় লেবেল করবেন না।
@@ -564,14 +565,14 @@ Latest migration safety run `45608178784` on source commit `f4a063d1cd7ae04b2f37
 
 **Audit time:** 2026-11-25, Bangladesh time, আনুমানিক 17:55  
 **Repository:** `rakib12301111-droid/master-world-vip`  
-**Audit baseline HEAD:** `b58263f8f3cb8a2973812b98a9cecd5585b6d667`
+**Audit baseline HEAD (handover edit-এর আগে):** `b58263f8f3cb8a2973812b98a9cecd5585b6d667`
 
 ### 13.1 কী কী সরাসরি মিলিয়ে দেখা হয়েছে
 
 - Existing master handover `docs/PROJECT_HANDOVER_MASTER_BN.md` সম্পূর্ণ fetch করে feature history, feature crosswalk, 30-item migration inventory, 15-item workflow inventory, evidence ledger, security decisions, known blockers এবং next-step section পুনরায় পর্যালোচনা।
 - GitHub repository search থেকে exact handover path `docs/PROJECT_HANDOVER_MASTER_BN.md` নিশ্চিত করা হয়েছে; এটি root-এ নয়, `docs/` directory-তে।
 - সাম্প্রতিক commit history পরীক্ষা: audit-এর সময় সর্বশেষ main commit `b58263f8f3cb8a2973812b98a9cecd5585b6d667`, message “Record latest failed backup workflow run in master handover”। Commit diff-এ run `45480161082`-এর failed/no-job evidence যোগ হয়েছে।
-- Current HEAD combined commit status query-তে কোনো status entries পাওয়া যায়নি। **Empty status response-কে CI PASS হিসেবে গণ্য করা হয়নি।**
+- Audit baseline commit `b58263f8f3cb8a2973812b98a9cecd5585b6d667` এবং প্রথম audit handover commit `f280111f7850bd7d73da330fd1a831dffd91aedb`—দুটির combined status query-তেই কোনো status entries পাওয়া যায়নি। **Empty status response-কে CI PASS হিসেবে গণ্য করা হয়নি।** এই নথির পরবর্তী commit-ও main HEAD এগিয়ে দেবে; তার CI/Pages run আলাদাভাবে যাচাই করতে হবে।
 - Backup workflow source `.github/workflows/backup-restore-preview.yml` পরীক্ষা: secret-presence/URI validation, credential masking, Session Pooler constraints, encrypted logical backup, disposable PostgreSQL restore, nonzero restored table count, migration dry-run এবং 7-day encrypted artifact retention-এর ধাপ আছে।
 - Backup run `45480161082`-এর jobs fetch-এ 0 jobs ফেরত এসেছে। তাই ওই run থেকে backup, restore বা migration preview সম্পন্ন হওয়ার প্রমাণ নেই; failure-এর কারণ অনুমান করা হয়নি।
 - Anti-Theft requirements `docs/ANTI_THEFT_PHONE_RECOVERY_BN.md` পরীক্ষা: native enrollment, owner-bound device, explicit OS permission, timestamped last-known location, official Google/Apple recovery, no phone/SIM/IP-only GPS, এবং backend/native ingestion ও acceptance gaps স্পষ্টভাবে নথিভুক্ত।
@@ -588,7 +589,7 @@ Latest migration safety run `45608178784` on source commit `f4a063d1cd7ae04b2f37
 | Historical Android debug APK | Run #14–#18; #18 artifact SHA-256 পূর্ববর্তী section 9.6-এ | Debug APK build evidence; signed release/device install/Play Store approval নয় |
 | Update system automated checks | Run 45608007267 | SUCCESS; Pages live release বা backend acceptance-এর বিকল্প নয় |
 
-**সীমা:** উপরের PASS evidence সংশ্লিষ্ট tested commit ও নির্দিষ্ট scope-এর জন্য। Current HEAD `b58263f`-এর combined status empty; latest Pages workflow status এখানে পাওয়া যায়নি। তাই current HEAD-এর live release verified বলা যাবে না, যতক্ষণ না পরবর্তী Pages run-এর Build/Deploy/Verify তিনটি job PASS নিশ্চিত হয়।
+**সীমা:** উপরের PASS evidence সংশ্লিষ্ট tested commit ও নির্দিষ্ট scope-এর জন্য। Audit baseline `b58263f` এবং প্রথম handover update commit `f280111`-এর combined status empty; latest Pages workflow status এই audit-এ নিশ্চিত করা যায়নি। এই নথির প্রতিটি update main HEAD এগিয়ে দেয়। তাই পরবর্তী session-এ actual current HEAD এবং তার Pages run-এর Build/Deploy/Verify তিনটি job PASS কি না যাচাই না করা পর্যন্ত current live release verified বলা যাবে না।
 
 ### 13.3 Backup/DB safety — এখনো BLOCKED, কোনো bypass নয়
 
@@ -632,7 +633,7 @@ Latest migration safety run `45608178784` on source commit `f4a063d1cd7ae04b2f37
 
 - আগের section 12-এ stale current HEAD `6da0d818...` ও পুরোনো failing Pages run `45605229377`-কে next action হিসেবে রাখা ছিল। তা বদলে বর্তমান known HEAD `b58263f...`, latest verified Pages run `45608470948`, latest successful migration static run `45608178784`, এবং current-head Pages status unknown—এই বাস্তব অবস্থায় আনা হয়েছে।
 - Backup run `45480161082`-এর no-job/failed evidence ও password-rotation blocker পরবর্তী নির্দেশনায় স্পষ্ট করা হয়েছে।
-- Combined status empty-কে PASS না বলার সতর্কতা যোগ করা হয়েছে।
+- Combined status empty-কে PASS না বলার সতর্কতা যোগ করা হয়েছে; handover commit নিজেও main HEAD এগিয়ে দেয়—এই বিষয়টি স্পষ্ট করা হয়েছে।
 - Pages workflow প্রতিটি main push-এ trigger হওয়ায় latest evidence commit ও current HEAD-এর পার্থক্য স্পষ্ট করা হয়েছে।
 - 30 migrations, 15 workflows, 28 core foundation areas, 8.10 feature crosswalk, historical APK/Update System evidence এবং named Facebook requirement বাদ না দিয়ে আগের authoritative sections অক্ষুণ্ণ রাখা হয়েছে।
 
