@@ -60,6 +60,11 @@ jobs:
           grep -q "Anti-Theft Recovery" /tmp/mwvip-live.html
           grep -q "Google Find Hub" /tmp/mwvip-live.html
           grep -q "Apple Find My" /tmp/mwvip-live.html
+          grep -q "Owner-only Recovery" /tmp/mwvip-live.html
+          grep -q "device enrollment" /tmp/mwvip-live.html
+          curl --fail --silent --show-error --location "$BASE_URL/supabase/migrations/20261125120000_anti_theft_device_recovery.sql" -o /tmp/mwvip-recovery.sql
+          grep -q "member_recovery_devices" /tmp/mwvip-recovery.sql
+          grep -q "member_recovery_location_samples" /tmp/mwvip-recovery.sql
           grep -q "START_TO_FINISH_AUDIT_BN.md" /tmp/mwvip-live.html
           grep -q "applySafeSetup" /tmp/mwvip-live.html
           grep -q "continueStartup" /tmp/mwvip-live.html
@@ -81,7 +86,7 @@ jobs:
           grep -q "get_admin_referral_network_reward_summary" /tmp/mwvip-live.html
           grep -q "Owner Network Reward Pending" /tmp/mwvip-live.html
           curl --fail --silent --show-error --location "$BASE_URL/www/sw.js" -o /tmp/mwvip-sw.js
-          grep -q "mwvip-pwa-v36" /tmp/mwvip-sw.js
+          grep -q "mwvip-pwa-v37" /tmp/mwvip-sw.js
           curl --fail --silent --show-error --location "$BASE_URL/www/member-dashboard.js" -o /tmp/mwvip-member-dashboard.js
           grep -q "MASTER WORLD VIP" /tmp/mwvip-member-dashboard.js
           grep -q "get_my_referral_wallet" /tmp/mwvip-member-dashboard.js
@@ -90,4 +95,4 @@ jobs:
           curl --fail --silent --show-error --location "$BASE_URL/www/update-manifest.json" -o /tmp/mwvip-update-manifest.json
           grep -q "start-to-finish-audit" /tmp/mwvip-update-manifest.json
           grep -q "anti-theft-phone-recovery" /tmp/mwvip-update-manifest.json
-          echo "PASS: live Pages HTML is reachable; expected signup/login/OTP code markers, Owner/referral UI markers, Update Center audit link, audit document, update-manifest audit stage, and PWA cache v34 are published. These are static deployment checks only; they do not prove real email OTP delivery, Supabase authentication, database migrations, or end-to-end feature behavior."
+          echo "PASS: live Pages HTML is reachable; expected signup/login/OTP code markers, Owner/referral UI markers, Update Center audit link, audit document, update-manifest audit stage, and PWA cache v37 are published. These are static deployment checks only; they do not prove real email OTP delivery, Supabase authentication, database migrations, or end-to-end feature behavior."
