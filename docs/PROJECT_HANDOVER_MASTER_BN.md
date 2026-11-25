@@ -128,3 +128,36 @@ Supporting details are kept in `docs/FEATURE_COMPLETION_REGISTER_BN.md`, `docs/S
 **Project decision:** Existing MASTER WORLD VIP repository সংরক্ষিত থাকবে। Handover ও no-repeat record এখন আলাদা, completed evidence-only তালিকা আলাদা। Repository-level audit/update সম্পন্ন হওয়া মানে পুরো product complete নয়। Production migration, money movement, real providers, native device features ও final acceptance প্রমাণসহ শেষ না হওয়া পর্যন্ত project status **IN PROGRESS / NOT FULLY LIVE** থাকবে।
 
 **Resume phrase:** “MASTER WORLD VIP — প্রথমে docs/PROJECT_HANDOVER_MASTER_BN.md এবং docs/COMPLETED_WORK_NO_REPEAT_REGISTER_BN.md পড়ুন; actual main HEAD ও latest Pages run যাচাই করুন; completed কাজের link পুনরায় দেবেন না; শুধু পরবর্তী অসম্পূর্ণ gate থেকে শুরু করুন।”
+
+
+## 9. Session update — Admin Auto Work visibility diagnosis (2026-11-25, Bangladesh time)
+
+### User-visible symptom and confirmed evidence
+- Owner reports being automatically logged into the Owner account, but the Admin Auto Work panel is not visible.
+- The Admin & Security Center reports: **Access Not configured** and the PostgREST schema-cache error: `Could not find the function public.get_my_admin_access without parameters in the schema cache`.
+- Repository inspection confirms `www/index.html` already contains `section#adminAutoWorkPanel` with `hidden` enabled by default. Client code calls `client.rpc('get_my_admin_access')` and reveals the panel only after a server-verified role of `owner`, `super_admin` or `admin` is returned. Therefore an automatic login session alone does not establish the database Owner role.
+- Existing RBAC migration `supabase/migrations/20261119180000_admin_rbac_owner_control.sql` defines `public.get_my_admin_access()` and Owner bootstrap logic. The bootstrap email in the migration is a placeholder/configuration value and MUST be checked against the verified Auth user in the correct Supabase project before use; do not assume it is correct.
+- Admin Auto Work depends on the RBAC tables/functions. Its two migrations are `20261125100000_admin_auto_work_control_plane.sql` then `20261125130000_admin_auto_work_claim_concurrency_fix.sql`. Correct dependency order: RBAC/Owner bootstrap first, then these two migrations.
+
+### Current status — BLOCKED, not completed/live
+- This is not evidence that the user is logged into the wrong app account. The observed blocker is that the live Supabase schema cache does not expose the no-argument RBAC RPC. Possible causes include migrations not applied to the selected project or schema cache not refreshed; verify project ref and migration history before deciding.
+- The panel markup/code exists in the repository, but live database role verification has not passed. Do not label the Admin Auto Work panel as live/visible in production until verified.
+- Even after the panel appears, the existing overview is a read-only control-plane status view. All five modules remain disabled by default; no server worker, provider-specific connectors, customer contracts, storage connector or payout integration is verified/deployed. Do not claim automatic jobs are executing or income is being generated.
+
+### Mandatory next sequence
+1. Read this handover and the no-repeat register; inspect actual current `main` HEAD and latest relevant workflow only. Do not repeat completed PASS checks without a source/config change or expired evidence.
+2. Confirm access to the correct Supabase project and verify the project's ref. Confirm the authenticated Owner identity in Supabase Auth without sharing credentials or secrets in chat.
+3. **Database safety gate first:** the previously recorded backup/restore workflow failed validation because `SUPABASE_DB_URL` was not a valid PostgreSQL URI; an older attempt failed PostgreSQL password authentication. Owner must rotate the DB password if needed and securely correct GitHub Actions secrets. Never ask for or expose secret values in chat. Do not rerun backup until Owner confirms secure correction.
+4. Complete encrypted backup, decrypt check, disposable PostgreSQL restore with restored table count > 0, and migration dry-run. Preserve encrypted backup and non-secret backup reference. If any gate fails, stop; no production migration.
+5. Review the exact pending migration list and the target project. Verify the Owner's actual verified Auth email against the RBAC bootstrap value; change placeholder/configuration only after identity confirmation. Never bootstrap an unverified or guessed email.
+6. After all backup/restore gates pass, use the guarded migration process and required authorization. Apply RBAC/Owner bootstrap first, then the two Admin Auto Work migrations in order. Production apply still requires the exact phrase `APPLY-MASTER-WORLD-VIP-MIGRATIONS` and a non-secret backup reference; never request secrets in chat.
+7. If migrations succeed, refresh/reload the PostgREST schema cache if necessary, then verify `get_my_admin_access()` returns the expected Owner role. Test role isolation with separate Owner/Admin/member accounts. Then refresh the app and confirm the panel is visible to authorized roles only.
+8. Keep panel status **NOT READY / CONTROL-PLANE ONLY** until reviewed server-side worker, provider connectors, contracts, storage, budgets, monitoring, security tests and settlement reconciliation are deployed and accepted. Paid APIs remain disabled without explicit Owner approval and BDT spend cap. Member Auto Work remains disabled.
+
+### Completion classification
+- **Already present in repository:** Admin Auto Work panel markup and role-gated client display logic; RBAC migration source; two Auto Work migration source files; rollout documentation.
+- **Newly diagnosed, not a completed production fix:** live RPC missing from schema cache and Owner access therefore not configured.
+- **Not yet completed:** live Supabase RBAC migration/Owner bootstrap, Auto Work migrations, visible-panel acceptance test, actual worker/connectors, provider approvals and live execution.
+- No new completed test evidence was created in this session. Do not add this diagnosis to the completed-work register as a PASS. Keep it here and in the rollout status document as BLOCKED.
+
+**Next exact starting point:** ask whether the Owner can access the correct Supabase Dashboard/SQL Editor; then follow the database backup/restore gate above. Do not make production DB changes until all gates and explicit authorization are satisfied.
