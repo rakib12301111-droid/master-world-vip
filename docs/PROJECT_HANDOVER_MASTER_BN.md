@@ -380,6 +380,7 @@ Workflow file থাকা মানে তার schedule/secret/provider integ
 - Password rotation এবং secret update নিশ্চিত না হওয়া পর্যন্ত backup workflow আবার চালানো যাবে না।
 - নতুন backup, decrypt, disposable restore, restored table count, migration dry-run ও artifact upload সব PASS না হওয়া পর্যন্ত production migration নিষিদ্ধ।
 - Production migration apply করা হয়নি—এটি এখনো NOT DONE।
+- পরবর্তী backup workflow run #52, ID `45480161082`, 2026-11-24-এ **FAILED**; GitHub API-তে ওই run-এর জন্য 0টি job পাওয়া গেছে, তাই backup/restore step চালু হয়েছে বা backup তৈরি হয়েছে—এমন evidence নেই। Run link: https://github.com/rakib12301111-droid/master-world-vip/actions/runs/45480161082. এই failure-এর কারণ অনুমান করা যাবে না; run #48-এর authentication failure-কে আলাদা historical blocker হিসেবে রাখুন।
 
 ## 9.4 Production / external integration — এখনো বাকি
 
