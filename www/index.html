@@ -256,10 +256,10 @@
 <div id="workEarnStatus" class="notice">কাজ দেখতে বা পোস্ট করতে আগে লগইন করুন। Supabase Work & Earn migration চালু থাকতে হবে।</div>
 <div class="item section" id="memberWorkWallet">
  <h3>💰 আমার Work & Earn Wallet</h3>
- <p class="muted small">শুধু যাচাইকৃত ও client-accepted কাজের সম্পূর্ণ প্রাপ্য এখানে দেখা যাবে। Wallet credit মানে নগদ bKash/Nagad payout সম্পন্ন হয়েছে—এমন নয়।</p>
+ <p class="muted small">শুধু যাচাইকৃত ও client-accepted কাজের সম্পূর্ণ প্রাপ্য এখানে দেখা যাবে। Wallet credit মানে নগদ bKash/Nagad payout সম্পন্ন হয়েছে—এমন নয়। এই পর্যায়ে withdrawal integration চালু নেই।</p>
  <div class="grid">
   <div class="feature"><strong>মোট অর্জিত</strong><div class="stat" id="workWalletEarned">৳০</div></div>
-  <div class="feature"><strong>উত্তোলনযোগ্য Ledger Balance</strong><div class="stat" id="workWalletAvailable">৳০</div></div>
+  <div class="feature"><strong>Available Ledger Balance</strong><div class="stat" id="workWalletAvailable">৳০</div></div>
   <div class="feature"><strong>প্রকৃত উত্তোলন/ডেবিট</strong><div class="stat" id="workWalletWithdrawn">৳০</div></div>
  </div>
  <button class="btn secondary" id="refreshWorkEarnWallet" type="button">Wallet Refresh</button>
@@ -1046,7 +1046,7 @@ async function connect(){
   setStatus(currentUser?'সংযুক্ত এবং লগইন আছে: '+currentUser.email:'Supabase সংযুক্ত হয়েছে। এখন Register অথবা Login করুন।');
   $('dashAuth').textContent=currentUser?'Logged in':'Connected';
   if(new URLSearchParams(location.search).has('member')){showPage('publicProfile');await loadPublicMemberProfile();}
-  else if(currentUser){await loadProfile();startMessagingSync();showPage('overview');}
+  else if(currentUser){await loadProfile();startMessagingSync();showPage('overview');if(typeof loadMyWorkEarnWallet==='function')await loadMyWorkEarnWallet();}
   else if(localStorage.getItem('mwvip_setup_completed')==='true'||localStorage.getItem('mwvip_setup_skipped')==='true'){showPage('account');}
   client.auth.onAuthStateChange((_event,session)=>{currentUser=session?.user||null;$('dashAuth').textContent=currentUser?'Logged in':'Connected';if(currentUser){showPage('overview');startMessagingSync();$('memberstatus').textContent='লগইন আছে: '+currentUser.email;setTimeout(()=>{loadProfile();loadPrivacyRequests();if(typeof loadVerificationRequests==='function')loadVerificationRequests();if(typeof refreshAdminAccess==='function')refreshAdminAccess();if(typeof loadMyWorkEarnWallet==='function')loadMyWorkEarnWallet();},0)}else{stopMessagingSync();$('memberstatus').textContent='লগইন করুন।';$('profileResult').textContent='লগইন করা নেই।';$('privacyRequestList').textContent='অনুরোধ দেখতে লগইন করুন।'}});
  }catch(e){client=null;setStatus('সংযোগে সমস্যা: '+e.message)}
