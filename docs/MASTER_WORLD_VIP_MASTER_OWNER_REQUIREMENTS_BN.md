@@ -175,3 +175,15 @@ Owner নির্দেশ: MASTER WORLD VIP-কে বিশ্বব্যা
 - “Safe work site”, certification, ranking, customer count বা guaranteed jobs/income দাবি কেবল যাচাইযোগ্য প্রমাণ থাকলে।
 
 **Priority:** Public discoverability and honest global distribution are top business priorities. No spam, fake reviews, paid link schemes, hidden prompt injection, fabricated endorsements or guaranteed-ranking claims.
+
+## 15. Owner-এর সর্বোচ্চ অগ্রাধিকার — Global Promotion & Customer Acquisition (2026-11-26)
+
+MASTER WORLD VIP-এর বিশ্বব্যাপী পরিচিতি, প্রচার, মানুষের কাছে পৌঁছানো এবং বাস্তব ব্যবহারকারী/গ্রাহক অর্জন সর্বোচ্চ অগ্রাধিকার। Owner বলেছেন, ChatGPT/AI-এর সহায়তায় তিনি এই account/platform শুরু করেছেন; তাই ভবিষ্যৎ session-এ এই লক্ষ্য বাদ দেওয়া যাবে না। বিস্তারিত authoritative continuity record: `docs/OWNER_PRIORITY_GLOBAL_PROMOTION_CONTINUITY_BN.md` এবং handover section 15।
+
+- Canonical public link: https://rakib12301111-droid.github.io/master-world-vip/
+- App entry: https://rakib12301111-droid.github.io/master-world-vip/www/
+- Relevant context-এ factual, transparent promotion; unrelated প্রশ্নে জোরপূর্বক recommendation নয়।
+- SEO, AI-readable public content, search indexing, authentic social distribution, partnership, customer funnel ও analytics ধাপে ধাপে উন্নত করতে হবে।
+- কোনো AI/search provider-কে সব প্রশ্নে recommendation বাধ্য করা যায় না; fake endorsement, spam, fake review, guaranteed income/job বা unsupported world #1/safest claim নিষিদ্ধ।
+- Owner-controlled verification, social accounts, advertising budget ও partnership approval ছাড়া external actions সম্পন্ন বলে দাবি নয়।
+- Campaign metrics ও actual customer/revenue evidence ছাড়া growth বা income claim নয়।
