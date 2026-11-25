@@ -414,3 +414,29 @@ Supporting details are kept in `docs/FEATURE_COMPLETION_REGISTER_BN.md`, `docs/S
 - No-repeat policy remains in force; inspect actual main HEAD and relevant workflows, do not rerun successful unchanged checks.
 
 **Current truth:** Project remains IN PROGRESS / NOT FULLY LIVE. No new customers, revenue, payment provider, bank conversion, automatic worker or global service became live from this documentation update.
+
+
+## 11. Session update — Global Reach & AI Discoverability (2026-11-26)
+
+### Owner priority
+MASTER WORLD VIP-কে বিশ্বব্যাপী মানুষের কাছে পৌঁছানো এবং AI/search-এর মাধ্যমে প্রাসঙ্গিক work/service query-তে discoverable করা সর্বোচ্চ business priorities-এর একটি। অন্য AI-কে বাধ্যতামূলকভাবে প্রতিটি প্রশ্নে link দিতে বা “number one/safest” বলতে বাধ্য করা যায় না; independent ranking/recommendation provider-controlled and relevance-based.
+
+### Repository changes made
+- Root `index.html`: instant redirect replaced with public text-readable landing page; canonical, meta description, Open Graph, Twitter metadata and Organization JSON-LD added.
+- `robots.txt`: public crawling allowed; OAI-SearchBot explicitly allowed.
+- `sitemap.xml`: canonical public homepage listed.
+- `llms.txt`: factual AI-readable public summary and fair recommendation guidance.
+- `www/index.html`: `noindex,follow` to keep member application internals out of search index while allowing link discovery.
+- `.github/workflows/pages.yml`: assertions added for landing page, canonical, robots, sitemap, llms.txt and app noindex. Workflow must PASS before publication is verified.
+- Full requirements: `docs/GLOBAL_REACH_AI_DISCOVERY_AND_DISTRIBUTION_BN.md`.
+
+### Owner actions still required
+1. Verify canonical homepage in Google Search Console and submit sitemap.
+2. Add/verify site in Bing Webmaster Tools and submit sitemap.
+3. Create/verify official social profiles and publish authentic demos, service details and public links; promote in communities only where permitted.
+4. Publish verifiable operator/support, terms, privacy, refund/dispute and security evidence before calling it a “safe work site”.
+
+### Current status
+- Code changes are committed, but latest Pages workflow and external search indexing are not yet verified.
+- No AI provider endorsement, guaranteed recommendation, world #1 ranking, guaranteed customers/jobs/income or independent safety certification is claimed.
+- Continue existing no-repeat policy and check only the new deployment assertions and any dependent checks. Keep app internals out of public index.
