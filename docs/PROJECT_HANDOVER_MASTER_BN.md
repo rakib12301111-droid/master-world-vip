@@ -226,3 +226,21 @@ Supporting details are kept in `docs/FEATURE_COMPLETION_REGISTER_BN.md`, `docs/S
 - প্রথমে আগের section 10-এ বর্ণিত GitHub `SUPABASE_DB_URL` secret edit/save confirmation থেকে resume করতে হবে; user save নিশ্চিত করলে workflow history আগে inspect করুন, successful run থাকলে পুনরাবৃত্তি নয়।
 - এরপর এই section 11-এর ক্রমে staging worker/provider implementation করুন। Existing UI, migrations, unique index, docs এবং completed static checks পুনরায় বানাবেন/চালাবেন না; শুধু source/config change হলে affected tests।
 - এই session-এ নতুন completed test evidence তৈরি হয়নি; তাই `COMPLETED_WORK_NO_REPEAT_REGISTER_BN.md`-এ নতুন PASS entry যোগ করা হয়নি।
+
+
+## 12. নতুন Auto Work static safety check — verified PASS (2026-11-25)
+
+### Added
+- `scripts/verify-admin-auto-work.py`: dedicated 14-check static validator for Auto Work security/readiness invariants.
+- `.github/workflows/verify-auto-work-safety.yml`: isolated GitHub Actions workflow; it runs only when Auto Work source/config/docs change or manually dispatched. It does not require production secrets and does not touch Supabase production.
+- First test attempt failed because the new validator's provider-approval text matcher did not account for SQL parentheses. This was a validator-only false negative; the SQL migration was not changed. The matcher was corrected and the check rerun successfully.
+- Latest verified Auto Work static run: `45641251920`, tested source commit `779ebcc1dec6b5bb763a6d6cb81b4abb57a84c1b`; job `auto-work-static-safety` SUCCESS, all 14 checks PASS.
+- Evidence is recorded in `docs/COMPLETED_WORK_NO_REPEAT_REGISTER_BN.md`. Do not rerun this static suite unless one of its tested source/config files changes or evidence expires.
+
+### What this PASS proves — and what it does not
+- It proves only that the repository currently contains the expected static safety patterns: five disabled-by-default modules, provider contract/Owner approval checks, RLS/browser table denial, service-role-only worker RPCs, per-module unique running-job index, claim concurrency guard, budget/idempotency gates, fail-closed overview, role-gated read-only UI, migration inventory and member automation disabled.
+- It does **not** prove production DB migration, Owner/RBAC live access, deployed scheduler/worker, provider API, private storage, 24/7 uptime, client work, settled revenue or payout. Feature remains **PARTIAL FOUNDATION / NOT LIVE**.
+
+### Current next action
+- Continue from section 10's already-open `SUPABASE_DB_URL` secret correction; wait for Owner confirmation that it was saved. Inspect backup workflow history before running it. Do not request or display secret values.
+- After DB safety/Owner gates, implement and test the real server-side worker and one approved provider in staging. Keep all modules disabled and no paid fallback until gates pass.
