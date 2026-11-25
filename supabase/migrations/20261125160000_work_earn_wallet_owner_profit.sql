@@ -178,15 +178,16 @@ grant execute on function public.owner_set_work_earn_profit_rate(numeric,text) t
 create or replace function public.get_my_work_earn_wallet()
 returns jsonb language plpgsql stable security definer set search_path=''
 as $$
-declare v_user uuid := auth.uid(); v_credits numeric(14,2); v_debits numeric(14,2);
+declare v_user uuid := auth.uid(); v_credits numeric(14,2); v_debits numeric(14,2); v_reversals numeric(14,2);
 begin
   if v_user is null then raise exception 'Authentication required'; end if;
-  select coalesce(sum(amount) filter(where entry_type in ('credit','reversal')),0),
-         coalesce(sum(amount) filter(where entry_type='debit'),0)
-    into v_credits,v_debits from public.member_work_wallet_ledger where user_id=v_user;
+  select coalesce(sum(amount) filter(where entry_type='credit'),0),
+         coalesce(sum(amount) filter(where entry_type='debit'),0),
+         coalesce(sum(amount) filter(where entry_type='reversal'),0)
+    into v_credits,v_debits,v_reversals from public.member_work_wallet_ledger where user_id=v_user;
   return jsonb_build_object(
     'earned_total',v_credits,'withdrawn_total',v_debits,
-    'available_balance',greatest(0,v_credits-v_debits),
+    'available_balance',greatest(0,v_credits-v_debits-v_reversals),
     'transactions',coalesce((select jsonb_agg(jsonb_build_object(
       'entry_type',entry_type,'amount',amount,'description',description,'created_at',created_at
     ) order by created_at desc) from (
