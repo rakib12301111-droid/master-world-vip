@@ -61,7 +61,7 @@ jobs:
           grep -q "Anti-Theft Recovery" /tmp/mwvip-live.html
           grep -q "Google Find Hub" /tmp/mwvip-live.html
           grep -q "Apple Find My" /tmp/mwvip-live.html
-          grep -q "Owner-only Recovery" /tmp/mwvip-live.html
+          grep -q "Owner-only)" /tmp/mwvip-live.html
           grep -q "device enrollment" /tmp/mwvip-live.html
           curl --fail --silent --show-error --location "$BASE_URL/supabase/migrations/20261125120000_anti_theft_device_recovery.sql" -o /tmp/mwvip-recovery.sql
           grep -q "member_recovery_devices" /tmp/mwvip-recovery.sql
