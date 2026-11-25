@@ -328,16 +328,23 @@
 </article>
 
 <article class="card" id="phoneRecovery">
-<h2>📱 হারানো / চুরি হওয়া ফোন খুঁজুন — Anti-Theft Recovery</h2>
-<p class="muted">এই সুবিধা Android ও iPhone—দুই প্ল্যাটফর্মের সদস্যদের জন্য। নিজের MASTER WORLD VIP অ্যাকাউন্টে নিবন্ধিত ফোন হারালে নিচের অফিসিয়াল ডিভাইস-ফাইন্ডার খুলুন।</p>
-<div class="notice">গুরুত্বপূর্ণ: শুধু IP Address দিয়ে ফোনের GPS বা সঠিক ঠিকানা বের করা যায় না। IP লগ কেবল সার্ভারের নিরাপত্তা/শেষ সংযোগের তথ্য হতে পারে; এটি লাইভ লোকেশন নয়। ফোনে আগে থেকে Find Hub / Find My এবং প্রয়োজনীয় সেটিংস চালু না থাকলে হারানোর পরে নতুন করে ট্র্যাকিং চালু করা যাবে না।</div>
+<h2>📱 হারানো / চুরি হওয়া ফোন — Owner-only Recovery</h2>
+<p class="muted">একই MASTER WORLD VIP অ্যাকাউন্টে আগে নিবন্ধিত নিজের Android বা iPhone শনাক্ত করে হারানোর রিপোর্ট ও সর্বশেষ লোকেশন দেখানোর জন্য এই কেন্দ্র। অন্য সদস্যের ফোন খোঁজার সুবিধা নয়।</p>
+<div class="notice">গুরুত্বপূর্ণ: Gmail দিয়ে MASTER WORLD VIP-তে লগইন করলে হারানো ফোনের GPS/IP নিজে থেকে পাওয়া যায় না। GPS পেতে ফোনে আগে থেকে native app, device enrollment, location permission, internet এবং অনুমোদিত background update চালু থাকতে হবে। IP শুধু server-observed network/security metadata—সঠিক ঠিকানা নয়।</div>
+<div class="section item">
+<h3>১. আগে থেকেই নিজের ফোন নিবন্ধন করুন</h3>
+<p class="muted small">পরবর্তী native Android/iOS app build-এ একই অ্যাকাউন্টে device enrollment, permission status ও last-seen heartbeat যুক্ত হবে। এখনকার ওয়েব সংস্করণ থেকে কোনো ফোন স্বয়ংক্রিয়ভাবে নিবন্ধিত হয় না।</p>
 <div class="feature-list">
-<div class="feature"><strong>🤖 Android — Google Find Hub</strong><p class="muted small">নিজের Google Account দিয়ে হারানো Android ফোন খুঁজুন, রিং করুন বা সমর্থিত হলে সুরক্ষিত করুন।</p><a class="btn" href="https://android.com/find" target="_blank" rel="noopener noreferrer" style="display:inline-block;text-decoration:none">Google Find Hub খুলুন</a></div>
-<div class="feature"><strong>🍎 iPhone — Apple Find My</strong><p class="muted small">নিজের Apple Account দিয়ে হারানো iPhone খুঁজুন এবং Lost Mode/অন্যান্য সমর্থিত ব্যবস্থা ব্যবহার করুন।</p><a class="btn" href="https://www.icloud.com/find" target="_blank" rel="noopener noreferrer" style="display:inline-block;text-decoration:none">Apple Find My খুলুন</a></div>
+<div class="feature"><strong>🤖 Android</strong><p class="muted small">Native Android app, random installation Device ID এবং অনুমতিপ্রাপ্ত location updates প্রয়োজন।</p><a class="btn" href="https://android.com/find" target="_blank" rel="noopener noreferrer" style="display:inline-block;text-decoration:none">Google Find Hub প্রস্তুত করুন</a></div>
+<div class="feature"><strong>🍎 iPhone</strong><p class="muted small">Native iOS app, Core Location permission এবং Apple Find My আগে থেকে চালু রাখুন।</p><a class="btn" href="https://www.icloud.com/find" target="_blank" rel="noopener noreferrer" style="display:inline-block;text-decoration:none">Apple Find My প্রস্তুত করুন</a></div>
+</div></div>
+<div class="section item">
+<h3>২. ফোন হারালে অন্য ডিভাইস থেকে</h3>
+<ol><li>নিজের MASTER WORLD VIP অ্যাকাউন্টে নিরাপদে লগইন করুন।</li><li>Anti-Theft Recovery-তে নিজের আগে নিবন্ধিত ফোন নির্বাচন করুন।</li><li>Mark as Lost দিলে server-এ lost report ও audit event তৈরি হবে।</li><li>শেষ heartbeat/location-এর সময় ও freshness দেখুন; ফোন আবার অনলাইনে এসে অনুমোদিত app update পাঠালে নতুন location আসতে পারে।</li><li>Google Find Hub বা Apple Find My দিয়ে supported locate/secure action নিন।</li></ol>
+<div class="notice">এই ওয়েব build-এ device enrollment, Mark as Lost API, native GPS sender, server-side IP event collector বা live map এখনো সংযুক্ত নয়। নিচের database migration শুধু নিরাপদ backend foundation; এটি চালালেই tracking চালু হবে না।</div>
 </div>
-<div class="section item"><strong>নিজের ডিভাইসের তথ্য প্রস্তুত রাখুন</strong><p class="muted small">ডিভাইসের নাম/মডেল, নিজের অ্যাকাউন্ট, ক্রয়-প্রমাণ এবং IMEI নম্বর ব্যক্তিগতভাবে নিরাপদ স্থানে রাখুন। IMEI, পাসওয়ার্ড, OTP বা recovery code এখানে লিখবেন না।</p></div>
-<div class="section item"><strong>ফোন হারালে করণীয়</strong><ol><li>উপরের সঠিক Android/iPhone সেবায় নিজের অ্যাকাউন্ট দিয়ে প্রবেশ করুন।</li><li>ফোনে Lost/secure ব্যবস্থা থাকলে সেটি ব্যবহার করুন।</li><li>মোবাইল অপারেটরকে SIM বন্ধ/প্রতিস্থাপনের জন্য জানান।</li><li>চুরির ঘটনা হলে পুলিশে রিপোর্ট করুন; নিজে চোরের মুখোমুখি হবেন না।</li></ol></div>
-<div class="notice">এই সংস্করণে MASTER WORLD VIP-এর নিজস্ব native Android/iOS tracker, device registration backend, server-side IP event log বা remote lock/erase সংযোগ এখনো চালু নয়। এই প্যানেলটি নিরাপদ অফিসিয়াল recovery shortcut ও নির্দেশনা; লাইভ ট্র্যাকিংয়ের দাবি করে না।</div>
+<div class="section item"><strong>৩. নিরাপত্তা ও সীমাবদ্ধতা</strong><ul><li>শুধু authenticated owner নিজের registered device/report/location দেখতে পারবেন; phone number বা IP দিয়ে অন্যের location খোঁজা যাবে না।</li><li>Offline/বন্ধ/permission বন্ধ/uninstalled হলে নতুন GPS আসবে না; last-known location-কে LIVE বলা যাবে না।</li><li>IP থেকে exact street location দাবি করা হবে না; raw IP public profile/search-এ দেখানো হবে না।</li><li>Gmail password, OTP, recovery code বা IMEI এখানে লিখবেন না।</li></ul></div>
+<div class="actions"><a class="btn secondary" href="https://github.com/rakib12301111-droid/master-world-vip/blob/main/supabase/migrations/20261125120000_anti_theft_device_recovery.sql" target="_blank" rel="noopener noreferrer" style="text-decoration:none">Recovery DB Migration</a><a class="btn secondary" href="https://github.com/rakib12301111-droid/master-world-vip/blob/main/docs/ANTI_THEFT_PHONE_RECOVERY_BN.md" target="_blank" rel="noopener noreferrer" style="text-decoration:none">সম্পূর্ণ পরিকল্পনা</a></div>
 </article>
 </section>
 <section class="page" id="inbox">
