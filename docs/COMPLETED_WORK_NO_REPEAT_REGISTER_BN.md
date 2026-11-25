@@ -99,7 +99,7 @@ The following may have repository code, screens, SQL, workflow files, or policy 
 
 - SQL migrations in current audited repository tree: 30.
 - GitHub Actions workflow files in current audited repository tree: 15.
-- Supporting documentation files under `docs/`: 28 at audit snapshot.
+- Supporting documentation files under `docs/`: 30 in the post-audit tree (28 pre-existing audit snapshot documents plus this new register and the preserved handover archive).
 - The existence of these files is inventory evidence only. It does not mean the related feature is live or complete.
 
 ## 6. Last no-repeat decision
