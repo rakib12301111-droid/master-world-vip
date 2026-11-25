@@ -338,3 +338,29 @@ Supporting details are kept in `docs/FEATURE_COMPLETION_REGISTER_BN.md`, `docs/S
 2. পরবর্তী session-এ প্রথমে current `main` HEAD, latest Pages workflow এবং no-repeat register অনুযায়ী evidence inspect করুন; completed checks অকারণে repeat নয়।
 3. Owner-এর secure DB URL save confirmation না পাওয়া পর্যন্ত backup workflow চালাবেন না। Confirmation-এর পর workflow history inspect করে প্রয়োজন হলে একবার gated backup → decrypt → disposable restore (table count > 0) → migration dry-run।
 4. DB safety gate পাসের পরই staging customer portal, verified USD payment/FX quote, BDT member-pay disclosure এবং প্রথম real paid high-value pilot-এর কাজ শুরু হবে।
+
+## ১৬. VIP USD Member Bonus Draw ও Admin USD Revenue Policy (2026-11-26)
+
+### Authoritative policy documents
+- নতুন consolidated policy: `docs/VIP_USD_MEMBER_BONUS_AND_ADMIN_REVENUE_POLICY_BN.md`.
+- Member earning plan context: `docs/global-earning-micro-work-system.md`-এর “VIP USD bonus draw and plan-linked Admin revenue” section.
+- Global marketplace: `docs/GLOBAL_CUSTOMER_MARKETPLACE_LIFETIME_WORK_SYSTEM_BN.md` Section 13.
+- Admin commission/financial safeguards: `docs/MEMBER_AUTO_WORK_OWNER_COMMISSION_POLICY_BN.md` Section 17.
+- Feature status/history: `docs/FEATURE_COMPLETION_REGISTER_BN.md` Update 20.
+
+### Owner request translated into safe product requirements
+1. **Ordinary member USD bonus:** VIP/Member Rewards area-তে অনিয়মিত, random USD promotional bonus draw থাকতে পারে। কে কখন পাবেন তা আগে থেকে নিশ্চিত নয়; কোনো নির্দিষ্ট member-এর win, amount, frequency বা income guarantee নয়।
+2. **No purchase necessary:** এটি pay-to-enter lottery নয়। Member deposit, joining fee, mandatory paid plan বা task-unlock fee নয়; plan purchase chance বাড়াবে না; legitimate work access free থাকবে।
+3. **Prize funding and legal gates:** draw শুরুর আগে পৃথক liquid USD prize reserve-এ 100% prize liability pre-fund; Bangladesh এবং প্রতিটি served jurisdiction-এর legal review/required permit; published eligibility/rules/required odds disclosure; auditable secure random selection, immutable logs, fraud controls, tax disclosure, appeal/correction এবং verified USD payout provider আবশ্যক। Gate fail হলে draw disabled।
+4. **Admin USD on Free/Paid Plan activity:** Free Plan free; শুধু active থাকলে USD income তৈরি হয় না। Free Plan-এর মাধ্যমে বাস্তব customer-paid service/order settle হলে approved Admin entitlement eligible net revenue থেকে record হতে পারে। Paid Plan receipt কেবল real provider-verified settlement এবং tax, gateway/FX fee, refund/chargeback, delivery/provider/operating cost, member payable ও reserves বাদ দেওয়ার পর net revenue হতে পারে।
+5. **100% Admin confirmation clarified:** actual eligible settled net revenue থেকে approved Admin entitlement-এর 100% সঠিকভাবে Admin USD ledger-এ post/reconcile হবে—এটাই accounting guarantee। 100% gross receipts, fixed USD amount বা plan activation থেকেই guaranteed profit নয়। Admin নিজে Paid Admin Plan কিনলে সেটি expense, income নয়; eligible settled revenue না থাকলে Admin accrual zero।
+6. Member USD prize, Member BDT Work Pay, Admin USD Entitlement/Profit, Company Revenue, Refund Reserve এবং Operating Expense পৃথক append-only ledgers-এ থাকবে। Member wage/deposit বা prize reserve দিয়ে Admin income/bonus funding নয়; double counting নয়।
+7. Member Auto Work package checkout/execution disabled থাকবে; existing 100% liquid refund reserve, separate operating fund, isolated infrastructure, provider/legal/security এবং acceptance gates bypass করা যাবে না.
+
+### Current status — DOCUMENTATION ONLY / NOT LIVE
+- New policy file এবং সংশ্লিষ্ট earning, marketplace, commission, feature-register docs update করা হয়েছে। এটি product requirement record; কোনো code/UI/DB/payment provider/plan checkout/bonus draw/FX conversion/USD ledger/prize reserve/random selection/payout activate করেনি।
+- VIP USD draw, Admin USD ledger and plan revenue collection **NOT VERIFIED / NOT LIVE**। No USD income or prize has been generated or paid by this documentation work.
+- Existing DB safety blocker and exact next step remain unchanged: wait for Owner confirmation that GitHub Actions `SUPABASE_DB_URL` was securely corrected and saved; do not request the secret value. Then inspect backup workflow history, reuse any valid successful evidence, and only if needed run the gated encrypted backup → decrypt → disposable restore (table count > 0) → migration dry-run. Production migration still requires all gates and the exact authorization phrase.
+- Previous 14-check Auto Work static safety suite must not be repeated unless tested source/configuration changes.
+
+**Pre-handover main HEAD:** `d16ca900c961c19a392c16a04dab7293d1d44c5d` (after VIP policy documentation updates; verify actual main HEAD after this handover commit).
