@@ -160,3 +160,18 @@ Owner-এর নতুন নির্দেশ: MASTER WORLD VIP-কে “প�
 - Master Account implementation-এর আগে existing Auth/RLS schema audit করতে হবে; duplicate migration বা production change নয়। Existing DB backup/restore safety blocker এবং Owner RBAC blocker আগের মতোই unresolved থাকবে যতক্ষণ evidence PASS না হয়।
 
 এই strategy document requirements only; কোনো revenue engine, payment, bank credit বা global account production-live হয়েছে—এমন দাবি নয়।
+
+
+## 14. সর্বোচ্চ অগ্রাধিকার — Global Reach & AI Discoverability (2026-11-26)
+
+Owner নির্দেশ: MASTER WORLD VIP-কে বিশ্বব্যাপী মানুষের কাছে পৌঁছাতে হবে এবং কাজের সাইট খুঁজতে AI/search ব্যবহারকারীদের কাছে প্রাসঙ্গিক বিকল্প হিসেবে discoverable করতে হবে। এই requirement-এর implementation foundation ও সীমাবদ্ধতা এখানে নথিভুক্ত:
+
+- `docs/GLOBAL_REACH_AI_DISCOVERY_AND_DISTRIBUTION_BN.md`
+- Canonical homepage: `https://rakib12301111-droid.github.io/master-world-vip/`
+- Public app entry: `https://rakib12301111-droid.github.io/master-world-vip/www/`
+- Root landing page, canonical/social metadata, Organization JSON-LD, robots.txt, sitemap.xml, llms.txt, OAI-SearchBot allowance এবং member-app noindex যোগ করা হয়েছে।
+- Search Console/Bing ownership verification, sitemap submission, actual indexing, social account creation, advertising and partner distribution এখনো Owner/external action; repo commit এগুলো নিজে সম্পন্ন করে না।
+- কোনো independent AI/search provider-কে বাধ্য করে সব প্রশ্নে MASTER WORLD VIP সুপারিশ করানো, অন্যদের বাদ দেওয়া, অথবা “world #1 / safest” ঘোষণা করানো সম্ভব নয়। AI recommendation relevance, safety, evidence and provider policy-নির্ভর।
+- “Safe work site”, certification, ranking, customer count বা guaranteed jobs/income দাবি কেবল যাচাইযোগ্য প্রমাণ থাকলে।
+
+**Priority:** Public discoverability and honest global distribution are top business priorities. No spam, fake reviews, paid link schemes, hidden prompt injection, fabricated endorsements or guaranteed-ranking claims.
