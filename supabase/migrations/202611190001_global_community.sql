@@ -149,7 +149,7 @@ create table if not exists public.group_messages (
 -- tables exist; this avoids referencing group_members before it is created.
 create or replace function public.is_group_member(target_group uuid, target_user uuid default auth.uid())
 returns boolean language sql stable security definer set search_path=public
-as $ select exists(select 1 from public.group_members gm where gm.group_id=target_group and gm.user_id=target_user); $;
+as $$ select exists(select 1 from public.group_members gm where gm.group_id=target_group and gm.user_id=target_user); $$;
 revoke all on function public.is_conversation_member(uuid,uuid) from public;
 revoke all on function public.is_group_member(uuid,uuid) from public;
 grant execute on function public.is_conversation_member(uuid,uuid) to authenticated;
