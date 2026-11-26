@@ -70,7 +70,7 @@ create table if not exists public.messages (
 create index if not exists messages_conversation_created_idx
   on public.messages(conversation_id,created_at desc);
 
-create or replace function public.is_conversation_member(target_conversation uuid, target_user uuid default auth.uid())
+create or replace function public.is_conversation_member(target_conversation uuid, target_user uuid)
 returns boolean language sql stable security definer set search_path=public
 as $$ select exists(select 1 from public.conversation_members cm where cm.conversation_id=target_conversation and cm.user_id=target_user); $$;
 
@@ -147,7 +147,7 @@ create table if not exists public.group_messages (
 
 -- SECURITY DEFINER membership helpers are created only after both membership
 -- tables exist; this avoids referencing group_members before it is created.
-create or replace function public.is_group_member(target_group uuid, target_user uuid default auth.uid())
+create or replace function public.is_group_member(target_group uuid, target_user uuid)
 returns boolean language sql stable security definer set search_path=public
 as $$ select exists(select 1 from public.group_members gm where gm.group_id=target_group and gm.user_id=target_user); $$;
 revoke all on function public.is_conversation_member(uuid,uuid) from public;
