@@ -69,3 +69,20 @@ Member ও Admin-এর জন্য সহজ payout interface রাখা: �
 - অনুমোদিত হলে order acceptance-এর সময় ২০% rate ও calculation basis immutable snapshot হবে; কেবল কাজ accepted/completed এবং payment settled/reconciled হলে আলাদা company-revenue ledger-এ post হবে।
 - USD order-এ ২০% USD-তে এবং BDT order-এ ২০% BDT-তে হিসাব হবে; cross-currency netting হবে না। Member-এর নিট পাওনা ও refund reserve আগে থেকেই স্পষ্ট দেখাতে হবে।
 - **Status: proposal recorded only — not enabled, not collected, no live revenue.**
+
+
+## ৯. KYC/Merchant approval ছাড়া সহজ ব্যবহারের সীমা ও নিরাপদ বিকল্প
+
+- কোনো live bKash/Nagad/bank transfer-এ provider, bank, আইন বা regulator-এর বাধ্যতামূলক পরিচয়/merchant/mandate/settlement শর্ত bypass করা যাবে না। ব্যক্তিগত wallet-এ অননুমোদিত bulk/automated payout-কে বিকল্প হিসেবে ব্যবহার করা যাবে না।
+- ব্যবহারকারীর জন্য onboarding সহজ রাখা হবে: payout method form, masked destination, status tracking, clear rejection reason, Admin approval queue এবং এক-ট্যাপে request submission। Platform কখনো wallet PIN, OTP, bank password বা card secret চাইবে না।
+- Provider account এখনো না থাকলে কেবল **mock/simulated payout sandbox** ব্যবহার করা যাবে: fake provider adapter, synthetic transaction IDs, deterministic success/failure/replay scenarios এবং test-only balances। এই simulation বাস্তব টাকা পাঠায় না এবং live payment হিসেবে দেখানো যাবে না।
+- কোনো official provider sandbox credential/API access পাওয়া গেলে তার published sandbox terms মেনে integration করা যাবে; sandbox ব্যবহারেও provider registration/credentials প্রয়োজন হতে পারে।
+- Production payout activation-এর আগে provider-approved rail, beneficiary ownership verification, legal/KYC checks, real safeguarded funds, reconciliation, fraud limits ও audit evidence আবশ্যক।
+
+## ১০. ২০% commission-এর নিরাপদ হিসাবের সুপারিশ (এখনো অনুমোদন/সক্রিয় নয়)
+
+- ২০% হারটি Owner-এর প্রস্তাব হিসেবেই থাকবে; সরাসরি customer gross amount থেকে ২০% কেটে Member payable কমানো যাবে না।
+- প্রস্তাবিত calculation base: **Distributable Platform Margin** = customer-এর settled gross amount − provider/payment fees − প্রযোজ্য tax/withholding − সম্পূর্ণ Member payable − নির্ধারিত refund/chargeback liability funding − অনুমোদিত direct operating cost।
+- Distributable Platform Margin শূন্য বা ঋণাত্মক হলে Admin commission শূন্য; Member payable বা refund reserve থেকে commission নেওয়া যাবে না। Positive margin হলে Admin commission = margin × 20%; অবশিষ্ট margin platform-এর retained net margin।
+- উদাহরণ (শুধু ব্যাখ্যা, বাস্তব মূল্য নয়): customer settled 1,000; provider fee 20; tax 30; Member payable 600; refund reserve allocation 100; direct operating cost 50; distributable margin 200; Admin commission 40 (20% of 200)।
+- এই base Owner-এর চূড়ান্ত ব্যবসায়িক/আইনি অনুমোদন, tax review ও Member/customer disclosure ছাড়া কার্যকর হবে না। Order acceptance-এ basis ও rate snapshot হবে; settled/reconciled accepted work-এর পরেই commission post হবে; refund/chargeback হলে পূর্বপ্রকাশিত reversal policy লাগবে।
