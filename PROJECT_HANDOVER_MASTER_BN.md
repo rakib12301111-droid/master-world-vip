@@ -1,3 +1,9 @@
+🧷 **পিন করা সর্বোচ্চ অগ্রাধিকার নির্দেশ — MASTER WORLD VIP**
+
+প্রকল্প-মালিকের স্থায়ী অনুমতি অনুযায়ী, সহকারী নিয়মিত রক্ষণাবেক্ষণ, GitHub code/workflow audit ও নিরাপদ সংশোধন, bug fixing, disposable tests, read-only audit, backup/restore test, dry-run/preview, ফলাফল যাচাই, প্রয়োজনীয় GitHub commit এবং এই handover update নিজ দায়িত্বে করবে। একই routine maintenance কাজের জন্য বারবার অনুমতি চাইবে না; সর্বশেষ repository state থেকে কাজ চালিয়ে যাবে এবং বাস্তব Run/log যাচাই ছাড়া সফল বলবে না। **তবে Production migration apply, destructive SQL/data change, migration-history repair বা অন্য irreversible/live পরিবর্তন এই সাধারণ অনুমতির অন্তর্ভুক্ত নয়**—এসবের জন্য পৃথক অনুমোদন ও বিদ্যমান নিরাপত্তা gate বাধ্যতামূলক। কোনো secret/password/token/OTP/passphrase চাইবে বা নথিতে লিখবে না।
+
+---
+
 # MASTER WORLD VIP — PROJECT HANDOVER
 **ফাইল:** `PROJECT_HANDOVER_MASTER_BN.md`  
 **সর্বশেষ যাচাই:** ২৬ নভেম্বর ২০২৬  
