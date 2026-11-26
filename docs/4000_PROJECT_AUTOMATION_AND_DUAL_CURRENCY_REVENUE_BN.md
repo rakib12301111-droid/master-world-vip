@@ -156,3 +156,13 @@ Work & Earn wallet/Owner profit backend migration source থাকলেও prod
 - Member wage, customer refund reserve ও platform operating funds আলাদা থাকবে। কোনো Member-কে customer shortfall নিজের টাকা দিয়ে পূরণ করতে বলা যাবে না; Member-এর কাজ পাওয়ার জন্য deposit/recharge বাধ্যতামূলক নয়।
 - Step 3 migration source: `20261126120000_free_paid_plan_customer_order_gates.sql`; static verifier: `scripts/verify-plan-customer-order-gates.py`। Catalog rows seeded/enabled নয়; plan price/feature matrix ও payment provider integration এখনও pending।
 - **Status:** source foundation only. No customer checkout, provider webhook, plan activation, order execution, refund reserve custody, payment collection or production migration is live. Zero-loss guarantee দেওয়া যাবে না; launch-এর আগে sandbox, refund/chargeback, accounting, legal/provider, security ও operational acceptance tests আবশ্যক।
+
+
+## ১২. Member Loss-Prevention Hard Security — বাধ্যতামূলক database controls (২৬ নভেম্বর ২০২৬)
+
+- নতুন migration `20261126130000_member_loss_prevention_hardening.sql` order-level fund allocation-কে append-only করে: তৈরি হওয়ার পর allocation update/delete নিষিদ্ধ; ভুল হলে পুরোনো order বাতিল করে নতুন order করতে হবে।
+- Order তৈরি হওয়ার পর customer price, Member payable, refund liability, operating budget, project/customer identity, currency ও idempotency key বদলানো যাবে না। Funded order-এ scope, provider settlement evidence এবং segregation/reserve/operating verification metadata-ও immutable থাকবে।
+- Order state কেবল allow-listed ধাপে এগোবে; funded order-কে pending/funded-এ ফেরত পাঠানো বা পুনরায় fund করা যাবে না। Funded/financially resolved order delete করা যাবে না। Trigger service-role call-এর ক্ষেত্রেও database level-এ কার্যকর।
+- এই guard-গুলো Member payable-কে অন্য order-এর দায়ে ব্যবহার বা order record নীরবে বদলে দেওয়ার ঝুঁকি কমায়। তবে database trigger নিজে external bank custody, solvency, payment provider signature, actual refund reserve, payout বা ক্ষতিপূরণ দেওয়ার আর্থিক সামর্থ্য প্রমাণ করে না।
+- Production launch-এর আগে append-only double-entry ledger, independent custodian/safeguarded accounts, signed provider webhooks, daily reconciliation, reserve solvency monitor, dispute/refund/payout state machine, real sandbox integration ও disposable PostgreSQL runtime tests আবশ্যক। কোনো gate ব্যর্থ হলে order intake ও execution fail-closed থাকবে।
+- **Status:** migration/verifier source branch-এ; static CI ফলের অপেক্ষা। Production apply নয়; real money custody নয়; Member-এর loss-free lifetime guarantee নয়।
