@@ -571,3 +571,13 @@ Owner-এর স্পষ্ট দীর্ঘমেয়াদি লক্ষ�
 5. Production migration-এর আগে আলাদা explicit Owner authorization phrase `APPLY-MASTER-WORLD-VIP-MIGRATIONS` আবশ্যক। এই secret update-কে migration authorization হিসেবে গণ্য করা যাবে না।
 
 **Current checkpoint:** Supabase password reset = COMPLETED; Session Pooler URI selection = COMPLETED; GitHub Actions `SUPABASE_DB_URL` secret update = OWNER-CONFIRMED COMPLETED; post-update backup/restore workflow verification = NEXT / NOT YET VERIFIED.
+
+
+## 21. Safe diagnostics added for SUPABASE_DB_URL validation (2026-11-26, Bangladesh time)
+
+- Owner-confirmed Supabase database password reset and GitHub Actions secret update remain completed; do not ask the Owner to repeat these tasks without new evidence.
+- Latest Run #73 (ID 45780002744) was dispatched at 2026-11-26 08:03:40 UTC, after the §20 documentation commit at 07:57:51 UTC, and failed in the first validation step with a PostgreSQL URI parse failure. No database connection, backup, restore, migration preview, or artifact upload occurred.
+- Updated `.github/workflows/backup-restore-preview.yml` to print only safe metadata about the supplied secret (nonempty, character length, whether it begins with postgres:// or postgresql://, whether a copied key label is present, and whether embedded newlines exist). No URI, username, hostname, or password is printed by these new diagnostics.
+- Workflow diagnostic update commit: 0acad5300faa066d7c514d72180deaf58e4c5ab2. It must be allowed to run on main before reviewing the next run's safe diagnostic output. Do not rerun old run #73; inspect the new run created by the workflow-file push.
+- Next action: inspect the new run and use only its non-secret diagnostics to isolate the secret-format issue. If the scheme prefix is false, Owner must correct only the GitHub secret value; if true, inspect parsing/format normalization. Do not request the database password or full URI in chat. Do not alter BACKUP_ENCRYPTION_PASSPHRASE based on current evidence.
+- All production migration safety gates remain closed; this change is diagnostics only and does not connect to or modify the production database.
