@@ -204,9 +204,10 @@ jobs:
           echo "Restore test succeeded in the disposable PostgreSQL service; production was not modified."
 
       - name: Preview all pending production migrations
+        id: migration_preview
         run: |
           set -euo pipefail
-          npx --yes supabase@latest db push --dry-run --db-url "$SUPABASE_DB_URL"
+          npx --yes supabase@latest db push --dry-run --remote "$SUPABASE_DB_URL"
 
       - name: Upload encrypted backup and non-secret test report
         if: always() && steps.backup.outcome == 'success'
@@ -220,11 +221,18 @@ jobs:
           if-no-files-found: warn
 
       - name: Print non-secret references for the migration approval record
-        if: success()
+        if: always() && steps.backup.outcome == 'success'
         env:
           BACKUP_REFERENCE: ${{ steps.backup.outputs.backup_reference }}
+          MIGRATION_PREVIEW_OUTCOME: ${{ steps.migration_preview.outcome }}
         run: |
+          set -euo pipefail
           echo "BACKUP_REFERENCE=$BACKUP_REFERENCE"
           echo "RESTORE_TEST_REFERENCE=github-actions-run-${GITHUB_RUN_ID}"
-          echo "Pipeline passed: encrypted logical backup, disposable restore test, and migration preview."
-          echo "Production migrations were NOT applied by this workflow."
+          echo "BACKUP_AND_RESTORE=success"
+          echo "MIGRATION_PREVIEW=${MIGRATION_PREVIEW_OUTCOME:-not-run}"
+          if [ "${MIGRATION_PREVIEW_OUTCOME:-}" = "success" ]; then
+            echo "Migration preview passed. Production migrations were NOT applied by this workflow."
+          else
+            echo "Migration preview did not pass. This reference record is informational only; production migrations were NOT applied."
+          fi
