@@ -24,18 +24,18 @@ jobs:
       test-db:
         image: supabase/postgres:17.6.1.136
         env:
-          POSTGRES_USER: postgres
+          POSTGRES_USER: supabase_admin
           POSTGRES_PASSWORD: migration_test_only
           POSTGRES_DB: mwvip_migration_test
         ports:
           - 5432:5432
         options: >-
-          --health-cmd "pg_isready -U postgres -d mwvip_migration_test"
+          --health-cmd "pg_isready -U supabase_admin -d mwvip_migration_test"
           --health-interval 10s
           --health-timeout 5s
           --health-retries 12
     env:
-      TEST_DB_URL: postgresql://postgres:migration_test_only@127.0.0.1:5432/mwvip_migration_test
+      TEST_DB_URL: postgresql://supabase_admin:migration_test_only@127.0.0.1:5432/mwvip_migration_test
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
