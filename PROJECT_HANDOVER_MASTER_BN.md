@@ -412,3 +412,12 @@ GitHub Actions-এ ব্যবহৃত secret নাম:
 - Disposable PostgreSQL 16 runtime workflow run `45872273474`: **success** — ledger ও payout/refund migrations test database-এ apply হয়েছে; balanced/idempotent journal, currency mismatch rejection, immutable journal, Member overdraft guard, pending payout reservation এবং paid-state journal evidence পরীক্ষা পাস।
 - Migration Safety CI `45872273373`: **success**; Auto Work Static Safety `45872273321`: **success**।
 - Runtime test Production-এ নয়; Production migration apply, bank custody, live payment/payout/refund বা revenue চালু হয়নি।
+
+## ১৮. ২৭ নভেম্বর ২০২৬ — বিকাশ/নগদ/ব্যাংক payout ও Admin commission requirement
+
+- Owner requirement: Member-এর payout method হিসেবে বিকাশ, নগদ ও ব্যাংক অ্যাকাউন্ট যোগ করার সহজ option থাকবে। Member নিজের payout destination যোগ করতে পারবে; sensitive account data encrypted/tokenized ও masked রাখতে হবে; OTP/PIN/password সংগ্রহ করা যাবে না।
+- বিকাশ/নগদ withdrawal request Admin approve না করা পর্যন্ত transfer হবে না। Approval-এর পরও official provider payout rail, eligibility, settlement ও reconciliation checks বাধ্যতামূলক। Provider/company/KYC/legal permission bypass করা যাবে না।
+- Bank account Member নিজে যোগ করতে পারবে। Verified ownership, KYC/AML/fraud checks এবং bank/payment partner-এর অনুমোদিত rail সক্রিয় থাকলে policy-based automatic payout Admin-এর প্রতিটি request-এর আলাদা approval ছাড়াই হতে পারে। এটি bank/provider permission ছাড়া transfer করার অনুমতি নয়। High-risk/new destination/limit breach হলে manual review ও fail-closed।
+- প্রতিটি paid completed work-এ configurable Admin commission থাকবে। কোনো percentage hard-code করা হয়নি; কাজ শুরুর আগে commission rate/basis, provider fee, reserve, operating cost ও Member net payable দেখাতে হবে। Rate order acceptance-এ immutable snapshot; commission আলাদা company-revenue ledger-এ, USD/BDT পৃথকভাবে।
+- Full design: docs/PAYOUT_METHODS_ADMIN_APPROVAL_AND_PLATFORM_COMMISSION_BN.md.
+- Status: requirement/specification only. bKash/Nagad/bank adapter, account ownership verification, live transfer, automatic payout, commission calculation/collection এখনো implemented/live নয়। Production migration/deployment বা real money movement হয়নি।
