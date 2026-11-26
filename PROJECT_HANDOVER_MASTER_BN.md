@@ -526,3 +526,36 @@ GitHub Actions-এ ব্যবহৃত secret নাম:
 - Update-এর পর PR #20 head একই commit SHA-তে যাচাই করা হয়েছে: Open / Draft / Unmerged.
 - Updated handover file: https://github.com/rakib12301111-droid/master-world-vip/blob/planning/4000-automated-project-economy/PROJECT_HANDOVER_MASTER_BN.md.
 - এই নথির সর্বশেষ যাচাইকৃত blob SHA: 8e1385803dce10592c467c14d2c4644ec68295cb.
+
+
+## ১৫. ২৭ নভেম্বর ২০২৬ — Live করার অনুরোধ, বর্তমান যাচাই ও পরবর্তী সেশনের শুরুর স্থান
+
+### Owner-এর সর্বশেষ নির্দেশ
+- Owner বলেছেন MASTER WORLD VIP-কে আপডেটের মাধ্যমে সম্পন্ন করে Live করতে এবং সব তথ্য এই `PROJECT_HANDOVER_MASTER_BN.md` ফাইলে রাখতে।
+- Owner আজকের কাজ এখানেই থামিয়ে পরের দিন সঠিক জায়গা থেকে শুরু করতে চান; একই কাজ পুনরায় না করার নির্দেশ বহাল।
+- এই Live করার লক্ষ্যকে গুরুত্ব দিয়ে কাজ এগোবে, কিন্তু Release Gate পাশ কাটিয়ে Production-এ ঝুঁকিপূর্ণ পরিবর্তন করা যাবে না। Routine source/docs/tests চলতে পারে; Production migration apply, migration-history repair, Production data write, real payment/payout এবং public/live release-এর নির্দিষ্ট নিরাপত্তা ও আলাদা অনুমোদন-সীমা বহাল।
+
+### এই সেশনে যাচাই করা GitHub অবস্থা
+- PR #20: https://github.com/rakib12301111-droid/master-world-vip/pull/20 — Open, Draft, Unmerged। যাচাইকৃত head: `97153d42e311748ecb2193d8914ae4eabca1bfe5`; base: `bfa7b582223b0c1caa9c1efd59858a3e94c66a3b`।
+- Release Readiness নথির সিদ্ধান্ত এখনও **NOT READY FOR PRODUCTION / NOT LIVE**। PR-এ সম্পূর্ণ migration chain, Production read-only audit/backup-restore, payment provider sandbox/custody/payout rails, worker ও end-to-end readiness এখনো প্রমাণিত নয়।
+- GitHub Actions-এর সাম্প্রতিক তালিকায় planning branch-এর commit `9f0a4c7cf2f3b7aeb50f9a5fd40b6ed163493741`-এ Worker verification, isolated PostgreSQL finance runtime, migration safety, Auto Work static safety এবং update-system check সফল দেখা গেছে। এগুলো ওই নির্দিষ্ট commit ও নির্দিষ্ট পরীক্ষার ফল; বর্তমান PR head `97153d4...`-এর পূর্ণ Release Readiness প্রমাণ করে না।
+- GitHub Pages-এর `main` branch-এ আগের public homepage deployment সফল ছিল (run `45879349896`)। এটি শুধু homepage deployment-এর প্রমাণ; পূর্ণ MASTER WORLD VIP application, automation, payment বা revenue system Live হওয়ার প্রমাণ নয়।
+- Staging validation workflow-এর বর্তমান সংজ্ঞা দেখা হয়েছে। এটি Staging secrets যাচাই, Staging-এ ordered migrations, Owner/Admin/Member RBAC পরীক্ষা এবং disabled অবস্থায় worker deploy করার জন্য। এই সেশনে Staging workflow সফলভাবে চালানোর কোনো নতুন প্রমাণ পাওয়া যায়নি; প্রয়োজনীয় Staging secrets/project প্রস্তুত আছে—এমন দাবিও করা হচ্ছে না। Secret values কখনো chat-এ চাইবে না।
+
+### সুখবর — যা সত্যিই সফল হয়েছে
+- Public GitHub Pages homepage আগে সফলভাবে publish হয়েছে।
+- Planning branch-এ isolated PostgreSQL finance-ledger/payout-refund runtime test এবং একাধিক static safety workflow আগের নির্দিষ্ট commits-এ সফল হয়েছে।
+- Worker source-এর verification workflow সফল হয়েছে; তবে Worker এখনও registration/heartbeat স্তরে, approved task handler ছাড়া বাস্তব কাজ বা আয় চালায় না।
+- এই সাফল্যগুলো অগ্রগতি, কিন্তু পূর্ণ প্ল্যাটফর্ম Live বা আয় শুরু হওয়ার ঘোষণা নয়।
+
+### পরবর্তী সেশনে ঠিক এখান থেকে শুরু — পুনরাবৃত্তি নয়
+1. প্রথমে এই handover, PR #20-এর সর্বশেষ head এবং GitHub Actions-এর নতুন run status আবার পরীক্ষা করতে হবে; ইতিমধ্যে তৈরি migrations, ledger, payout/refund workflows, dashboard ও Staging workflow নতুন করে তৈরি করা যাবে না।
+2. GitHub repository Settings → Secrets and variables → Actions-এ Staging-এর প্রয়োজনীয় secrets আছে কি না Owner নিজে পরীক্ষা করবেন; কোনো secret value chat-এ পাঠাবেন না।
+3. Secrets ও আলাদা Staging project প্রস্তুত থাকলে কেবল `validate-staging-supabase.yml` workflow-এর `workflow_dispatch` ব্যবহার করে Staging validation চালাতে হবে; না থাকলে নিরাপদ source/tests/docs কাজ চালাতে হবে এবং Staging deployment হয়েছে বলে দাবি করা যাবে না।
+4. Staging migration chain ও Auth/RBAC পরীক্ষা সফল হলে ফলাফল নথিভুক্ত করে পরের release blockers—Production read-only audit, backup/restore evidence, provider sandbox, custody/reconciliation, payout/refund rails, real worker handlers, pricing/security/E2E—একটি করে সমাধান করতে হবে।
+5. সব Release Gate প্রমাণসহ পাস না করা পর্যন্ত Production migration apply বা public/live release করা যাবে না। Production migration-এর আলাদা অনুমোদন phrase `APPLY-MASTER-WORLD-VIP-MIGRATIONS`; phrase-টি একা যথেষ্ট নয়—আগে সব পূর্বশর্ত ও backup/restore evidence লাগবে। Public deployment ও live payment/payout-এর আলাদা অনুমোদনও বহাল।
+
+### সময় ও সেশন সমাপ্তি
+- এই সেশনের সময় যাচাই: বাংলাদেশ সময় ২৭ নভেম্বর ২০২৬, রাত ১:১০ (প্রায় ১:১০:৫৪, UTC+06:00)।
+- Owner শুভরাত্রি জানিয়েছেন; পরের সেশনে উপরের ধাপ ১ থেকে সর্বশেষ অবস্থা যাচাই করে শুরু করতে হবে।
+- বর্তমান অবস্থা: পূর্ণ প্ল্যাটফর্ম Production Live নয়; বাস্তব payment/payout বা আয় চালু হওয়ার প্রমাণ নেই।
