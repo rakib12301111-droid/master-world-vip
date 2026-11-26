@@ -110,3 +110,26 @@ Work & Earn wallet/Owner profit backend migration source থাকলেও prod
 - **সাধারণ Member:** Free Option/paid earning automation-এ Admin-এর মতো free paid-plan entitlement পাবেন না; paid plan-এর মূল্য বাস্তবে provider-এর মাধ্যমে settle ও server-side verify হওয়ার পরেই সংশ্লিষ্ট project-এর paid automation entitlement চালু হবে।
 - Paid plan-এর সুনির্দিষ্ট মূল্য, মেয়াদ, feature limits, কোন project-এ কী সুবিধা এবং refund/renewal terms পরে লিখিতভাবে নির্ধারণ ও প্রকাশ করতে হবে। কোনো paid plan কাজ, customer demand, নির্দিষ্ট আয় বা profit নিশ্চিত করে না।
 - এই ব্যাখ্যা **দুটি access option (Free + Paid)** বোঝায়; এখানে Basic/Premium নামে দুটি আলাদা paid tier অনুমান করা হয়নি।
+
+
+## ১০. বাস্তব গ্রাহক, গ্রাহকের কাজের অর্ডার ও Member সুরক্ষা — Owner-এর বাধ্যতামূলক শর্ত
+
+### ১০.১ গ্রাহক-চালিত কাজের মডেল
+- ৪,০০০ project-এর প্রতিটি প্রাসঙ্গিক service/marketplace-এ বাস্তব গ্রাহক কাজ, অর্ডার, service request বা paid subscription নিয়ে আসবেন। প্রজেক্ট/সিস্টেম নিজেরা ভুয়া customer, ভুয়া order, ভুয়া task, কৃত্রিম engagement বা কৃত্রিম revenue তৈরি করবে না।
+- Customer acquisition, public service catalog, project-specific landing page, search/discovery, quote/order intake, customer support, checkout, delivery, acceptance, refund/dispute এবং repeat-customer workflow আলাদা করে তৈরি ও পরিমাপ করতে হবে।
+- ১ কোটি (১০,০০০,০০০) বা তার বেশি বাস্তব গ্রাহক হলো দীর্ঘমেয়াদি scale target—বর্তমান customer count বা নিশ্চিত ফল নয়। পর্যায়ক্রমিক acquisition, conversion, retention, support capacity, infrastructure load, fraud rate ও unit economics-এর প্রমাণ ছাড়া এই সংখ্যা achieved/capacity বলে প্রচার করা যাবে না।
+- USD ও BDT customer journey, displayed price, payment provider, ledger, refund, FX ও payout আলাদা থাকবে; project control plane shared হলেও currency boundaries অতিক্রম করে অর্থ মেশানো যাবে না।
+
+### ১০.২ সাধারণ Member-এর আর্থিক সুরক্ষা
+- সাধারণ Member-কে কাজ পাওয়ার জন্য deposit, recharge, paid membership, unlock fee বা ব্যক্তিগত অর্থ ঝুঁকিতে দিতে বাধ্য করা যাবে না। Paid plan ঐচ্ছিক; paid plan কেনা কাজ/আয় পাওয়ার শর্ত বা নিশ্চয়তা নয়।
+- Customer-funded কাজের ক্ষেত্রে কাজ assign/worker শুরু করার আগে customer payment বাস্তবে provider-এ settled এবং সংশ্লিষ্ট order-এর জন্য যথেষ্ট অর্থ funded/segregated আছে তা server-side verify করতে হবে। কেবল screenshot, client-side success বা pending payment গ্রহণযোগ্য নয়।
+- কাজের scope, মূল্য, currency, deadline, acceptance criteria, revision, cancellation, dispute, refund এবং Member payable কাজ শুরুর আগেই স্পষ্ট করতে হবে।
+- Member-এর কাজের পারিশ্রমিক, customer refund liability ও platform operating funds আলাদা ledger/accounting bucket-এ রাখতে হবে। Member payable-কে platform revenue বা operating cash হিসেবে ব্যবহার করা যাবে না।
+- Milestone/acceptance evidence, idempotent payment posting, fraud checks, duplicate-order protection, chargeback/dispute workflow, audit trail এবং incident freeze/kill switch থাকতে হবে।
+- গ্রাহক payment settle না করলে, কাজ বাতিল/বিতর্কিত হলে বা fraud signal দেখা দিলে নতুন কাজ শুরু বন্ধ থাকবে; policy ও আইন অনুযায়ী refund/dispute নিষ্পত্তি হবে। Member-কে নিজের টাকা দিয়ে customer shortfall পূরণ করতে বলা যাবে না।
+- কোনো সিস্টেমই শূন্য ঝুঁকি বা প্রত্যেক পরিস্থিতিতে ক্ষতি-শূন্য ফলের নিশ্চয়তা দিতে পারে না। তাই Member-এর অগ্রিম অর্থ ঝুঁকি নিষিদ্ধ করা, funded-order gate, reserve, clear terms, দ্রুত dispute handling ও নিয়মিত audit বাধ্যতামূলক acceptance criteria হবে।
+
+### ১০.৩ Launch gates
+- Public launch-এর আগে বাস্তব customer onboarding ও order-to-settlement-to-delivery-to-member-payment end-to-end sandbox tests, refund/chargeback tests, fraud/abuse review, security/privacy review, capacity/load tests, customer support staffing ও legal/provider compliance সম্পন্ন করতে হবে।
+- ১০,০০০,০০০+ customer scale-এর আগে staged load test, regional capacity, queue isolation, per-project quotas, rate limiting, autoscaling, disaster recovery, observability, support operations ও cost-per-customer validation পাস করতে হবে।
+- এই শর্তগুলো architecture/acceptance requirements; এগুলো বাস্তব গ্রাহক, settled order, funded reserve, Member protection guarantee বা production deployment ইতিমধ্যে আছে—এমন দাবি নয়।
