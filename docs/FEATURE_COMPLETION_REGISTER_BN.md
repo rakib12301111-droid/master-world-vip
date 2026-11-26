@@ -367,3 +367,12 @@ Owner commission কেবল সব member payable, refund liability, provider 
 - Bank destination can be self-added; policy-based per-request Admin-approval-free automatic payout is allowed only after ownership verification, KYC/AML/fraud checks and activation of a bank/payment-partner-approved transfer rail. High-risk/new destinations and reconciliation alerts fail closed to manual review.
 - Configurable Admin commission per paid work is required. No default rate is invented; rate/basis and Member net payable must be disclosed before work, snapshotted immutably at order acceptance and posted to a separate company-revenue account after accepted/completed and settled/reconciled work. USD and BDT remain separate.
 - Status: specification only, NOT LIVE. No provider adapters, bank integration, account verification, automatic withdrawal, commission posting/collection or production money movement has been implemented. Provider and legal permissions cannot be bypassed.
+
+
+### Update 30.1 — 2026-11-27: Owner proposes 20% Admin commission
+
+- Recorded the owner's requested **20% proposed Admin commission** for each completed/accepted paid work order in the payout/commission specification and handover.
+- The 20% is a proposal only, not an enabled production rate and not authorization to deduct or collect money.
+- Before activation, define and disclose the calculation basis, provider fees, tax, refund/chargeback reversal and rounding policy; show Member net payable before work; post commission only after accepted/completed work and settled/reconciled funds to a separate Company Revenue Ledger.
+- Keep USD and BDT calculations separate. No retroactive changes to accepted order terms.
+- **Status: recorded proposal only; no commission calculation, deduction, collection or live revenue is active.**
