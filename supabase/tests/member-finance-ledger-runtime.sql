@@ -9,11 +9,11 @@ do $$ begin
 end $$;
 create table if not exists auth.users(id uuid primary key);
 insert into auth.users(id) values('00000000-0000-0000-0000-000000000101') on conflict do nothing;
+select set_config('request.jwt.claim.role','service_role',false);
 \i supabase/migrations/20261126140000_append_only_double_entry_finance_ledger.sql
 create table public.customer_service_orders(id uuid primary key,customer_user_id uuid not null references auth.users(id),currency text not null,status text not null);
 \i supabase/tests/member-payout-refund-runtime.sql
-select set_config('request.jwt.claim.role','service_role',false);
-do $$
+do $
 declare
  v_member uuid; v_clearing uuid; v_personal uuid; v_journal jsonb; v_retry jsonb; v_balance numeric;
 begin
