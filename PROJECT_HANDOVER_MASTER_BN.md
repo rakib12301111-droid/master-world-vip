@@ -397,3 +397,11 @@ GitHub Actions-এ ব্যবহৃত secret নাম:
 - Database triggers service-role write-সহ database mutation path-এ প্রযোজ্য; correction path হলো order cancel করে নতুন order, পুরোনো allocation rewrite নয়।
 - Static verifier `scripts/verify-plan-customer-order-gates.py` নতুন guard পরীক্ষা করে; Supabase migration safety workflow-এ এটি চালানো হয়।
 - **সীমাবদ্ধতা:** এটি software-level tamper-resistance/fail-closed control; real custody, reserve funding, solvency, provider signature, refund/payout বা Member ক্ষতিপূরণের বাস্তব নগদ সামর্থ্য নয়। Runtime disposable PostgreSQL validation এবং external safeguarded custody/audit/payout integration বাকি। Production apply/merge/deploy হয়নি।
+
+
+## ১৭. ২৬ নভেম্বর ২০২৬ — Double-entry Ledger ও payout/refund runtime foundation
+
+- Added `20261126140000_append_only_double_entry_finance_ledger.sql`: USD/BDT পৃথক chart of accounts, append-only balanced journals/lines, idempotent posting, Member-specific payable overdraft prevention এবং ledger integrity RPC।
+- Added `20261126150000_guarded_member_payout_refund_workflows.sql`: service-only Member payout/customer refund requests, immutable terms, allowed state transitions, pending amount reservation, এবং paid state-এর আগে provider settlement + reconciliation + matching journal বাধ্যতামূলক।
+- Added static verifiers `verify-member-finance-ledger.py`, `verify-member-payout-refund.py`; disposable PostgreSQL 16 runtime workflow `verify-member-finance-ledger-runtime.yml` ও test scripts।
+- **কোনো Live rail নয়:** internal journal/request নিজে bank balance, safeguarded custody, refund reserve বা টাকা পাঠানোর প্রমাণ নয়। Provider-specific signed webhook, bank/custodian, actual payout/refund connectors ও independent daily reconciliation এখনও বাকি। Production apply/merge/deploy করা হয়নি।
