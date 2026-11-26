@@ -59,7 +59,7 @@ jobs:
           if len(raw) >= 2 and raw[0] == raw[-1] and raw[0] in ('"', "'"):
               raw = raw[1:-1].strip()
           if raw.startswith("SUPABASE_DB_URL="):
-              raw = raw.split("=", 1)[1].strip().strip("\\"'")
+              raw = raw.split("=", 1)[1].strip().strip(chr(34) + chr(39))
           # Emit only booleans/counts; never print the URI, authority, username,
           # password, query, fragment, or any extracted credential.
           has_postgres_prefix = raw.startswith(("postgresql://", "postgres://"))
