@@ -329,3 +329,12 @@ GitHub Actions-এ ব্যবহৃত secret নাম:
 - বর্তমান repository-তে AI assistant, Work & Earn, referral wallet, payment-state/checkout migration source ও wallet/profit RPC foundation আছে। কিন্তু Company Revenue Ledger, complete plan checkout→verified webhook→entitlement activation, ৪,০০০ project registry/orchestrator, production USD/BDT revenue/payout integration এবং production acceptance tests এখনো যাচাইকৃতভাবে Live নয়।
 - Member Auto Work paid package checkout/execution existing safety policy অনুযায়ী Disabled/Not Live থাকবে; ১০০% liquid refund reserve, separate operating budget, isolated infrastructure, provider/legal/security gates ও tests ছাড়া চালু নয়। নতুন পরিকল্পনা এই gate override করে না।
 - Production migration apply, billing/payment execution ও live deployment-এর জন্য আলাদা explicit approval বাধ্যতামূলক।
+
+
+## ১২. ২৬ নভেম্বর ২০২৬ — ৪,০০০ প্রজেক্টের Free + Paid access clarification ও অটোমেশন অগ্রগতি
+
+- Owner স্পষ্ট করেছেন: ৪,০০০টির প্রতিটি project-এ দুটি option থাকবে—Free Option এবং Paid Automatic Plan। Admin Free Option ব্যবহার করতে পারবেন এবং চাইলে Paid Plan কিনবেন; সাধারণ Member-এর paid automation চালু হবে কেবল verified paid-plan settlement-এর পর। Paid tier count/price/feature matrix এখনো নির্ধারিত নয়; এই নির্দেশে দুটি option মানে Free + Paid, দুটি paid tier নয়।
+- **যাচাইকৃত automation foundation:** GitHub Actions-এ daily backup/restore preview, weekly read-only DB audit এবং প্রতি ৬ ঘণ্টায় DB health monitoring workflow source রয়েছে। এগুলো infrastructure/database safety automation; customer earning projects বা payment-to-plan activation নয়.
+- **যাচাইকৃত product foundation:** AI Assistant Edge Function, Work & Earn board/migration, referral wallet/reward foundation, verified-payment/checkout migration source এবং Work & Earn wallet/Owner-profit settlement migration source repository-তে আছে।
+- **বড় অটোমেশন এখনো বাকি:** ৪,০০০ project registry ও orchestration/worker fleet, per-project scheduler/queue/budget controls, Company Revenue Ledger, complete Premium/AI plan catalog and checkout-to-entitlement flow, USD/BDT settlement & payout integrations, Admin/Member entitlement enforcement এবং end-to-end/load/security acceptance tests.
+- **Current verified progress:** foundation and specification stage only; ৪,০০০ earning project চালু নয়, paid plan purchase/activation production-live নয়, কোনো নতুন আয় বা payout প্রমাণিত নয়। Production DB apply, billing/payment execution এবং live deployment পৃথক অনুমোদন ছাড়া করা যাবে না।
