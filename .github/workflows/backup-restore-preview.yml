@@ -219,7 +219,7 @@ jobs:
           npx --yes supabase@latest migration list --remote "$SUPABASE_DB_URL" | tee "$HISTORY_FILE"
           if grep -Fq '`20261121081842`' "$HISTORY_FILE" && grep -Fq '`20261121082217`' "$HISTORY_FILE"; then
             echo "Found the two obsolete remote-only migration versions; marking only these entries reverted."
-            npx --yes supabase@latest migration repair --status reverted 20261121081842 20261121082217 --remote "$SUPABASE_DB_URL"
+            npx --yes supabase@latest migration repair --yes --status reverted 20261121081842 20261121082217 --remote "$SUPABASE_DB_URL"
           else
             echo "Obsolete remote-only versions are not both present; no migration-history change was made."
           fi
