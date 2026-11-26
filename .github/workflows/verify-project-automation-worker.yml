@@ -1,0 +1,26 @@
+name: Verify MASTER WORLD VIP project worker
+
+on:
+  pull_request:
+    paths:
+      - "supabase/functions/project-automation-worker/**"
+      - ".github/workflows/verify-project-automation-worker.yml"
+  push:
+    branches: [main]
+    paths:
+      - "supabase/functions/project-automation-worker/**"
+      - ".github/workflows/verify-project-automation-worker.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  worker-static-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - name: Type-check Supabase Edge Worker
+        run: deno check supabase/functions/project-automation-worker/index.ts
