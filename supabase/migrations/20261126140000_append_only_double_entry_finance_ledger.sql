@@ -121,25 +121,25 @@ begin
    raise exception 'Journal reference and memo are required';
  end if;
 
- select count(*),coalesce(sum((x->>'debit')::numeric),0),coalesce(sum((x->>'credit')::numeric),0)
- into v_count,v_debits,v_credits from jsonb_array_elements(p_lines) x;
+ select count(*),coalesce(sum((line->>'debit')::numeric),0),coalesce(sum((line->>'credit')::numeric),0)
+ into v_count,v_debits,v_credits from jsonb_array_elements(p_lines) as e(line);
  if v_count<>jsonb_array_length(p_lines) or v_debits<=0 or v_debits<>v_credits
-   or exists(select 1 from jsonb_array_elements(p_lines) x
-     where coalesce((x->>'debit')::numeric,0)<0 or coalesce((x->>'credit')::numeric,0)<0
-       or ((coalesce((x->>'debit')::numeric,0)>0)=(coalesce((x->>'credit')::numeric,0)>0))
-       or round(coalesce((x->>'debit')::numeric,0),2)<>coalesce((x->>'debit')::numeric,0)
-       or round(coalesce((x->>'credit')::numeric,0),2)<>coalesce((x->>'credit')::numeric,0))
+   or exists(select 1 from jsonb_array_elements(p_lines) as e(line)
+     where coalesce((line->>'debit')::numeric,0)<0 or coalesce((line->>'credit')::numeric,0)<0
+       or ((coalesce((line->>'debit')::numeric,0)>0)=(coalesce((line->>'credit')::numeric,0)>0))
+       or round(coalesce((line->>'debit')::numeric,0),2)<>coalesce((line->>'debit')::numeric,0)
+       or round(coalesce((line->>'credit')::numeric,0),2)<>coalesce((line->>'credit')::numeric,0))
  then raise exception 'Journal must have positive, two-decimal, one-sided lines and equal debit/credit totals'; end if;
 
- if exists(select 1 from jsonb_array_elements(p_lines) x
-   group by x->>'account_id' having count(*)>1) then
+ if exists(select 1 from jsonb_array_elements(p_lines) as e(line)
+   group by line->>'account_id' having count(*)>1) then
    raise exception 'Each account may appear only once per journal';
  end if;
 
  -- Lock every account in deterministic order to prevent concurrent overspending.
  for v_account_id in
-   select (x->>'account_id')::uuid from jsonb_array_elements(p_lines) x
-   order by (x->>'account_id')::uuid
+   select (line->>'account_id')::uuid from jsonb_array_elements(p_lines) as e(line)
+   order by (line->>'account_id')::uuid
  loop
    select * into v_account from public.finance_accounts where id=v_account_id for update;
    if not found or v_account.currency<>p_currency then
@@ -148,7 +148,7 @@ begin
  end loop;
 
  -- A Member payable liability may only be debited up to its own accrued balance.
- for v_line in select x from jsonb_array_elements(p_lines) x loop
+ for v_line in select x from jsonb_array_elements(p_lines) as e(line) loop
    select * into v_account from public.finance_accounts
     where id=(v_line->>'account_id')::uuid;
    if v_account.account_code='member_payable' then
@@ -177,9 +177,9 @@ begin
  returning id into v_journal_id;
 
  insert into public.finance_journal_lines(journal_id,account_id,currency,debit,credit)
- select v_journal_id,(x->>'account_id')::uuid,p_currency,
-   coalesce((x->>'debit')::numeric,0),coalesce((x->>'credit')::numeric,0)
- from jsonb_array_elements(p_lines) x;
+ select v_journal_id,(line->>'account_id')::uuid,p_currency,
+   coalesce((line->>'debit')::numeric,0),coalesce((line->>'credit')::numeric,0)
+ from jsonb_array_elements(p_lines) as e(line);
 
  return jsonb_build_object('journal_id',v_journal_id,'duplicate',false,
    'currency',p_currency,'debit_total',v_debits,'credit_total',v_credits);
