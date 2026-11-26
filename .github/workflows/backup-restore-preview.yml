@@ -203,6 +203,13 @@ jobs:
           rm -f backup/restore-test.dump
           echo "Restore test succeeded in the disposable PostgreSQL service; production was not modified."
 
+      - name: Inspect remote migration history without changing it
+        id: migration_history
+        continue-on-error: true
+        run: |
+          set -euo pipefail
+          npx --yes supabase@latest migration list --db-url "$SUPABASE_DB_URL"
+
       - name: Preview all pending production migrations
         id: migration_preview
         run: |
