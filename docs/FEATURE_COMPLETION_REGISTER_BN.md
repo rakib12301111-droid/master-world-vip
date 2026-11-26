@@ -351,3 +351,10 @@ Owner commission কেবল সব member payable, refund liability, provider 
 - Added guarded Member payout/customer refund requests with pending-balance reservations, immutable terms, restricted state transitions and paid-state requirements for provider settlement evidence, reconciliation and matching ledger journal in `20261126150000_guarded_member_payout_refund_workflows.sql`.
 - Added static verifiers and disposable PostgreSQL 16 runtime test workflow. The runtime test checks balanced posting, idempotent retry, cross-currency rejection, immutable journals, Member overdraw prevention and payout state completion.
 - **Not live:** no provider-specific signed webhook, safeguarded bank/custodian account, funded reserve, external payout/refund rail, or daily independent bank reconciliation is connected. Ledger/request rows are not cash custody or transfers. Production migration not applied.
+
+
+### Update 29.1 — Runtime validation result (2026-11-26)
+
+- Disposable PostgreSQL 16 workflow `45872273474` passed. Both ledger and payout/refund migrations applied successfully in the isolated CI database; tests passed for balanced journals, idempotent retries, cross-currency rejection, immutable journals, Member overdraft protection, pending payout reservations and paid-state journal evidence.
+- Migration Safety CI `45872273373` and Auto Work Static Safety `45872273321` passed.
+- This is isolated runtime validation only, not Production apply, live custody, payment, refund, payout or revenue.
