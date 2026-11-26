@@ -166,3 +166,13 @@ Work & Earn wallet/Owner profit backend migration source থাকলেও prod
 - এই guard-গুলো Member payable-কে অন্য order-এর দায়ে ব্যবহার বা order record নীরবে বদলে দেওয়ার ঝুঁকি কমায়। তবে database trigger নিজে external bank custody, solvency, payment provider signature, actual refund reserve, payout বা ক্ষতিপূরণ দেওয়ার আর্থিক সামর্থ্য প্রমাণ করে না।
 - Production launch-এর আগে append-only double-entry ledger, independent custodian/safeguarded accounts, signed provider webhooks, daily reconciliation, reserve solvency monitor, dispute/refund/payout state machine, real sandbox integration ও disposable PostgreSQL runtime tests আবশ্যক। কোনো gate ব্যর্থ হলে order intake ও execution fail-closed থাকবে।
 - **Status:** migration/verifier source branch-এ; static CI ফলের অপেক্ষা। Production apply নয়; real money custody নয়; Member-এর loss-free lifetime guarantee নয়।
+
+
+## ১৩. Double-entry Ledger ও Disbursement Workflow — source implementation (২৬ নভেম্বর ২০২৬)
+
+- Migration `20261126140000_append_only_double_entry_finance_ledger.sql` আলাদা USD/BDT chart of accounts, immutable journal header/lines, per-currency balanced debit/credit posting, unique idempotency key, same-key payload collision rejection এবং Member-specific payable overdraft block যোগ করে।
+- `finance_journal_integrity_check()` posted journal-এর debit/credit equality যাচাই করে। Direct browser write বন্ধ; posting কেবল trusted service-role function দিয়ে।
+- Migration `20261126150000_guarded_member_payout_refund_workflows.sql` Member payout ও customer refund-এর immutable request, bounded status machine, pending request balance reservation এবং paid হওয়ার আগে provider settlement/reconciliation evidence ও matching disbursement journal বাধ্যতামূলক করে। Member payout নিজের accrued payable-এর বেশি হতে পারে না; customer refund কেবল সংশ্লিষ্ট cancelled/disputed/refunded order এবং available refund liability-এর মধ্যে।
+- Disposable PostgreSQL 16 runtime workflow `.github/workflows/verify-member-finance-ledger-runtime.yml` migration চালিয়ে balanced posting, idempotent retry, cross-currency rejection, immutable journal, Member overdraft prevention এবং payout workflow পরীক্ষা করে।
+- **সীমাবদ্ধতা:** ledger entries হিসাবের রেকর্ড; bank custody নয়। Payout/refund request তৈরি হওয়া মানে টাকা পাঠানো নয়। Live payment provider, signed provider-specific webhook, segregated bank/custodian account, actual payout/refund rail, reserve funding ও independent reconciliation এখনও যুক্ত হয়নি।
+- **Status:** source branch + CI; Production migration apply নয়, live money movement নয়, revenue নয়।
