@@ -319,3 +319,27 @@ GitHub Actions-এ ব্যবহৃত secret নাম:
 - অবশিষ্ট ঝুঁকি ও পরবর্তী প্রয়োজনীয় পদক্ষেপ।
 
 **কার্যকর নির্দেশ:** ব্যবহারকারী ইতিমধ্যে routine maintenance, পরীক্ষা ও যাচাইয়ের অনুমতি দিয়েছেন। তাই একই scope-এর কাজের জন্য বারবার অনুমতি চাইবেন না; নিরাপদে এগিয়ে কাজ করুন, ফলাফল যাচাই করুন এবং handover file আপডেট রাখুন। Production-impacting কাজের জন্য আলাদা gate বজায় রাখুন।
+
+
+## 14. ২৬ নভেম্বর ২০২৬ — Scheduled Safety & Health Automation (প্রস্তাবিত Branch)
+
+এই পরিবর্তনগুলো `automation/scheduled-safety-monitoring` branch-এ প্রস্তুত করা হয়েছে। এগুলো Production database-এ কোনো write, DDL, migration apply বা deployment চালায় না। Branch/PR পর্যায়ের কাজ; main-এ merge করা হয়নি।
+
+### প্রস্তাবিত স্বয়ংক্রিয় সময়সূচি (UTC)
+- Encrypted full backup + isolated restore test: প্রতিদিন 02:30 UTC; আগের workflow-এর backup, decrypt/restore test, migration read-only inspection এবং dry-run preview অপরিবর্তিত রেখে শুধু schedule যোগ।
+- Read-only schema/migration audit: প্রতি সোমবার 03:15 UTC; বিদ্যমান audit workflow-তে weekly schedule যোগ।
+- Database health monitor: প্রতি ৬ ঘণ্টায়; নতুন `.github/workflows/database-health-monitor.yml`। এটি শুধু PostgreSQL read-only transaction-এ server/database পরিচয়, public table সংখ্যা, invalid index, unvalidated constraint এবং migration-history table উপস্থিতি রিপোর্ট করে। কোনো row content বা secret report-এ লেখা হয় না।
+
+### আগে থেকেই থাকা সুরক্ষা/পরীক্ষা
+- Backup workflow-তেই encrypted backup decrypt করে disposable PostgreSQL service-এ restore test আছে।
+- Disposable migration validation workflow-তে fresh ও legacy-shaped test database পরীক্ষা হয়।
+- GitHub Pages workflow-তে build/deploy-এর পর published static asset verification আছে; তবে main merge/push Pages-এ live deployment trigger করে।
+- Existing Owner-only service-health endpoint configuration/schema preflight দেয়; এটি backup readiness বা real feature delivery প্রমাণ করে না।
+
+### Safety boundaries
+- Health monitor query-গুলো `BEGIN READ ONLY` transaction-এ চলে; কোনো migration repair, db push, DDL, UPDATE/INSERT/DELETE বা privilege পরিবর্তন নেই।
+- Invalid index বা unvalidated constraint পাওয়া গেলে শুধু report হবে; স্বয়ংক্রিয়ভাবে drop/reindex/validate করা হবে না।
+- Scheduled workflow-গুলো সফলভাবে run করার জন্য main-এ merge হলে GitHub Actions secrets এবং scheduled Actions availability প্রয়োজন।
+- Main-এ merge করলে `pages.yml`-এর push trigger live GitHub Pages deployment করবে। তাই এই PR প্রস্তুত/পরীক্ষা করা গেলেও main merge এবং live deployment আলাদা স্পষ্ট অনুমোদন ছাড়া করা যাবে না।
+- Artifact retention: backup artifact ৭ দিন; health/audit reports ১৪ দিন। এগুলো দীর্ঘমেয়াদি backup storage নয়।
+- Auto-repair কেবল isolated test/non-production code/workflow layer-এ সীমাবদ্ধ থাকবে; Production data/schema/service auto-repair নয়।
