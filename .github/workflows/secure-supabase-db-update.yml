@@ -121,7 +121,11 @@ jobs:
             202611240004_owner_monthly_compensation.sql \
             202611240005_international_referral_usd_equivalent.sql \
             202611240006_network_admin_referral_rewards.sql \
-            202611240007_referral_payout_reference_hardening.sql; do
+            202611240007_referral_payout_reference_hardening.sql \
+            20261125100000_admin_auto_work_control_plane.sql \
+            20261125120000_anti_theft_device_recovery.sql \
+            20261125130000_admin_auto_work_claim_concurrency_fix.sql \
+            20261125160000_work_earn_wallet_owner_profit.sql; do
             test -f "supabase/migrations/$migration" || { echo "::error::Missing required migration: $migration"; exit 1; }
           done
 
