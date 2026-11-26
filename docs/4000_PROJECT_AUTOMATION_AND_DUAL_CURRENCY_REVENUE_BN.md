@@ -176,3 +176,10 @@ Work & Earn wallet/Owner profit backend migration source থাকলেও prod
 - Disposable PostgreSQL 16 runtime workflow `.github/workflows/verify-member-finance-ledger-runtime.yml` migration চালিয়ে balanced posting, idempotent retry, cross-currency rejection, immutable journal, Member overdraft prevention এবং payout workflow পরীক্ষা করে।
 - **সীমাবদ্ধতা:** ledger entries হিসাবের রেকর্ড; bank custody নয়। Payout/refund request তৈরি হওয়া মানে টাকা পাঠানো নয়। Live payment provider, signed provider-specific webhook, segregated bank/custodian account, actual payout/refund rail, reserve funding ও independent reconciliation এখনও যুক্ত হয়নি।
 - **Status:** source branch + CI; Production migration apply নয়, live money movement নয়, revenue নয়।
+
+
+### ১৩.১ Runtime test result (২৬ নভেম্বর ২০২৬)
+
+- GitHub Actions disposable PostgreSQL 16 run `45872273474` — migration/runtime test step **success**। এতে দুই migration বাস্তব PostgreSQL-এ apply, balanced journal posting, idempotent retry, currency mismatch rejection, journal immutability, Member payable overdraw rejection, pending payout reservation ও payout paid-state journal gate পরীক্ষা হয়েছে।
+- Migration Safety CI run `45872273373` — **success**; Auto Work Static Safety run `45872273321` — **success**।
+- এই পরীক্ষা disposable CI database-এ; Production Supabase database নয়।
