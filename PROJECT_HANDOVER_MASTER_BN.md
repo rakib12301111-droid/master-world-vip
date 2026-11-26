@@ -449,3 +449,11 @@ GitHub Actions-এ ব্যবহৃত secret নাম:
 - Supabase Migration Safety run `45874411687`: **success**।
 - Auto Work Static Safety run `45874411490`: **success**।
 - এই ফলাফল isolated finance migration runtime ও static source safety নিশ্চিত করে; full ordered migration chain Production schema-তে apply হবে, provider settlement/custody বা live payout কাজ করছে—এগুলো প্রমাণ করে না। Release status এখনও NOT READY / NOT LIVE।
+
+
+### ১৯.২ Owner-এর payout/KYC সহজীকরণ নির্দেশনা (২৭ নভেম্বর ২০২৬)
+
+- Owner routine updates-এ বাকি release/payment readiness এগিয়ে নিতে বলেছেন; live KYC/Merchant/bank approval bypass করার অনুরোধও করেছেন। Live transfer-এর ক্ষেত্রে provider/bank/legal বাধ্যতামূলক approval bypass করা যাবে না। সহজ payout UI, Admin approval queue এবং synthetic mock sandbox করা যাবে; mock test real money নয়। Official sandbox কেবল provider-এর অনুমোদিত sandbox access/terms অনুযায়ী।
+- Payout specification-এ no-bypass rule এবং ২০% commission-এর proposal-only distributable-margin calculation যোগ হয়েছে: settled gross − provider fees − tax − full Member payable − refund reserve funding − approved direct operating cost; positive margin-এর ২০%, অন্যথায় শূন্য। Owner/legal/tax approval ছাড়া এটি সক্রিয় নয়।
+- Full migration-chain disposable Supabase-compatible run এবং Production read-only audit এখনও বাকি; production credentials/DB access নিরাপদ secret-backed environment-এ না থাকলে তা সম্পন্ন দাবি করা যাবে না।
+- Real custody/reserve, daily bank/provider reconciliation, worker deployment, signed webhook ও live payout/refund rail external provider/bank access ও অনুমোদন ছাড়া complete নয়। এই update-এ কোনো Production/live action হয়নি।
