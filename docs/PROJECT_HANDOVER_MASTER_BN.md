@@ -526,3 +526,30 @@ Owner-এর স্পষ্ট দীর্ঘমেয়াদি লক্ষ�
 - Existing completed checks পুনরায় চালাবেন না; changed source-এর affected checks-ই চালাবেন। Handover ও no-repeat register authoritative থাকবে।
 
 **Owner’s priority:** “২,০০০+ বাস্তব গ্রাহক, ১ কোটিরও বেশি বাস্তব প্রজেক্ট/কাজের সুযোগ এবং দেশি-বিদেশি যাচাইকৃত brand/company-এর যত বেশি বৈধ কাজ সম্ভব—পাঁচটি প্রাথমিক module-এ সীমাবদ্ধ না থেকে ধাপে ধাপে একটি বড় global automatic work marketplace তৈরি করতে হবে।”
+
+
+## 19. Session update — Supabase database password rotation ও GitHub secret correction checkpoint (2026-11-26, Bangladesh time)
+
+### এই session-এ ব্যবহারকারী-নিশ্চিত অগ্রগতি
+- Owner Supabase project list থেকে বিদ্যমান `MASTER-WORLD-VIP` project খুলেছেন; project ref: `lztbbrzeuyjkuiyzrsxp`, region `ap-south-1`, Free plan।
+- Supabase Connect dialog-এ **Session pooler** method এবং **URI** type নির্বাচন করা আছে। Shared pooler connection details-এ host `aws-0-ap-south-1.pooler.supabase.com`, port `5432`, database `postgres`, username `postgres.lztbbrzeuyjkuiyzrsxp` দেখানো হয়েছে।
+- Owner **Reset database password** সম্পন্ন করেছেন এবং Supabase-এ successful password-reset confirmation দেখেছেন। নতুন password গোপন রাখতে হবে; chat, handover, source, issue বা log-এ কখনো লিখবেন না।
+- Owner যে connection string template দেখিয়েছেন তাতে এখনো literal placeholder `[YOUR-DATABASE-PASSWORD]` আছে। তাই ওই template একা valid usable credential নয়; নতুন database password বসিয়ে URI সম্পূর্ণ করতে হবে। Password-এ reserved/special characters থাকলে URI percent-encode করতে হবে।
+- Owner-কে সরাসরি এই দুই পেজ দেওয়া হয়েছে, এবং কাজের সঠিক ক্রম নিশ্চিত করা হয়েছে:
+  1. Supabase project: https://supabase.com/dashboard/project/lztbbrzeuyjkuiyzrsxp — Connect → Session pooler → URI.
+  2. GitHub Actions secrets: https://github.com/rakib12301111-droid/master-world-vip/settings/secrets/actions — `SUPABASE_DB_URL` → Update → Update secret.
+- **GitHub `SUPABASE_DB_URL` secret নতুন password-সহ সম্পূর্ণ URI দিয়ে update হয়েছে—এমন Owner confirmation এখনো পাওয়া যায়নি।** তাই এই কাজ PENDING; completed হিসেবে চিহ্নিত নয়।
+
+### সর্বশেষ backup workflow failure-এর ব্যাখ্যা
+- Inspected workflow run #72-এর failure ছিল প্রথম URI-format validation step-এ: `SUPABASE_DB_URL must be a PostgreSQL URI`; অর্থাৎ secret value valid `postgres://` বা `postgresql://` URI হিসেবে parse হয়নি।
+- সেই run-এ PostgreSQL connection, backup, restore এবং migration dry-run ধাপগুলো skipped ছিল। Production database migration apply হয়নি এবং এই failed run কোনো backup তৈরি করেনি।
+- তাই GitHub secret ঠিকভাবে update না হওয়া পর্যন্ত backup workflow rerun নয়। Secret value/log-এ প্রকাশ বা chat-এ পাঠানোর প্রয়োজন নেই।
+
+### পরবর্তী সঠিক resume point — আগের ধাপ পুনরায় নয়
+1. Owner নতুন password-সহ সম্পূর্ণ Session Pooler URI নিজে তৈরি করে GitHub Actions secret `SUPABASE_DB_URL` update করবেন। Secret value কখনো assistant-কে পাঠাবেন না।
+2. Owner শুধু “আপডেট হয়েছে” নিশ্চিত করলে পরবর্তী session-এ প্রথমে handover ও no-repeat register পড়ে, actual `main` HEAD এবং বর্তমান workflow evidence যাচাই করুন।
+3. এরপরই targeted backup/restore-preview workflow একবার চালানোর অনুমোদিত পদ্ধতি উপলব্ধ থাকলে ব্যবহার করুন; না থাকলে Owner-কে workflow UI-তে সঠিক পদক্ষেপ দিন। সফল হয়েছে বলে আগে থেকে দাবি নয়।
+4. Encrypted backup → disposable database restore → restored table count > 0 → migration dry-run → encrypted artifact preservation—সব gate PASS না হওয়া পর্যন্ত production migration নিষিদ্ধ।
+5. Production migration-এর জন্য আলাদা explicit Owner authorization phrase `APPLY-MASTER-WORLD-VIP-MIGRATIONS` আবশ্যক। Secret update বা password reset এই authorization নয়।
+
+**No-repeat reminder:** Supabase project locate করা, Connect dialog-এ Session pooler/URI নির্বাচন করা এবং database password reset confirmation পাওয়া—এই session-এর সম্পন্ন ধাপ। এগুলো পুনরায় করাবেন না, যদি না নতুন evidence-এ প্রয়োজন দেখা দেয়। পরবর্তী কাজ কেবল সম্পূর্ণ URI দিয়ে GitHub secret update নিশ্চিত করা।
