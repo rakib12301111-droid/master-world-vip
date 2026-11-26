@@ -55,11 +55,30 @@ jobs:
         env:
           BASE_URL: ${{ secrets.STAGING_SUPABASE_URL }}
           ANON_KEY: ${{ secrets.STAGING_SUPABASE_ANON_KEY }}
-          OWNER_JWT: ${{ secrets.STAGING_OWNER_JWT }}
-          ADMIN_JWT: ${{ secrets.STAGING_ADMIN_JWT }}
-          MEMBER_JWT: ${{ secrets.STAGING_MEMBER_JWT }}
+          OWNER_EMAIL: ${{ secrets.STAGING_OWNER_EMAIL }}
+          OWNER_PASSWORD: ${{ secrets.STAGING_OWNER_PASSWORD }}
+          ADMIN_EMAIL: ${{ secrets.STAGING_ADMIN_EMAIL }}
+          ADMIN_PASSWORD: ${{ secrets.STAGING_ADMIN_PASSWORD }}
+          MEMBER_EMAIL: ${{ secrets.STAGING_MEMBER_EMAIL }}
+          MEMBER_PASSWORD: ${{ secrets.STAGING_MEMBER_PASSWORD }}
         run: |
           set -euo pipefail
+          for name in BASE_URL ANON_KEY OWNER_EMAIL OWNER_PASSWORD ADMIN_EMAIL ADMIN_PASSWORD MEMBER_EMAIL MEMBER_PASSWORD; do
+            test -n "${!name:-}" || { echo "::error::Missing staging test secret: $name"; exit 1; }
+          done
+          auth_token() {
+            local email="$1" password="$2" response token
+            response=$(curl --silent --show-error "$BASE_URL/auth/v1/token?grant_type=password" \
+              -H "apikey: $ANON_KEY" -H "Content-Type: application/json" \
+              -d "$(jq -n --arg email "$email" --arg password "$password" '{email:$email,password:$password}')")
+            token=$(printf '%s' "$response" | jq -r '.access_token // empty')
+            test -n "$token" || { echo "::error::Staging Auth login failed for a test account"; exit 1; }
+            echo "::add-mask::$token"
+            printf '%s' "$token"
+          }
+          OWNER_JWT=$(auth_token "$OWNER_EMAIL" "$OWNER_PASSWORD")
+          ADMIN_JWT=$(auth_token "$ADMIN_EMAIL" "$ADMIN_PASSWORD")
+          MEMBER_JWT=$(auth_token "$MEMBER_EMAIL" "$MEMBER_PASSWORD")
           user_id() {
             python - "$1" <<'PY'
           import base64,json,sys
@@ -70,6 +89,9 @@ jobs:
           }
           admin_id=$(user_id "$ADMIN_JWT")
           member_id=$(user_id "$MEMBER_JWT")
+          echo "OWNER_JWT=$OWNER_JWT" >> "$GITHUB_ENV"
+          echo "ADMIN_JWT=$ADMIN_JWT" >> "$GITHUB_ENV"
+          echo "MEMBER_JWT=$MEMBER_JWT" >> "$GITHUB_ENV"
           for pair in "$admin_id:admin" "$member_id:member"; do
             target="${pair%%:*}"; role="${pair##*:}"
             code=$(curl --silent --show-error -o /tmp/role-change.json -w '%{http_code}' \
@@ -92,9 +114,6 @@ jobs:
         env:
           BASE_URL: ${{ secrets.STAGING_SUPABASE_URL }}
           ANON_KEY: ${{ secrets.STAGING_SUPABASE_ANON_KEY }}
-          OWNER_JWT: ${{ secrets.STAGING_OWNER_JWT }}
-          ADMIN_JWT: ${{ secrets.STAGING_ADMIN_JWT }}
-          MEMBER_JWT: ${{ secrets.STAGING_MEMBER_JWT }}
         run: |
           set -euo pipefail
           for name in BASE_URL ANON_KEY OWNER_JWT ADMIN_JWT MEMBER_JWT; do
