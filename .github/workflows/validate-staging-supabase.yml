@@ -102,14 +102,6 @@ jobs:
             test "$code" = "200" || { echo "::error::Owner could not assign staging $role test role (HTTP $code)"; cat /tmp/role-change.json; exit 1; }
             echo "PASS: staging $role test role assigned by Owner"
           done
-      - name: Deploy queue worker to Staging (disabled until separately enabled)
-        env:
-          SUPABASE_ACCESS_TOKEN: ${{ secrets.STAGING_SUPABASE_ACCESS_TOKEN }}
-          PROJECT_REF: ${{ secrets.STAGING_SUPABASE_PROJECT_REF }}
-        run: |
-          set -euo pipefail
-          supabase functions deploy project-automation-worker --project-ref "$PROJECT_REF"
-          echo "Worker function deployed to Staging; execution remains disabled unless MWVIP_WORKER_ENABLED=true is configured."
       - name: Verify Owner, Admin and Member Auth roles and Admin RPC access
         env:
           BASE_URL: ${{ secrets.STAGING_SUPABASE_URL }}
@@ -148,3 +140,11 @@ jobs:
             fi
             echo "PASS: Admin overview access for $var"
           done
+      - name: Deploy queue worker to Staging (disabled until separately enabled)
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.STAGING_SUPABASE_ACCESS_TOKEN }}
+          PROJECT_REF: ${{ secrets.STAGING_SUPABASE_PROJECT_REF }}
+        run: |
+          set -euo pipefail
+          supabase functions deploy project-automation-worker --project-ref "$PROJECT_REF"
+          echo "Worker function deployed to Staging; execution remains disabled unless MWVIP_WORKER_ENABLED=true is configured."
