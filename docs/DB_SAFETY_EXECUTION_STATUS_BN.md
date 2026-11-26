@@ -96,3 +96,12 @@ Commit `64350b9922e1ef493e5dd89aa02827f639f89e44`-এর পর স্বয়ং�
 Workflow-তে extracted username/password mask করার code যোগ হয়েছে; তবে এটি আগের log থেকে তথ্য মুছে দেয় না এবং authentication failure ঠিকও করে না।
 
 **পরবর্তী gate:** Owner password rotate করে Secret update নিশ্চিত না করা পর্যন্ত backup workflow পুনরায় চালাবেন না। নতুন run-এ backup, restore, dry-run ও artifact upload—সব PASS না হওয়া পর্যন্ত ধাপ ১–৩ অসম্পন্ন থাকবে। Production migration সম্পূর্ণ নিষিদ্ধ থাকবে।
+
+
+## Update 2026-11-26 — URI authority/fragment diagnosis
+
+- The current validator now emits only non-secret URI structure diagnostics.
+- Corrected validator run #77 failed before any database connection. Safe output: URI scheme prefix present; authority present; one `@`; hostname absent; query absent; fragment present; expected `/postgres` path not recognized.
+- This points to a literal fragment delimiter `#` being encountered before the hostname. It is a URI-format issue, not a PostgreSQL authentication result.
+- Next: Owner should update only `SUPABASE_DB_URL` so the pooler hostname immediately follows `@`; if the password contains `#`, percent-encode it as `%23` before `@`. Do not send the secret value and do not reset the database password again.
+- Wait for Owner confirmation before one targeted rerun. Backup, disposable restore, dry-run and artifact gates remain NOT VERIFIED. Production migration remains NOT RUN.
