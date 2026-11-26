@@ -1,0 +1,137 @@
+name: MASTER WORLD VIP - Read Only Supabase Migration and Schema Audit
+run-name: MASTER WORLD VIP Read-only Database Audit
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/read-only-db-audit.yml'
+      - 'supabase/migrations/**'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: master-world-vip-read-only-db-audit
+  cancel-in-progress: false
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Validate database connection secret without printing it
+        run: |
+          set -euo pipefail
+          test -n "${SUPABASE_DB_URL:-}" || { echo "::error::Missing SUPABASE_DB_URL Actions secret."; exit 1; }
+          python3 - <<'PY'
+          import os
+          from urllib.parse import urlsplit
+          raw = os.environ["SUPABASE_DB_URL"].strip()
+          parsed = urlsplit(raw)
+          if parsed.scheme not in ("postgres", "postgresql") or not parsed.hostname:
+              raise SystemExit("::error::SUPABASE_DB_URL is not a valid PostgreSQL URI.")
+          if not parsed.hostname.endswith(".pooler.supabase.com") or parsed.port != 5432:
+              raise SystemExit("::error::Expected Supabase Session Pooler on port 5432.")
+          if parsed.path.lstrip("/") != "postgres" or not parsed.username or not parsed.password:
+              raise SystemExit("::error::Database URI is missing required connection components.")
+          print("Database URI structure validated; credential values were not displayed.")
+          PY
+
+      - name: Install PostgreSQL client
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install --yes postgresql-client
+
+      - name: Install Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Collect remote migration history (read only)
+        run: |
+          set -euo pipefail
+          mkdir -p audit
+          supabase migration list --db-url "$SUPABASE_DB_URL" | tee audit/remote-migration-history.txt
+
+      - name: Collect read-only database schema inventory
+        run: |
+          set -euo pipefail
+          export PGSSLMODE=require
+          python3 - <<'PY'
+          import os
+          from urllib.parse import urlsplit, unquote
+          p = urlsplit(os.environ["SUPABASE_DB_URL"])
+          for key, value in {
+              "PGHOST": p.hostname or "",
+              "PGPORT": str(p.port or 5432),
+              "PGDATABASE": p.path.lstrip("/"),
+              "PGUSER": unquote(p.username or ""),
+              "PGPASSWORD": unquote(p.password or ""),
+          }.items():
+              print(f"::add-mask::{value}")
+              with open(os.environ["GITHUB_ENV"], "a", encoding="utf-8") as f:
+                  f.write(f"{key}={value}\n")
+          PY
+          {
+            echo "AUDIT TIMESTAMP (UTC): $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+            echo
+            echo "=== DATABASE VERSION ==="
+            psql -X -v ON_ERROR_STOP=1 -Atc "select version();"
+            echo
+            echo "=== SUPABASE MIGRATION HISTORY TABLE ==="
+            psql -X -v ON_ERROR_STOP=1 -P pager=off -c "
+              select version, name
+              from supabase_migrations.schema_migrations
+              order by version;"
+            echo
+            echo "=== USER TABLES AND VIEWS ==="
+            psql -X -v ON_ERROR_STOP=1 -P pager=off -c "
+              select table_schema, table_name, table_type
+              from information_schema.tables
+              where table_schema not in ('pg_catalog','information_schema','auth','storage','realtime','_realtime')
+              order by table_schema, table_name;"
+            echo
+            echo "=== ROW LEVEL SECURITY POLICIES ==="
+            psql -X -v ON_ERROR_STOP=1 -P pager=off -c "
+              select schemaname, tablename, policyname, permissive, roles, cmd, qual, with_check
+              from pg_policies
+              where schemaname not in ('pg_catalog','information_schema')
+              order by schemaname, tablename, policyname;"
+            echo
+            echo "=== USER-DEFINED FUNCTIONS ==="
+            psql -X -v ON_ERROR_STOP=1 -P pager=off -c "
+              select n.nspname as schema_name, p.proname as function_name,
+                     pg_get_function_identity_arguments(p.oid) as arguments
+              from pg_proc p join pg_namespace n on n.oid=p.pronamespace
+              where n.nspname not in ('pg_catalog','information_schema','auth','storage','extensions')
+              order by 1,2,3;"
+            echo
+            echo "=== TRIGGERS ==="
+            psql -X -v ON_ERROR_STOP=1 -P pager=off -c "
+              select event_object_schema, event_object_table, trigger_name, action_timing, event_manipulation
+              from information_schema.triggers
+              where trigger_schema not in ('pg_catalog','information_schema')
+              order by 1,2,3;"
+            echo
+            echo "=== AUDIT SAFETY ==="
+            echo "This workflow performed SELECT/read-only inspection only."
+            echo "It did not run db push, migration repair, DDL, or data modifications."
+          } > audit/database-schema-audit.txt
+          cat audit/database-schema-audit.txt
+
+      - name: Upload non-secret audit report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: master-world-vip-read-only-db-audit-${{ github.run_id }}
+          path: audit/
+          retention-days: 14
+          if-no-files-found: warn
