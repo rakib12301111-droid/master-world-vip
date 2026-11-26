@@ -72,7 +72,7 @@ create index if not exists messages_conversation_created_idx
 
 create or replace function public.is_conversation_member(target_conversation uuid, target_user uuid default auth.uid())
 returns boolean language sql stable security definer set search_path=public
-as $ select exists(select 1 from public.conversation_members cm where cm.conversation_id=target_conversation and cm.user_id=target_user); $;
+as $$ select exists(select 1 from public.conversation_members cm where cm.conversation_id=target_conversation and cm.user_id=target_user); $$;
 
 alter table public.conversations enable row level security;
 alter table public.conversation_members enable row level security;
