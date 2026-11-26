@@ -53,6 +53,7 @@ required_migrations = [
     "20261126110000_project_automation_engine.sql",
     "20261126120000_free_paid_plan_customer_order_gates.sql",
     "20261126130000_member_loss_prevention_hardening.sql",
+    "20261126140000_append_only_double_entry_finance_ledger.sql",
 ]
 checks = {
     "Supabase migration versions are unique": migration_version_unique,
