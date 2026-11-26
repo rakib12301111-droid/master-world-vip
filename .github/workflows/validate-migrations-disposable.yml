@@ -1,5 +1,5 @@
 name: MASTER WORLD VIP - Disposable Migration SQL Validation
-run-name: MASTER WORLD VIP disposable migration validation
+run-name: MASTER WORLD VIP disposable migration validation (SQL delimiter and dependency check)
 
 on:
   workflow_dispatch:
