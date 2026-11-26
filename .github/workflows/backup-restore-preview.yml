@@ -55,25 +55,43 @@ jobs:
           from urllib.parse import urlsplit
 
           raw = os.environ["SUPABASE_DB_URL"].lstrip("\ufeff").strip()
+          had_key_label = raw.startswith("SUPABASE_DB_URL=")
           if len(raw) >= 2 and raw[0] == raw[-1] and raw[0] in ('"', "'"):
               raw = raw[1:-1].strip()
           if raw.startswith("SUPABASE_DB_URL="):
-              raw = raw.split("=", 1)[1].strip().strip("\"'")
-          # Emit only non-secret diagnostics so an incorrectly stored GitHub
-          # secret can be identified without revealing any URI or credentials.
+              raw = raw.split("=", 1)[1].strip().strip("\\"'")
+          # Emit only booleans/counts; never print the URI, authority, username,
+          # password, query, fragment, or any extracted credential.
           has_postgres_prefix = raw.startswith(("postgresql://", "postgres://"))
-          has_key_label = raw.startswith("SUPABASE_DB_URL=")
           has_newline = any(ch in raw for ch in (chr(10), chr(13)))
+          try:
+              parsed = urlsplit(raw)
+              hostname = parsed.hostname
+              hostname_error = False
+          except ValueError:
+              parsed = None
+              hostname = None
+              hostname_error = True
+          authority = parsed.netloc if parsed is not None else ""
           print(
               "Safe SUPABASE_DB_URL diagnostics: "
               f"nonempty={bool(raw)}; length={len(raw)}; "
               f"postgres_scheme_prefix={has_postgres_prefix}; "
-              f"key_label_prefix={has_key_label}; embedded_newline={has_newline}."
+              f"key_label_prefix={had_key_label}; embedded_newline={has_newline}; "
+              f"authority_present={bool(authority)}; "
+              f"authority_has_at={('@' in authority)}; "
+              f"authority_at_count={authority.count('@')}; "
+              f"hostname_present={bool(hostname)}; "
+              f"hostname_parse_error={hostname_error}; "
+              f"path_is_postgres={bool(parsed and parsed.path.lstrip('/') == 'postgres')}; "
+              f"query_present={bool(parsed and parsed.query)}; "
+              f"fragment_present={bool(parsed and parsed.fragment)}."
           )
-          parsed = urlsplit(raw)
-          if parsed.scheme not in ("postgres", "postgresql") or not parsed.hostname:
-              raise SystemExit("::error::SUPABASE_DB_URL is not being supplied as a valid PostgreSQL URI. Check the secret value format; the secret itself is never printed.")
-          host = parsed.hostname.lower()
+          if parsed is None or parsed.scheme not in ("postgres", "postgresql"):
+              raise SystemExit("::error::SUPABASE_DB_URL could not be parsed as a PostgreSQL URI; check URI delimiters and percent-encoding without sharing the secret.")
+          if not hostname:
+              raise SystemExit("::error::SUPABASE_DB_URL has no parseable URI hostname/authority; check URI structure and percent-encode reserved password characters.")
+          host = hostname.lower()
           if not host.endswith(".pooler.supabase.com"):
               # Hostname is not a credential; showing it helps identify Direct vs Session Pooler safely.
               print(f"Detected database host type: non-pooler ({host}).")
