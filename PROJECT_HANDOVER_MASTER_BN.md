@@ -323,7 +323,7 @@ GitHub Actions-এ ব্যবহৃত secret নাম:
 
 ## ১১. ২৬ নভেম্বর ২০২৬ — ৪,০০০ প্রজেক্টের কেন্দ্রীয় অটোমেশন ও দ্বৈত-মুদ্রা আয় পরিকল্পনা
 
-- Owner-এর সর্বশেষ নির্দেশ: মোট ৪,০০০ project slot; MW-USD-0001–2000 থেকে বাস্তব settled USD revenue এবং MW-BDT-2001–4000 থেকে বাস্তব settled BDT revenue লক্ষ্য। সব project একই central automation control plane-এর অধীনে থাকবে, তবে USD/BDT ledger, provider, FX, tax/fee ও payout reconciliation আলাদা থাকবে।
+- Owner-এর সর্বশেষ নির্দেশ: মোট ৪,০০০ project slot; MW-USD-0001–2000 থেকে বাস্তব settled USD revenue এবং MW-BDT-0001–2000 থেকে বাস্তব settled BDT revenue লক্ষ্য। সব project একই central automation control plane-এর অধীনে থাকবে, তবে USD/BDT ledger, provider, FX, tax/fee ও payout reconciliation আলাদা থাকবে।
 - Admin-এর জন্য একটি Free Admin entitlement এবং একটি Paid Admin plan; সাধারণ Member paid plan কিনে verified payment settlement ও entitlement check-এর পর plan-সংশ্লিষ্ট automation চালাবেন। Plan purchase কোনো কাজ/আয়/লাভ নিশ্চিত করে না।
 - নতুন specification: docs/4000_PROJECT_AUTOMATION_AND_DUAL_CURRENCY_REVENUE_BN.md। এটি লক্ষ্য/architecture specification; ৪,০০০ project implementation বা live income নয়।
 - বর্তমান repository-তে AI assistant, Work & Earn, referral wallet, payment-state/checkout migration source ও wallet/profit RPC foundation আছে। কিন্তু Company Revenue Ledger, complete plan checkout→verified webhook→entitlement activation, ৪,০০০ project registry/orchestrator, production USD/BDT revenue/payout integration এবং production acceptance tests এখনো যাচাইকৃতভাবে Live নয়।
@@ -352,3 +352,15 @@ GitHub Actions-এ ব্যবহৃত secret নাম:
 - **Next:** run static checks and disposable database migration validation; correct any failures; then design Step 3 Free/Paid entitlement activation without enabling member paid automation or collecting fees until existing refund-reserve, payment-provider and legal/security gates pass.
 
 - **CI evidence update:** PR migration-safety workflow Run `45866578250` completed successfully; the new `Verify central project automation engine safety` step passed (job `140070826818`, step 8). The separate Auto Work static workflow Run `45866578261` also passed. This is static source verification only; no disposable PostgreSQL apply or Production migration apply is confirmed.
+
+
+## ১৩. Owner-এর নতুন বাধ্যতামূলক product requirement — বাস্তব গ্রাহক ও Member financial safety (২৬ নভেম্বর ২০২৬)
+
+- Customer-led demand: বাস্তব customer-রা project-এ কাজের order/service request/subscription আনবেন; ভুয়া customer/order/task/revenue নিষিদ্ধ। প্রতিটি project-এর জন্য customer acquisition, catalog/discovery, order intake, payment, delivery, acceptance, support, refund/dispute flow তৈরি ও মাপতে হবে।
+- Scale ambition: ১ কোটি (১০,০০০,০০০)+ বাস্তব customer দীর্ঘমেয়াদি লক্ষ্য; বর্তমান অর্জন বা নিশ্চয়তা নয়। staged growth ও evidence ছাড়া customer count বা capacity দাবি করা যাবে না।
+- সাধারণ Member protection: কাজ পাওয়ার জন্য deposit/recharge/unlock fee বাধ্যতামূলক নয়; paid plan ঐচ্ছিক এবং কাজ/আয়ের নিশ্চয়তা নয়। Customer-funded order-এ provider settlement ও segregated funding verify না হওয়া পর্যন্ত কাজ শুরু নয়।
+- কাজ শুরুর আগে scope, price/currency, deadline, acceptance, revision, cancellation, dispute/refund এবং Member payable প্রকাশ করতে হবে। Member payable, customer refund liability ও platform operating funds পৃথক রাখতে হবে।
+- Screenshot/client-side payment status নয়; signed/server-side provider settlement, idempotency, duplicate/fraud checks, audit trail, chargeback/refund workflow, kill switch এবং support process আবশ্যক।
+- কোনো সফটওয়্যার সম্পূর্ণ loss-free guarantee দিতে পারে না; তবে Member-কে নিজের টাকা দিয়ে customer shortfall পূরণ করানো যাবে না এবং unfunded order-এ কাজ শুরু করানো যাবে না। Reserve, funded-order gate ও dispute controls launch blockers।
+- এই requirements docs/4000_PROJECT_AUTOMATION_AND_DUAL_CURRENCY_REVENUE_BN.md-এর Section 10-এ যোগ করা হয়েছে। ১ কোটি customer এখনও target, actual user/customer count নয়।
+- Production migration, real payment/payout, public launch বা irreversible action-এর জন্য পৃথক approval/safety gate অপরিবর্তিত।
