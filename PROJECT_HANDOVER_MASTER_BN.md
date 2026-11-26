@@ -364,3 +364,18 @@ GitHub Actions-এ ব্যবহৃত secret নাম:
 - কোনো সফটওয়্যার সম্পূর্ণ loss-free guarantee দিতে পারে না; তবে Member-কে নিজের টাকা দিয়ে customer shortfall পূরণ করানো যাবে না এবং unfunded order-এ কাজ শুরু করানো যাবে না। Reserve, funded-order gate ও dispute controls launch blockers।
 - এই requirements docs/4000_PROJECT_AUTOMATION_AND_DUAL_CURRENCY_REVENUE_BN.md-এর Section 10-এ যোগ করা হয়েছে। ১ কোটি customer এখনও target, actual user/customer count নয়।
 - Production migration, real payment/payout, public launch বা irreversible action-এর জন্য পৃথক approval/safety gate অপরিবর্তিত।
+
+
+## ১৪. ২৬ নভেম্বর ২০২৬ — ধাপ ৩: Free + Paid Plan ও customer-paid order foundation
+
+- Added migration `20261126120000_free_paid_plan_customer_order_gates.sql`:
+  - Admin ও Member-এর পৃথক Free/Paid plan catalog;
+  - server-verified payment metadata ছাড়া paid subscription Active হতে পারে না;
+  - customer service order-এর মূল্য অবশ্যই positive; free browsing/quote আর paid service delivery আলাদা;
+  - funded/in-progress কাজের আগে provider settlement, segregated order funds, refund reserve ও operating budget verification বাধ্যতামূলক;
+  - Member payable + refund liability + operating cost customer gross price-এর মধ্যে cover না হলে কাজ fail-closed;
+  - own-record read policies এবং service-role-only writes।
+- Paid plan price/period/features অনুমান করে বসানো হয়নি; কোনো plan row seed/enable করা হয়নি।
+- Added `scripts/verify-plan-customer-order-gates.py` and wired into Supabase migration-safety workflow.
+- **Status:** source foundation only. Provider checkout/webhook, actual reserve custody, plan activation, order worker, payout, production apply and end-to-end runtime tests are NOT LIVE / NOT VERIFIED. No customer payment or income was collected/generated.
+- Customer Free Option cannot mean free work delivery. Customer service work must be a positive-price funded order; Free may cover browsing/quote or explicitly approved non-delivery access only.
