@@ -1,0 +1,34 @@
+name: Verify Member finance ledger on disposable PostgreSQL
+on:
+  pull_request:
+    paths:
+      - "supabase/migrations/20261126140000_append_only_double_entry_finance_ledger.sql"
+      - "supabase/tests/member-finance-ledger-runtime.sql"
+      - ".github/workflows/verify-member-finance-ledger-runtime.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  postgres-runtime:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: test_only_password
+          POSTGRES_DB: mwvip_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d mwvip_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install PostgreSQL client
+        run: sudo apt-get update && sudo apt-get install --yes postgresql-client
+      - name: Apply finance ledger migration to disposable database
+        env:
+          PGPASSWORD: test_only_password
+        run: psql "postgresql://postgres@localhost:5432/mwvip_test" -v ON_ERROR_STOP=1 -f supabase/tests/member-finance-ledger-runtime.sql
