@@ -358,3 +358,12 @@ Owner commission কেবল সব member payable, refund liability, provider 
 - Disposable PostgreSQL 16 workflow `45872273474` passed. Both ledger and payout/refund migrations applied successfully in the isolated CI database; tests passed for balanced journals, idempotent retries, cross-currency rejection, immutable journals, Member overdraft protection, pending payout reservations and paid-state journal evidence.
 - Migration Safety CI `45872273373` and Auto Work Static Safety `45872273321` passed.
 - This is isolated runtime validation only, not Production apply, live custody, payment, refund, payout or revenue.
+
+### Update 30 — 2026-11-27: bKash/Nagad/Bank payout policy and Admin commission specification
+
+- Added docs/PAYOUT_METHODS_ADMIN_APPROVAL_AND_PLATFORM_COMMISSION_BN.md.
+- Spec records Member self-enrollment for bKash/Nagad/bank destinations with encrypted/tokenized sensitive data, masked account display and ownership verification; no OTP/PIN/password collection.
+- bKash/Nagad payout requests require Admin approval plus official provider payout eligibility/settlement/reconciliation. No provider/company/KYC/legal permission bypass.
+- Bank destination can be self-added; policy-based per-request Admin-approval-free automatic payout is allowed only after ownership verification, KYC/AML/fraud checks and activation of a bank/payment-partner-approved transfer rail. High-risk/new destinations and reconciliation alerts fail closed to manual review.
+- Configurable Admin commission per paid work is required. No default rate is invented; rate/basis and Member net payable must be disclosed before work, snapshotted immutably at order acceptance and posted to a separate company-revenue account after accepted/completed and settled/reconciled work. USD and BDT remain separate.
+- Status: specification only, NOT LIVE. No provider adapters, bank integration, account verification, automatic withdrawal, commission posting/collection or production money movement has been implemented. Provider and legal permissions cannot be bypassed.
