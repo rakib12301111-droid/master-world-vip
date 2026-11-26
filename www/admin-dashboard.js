@@ -67,6 +67,8 @@
   };
  }
  $('mwaRefresh')?.addEventListener('click',()=>refresh());
- const client=getClient();if(client?.auth?.onAuthStateChange)client.auth.onAuthStateChange(()=>{role='guest';refresh();});
- setTimeout(()=>refresh(),1200);
+ let boundClient=null;
+ function bindAuth(){const c=getClient();if(c&&c!==boundClient&&c.auth?.onAuthStateChange){boundClient=c;c.auth.onAuthStateChange(()=>{role='guest';refresh();});}}
+ ['connect','login','register','signup'].forEach(id=>$(id)?.addEventListener('click',()=>setTimeout(()=>{bindAuth();refresh();},1200)));
+ bindAuth();setTimeout(()=>{bindAuth();refresh();},1200);
 })();
