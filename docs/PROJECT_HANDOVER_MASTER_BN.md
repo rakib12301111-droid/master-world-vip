@@ -581,3 +581,14 @@ Owner-এর স্পষ্ট দীর্ঘমেয়াদি লক্ষ�
 - Workflow diagnostic update commit: 0acad5300faa066d7c514d72180deaf58e4c5ab2. It must be allowed to run on main before reviewing the next run's safe diagnostic output. Do not rerun old run #73; inspect the new run created by the workflow-file push.
 - Next action: inspect the new run and use only its non-secret diagnostics to isolate the secret-format issue. If the scheme prefix is false, Owner must correct only the GitHub secret value; if true, inspect parsing/format normalization. Do not request the database password or full URI in chat. Do not alter BACKUP_ENCRYPTION_PASSPHRASE based on current evidence.
 - All production migration safety gates remain closed; this change is diagnostics only and does not connect to or modify the production database.
+
+
+## 22. Session update — Supabase URI authority/fragment diagnosis (2026-11-26, Bangladesh time)
+
+- Current workflow source was updated with secret-safe URI diagnostics. The first diagnostic-only patch had a Python quoting syntax error (run #76 / 45797983580); this was corrected in commit `0518c07b0e309cda4fc6ab462192c9210eaf0f2c`. No database connection or credential exposure occurred in that failed run.
+- Corrected validator ran as DB Safety Pipeline #77 / run `45798145654` and reached the safe diagnostic output without Python syntax error.
+- Safe diagnostic result: secret non-empty; PostgreSQL scheme prefix present; no key-label prefix/newline; URI authority present with exactly one `@`; hostname absent; hostname parsing itself raised no exception; expected `/postgres` path not recognized; query absent; fragment present.
+- Interpretation: the parser sees a URI fragment delimiter before it can identify the pooler hostname. This is a URI structure issue, not evidence of a PostgreSQL password-authentication failure. No host/password/URI value was printed.
+- The failure occurred before PostgreSQL client installation, database connection, backup, decrypt/restore, migration dry-run or artifact upload. Production DB was not modified.
+- Next step: Owner should inspect/update only the GitHub Actions secret `SUPABASE_DB_URL` so the Session Pooler hostname immediately follows the single `@` delimiter and no literal `#` occurs before the hostname. If the actual database password contains `#`, encode that character as `%23` in the password portion before the `@`. Keep the rest of the known host/port/database details unchanged. Do not share the secret value and do not reset/rotate the password again.
+- Do not rerun the DB workflow until the Owner confirms this URI-structure correction. After confirmation, run one targeted backup/restore preview. All backup, disposable restore, migration dry-run and artifact gates remain NOT VERIFIED; production migration remains prohibited.
