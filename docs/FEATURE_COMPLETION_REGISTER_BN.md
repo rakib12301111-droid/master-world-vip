@@ -285,3 +285,13 @@ Owner commission কেবল সব member payable, refund liability, provider 
 - Existing product foundations include AI Assistant Edge Function, Work & Earn board/migration, referral wallet/reward foundation, verified-payment/checkout migration source, and Work & Earn wallet/Owner-profit settlement migration source.
 - Missing/not verified as live: 4,000-project registry/orchestrator/worker fleet; project queues/schedulers/budget enforcement; Company Revenue Ledger; complete plan checkout→verified webhook→entitlement activation; production USD/BDT revenue and payout integrations; Admin/Member entitlement enforcement; full acceptance/load/security tests.
 - **Status: foundation + specification only; NOT LIVE as a 4,000-project earning system.** No new customer payment, revenue, payout, production migration or deployment was performed.
+
+
+## Update 23 — 2026-11-26: Step 1 implementation — 4,000-project registry source
+
+- Added `supabase/migrations/20261126100000_earning_project_registry.sql`.
+- Registry schema includes stable project code/number, USD/BDT group, lifecycle state, Free/Paid option flags, paid-plan configuration state, execution/revenue kill-switch defaults, payer model, budget cap and JSON configuration.
+- Seeds exactly 4,000 planned slots: MW-USD-0001..2000 and MW-BDT-0001..2000. Both option flags are enabled for every catalog row; paid plans remain unconfigured.
+- Safety defaults: execution_enabled=false, revenue_collection_enabled=false, budget_cap=0. No payment, worker, revenue or payout is initiated.
+- Added read-only audit query at `supabase/audits/4000_project_registry_read_only.sql`, and documented migration order in Supabase README.
+- **Status:** migration and audit source committed to feature branch; not applied to Supabase production. Disposable CI validation must pass before Step 1 can be marked verified. This is a project catalog registry, not 4,000 working/earning projects.
