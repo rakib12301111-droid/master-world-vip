@@ -192,3 +192,11 @@ Work & Earn wallet/Owner profit backend migration source থাকলেও prod
 - প্রতিটি paid work order-এ Admin commission configurable হবে; rate অনুমান করে hard-code নয়। Order acceptance-এর আগে gross price, currency, provider fee, refund reserve, operating cost, Admin commission ও Member net payable disclose করতে হবে। Commission basis/rate order snapshot immutable; completed + settled/reconciled কাজের পর আলাদা company-revenue account-এ post হবে। USD ও BDT আলাদা।
 - Full design ও launch gates: docs/PAYOUT_METHODS_ADMIN_APPROVAL_AND_PLATFORM_COMMISSION_BN.md.
 - Status: requirement/design only. Provider adapters, ownership verification, bank mandate/API, commission posting logic, live payouts/collection এবং production apply বাকি।
+
+
+### ১৪.১ Owner-এর commission proposal (২৭ নভেম্বর ২০২৬)
+
+- Admin commission প্রতি completed/accepted paid work order-এ **২০% proposed rate** হিসেবে নথিভুক্ত।
+- Proposal এখনো active configuration নয়। Calculation basis, provider fee, tax, refunds/chargebacks ও rounding policy স্পষ্ট করে order acceptance-এর আগে customer/Member-কে disclose করতে হবে; তারপরই পৃথক Company Revenue Ledger-এ settled/reconciled completion-এর পর post করা যাবে।
+- USD/BDT commission নিজ নিজ currency-তে; Member net payable ও refund reserve আলাদা। কোনো retroactive rate change নয়।
+- Status: proposal only; no commission deduction/collection/posting is live.
