@@ -205,16 +205,9 @@ jobs:
 
       - name: Inspect remote migration history without changing it
         id: migration_history
-        continue-on-error: true
         run: |
           set -euo pipefail
           npx --yes supabase@latest migration list --remote "$SUPABASE_DB_URL"
-
-      - name: Inspect remote migration history without changing it
-        id: migration_repair
-        run: |
-          set -euo pipefail
-          npx --yes supabase@latest migration list --db-url "$SUPABASE_DB_URL"
           echo "Read-only migration history inspection complete; no history entries were changed."
 
       - name: Preview all pending production migrations
