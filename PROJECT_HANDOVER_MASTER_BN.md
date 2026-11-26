@@ -132,7 +132,7 @@ Run #85-এর log-এ স্পষ্ট লেখা আছে:
 ### `.github/workflows/test-two-member-rls.yml`
 - দুইটি পৃথক test member UUID এবং Session Pooler URI যাচাই করে।
 - `supabase/audits/two-member-rls-integration-test.sql` চালায়।
-- এই audit workflow-এর সর্বশেষ run এই পর্যালোচনায় চালানো/যাচাই করা হয়নি।
+- এই workflow-এর সর্বশেষ run এই পর্যালোচনায় চালানো/যাচাই করা হয়নি।
 
 ## 6. সরাসরি দেখা migration SQL-এর পর্যালোচনা
 
@@ -146,36 +146,48 @@ Run #85-এর log-এ স্পষ্ট লেখা আছে:
 - Function-এ `security definer` এবং fixed empty `search_path` আছে।
 - সংশ্লিষ্ট SELECT policies পুনর্গঠন করে।
 
-**পর্যালোচনার সীমা:** এই দুটি SQL migration-এর source-level পাঠ করা হয়েছে; Supabase production database-এ বাস্তব permission/behavior integration test করা হয়নি। বাকি migration SQL-এর সম্পূর্ণ নিরাপত্তা/কার্যকারিতা audit এখনো সম্পন্ন বলে দাবি করা যাবে না।
+**পর্যালোচনার সীমা:** এই দুটি SQL migration-এর source-level পাঠ করা হয়েছে। ২৬ নভেম্বরের Disposable Database Validation-এ সব ৩০টি migration ধারাবাহিকভাবে apply হয়েছে; এটি SQL execution/dependency validation, production permission/behavior integration test নয়।
 
 ## 7. Secrets ও নিরাপত্তা
 
 GitHub Actions-এ ব্যবহৃত secret নাম:
 - `SUPABASE_DB_URL`
 - `BACKUP_ENCRYPTION_PASSPHRASE`
-- অন্যান্য workflow-এ `SUPABASE_ACCESS_TOKEN), RLS test member identifiers ইত্যাদি থাকতে পারে।
+- অন্যান্য workflow-এ `SUPABASE_ACCESS_TOKEN`, RLS test member identifiers ইত্যাদি থাকতে পারে।
 
 এই নথিতে কোনো secret value, password, token বা encryption passphrase রাখা যাবে না। Secret পরিবর্তন কেবল বাস্তব প্রয়োজন ও যাচাই করা কারণ থাকলে করতে হবে। সফল Run #85-এর পরে অকারণে secret rotate বা workflow edit করা উচিত নয়।
 
 ## 8. পরবর্তী কাজের অগ্রাধিকার
 
-1. **সর্বোচ্চ অগ্রাধিকার:** ৩০টি pending migration কেন remote history-তে applied হিসেবে দেখা যাচ্ছে না, তা যাচাই করা।
-2. প্রতিটি migration-এর বর্তমান remote schema-এর সঙ্গে সামঞ্জস্য ও নিরাপত্তা পর্যালোচনা।
-3. প্রয়োজনে staging/disposable database-এ migration apply test।
-4. আলাদা অনুমোদন ছাড়া production-এ কোনো schema change নয়।
-5. Two-member RLS audit workflow-এর সর্বশেষ ফলাফল যাচাই।
+1. **সর্বোচ্চ অগ্রাধিকার:** Production schema-র সম্পূর্ণ column/constraint/index/policy/function diff সংগ্রহ করে ৩০টি migration-এর প্রত্যাশিত schema-র সঙ্গে তুলনা করা।
+2. Existing `profiles` ও `update_releases`-এর মতো overlapping objects-এর compatibility ও data-preservation যাচাই।
+3. Production backup/restore reference-এর মেয়াদ ও recoverability যাচাই করে apply পরিকল্পনা তৈরি করা।
+4. আলাদা exact approval phrase ছাড়া Production-এ কোনো schema change বা migration-history repair নয়।
+5. Two-member RLS integration test-এর ফলাফল যাচাই/প্রয়োজনে সংশোধন।
 6. ভবিষ্যৎ কাজ শেষে এই handover ফাইলের তারিখ, commit, run, সম্পন্ন কাজ ও বাকি কাজ update করা।
 
 
 ## 9. ২৬ নভেম্বর ২০২৬ — Read-only Audit ও নিরাপত্তা সংশোধন
 
-### নতুন workflow
-- ফাইল: `.github/workflows/read-only-db-audit.yml`
-- Commit: `1af5e1396e43d6c1ba404a171d8e5195cbc5b6f6`
-- কাজ: Supabase remote migration history এবং database-এর table/view, RLS policy, function ও trigger inventory সংগ্রহ।
-- এটি read-only; `db push`, `migration repair`, DDL বা data mutation চালানোর কথা নয়।
-- রিপোর্ট GitHub Actions artifact হিসেবে ১৪ দিন সংরক্ষিত হবে।
-- এই workflow-এর run ফলাফল এখনো যাচাই করা হয়নি; প্রথম run শেষ হলে report পর্যালোচনা করতে হবে।
+### Read-only Database Audit
+- Workflow: `.github/workflows/read-only-db-audit.yml`
+- প্রথম Run `45812058134` failed হয়েছিল audit step-এর local socket connection bug-এর কারণে; এটি Production পরিবর্তন করেনি।
+- সংশোধিত Run ID: `45812490786`
+- Run result: `success`
+- Run URL: https://github.com/rakib12301111-droid/master-world-vip/actions/runs/45812490786
+- Artifact ID: `15112873683`
+- Artifact: https://github.com/rakib12301111-droid/master-world-vip/actions/runs/45812490786/artifacts/15112873683
+- Artifact retention: ১৪ দিন; created ২৬ নভেম্বর ২০২৬।
+- Audit query-গুলো SELECT/read-only ছিল; কোনো DDL, data mutation, `db push` বা `migration repair` হয়নি।
+
+### Production Database-এ Audit-এর ফল
+- `supabase_migrations.schema_migrations`: ০টি row।
+- CLI migration history-তে ৩০টি local migration-এর Remote column ফাঁকা; সব ৩০টি local pending।
+- Public schema-তে ৪টি project table পাওয়া গেছে: `profiles`, `update_events`, `update_modules`, `update_releases`।
+- Public schema-তে ৫টি RLS policy এবং ৩টি project custom function পাওয়া গেছে।
+- Public schema-তে `update_releases` আছে, কিন্তু migration history-তে তার version recorded নয় এবং policy name-ও migration file-এর policy name থেকে আলাদা। তাই object name এক হওয়া মানেই migration সম্পূর্ণ apply হয়েছে—এমন সিদ্ধান্ত নেওয়া যাবে না।
+- Database-এ `profiles` ও `update_releases`-এর মতো কিছু overlapping object আছে; কিন্তু বাকি ৩০টি migration-এর প্রত্যাশিত table/function/policy inventory দেখা যায়নি।
+- **সিদ্ধান্ত:** Migration History অনুযায়ী ৩০টির কোনোটিই applied হিসেবে recorded নয়। কিছু object আগে manual/custom SQL দিয়ে তৈরি হয়ে থাকতে পারে; exact column/constraint/index comparison ছাড়া সেগুলোকে applied mark করা যাবে না।
 
 ### Backup workflow নিরাপত্তা সংশোধন
 - ফাইল: `.github/workflows/backup-restore-preview.yml`
@@ -184,8 +196,27 @@ GitHub Actions-এ ব্যবহৃত secret নাম:
 - এখন migration history inspection read-only।
 - উদ্দেশ্য: Backup/Preview চালানোর সময় অজান্তে remote migration metadata পরিবর্তন ঠেকানো।
 
-**বর্তমান অবস্থা:** ব্যবহারকারী নিশ্চিত করতে পারেননি ৩০টি migration আগে SQL Editor/অন্য উপায়ে Apply হয়েছিল কি না। তাই সবগুলোকে applied/reverted করা হয়নি এবং Production migration push করা হয়নি। Read-only audit report পাওয়ার পর migration history ও বাস্তব schema মিলিয়ে পরবর্তী সংশোধন নির্ধারণ করতে হবে。
+## 10. ২৬ নভেম্বর ২০২৬ — Disposable Migration Validation ও SQL Fixes
 
-## 10. ভবিষ্যৎ সহকারীর জন্য সংক্ষিপ্ত নির্দেশনা
+### Validation workflow
+- ফাইল: `.github/workflows/validate-migrations-disposable.yml`
+- সফল Run ID: `45814105586`
+- Job ID: `139889243549`
+- Run URL: https://github.com/rakib12301111-droid/master-world-vip/actions/runs/45814105586
+- Result: `success`
+- সব ৩০টি migration সঠিক ক্রমে disposable Supabase PostgreSQL 17 database-এ apply হয়েছে।
+- Log evidence: `DISPOSABLE_MIGRATION_VALIDATION=success`, `MIGRATIONS_APPLIED_TO_TEST_DATABASE=30`, `PRODUCTION_DATABASE_CHANGED=false`।
+- Validation শেষে disposable database-এ অন্তত ৩০টি public base table আছে—এটিও যাচাই হয়েছে।
+- এটি SQL syntax/dependency/sequence test; production migration apply বা production data validation নয়।
 
-ব্যবহারকারীকে আবার শুরু থেকে সব করতে বলবেন না। প্রথমে এই নথি পড়ুন এবং সর্বশেষ GitHub state যাচাই করুন। Run #85-এর Backup/Restore/History Repair/Preview সফল হয়েছে—এটি ইতিমধ্যে সম্পন্ন। কিন্তু Preview-তে ৩০টি migration pending দেখানো হয়েছে—এটি এখনো সমাধান করা বাকি। এই দুই তথ্য একসঙ্গে ধরে কাজ করুন। ব্যবহারকারীকে না জানিয়ে production migration চালাবেন না।
+### Disposable test-এ ধরা ও সংশোধিত SQL সমস্যা
+1. `202611190001_global_community.sql`: `is_conversation_member` ও `is_group_member` helper-এর malformed dollar quoting ঠিক করা হয়েছে; পরে single-argument helper-এর সঙ্গে overload ambiguity এড়াতে default target-user arguments সরানো হয়েছে।
+2. `20261120150000_membership_helper_hardening.sql`: caller-scoped helper তৈরি করার আগে legacy RLS policies এবং two-argument helper overload drop করা হয়েছে; এতে PostgreSQL function ambiguity বন্ধ হয়েছে।
+3. `202611240004_owner_monthly_compensation.sql`: `service_accrue_owner_compensation_months()`-এর malformed dollar-quote delimiter ঠিক করা হয়েছে।
+4. `20261125160000_work_earn_wallet_owner_profit.sql`: PL/pgSQL `RAISE EXCEPTION` string-এর `100%`-এ percent placeholder conflict ঠিক করতে `100%%` করা হয়েছে।
+
+**গুরুত্বপূর্ণ:** এই সংশোধনগুলো GitHub migration source-এ commit হয়েছে এবং disposable test-এ সব ৩০টি migration সফল হয়েছে। Production Database-এ কোনো migration apply হয়নি; remote migration history-ও repair করা হয়নি।
+
+## 11. ভবিষ্যৎ সহকারীর জন্য সংক্ষিপ্ত নির্দেশনা
+
+ব্যবহারকারীকে আবার শুরু থেকে সব করতে বলবেন না। প্রথমে এই handover ফাইল ও সর্বশেষ GitHub state পড়ুন। Run #85-এর backup/restore/preview এবং historical migration metadata repair সম্পন্ন হয়েছিল। পরের Read-only Audit নিশ্চিত করেছে remote migration history table-এ ০ row এবং ৩০টি migration pending। Disposable validation-এ SQL source-এর চারটি সমস্যা সংশোধন করে সব ৩০টি migration test database-এ সফলভাবে apply হয়েছে। এগুলো Production-এ apply হয়েছে—এমন নয়। Production schema comparison, recoverable backup confirmation এবং পৃথক exact approval ছাড়া কোনো Production migration চালাবেন না।
