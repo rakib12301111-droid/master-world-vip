@@ -113,3 +113,37 @@ Mark a feature LIVE only after code, required deployment, production configurati
 - User-এর “Admin 100% নিশ্চিত USD” নির্দেশকে accounting rule হিসেবে সীমাবদ্ধ করা হলো: **প্রকৃত eligible settled net revenue-এর অনুমোদিত Admin entitlement 100% ledger-এ সঠিকভাবে record/reconcile করতে হবে**। Plan existence, Free Plan activation বা Admin-এর নিজের purchase থেকে guaranteed USD/profit বা fixed dollar credit তৈরি করা যাবে না। Eligible settled revenue শূন্য হলে Admin USD accrual শূন্য।
 - এটি high-value USD project pricing (Section 12), BDT member payable, progressive commission ও no-loss member protection-এর অতিরিক্ত পৃথক reward/revenue stream; একটির অর্থ অন্যটির সঙ্গে মিশিয়ে double-count করা যাবে না।
 - **Status: DOCUMENTED ONLY / NOT LIVE.** VIP UI, promotional draw, funded prize pool, random selection engine, USD ledger, plan checkout, payment settlement, legal approvals and payout are not implemented/verified by this policy update. Existing DB backup/restore and migration authorization blockers remain unchanged.
+
+
+## ১৪. 2,000+ Customer এবং 1 Crore+ Real Project/Task Marketplace Scale Target (Owner priority, 2026-11-26)
+
+### Long-term scale target
+- বাস্তব ও যাচাইকৃত **২,০০০+ customer/client/organization** অর্জন ও ধরে রাখার লক্ষ্য।
+- **১ কোটিরও বেশি (10,000,000+) genuine project/task catalogue entry ও opportunity pipeline** গড়ে তোলার দীর্ঘমেয়াদি লক্ষ্য।
+- দেশি-বিদেশি brand, enterprise, SME, agency, merchant ও direct client-এর one-off এবং recurring কাজ যুক্ত করা—কেবল বাস্তব contract, authorized API, approved partner feed বা customer order থেকে।
+- পাঁচটি প্রাথমিক Auto Work module catalogue-এর সীমা নয়; এগুলো প্রথম execution families। Demand অনুযায়ী আরও industry/category/service subtype, project template ও provider connector যোগ হবে।
+
+### Catalogue integrity and metrics
+- Catalogue template, real available opportunity, funded customer order, assigned job, delivered output, client-accepted work এবং settled payment আলাদা entity/status/metric।
+- 10M+ target-কে 10M live funded jobs বা existing customers বলে দেখানো যাবে না। Duplicate, expired, fabricated, scraped-without-permission, test/bot listing বাদ দিতে হবে।
+- প্রতিটি actionable opportunity-তে verified source/customer, brand authorization where relevant, contract/permission, task scope, deliverable, eligibility, deadline, price, funding proof, acceptance criteria, payout terms, expiry এবং dispute/refund route থাকতে হবে।
+- 2,000 customer target-এ real verified organizations/accounts গণনা হবে; paying, contracted, active, retained ও inactive customer আলাদা report হবে। Signup-কে customer revenue বলা যাবে না।
+
+### No-loss-by-design is a risk-control goal, not a guarantee
+- More customers, more catalogue entries বা “unlimited” brand work নিজে থেকে loss শূন্য করে না। Demand, contract, quality, fraud, refunds, chargebacks, FX, tax, provider/API, hosting, storage, support, delivery capacity ও settlement risk থাকতে পারে।
+- প্রতিটি order accept করার আগে verified funding/credit, full member payable, direct/variable cost, fees/tax, refund/chargeback exposure, reserve, workload/capacity এবং conservative contribution margin হিসাব করতে হবে।
+- Member wage, customer restricted funds, refund reserve, prize pool, referral liability বা অন্যের payable কখনো operating loss cover করবে না।
+- Per-job/customer/provider budget cap, quota/concurrency, idempotency, rate limits, audit, retry ceiling, human review ও global emergency pause বাধ্যতামূলক।
+- Free quota exhausted হলে pause/queue; paid fallback নয়। Paid infrastructure/API কেবল Owner-এর পৃথক approval ও নির্দিষ্ট BDT spend cap-এ।
+- Margin negative/uncertain, source unverifiable, funding absent, permission expired বা delivery capacity unavailable হলে reject/pause/requote—volume target পূরণ করতে loss-making job গ্রহণ নয়।
+
+### Scale rollout
+1. Verified supply sources ও customer contracts register.
+2. Reusable taxonomy: industry → category → service → template → provider connector → order → job instance.
+3. Customer verification, funded order/payment protection, acceptance, dispute/refund ও settlement.
+4. Existing five connector families দিয়ে staging execution; adapter interface reusable করে নতুন category যোগ।
+5. Controlled milestones: 10 → 100 → 500 → 2,000 verified customers; catalogue milestones 1,000 → 10,000 → 100,000 → 1,000,000 → 10,000,000+ genuine entries/opportunities.
+6. প্রতিটি milestone-এ customer retention, funded demand, completion/acceptance, on-time delivery, positive contribution margin, provider reliability, fraud/refund rate, support load ও settlement reconciliation pass না করলে scale freeze।
+
+### Status
+এটি Owner-এর long-term product/business target এবং architecture requirement মাত্র। 2,000 customer, 10M+ genuine entries, unlimited brand supply, zero-loss operation, global customer contracts বা live automation বর্তমানে অর্জিত/guaranteed নয়। পাঁচটি module-ই এখনো control-plane foundation; connector, worker, verified funding, production database, storage ও payout integration আলাদা implementation/acceptance gates-এ থাকবে.
