@@ -3,6 +3,8 @@ run-name: MASTER WORLD VIP Read-only Database Audit
 
 on:
   workflow_dispatch:
+  schedule:
+    - cron: '15 3 * * 1' # Weekly read-only schema and migration audit (UTC)
   push:
     branches: [main]
     paths:
