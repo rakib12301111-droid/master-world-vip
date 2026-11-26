@@ -353,3 +353,11 @@ comment on table public.member_work_wallet_ledger is 'Append-only member Work & 
 comment on table public.owner_work_profit_ledger is 'Separate Owner profit accrual ledger; accrued is not a completed bank/MFS transfer.';
 comment on table public.work_earn_payment_events is 'Server-only provider-verified payment events. Browser redirects and screenshots are not proof of settlement.';
 comment on table public.finance_reconciliation_snapshots is 'Server-only short-lived financial gate; does not itself prove custody of funds without independently verified provider/bank evidence.';
+
+-- RLS does not protect TRUNCATE. Remove structural table privileges from
+-- browser-facing roles across the complete public schema after all app tables
+-- have been created. Keep ordinary row-level DML governed by each table's RLS.
+revoke truncate, references, trigger on all tables in schema public from anon, authenticated;
+alter default privileges in schema public
+  revoke truncate, references, trigger on tables from anon, authenticated;
+
