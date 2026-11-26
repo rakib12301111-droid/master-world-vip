@@ -317,3 +317,13 @@ Owner commission কেবল সব member payable, refund liability, provider 
 - Require idempotent provider settlement, duplicate/fraud checks, audit trails, chargeback/refund workflow, incident freeze/kill switch and customer support. Never ask Members to cover customer payment shortfalls from personal funds.
 - No software can guarantee zero risk in every circumstance; funded-order gates, reserves, controls and dispute handling are mandatory launch acceptance criteria.
 - Updated the main architecture spec Section 10 and handover. Requirement recorded only: no customer acquisition system, customer count, funded reserve, payment integration or loss-free guarantee is thereby live.
+
+
+## Update 26 — 2026-11-26: Step 3 — Free/Paid plan catalog ও customer funded-order gates (source foundation)
+
+- Added `20261126120000_free_paid_plan_customer_order_gates.sql` with separate Admin/Member plan catalog, paid-plan subscription entitlement records and customer service order records.
+- Paid catalog rows are not seeded/enabled; paid plan requires a positive configured price and billing period. Active subscription requires provider transaction/event identifiers, positive settled amount and server-settled timestamp.
+- Customer service orders require a strictly positive customer price; funded/in-progress/delivered/accepted/completed states require server-verified provider settlement, segregated funds, independently verified refund reserve and operating budget, plus sufficient gross allocation to cover Member payable, refund liability and operating costs.
+- Customer free browsing/quote is distinct from paid work delivery. No zero-price customer service order can be created by this schema.
+- RLS restricts reads to enabled catalog / own subscriptions / own orders; all writes are service-role only. Added static verifier `scripts/verify-plan-customer-order-gates.py` and wired it into migration-safety workflow.
+- **Not live:** no checkout, provider webhook, payment capture, plan activation, reserve custody, worker execution, payout, production migration apply or live deployment. Prices/features remain intentionally unconfigured; no fees should be collected on the basis of this schema alone.
