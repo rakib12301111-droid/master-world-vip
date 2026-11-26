@@ -44,7 +44,7 @@
 - Encrypted logical database backup তৈরি।
 - Encrypted backup decrypt করে disposable PostgreSQL database-এ restore test।
 - Remote migration history inspect।
-- পুরোনো remote-only migration version `20261121081842` এবং `20261121082217`-কে `reverted` হিসেবে migration history-তে চিহ্নিত করা হয়েছে।
+- ওই Run-এ remote-only migration version `20261121081842` এবং `20261121082217`-কে `reverted` হিসেবে migration history-তে চিহ্নিত করা হয়েছিল। এটি history metadata পরিবর্তন; schema change নয়।
 - Supabase migration preview / dry-run সফল।
 - Encrypted backup artifact আপলোড।
 - Non-secret backup ও restore reference log-এ রেকর্ড।
@@ -113,7 +113,7 @@ Run #85-এর log-এ স্পষ্ট লেখা আছে:
 - Push/ম্যানুয়াল trigger আছে।
 - Encrypted full logical backup এবং isolated restore test চালায়।
 - Remote migration history inspect করে।
-- নির্দিষ্ট দুইটি পুরোনো remote-only version `reverted` করে।
+- বর্তমান সংশোধনের পর remote migration history শুধু inspect করে; স্বয়ংক্রিয় `migration repair` আর চালায় না।
 - `supabase db push --dry-run --remote` দিয়ে preview চালায়।
 - এই workflow Production migration push করে না।
 
@@ -166,6 +166,26 @@ GitHub Actions-এ ব্যবহৃত secret নাম:
 5. Two-member RLS audit workflow-এর সর্বশেষ ফলাফল যাচাই।
 6. ভবিষ্যৎ কাজ শেষে এই handover ফাইলের তারিখ, commit, run, সম্পন্ন কাজ ও বাকি কাজ update করা।
 
-## 9. ভবিষ্যৎ সহকারীর জন্য সংক্ষিপ্ত নির্দেশনা
+
+## 9. ২৬ নভেম্বর ২০২৬ — Read-only Audit ও নিরাপত্তা সংশোধন
+
+### নতুন workflow
+- ফাইল: `.github/workflows/read-only-db-audit.yml`
+- Commit: `1af5e1396e43d6c1ba404a171d8e5195cbc5b6f6`
+- কাজ: Supabase remote migration history এবং database-এর table/view, RLS policy, function ও trigger inventory সংগ্রহ।
+- এটি read-only; `db push`, `migration repair`, DDL বা data mutation চালানোর কথা নয়।
+- রিপোর্ট GitHub Actions artifact হিসেবে ১৪ দিন সংরক্ষিত হবে।
+- এই workflow-এর run ফলাফল এখনো যাচাই করা হয়নি; প্রথম run শেষ হলে report পর্যালোচনা করতে হবে।
+
+### Backup workflow নিরাপত্তা সংশোধন
+- ফাইল: `.github/workflows/backup-restore-preview.yml`
+- Commit: `7f574b4e92fa45a7522fdc7dab0a26415e9e4e3e`
+- স্বয়ংক্রিয় `migration repair --status reverted` ধাপ সরানো হয়েছে।
+- এখন migration history inspection read-only।
+- উদ্দেশ্য: Backup/Preview চালানোর সময় অজান্তে remote migration metadata পরিবর্তন ঠেকানো।
+
+**বর্তমান অবস্থা:** ব্যবহারকারী নিশ্চিত করতে পারেননি ৩০টি migration আগে SQL Editor/অন্য উপায়ে Apply হয়েছিল কি না। তাই সবগুলোকে applied/reverted করা হয়নি এবং Production migration push করা হয়নি। Read-only audit report পাওয়ার পর migration history ও বাস্তব schema মিলিয়ে পরবর্তী সংশোধন নির্ধারণ করতে হবে。
+
+## 10. ভবিষ্যৎ সহকারীর জন্য সংক্ষিপ্ত নির্দেশনা
 
 ব্যবহারকারীকে আবার শুরু থেকে সব করতে বলবেন না। প্রথমে এই নথি পড়ুন এবং সর্বশেষ GitHub state যাচাই করুন। Run #85-এর Backup/Restore/History Repair/Preview সফল হয়েছে—এটি ইতিমধ্যে সম্পন্ন। কিন্তু Preview-তে ৩০টি migration pending দেখানো হয়েছে—এটি এখনো সমাধান করা বাকি। এই দুই তথ্য একসঙ্গে ধরে কাজ করুন। ব্যবহারকারীকে না জানিয়ে production migration চালাবেন না।
