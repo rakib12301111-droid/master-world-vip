@@ -457,3 +457,13 @@ GitHub Actions-এ ব্যবহৃত secret নাম:
 - Payout specification-এ no-bypass rule এবং ২০% commission-এর proposal-only distributable-margin calculation যোগ হয়েছে: settled gross − provider fees − tax − full Member payable − refund reserve funding − approved direct operating cost; positive margin-এর ২০%, অন্যথায় শূন্য। Owner/legal/tax approval ছাড়া এটি সক্রিয় নয়।
 - Full migration-chain disposable Supabase-compatible run এবং Production read-only audit এখনও বাকি; production credentials/DB access নিরাপদ secret-backed environment-এ না থাকলে তা সম্পন্ন দাবি করা যাবে না।
 - Real custody/reserve, daily bank/provider reconciliation, worker deployment, signed webhook ও live payout/refund rail external provider/bank access ও অনুমোদন ছাড়া complete নয়। এই update-এ কোনো Production/live action হয়নি।
+
+
+## ১২. ২৭ নভেম্বর ২০২৬ — Server-authorized Admin Dashboard source update
+
+- Added `www/admin-dashboard.js` and loaded it from `www/index.html` on the planning branch. The separate Admin Dashboard checks the authenticated Supabase session and server-returned `get_my_admin_access` role before showing the privileged view.
+- The view reads the 4,000-project Registry, worker summary and recent task counts through `admin_project_automation_overview`; it is read-only and cannot enable schedules, enqueue tasks or start workers.
+- Added `scripts/verify-admin-dashboard.py` and wired it into `.github/workflows/verify-supabase-migrations.yml`.
+- Implementation notes and exact release limitations: `docs/ADMIN_DASHBOARD_IMPLEMENTATION_STATUS_BN.md`.
+- **Not Live / not yet verified:** these changes are on Draft PR #20 only. They have not been merged or deployed. Required Supabase migrations/RBAC/Owner bootstrap are not thereby applied to Production; no Production database or live deployment action was taken. The new UI cannot prove the live backend is connected until staging/Production RPC calls are tested with separate Owner/Admin/Member accounts.
+- Worker execution remains NOT READY; no worker service is deployed. Dashboard intentionally provides read-only visibility and leaves execution disabled.
