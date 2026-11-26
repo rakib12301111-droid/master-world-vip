@@ -137,6 +137,17 @@ Work & Earn wallet/Owner profit backend migration source থাকলেও prod
 
 ## ১১. ধাপ ৩ — Free + Paid Plan এবং Customer Paid Order-এর পৃথক নিয়ম
 
+### ১১.১ Member-এর অর্থ সুরক্ষা — সর্বোচ্চ অগ্রাধিকার
+
+- প্রতিটি customer order-এর টাকা একই সাধারণ balance-এ রাখা যাবে না। Order অনুযায়ী পৃথক reconciliation-সহ তিনটি locked allocation থাকবে: (১) Member payable, (২) customer refund/chargeback reserve, (৩) platform operating cost। USD ও BDT আলাদা custody/ledger-এ থাকবে; cross-currency netting নিষিদ্ধ।
+- Member payable হলো Member-এর পাওনা—এটি platform revenue বা ব্যবহারযোগ্য operating cash নয়। কাজের acceptance evidence এবং dispute/chargeback policy অনুযায়ী release eligibility না হওয়া পর্যন্ত এটি locked থাকবে; Member-এর earned balance কখনো negative করা যাবে না এবং অন্য order-এর ঘাটতি দিয়ে সমন্বয় করা যাবে না।
+- Refund reserve কেবল customer refund, chargeback ও dispute-এর সম্ভাব্য দায় মেটাতে থাকবে। এটি platform profit, marketing বা অন্য Member payout-এ ব্যবহার করা যাবে না। Reserve threshold পূরণ না হলে নতুন order intake/execution স্বয়ংক্রিয়ভাবে বন্ধ (fail-closed) হবে।
+- বাস্তব launch-এ provider/custodian-এর পৃথক safeguarded account বা সমমানের আইনসম্মত custody arrangement, order-level sub-ledger, signed webhook verification, daily reconciliation এবং independent audit evidence আবশ্যক। Database-এর allocation row বা timestamp নিজে বাস্তব bank custody/segregation-এর প্রমাণ নয়।
+- Member-কে নিজের টাকা জমা, recharge, customer-এর বকেয়া পূরণ, chargeback বহন বা অন্য Member-এর ক্ষতি মেটাতে বাধ্য করা যাবে না। Member payout হবে শুধু settled ও reconciled অর্থ থেকে, অনুমোদিত payout rail দিয়ে; payout pending/failed হলে balance হারাবে না।
+- Refund/chargeback/dispute হলে সংশ্লিষ্ট order-এর reserve ও Member payable আলাদা করে hold হবে; অন্য order/member-এর টাকা freeze বা কেটে নেওয়া যাবে না, যদি না আইনগত বাধ্যবাধকতা ও স্পষ্ট policy থাকে। প্রতিটি hold/release/refund/payout audit trail-এ থাকবে।
+- Zero-loss guarantee বাস্তবসম্মত নয়। কিন্তু Member-এর principal/earned payable সুরক্ষার জন্য reserve, order isolation, reconciliation, withdrawal controls, incident freeze, dispute SLA ও solvency monitoring বাধ্যতামূলক launch gates।
+
+
 - **Free Option customer-কে বিনামূল্যে কাজ দেওয়ার প্রতিশ্রুতি নয়।** Customer account/catalog browse, project details দেখা বা quote চাওয়া free হতে পারে; কিন্তু বাস্তব service delivery/কাজের order-এর মূল্য শূন্য হবে না। প্রতিটি customer work order-এ positive price, currency, scope, deadline, acceptance, cancellation/refund এবং Member payable প্রকাশ করতে হবে।
 - Free/Paid project automation access এবং customer service order দুটি পৃথক product flow। Free access থাকলেও সেটি paid customer work-কে free করে না; paid plan কেনাও customer order বা কাজের নিশ্চয়তা নয়।
 - Admin/Member audience আলাদা plan catalog-এ থাকবে। Paid price, period, feature/usage limits এবং refund terms অনুমোদিত না হওয়া পর্যন্ত কোনো paid catalog entry enabled হবে না। কোনো মূল্য অনুমান করে বসানো যাবে না।
