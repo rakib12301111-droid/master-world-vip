@@ -4,12 +4,13 @@ create extension if not exists pgcrypto;
 
 create table if not exists public.profiles (
  id uuid primary key references auth.users(id) on delete cascade,
- display_name text not null default '',
+ display_name text default '',
  country text,
  avatar_url text,
  created_at timestamptz not null default now(),
  updated_at timestamptz not null default now()
 );
+alter table public.profiles alter column display_name set default '';
 create table if not exists public.user_roles (
  user_id uuid not null references auth.users(id) on delete cascade,
  role text not null check (role in ('member','moderator','admin')),
