@@ -479,3 +479,50 @@ Owner স্পষ্টভাবে বলেছেন, MASTER WORLD VIP-এর
 - Next implementation scope: design/test separate ledger entries and wallet display, then trusted FX conversion and currency-stream commission calculation in staging; keep promotional draw disabled until funding/legal/provider gates pass. Update the completed-only no-repeat register only for checks actually run and proven PASS.
 
 - Supporting-document alignment: `docs/GLOBAL_CUSTOMER_MARKETPLACE_LIFETIME_WORK_SYSTEM_BN.md` Section 8 now explicitly uses 35% for the USD Automatic-System stream and 20% for ordinary BDT work; its previous generic lower/higher BDT-value tier wording is superseded.
+
+
+## 18. Owner-এর Global Customer & 1 Crore+ Real Project Marketplace লক্ষ্য (2026-11-26, Bangladesh time)
+
+### সর্বোচ্চ-পরিসরের ব্যবসায়িক লক্ষ্য — পাঁচটি module-এ সীমাবদ্ধ নয়
+Owner-এর স্পষ্ট দীর্ঘমেয়াদি লক্ষ্য:
+- অন্তত **২,০০০ বাস্তব গ্রাহক/ক্লায়েন্ট** অর্জন ও সেবা দেওয়া।
+- **১ কোটিরও বেশি (10,000,000+) বাস্তব project/task opportunity**-এর একটি বিস্তৃত, searchable catalogue ও supply pipeline গড়ে তোলা।
+- দেশি-বিদেশি যাচাইকৃত কোম্পানি, প্রতিষ্ঠিত brand, SME, agency, merchant ও direct customer-এর বৈধ recurring/one-off কাজ যুক্ত করা।
+- catalogue-এ যত বেশি বাস্তব ও অনুমোদিত কাজের ধরন যুক্ত করা যায়, নতুন category/provider/connector দিয়ে ক্রমাগত সম্প্রসারণ করা।
+- সদস্যের যোগ্যতা, সম্মতি, skill, কাজের নিয়ম ও provider permission অনুযায়ী ২৪/৭ server-side automation; সদস্য offline থাকলেও কেবল অনুমোদিত, queue-তে থাকা এবং বাস্তবে সম্পাদনযোগ্য কাজ চলবে।
+
+### পাঁচটি Auto Work module-এর সঠিক অবস্থান
+বর্তমান পাঁচটি module (AI Data Processing; AI Translation & Document Processing; PDF Automation; Image Processing; Website Monitoring & Automated Reporting) হলো **প্রথম execution category / initial connector families**—সম্পূর্ণ catalogue নয় এবং চূড়ান্ত সীমাও নয়। ভবিষ্যতে বাস্তব customer demand ও verified provider availability অনুযায়ী হাজারো service subtype, industry workflow, project template ও connector যুক্ত করতে হবে। একই ধরনের project-এর জন্য আলাদা আলাদা fake listing বানিয়ে catalogue count বাড়ানো যাবে না।
+
+### 1 crore+ catalogue এবং 2,000 customer target-এর বাস্তব সংজ্ঞা
+- 10,000,000+ হলো Owner-এর **দীর্ঘমেয়াদি catalogue/pipeline target**, বর্তমানে বিদ্যমান project/order/customer-এর দাবি নয়।
+- Catalogue entry, reusable project template, available opportunity, customer order, assigned job, completed deliverable, client-accepted work এবং settled payment—প্রতিটি আলাদা metric হবে। Template বা scraped listing-কে funded order/revenue হিসেবে গণনা করা যাবে না।
+- 2,000 customer বলতে বাস্তব, যাচাইকৃত customer account/organization; duplicate, test, bot বা inactive signup-কে active customer হিসেবে দেখানো যাবে না। Paying/contracted/retained customer আলাদা করে report হবে।
+- প্রতিটি live opportunity-তে customer/provider identity, source, contract/permission, scope, deliverable, eligibility, deadline, unit price, budget/funding proof, acceptance criteria, payout terms, expiry ও status থাকতে হবে।
+- Brand-এর নাম/logo ব্যবহার, brand-client relationship, endorsement বা কাজের অনুমোদন কেবল যাচাইকৃত contract/authorization থাকলেই দেখানো যাবে। Brand affiliation বা “unlimited work” কল্পনা/অনুমান করে দাবি নয়।
+
+### No-loss / sustainability guardrails
+বড় catalogue বা বহু customer থাকলেই loss-এর সম্ভাবনা শূন্য হয় না। লক্ষ্য হবে loss-risk কমানো ও প্রতিটি কাজের unit economics যাচাই করা—কোনো loss-free বা guaranteed-profit প্রতিশ্রুতি নয়।
+- কাজ গ্রহণের আগে customer funding/creditworthiness, provider terms, country eligibility, fraud/chargeback risk, delivery capacity ও positive expected contribution margin যাচাই।
+- Member wage, customer refund reserve, prize pool, referral liability বা অন্যের payable অর্থ কখনো operating cost-এ ব্যবহার নয়।
+- Per-job ও per-customer budget cap, daily/provider quota, concurrency cap, idempotency, SLA/deadline, retry ceiling, human review এবং emergency pause।
+- API/hosting/storage/FX/payment/tax/refund/support/chargeback/quality-control cost-সহ প্রকৃত খরচ হিসাব; demand বা margin অপর্যাপ্ত হলে pause, reject বা re-quote।
+- Provider quota শেষ হলে free থেকে paid-এ স্বয়ংক্রিয় fallback নয়; paid use কেবল Owner-এর আলাদা approval ও নির্দিষ্ট BDT spend cap-এ।
+- কোনো কাজের আয় কেবল client acceptance ও actual settlement-এর পর revenue ledger-এ; queued jobs, AI output, listing, API call বা estimate revenue নয়।
+
+### Implementation roadmap — existing repository only
+1. **Supply discovery & verification:** reputable brands, agencies, marketplaces, SMEs ও direct clients-এর real work sources/contract/API/payout terms যাচাই; source registry ও evidence.
+2. **Catalogue architecture:** industry → category → service → task template → provider connector → customer order → job instance; deduplication, searchable taxonomy, localization, versioning, expiry ও eligibility.
+3. **Customer/order system:** verified business onboarding, contract, funded order/escrow or verified payment, scope, acceptance, dispute/refund and audit.
+4. **Execution platform:** বর্তমান পাঁচ module দিয়ে শুরু; reusable adapter interface, durable queue, server workers, scheduler, per-module/customer/provider quotas, horizontal scaling ও observability. New module শুধু verified demand/connector দিয়ে।
+5. **Member assignment & protection:** skill/consent/eligibility matching, fair queue, clear wage/unit price, no unpaid speculative work, member wallet protection and payout reconciliation.
+6. **Scale gates:** 10 → 100 → 500 → 2,000 verified customers; controlled catalogue growth toward 10,000,000+ genuine entries/opportunities. প্রতিটি ধাপে acceptance, uptime, margin, fraud, support load ও settlement metrics pass না করলে পরের scale নয়.
+7. **Operations & continuity:** 24/7 server-side monitoring/worker only where the hosting plan supports it; outage-এ durable queue/pause. Phone/PWA is not the execution engine.
+
+### Current truth / resume point
+- এই লক্ষ্যটি product/business requirement হিসেবে নথিভুক্ত; 2,000 customer, 10,000,000+ real opportunities, unlimited brand supply, global contracts, live connectors বা 24/7 execution বর্তমানে অর্জিত/চালু—এমন দাবি নয়।
+- পাঁচটি Auto Work module-ই এখনো control-plane foundation; real provider connector, deployed worker, verified client contracts/funding, storage, settlement and payout remain incomplete.
+- পরবর্তী Auto Work কাজের scope কেবল পাঁচ module-এ থেমে থাকবে না: আগে reusable catalogue/provider/customer-order architecture design ও staging implementation plan; তবে বর্তমান DB backup/restore and Owner/RBAC gates bypass নয়।
+- Existing completed checks পুনরায় চালাবেন না; changed source-এর affected checks-ই চালাবেন। Handover ও no-repeat register authoritative থাকবে।
+
+**Owner’s priority:** “২,০০০+ বাস্তব গ্রাহক, ১ কোটিরও বেশি বাস্তব প্রজেক্ট/কাজের সুযোগ এবং দেশি-বিদেশি যাচাইকৃত brand/company-এর যত বেশি বৈধ কাজ সম্ভব—পাঁচটি প্রাথমিক module-এ সীমাবদ্ধ না থেকে ধাপে ধাপে একটি বড় global automatic work marketplace তৈরি করতে হবে।”
