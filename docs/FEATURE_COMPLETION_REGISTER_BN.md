@@ -327,3 +327,11 @@ Owner commission কেবল সব member payable, refund liability, provider 
 - Customer free browsing/quote is distinct from paid work delivery. No zero-price customer service order can be created by this schema.
 - RLS restricts reads to enabled catalog / own subscriptions / own orders; all writes are service-role only. Added static verifier `scripts/verify-plan-customer-order-gates.py` and wired it into migration-safety workflow.
 - **Not live:** no checkout, provider webhook, payment capture, plan activation, reserve custody, worker execution, payout, production migration apply or live deployment. Prices/features remain intentionally unconfigured; no fees should be collected on the basis of this schema alone.
+
+
+## Update 27 — 2026-11-26: Member fund protection hardening
+
+- Strengthened Step 3 migration with `customer_order_fund_allocations`: three separate order-level buckets (Member payable, refund reserve, operating cost), unique per order/bucket, currency and reconciliation reference.
+- Funded/in-progress order transitions now require exactly three matching locked allocations, verified provider settlement, external fund-segregation timestamp, refund-reserve verification, operating-budget verification, active project and complete scope terms.
+- Added static checks for the three protected allocations and fail-closed order transition.
+- **Important limitation:** database allocation rows/timestamps are internal evidence only; they do not establish real bank custody, trust/safeguarded account, provider settlement or actual payout. Dedicated lawful custody, signed provider webhooks, daily reconciliation, dispute/chargeback operations and payout rails remain mandatory before launch. No Member funds have been collected or secured by this source change.
