@@ -440,3 +440,12 @@ GitHub Actions-এ ব্যবহৃত secret নাম:
 - বাকি release blocker: full-chain clean disposable DB validation, Production read-only schema/RLS audit, provider-specific sandbox/webhook, lawful merchant onboarding, real segregated custody/refund reserve, daily reconciliation, actual payout/refund rails, worker service, plan/pricing/commission details, security/load/end-to-end acceptance tests।
 - ২০% Admin commission এখনও proposal-only; payout methods ও bank self-enrollment specification-only; কোনো live money movement/commission posting নয়।
 - Routine source/docs/test updates চলতে পারে। Production migration apply, migration-history repair, public deployment, live billing/payout এবং bank/provider account/KYC change আলাদা explicit approval ছাড়া করা যাবে না। Migration apply-এর exact phrase: `APPLY-MASTER-WORLD-VIP-MIGRATIONS`।
+
+
+### ১৯.১ Release-readiness CI refresh (২৭ নভেম্বর ২০২৬)
+
+- Documentation release-readiness update-এর পর PR head `2ba5af6027f2f8fecd23ae5ce837079ca6e7b44d`-এ নতুন CI আবার যাচাই করা হয়েছে।
+- Disposable PostgreSQL 16 finance runtime run `45874411633`: **success**।
+- Supabase Migration Safety run `45874411687`: **success**।
+- Auto Work Static Safety run `45874411490`: **success**।
+- এই ফলাফল isolated finance migration runtime ও static source safety নিশ্চিত করে; full ordered migration chain Production schema-তে apply হবে, provider settlement/custody বা live payout কাজ করছে—এগুলো প্রমাণ করে না। Release status এখনও NOT READY / NOT LIVE।
