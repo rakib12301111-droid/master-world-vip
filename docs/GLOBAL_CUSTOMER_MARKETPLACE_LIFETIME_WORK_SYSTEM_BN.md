@@ -51,13 +51,15 @@ Order, payment, job, acceptance, refund, settlement and payout are server-author
 - Earnings become payable only after deliverable acceptance and actual customer payment settlement. A wallet entry is not a completed cash withdrawal.
 - The example “৳100 cost → ৳1,000+ income” is an aspiration, not a forecast or guarantee. Never advertise or promise this return without proven per-task economics and actual settled customer revenue.
 
-## 8. Progressive Admin commission: 20% / 35%
-Owner requests 20% for lower-value/smaller work and 35% for higher-value work. The BDT threshold separating the two tiers has not yet been specified; do not invent or hard-code it. Make it configurable only after explicit Owner approval, public disclosure and audited prospective activation.
+## 8. Currency-stream Admin/Owner allocation: 35% USD / 20% BDT
 
-Both rates apply solely to Distributable Net Platform Revenue after member payable, taxes, payment/provider fees, direct/compute/operating costs, refunds/chargebacks and required reserves/restricted liabilities are fully accounted for. Never calculate commission on gross customer payments, member wages, unsettled/disputed funds or refund reserves. If net base is zero/negative or reconciliation/reserve/member-pay gates fail, commission is zero and fails closed.
-
-The prior fixed 20% policy is superseded as the requested future tier design, but the existing production behavior must not change until the approved threshold, implementation, legal review and end-to-end tests are complete. Rate changes are prospective only and must be disclosed before order acceptance and audited.
-
+- **USD Automatic-System / high-volume-high-value USD work stream: 35% Admin/Owner allocation.**
+- **Ordinary Bangladeshi-taka Work stream: 20% Admin/Owner allocation.**
+- These are separate currency/work-stream rates, not a flat 35% rate and not a tier selected by an unspecified BDT order-value threshold. Do not apply both rates to one receipt or reclassify an accepted order.
+- Both rates apply only to the relevant **Distributable Net Platform Revenue** after taxes/withholding, payment and FX fees, refunds/chargebacks, direct delivery/provider/compute/operating costs, the full disclosed member payable and required protected reserves/restricted liabilities are covered.
+- Never calculate Admin/Owner allocation from gross customer receipts, member wages, member wallet balances, member deposits, prize reserves, customer-restricted funds or unsettled/disputed money. If the eligible net base is zero/negative or settlement/member-pay/reserve/reconciliation gates fail, allocation is zero.
+- The currency/work stream and rate must be disclosed before task acceptance; accepted member pay cannot be reduced retroactively.
+- For separate USD and BDT wallet display, automatic USD-to-BDT conversion, member USD promotional draw separation, and detailed acceptance rules, follow `docs/DUAL_CURRENCY_MEMBER_WALLET_AND_COMMISSION_POLICY_BN.md`.
 ## 9. Admin Free Plan and Paid Plan
 Admin dashboard must offer:
 - **Free Admin Plan** (default), with clearly displayed provider-defined quotas and limits.
