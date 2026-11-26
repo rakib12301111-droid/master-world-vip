@@ -304,3 +304,5 @@ Owner commission কেবল সব member payable, refund liability, provider 
 - Added a read-only audit SQL file and static verifier, and wired the verifier into the Supabase migration safety workflow.
 - No worker service, external provider connector, payment collection, revenue recording or payout is deployed by this source migration. No project is enabled by default; the 4,000 registry rows still have execution disabled and zero budget.
 - **Status:** source files committed to the feature branch; GitHub Actions and disposable SQL validation pending. Not applied to Production, not deployed, and not generating income.
+
+- **CI result:** GitHub Actions migration-safety Run `45866578250` passed, including the new central automation verifier (job `140070826818`, step 8). Auto Work static safety Run `45866578261` also passed. Static checks do not prove PostgreSQL runtime correctness; disposable-database SQL validation remains pending.
