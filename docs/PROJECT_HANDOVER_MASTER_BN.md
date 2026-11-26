@@ -477,3 +477,5 @@ Owner স্পষ্টভাবে বলেছেন, MASTER WORLD VIP-এর
 - This is a documentation/policy update only. USD/BDT wallet display, automatic FX conversion, currency-specific commission calculation, USD draw engine, customer contracts/acquisition and payouts remain NOT LIVE until implemented and independently acceptance-tested.
 - Do not change production database or payment behavior in this session. Existing database backup/restore, secure credential correction and explicit migration authorization blockers remain in force.
 - Next implementation scope: design/test separate ledger entries and wallet display, then trusted FX conversion and currency-stream commission calculation in staging; keep promotional draw disabled until funding/legal/provider gates pass. Update the completed-only no-repeat register only for checks actually run and proven PASS.
+
+- Supporting-document alignment: `docs/GLOBAL_CUSTOMER_MARKETPLACE_LIFETIME_WORK_SYSTEM_BN.md` Section 8 now explicitly uses 35% for the USD Automatic-System stream and 20% for ordinary BDT work; its previous generic lower/higher BDT-value tier wording is superseded.
