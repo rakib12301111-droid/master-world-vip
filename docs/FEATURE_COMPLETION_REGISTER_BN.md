@@ -306,3 +306,14 @@ Owner commission কেবল সব member payable, refund liability, provider 
 - **Status:** source files committed to the feature branch; GitHub Actions and disposable SQL validation pending. Not applied to Production, not deployed, and not generating income.
 
 - **CI result:** GitHub Actions migration-safety Run `45866578250` passed, including the new central automation verifier (job `140070826818`, step 8). Auto Work static safety Run `45866578261` also passed. Static checks do not prove PostgreSQL runtime correctness; disposable-database SQL validation remains pending.
+
+
+## Update 25 — 2026-11-26: Customer-led projects, 10M+ customer ambition and Member financial protection
+
+- Owner requirement: real customers must bring genuine paid work/orders/service requests to the relevant projects; fake customers, fake orders, fake tasks and artificial revenue are prohibited.
+- Long-term ambition: 10,000,000+ real customers. This is a target, not an achieved customer count, forecast or guarantee. Growth and capacity claims require measured acquisition, retention, support, fraud, load and unit-economics evidence.
+- Member safety requirements: no mandatory deposit/recharge/unlock fee to access work; paid plans remain optional and never guarantee work or income; customer-funded orders must have server-side verified settlement and segregated funding before a Member starts work.
+- Scope, price/currency, deadlines, acceptance, cancellation, dispute/refund and Member payable must be clear before work starts. Member payable, refund liabilities and platform operating funds must be accounted separately.
+- Require idempotent provider settlement, duplicate/fraud checks, audit trails, chargeback/refund workflow, incident freeze/kill switch and customer support. Never ask Members to cover customer payment shortfalls from personal funds.
+- No software can guarantee zero risk in every circumstance; funded-order gates, reserves, controls and dispute handling are mandatory launch acceptance criteria.
+- Updated the main architecture spec Section 10 and handover. Requirement recorded only: no customer acquisition system, customer count, funded reserve, payment integration or loss-free guarantee is thereby live.
