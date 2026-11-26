@@ -461,3 +461,19 @@ Owner স্পষ্টভাবে বলেছেন, MASTER WORLD VIP-এর
 - পরবর্তী কাজ: existing repository-তেই promotion/distribution plan-কে actionable 30/60/90-day checklist, channel-specific content calendar, landing-page conversion improvements এবং analytics measurement plan-এ রূপান্তর করুন; কোনো external account বা paid spend ব্যবহার করার আগে Owner-এর অনুমোদন নিন।
 
 **Owner priority reminder:** “MASTER WORLD VIP-কে মানুষের কাছে পৌঁছানো ও বাস্তব ব্যবহারকারী/গ্রাহক আনা আমার সর্বোচ্চ অগ্রাধিকার—এই বিষয়টি কোনো session-এ বাদ দেওয়া যাবে না।”
+
+
+## 10. Session update — dual-currency wallet and commission clarification (2026-11-26, Bangladesh time)
+
+### Owner-approved policy clarification
+- Read and follow `docs/DUAL_CURRENCY_MEMBER_WALLET_AND_COMMISSION_POLICY_BN.md` as the detailed policy and acceptance-test source.
+- The 35% rate is for the USD Automatic-System/high-volume-high-value USD work stream; the 20% rate is for ordinary BDT work. These are separate Admin/Owner allocations on each stream's Distributable Net Platform Revenue, not a flat 35% on all work, not a BDT order-value threshold, and never both on the same receipt.
+- Show two separate member wallet balances: actual available USD (US$0.00 when none) and BDT. Verified USD is automatically converted using a trusted server-side FX quote and credited to BDT; preserve source USD, FX details and exact BDT credit in linked ledger history. After full conversion, available USD becomes zero; historical USD and BDT credit remain visible.
+- USD member lottery is a separate no-purchase-necessary promotional prize stream, unpredictable and not guaranteed wages. Keep prize liability separately funded and legally approved; do not launch without all gates. Converted prize BDT remains labelled as prize, not work wages.
+- Admin/Owner personal out-of-pocket spending target remains zero. Accept only genuine funded customer orders/contracts; prioritize reputable brands/companies with recurring real work. Never invent customers, endorsements, orders or guaranteed unlimited work. No member wages/deposits, prize pool or refund reserve may fund operations; no silent paid fallback. If customer funding/capacity is insufficient, pause/reject/requote.
+- Existing generic commission wording in supporting documents must be interpreted in line with this currency-stream clarification. No production commission behavior is changed by documentation alone.
+
+### Status and next work
+- This is a documentation/policy update only. USD/BDT wallet display, automatic FX conversion, currency-specific commission calculation, USD draw engine, customer contracts/acquisition and payouts remain NOT LIVE until implemented and independently acceptance-tested.
+- Do not change production database or payment behavior in this session. Existing database backup/restore, secure credential correction and explicit migration authorization blockers remain in force.
+- Next implementation scope: design/test separate ledger entries and wallet display, then trusted FX conversion and currency-stream commission calculation in staging; keep promotional draw disabled until funding/legal/provider gates pass. Update the completed-only no-repeat register only for checks actually run and proven PASS.
