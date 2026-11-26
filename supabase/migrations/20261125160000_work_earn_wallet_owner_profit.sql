@@ -290,7 +290,7 @@ begin
      or not v_snapshot.operating_budget_sufficient
      or v_snapshot.verified_at < now()-interval '15 minutes'
      or v_snapshot.valid_until < now() then
-    raise exception 'Financial reconciliation, 100% refund reserves or operating budget gate failed/stale';
+    raise exception 'Financial reconciliation, 100%% refund reserves or operating budget gate failed/stale';
   end if;
 
   select count(*) into v_owner_count from public.app_user_roles where role='owner';
