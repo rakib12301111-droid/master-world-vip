@@ -59,3 +59,13 @@ Member ও Admin-এর জন্য সহজ payout interface রাখা: �
 ## ৭. বর্তমান অবস্থা
 
 এই নথি product requirement ও architecture policy হিসেবে যোগ করা হয়েছে। বর্তমানে bKash/Nagad/bank provider integration, account verification, live transfer, commission collection বা automatic withdrawal চালু নয়। কোনো company/provider permission ছাড়াই টাকা তোলার নিশ্চয়তা দেওয়া হচ্ছে না।
+
+
+## ৮. Owner-এর Admin commission প্রস্তাব — ২৭ নভেম্বর ২০২৬
+
+- প্রতি সম্পন্ন ও গ্রহণযোগ্য paid work order-এর জন্য **Admin commission ২০% (প্রস্তাবিত হার)** হিসেবে নথিভুক্ত করা হলো।
+- এই ২০% এখনো production/configuration-এ সক্রিয় নয়; এটি প্রস্তাব, স্বয়ংক্রিয়ভাবে চালু হওয়া বা Member/customer-এর কাছ থেকে কাটা শুরু হওয়ার অনুমতি নয়।
+- বাস্তবায়নের আগে commission-এর calculation basis (gross customer price নাকি provider fee বাদে net amount), provider fee, refund/chargeback reversal, tax এবং rounding policy নির্দিষ্ট করে order-এর আগে customer ও Member-কে দেখাতে হবে।
+- অনুমোদিত হলে order acceptance-এর সময় ২০% rate ও calculation basis immutable snapshot হবে; কেবল কাজ accepted/completed এবং payment settled/reconciled হলে আলাদা company-revenue ledger-এ post হবে।
+- USD order-এ ২০% USD-তে এবং BDT order-এ ২০% BDT-তে হিসাব হবে; cross-currency netting হবে না। Member-এর নিট পাওনা ও refund reserve আগে থেকেই স্পষ্ট দেখাতে হবে।
+- **Status: proposal recorded only — not enabled, not collected, no live revenue.**
