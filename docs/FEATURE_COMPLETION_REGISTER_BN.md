@@ -275,3 +275,13 @@ Owner commission কেবল সব member payable, refund liability, provider 
 - Existing repository foundations include AI assistant function, Work & Earn board/migration, referral wallet/reward foundation, verified-payment/checkout migration source and Work & Earn wallet/Owner-profit settlement migration source. These are not proof of a live 4,000-project fleet, production checkout/entitlement activation, company revenue ledger, USD/BDT payout or settled income.
 - Member Auto Work paid package checkout/execution remains DISABLED / NOT LIVE until its existing 100% liquid refund reserve, separate operating budget, isolated infrastructure, verified provider integration, legal/security review and acceptance tests pass.
 - **Status: requirements/specification only — NOT LIVE.** No new customer payments, project workers, income, migration apply or deployment resulted from this update.
+
+
+## Update 22 — 2026-11-26: Free + Paid option clarified for every project; automation progress audit
+
+- Owner clarified that all 4,000 project slots (2,000 USD + 2,000 BDT) must each expose two access options: Free Option and Paid Automatic Plan.
+- Admin may use the Free Option across the project portfolio and may purchase the Paid Plan. Ordinary Members activate paid automation only after provider-confirmed settlement and server-side entitlement checks. The two options mean Free + Paid, not two paid tiers; pricing/limits/features remain to be specified.
+- Progress audit: repository contains operational GitHub Actions workflow source for daily backup/restore preview, weekly read-only database audit and six-hour database health monitoring; these automate infrastructure checks, not customer earning projects.
+- Existing product foundations include AI Assistant Edge Function, Work & Earn board/migration, referral wallet/reward foundation, verified-payment/checkout migration source, and Work & Earn wallet/Owner-profit settlement migration source.
+- Missing/not verified as live: 4,000-project registry/orchestrator/worker fleet; project queues/schedulers/budget enforcement; Company Revenue Ledger; complete plan checkout→verified webhook→entitlement activation; production USD/BDT revenue and payout integrations; Admin/Member entitlement enforcement; full acceptance/load/security tests.
+- **Status: foundation + specification only; NOT LIVE as a 4,000-project earning system.** No new customer payment, revenue, payout, production migration or deployment was performed.
