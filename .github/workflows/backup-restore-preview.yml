@@ -59,9 +59,20 @@ jobs:
               raw = raw[1:-1].strip()
           if raw.startswith("SUPABASE_DB_URL="):
               raw = raw.split("=", 1)[1].strip().strip("\"'")
+          # Emit only non-secret diagnostics so an incorrectly stored GitHub
+          # secret can be identified without revealing any URI or credentials.
+          has_postgres_prefix = raw.startswith(("postgresql://", "postgres://"))
+          has_key_label = raw.startswith("SUPABASE_DB_URL=")
+          has_newline = "\\n" in raw or "\\r" in raw
+          print(
+              "Safe SUPABASE_DB_URL diagnostics: "
+              f"nonempty={bool(raw)}; length={len(raw)}; "
+              f"postgres_scheme_prefix={has_postgres_prefix}; "
+              f"key_label_prefix={has_key_label}; embedded_newline={has_newline}."
+          )
           parsed = urlsplit(raw)
           if parsed.scheme not in ("postgres", "postgresql") or not parsed.hostname:
-              raise SystemExit("::error::SUPABASE_DB_URL must be a PostgreSQL URI. Check for a copied label, extra text, or missing postgresql:// prefix.")
+              raise SystemExit("::error::SUPABASE_DB_URL is not being supplied as a valid PostgreSQL URI. Check the secret value format; the secret itself is never printed.")
           host = parsed.hostname.lower()
           if not host.endswith(".pooler.supabase.com"):
               # Hostname is not a credential; showing it helps identify Direct vs Session Pooler safely.
