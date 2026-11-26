@@ -91,7 +91,7 @@ returns integer
 language plpgsql
 security definer
 set search_path = ''
-as $
+as $$
 declare
   v_owner record;
   v_inserted integer := 0;
@@ -119,7 +119,7 @@ begin
   end loop;
   return v_inserted;
 end;
-$;
+$$;
 revoke all on function public.service_accrue_owner_compensation_months() from public,anon,authenticated;
 grant execute on function public.service_accrue_owner_compensation_months() to service_role;
 
