@@ -2,6 +2,8 @@ name: MASTER WORLD VIP - Encrypted Backup, Restore Test & Migration Preview
 run-name: MASTER WORLD VIP DB Safety Pipeline
 
 on:
+  schedule:
+    - cron: '30 2 * * *' # daily 08:30 Bangladesh time
   workflow_dispatch:
   push:
     branches: [main]
