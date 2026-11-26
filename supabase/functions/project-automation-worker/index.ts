@@ -23,27 +23,17 @@ Deno.serve(async (req) => {
   try {
     await rpc("worker_register_project_automation", { p_worker_key: workerKey, p_display_name: "MASTER WORLD VIP Edge Worker", p_currencies: ["USD", "BDT"] });
     await rpc("worker_heartbeat_project_automation", { p_worker_key: workerKey });
-    const maxTasks = 5;
-    const outcomes: Array<{ task_id: string; task_type: string; outcome: string }> = [];
-    for (let i = 0; i < maxTasks; i++) {
-      await rpc("worker_heartbeat_project_automation", { p_worker_key: workerKey });
-      const claimed = await rpc("worker_claim_project_automation_task", { p_worker_key: workerKey });
-      const task = Array.isArray(claimed) ? claimed[0] : claimed;
-      if (!task) break;
-      // No business task handlers are deployed yet. Fail closed rather than
-      // pretending that a generic project_cycle generated work or revenue.
-      const supported = new Set<string>([]);
-      const success = supported.has(String(task.task_type));
-      await rpc("worker_finish_project_automation_task", {
-        p_task_id: task.id,
-        p_lease_token: task.lease_token,
-        p_success: success,
-        p_actual_cost: 0,
-        p_error: success ? null : "No approved task handler is deployed for this task type"
-      });
-      outcomes.push({ task_id: String(task.id), task_type: String(task.task_type), outcome: success ? "succeeded" : "rejected_no_handler" });
-    }
-    return json({ status: "ok", worker: workerKey, claimed: outcomes.length, outcomes, execution_handlers_ready: false, revenue_enabled: false });
+    // Fail closed until reviewed task handlers are implemented and allow-listed.
+    // Do not claim queue items that this worker cannot safely execute.
+    const registeredHandlerCount = 0;
+    return json({
+      status: "idle",
+      worker: workerKey,
+      claimed: 0,
+      execution_handlers_ready: registeredHandlerCount > 0,
+      revenue_enabled: false,
+      note: "Worker registration and heartbeat are active; no approved business task handlers are deployed, so queue claims remain disabled."
+    });
   } catch (error) {
     return json({ error: error instanceof Error ? error.message : String(error) }, 500);
   }
