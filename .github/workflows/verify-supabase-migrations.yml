@@ -23,6 +23,7 @@ on:
       - "scripts/verify-project-automation-engine.py"
       - "scripts/verify-plan-customer-order-gates.py"
       - "scripts/verify-member-finance-ledger.py"
+      - "scripts/verify-member-payout-refund.py"
       - "www/data/helplines-BD.json"
       - "www/index.html"
       - "www/sw.js"
@@ -94,6 +95,8 @@ jobs:
         run: python scripts/verify-plan-customer-order-gates.py
       - name: Verify append-only double-entry finance ledger
         run: python scripts/verify-member-finance-ledger.py
+      - name: Verify Member payout and refund safety
+        run: python scripts/verify-member-payout-refund.py
       - name: Verify community live readiness
         run: python scripts/verify-community-live-readiness.py
       - name: Verify Owner-only live service health
