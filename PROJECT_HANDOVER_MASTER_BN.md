@@ -388,3 +388,12 @@ GitHub Actions-এ ব্যবহৃত secret নাম:
 - Member payable platform operating money নয়; Member-এর নিজের deposit/recharge বা customer shortfall পূরণের দায় নেই। Member payout কেবল reconciled settled funds থেকে হওয়া উচিত।
 - বাস্তব safeguarded custody account, signed webhook, daily reconciliation, dispute/chargeback workflow এবং payout integration এখনও তৈরি/যাচাইকৃত নয়। Database row বাস্তব bank custody-এর প্রমাণ নয়; Member-এর অর্থ এখনো এই কোড দ্বারা বাস্তবে সংরক্ষিত হয়নি।
 - নতুন static verifier-এ এই সুরক্ষা পরীক্ষা যুক্ত করা হয়েছে। Production apply নিষিদ্ধ/অনুমোদিত হয়নি।
+
+
+## ১৬. ২৬ নভেম্বর ২০২৬ — Member Loss-Prevention Hard Security
+
+- Added `supabase/migrations/20261126130000_member_loss_prevention_hardening.sql`.
+- Customer order-এর financial terms ও identity পরিবর্তন নিষিদ্ধ; funded order-এর scope এবং settlement/segregation evidence immutable; allocation row update/delete নিষিদ্ধ; allow-listed order lifecycle ও no-backward-transition guard যোগ; funded/financially resolved order delete নিষিদ্ধ।
+- Database triggers service-role write-সহ database mutation path-এ প্রযোজ্য; correction path হলো order cancel করে নতুন order, পুরোনো allocation rewrite নয়।
+- Static verifier `scripts/verify-plan-customer-order-gates.py` নতুন guard পরীক্ষা করে; Supabase migration safety workflow-এ এটি চালানো হয়।
+- **সীমাবদ্ধতা:** এটি software-level tamper-resistance/fail-closed control; real custody, reserve funding, solvency, provider signature, refund/payout বা Member ক্ষতিপূরণের বাস্তব নগদ সামর্থ্য নয়। Runtime disposable PostgreSQL validation এবং external safeguarded custody/audit/payout integration বাকি। Production apply/merge/deploy হয়নি।
