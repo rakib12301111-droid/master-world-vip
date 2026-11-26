@@ -133,3 +133,15 @@ Work & Earn wallet/Owner profit backend migration source থাকলেও prod
 - Public launch-এর আগে বাস্তব customer onboarding ও order-to-settlement-to-delivery-to-member-payment end-to-end sandbox tests, refund/chargeback tests, fraud/abuse review, security/privacy review, capacity/load tests, customer support staffing ও legal/provider compliance সম্পন্ন করতে হবে।
 - ১০,০০০,০০০+ customer scale-এর আগে staged load test, regional capacity, queue isolation, per-project quotas, rate limiting, autoscaling, disaster recovery, observability, support operations ও cost-per-customer validation পাস করতে হবে।
 - এই শর্তগুলো architecture/acceptance requirements; এগুলো বাস্তব গ্রাহক, settled order, funded reserve, Member protection guarantee বা production deployment ইতিমধ্যে আছে—এমন দাবি নয়।
+
+
+## ১১. ধাপ ৩ — Free + Paid Plan এবং Customer Paid Order-এর পৃথক নিয়ম
+
+- **Free Option customer-কে বিনামূল্যে কাজ দেওয়ার প্রতিশ্রুতি নয়।** Customer account/catalog browse, project details দেখা বা quote চাওয়া free হতে পারে; কিন্তু বাস্তব service delivery/কাজের order-এর মূল্য শূন্য হবে না। প্রতিটি customer work order-এ positive price, currency, scope, deadline, acceptance, cancellation/refund এবং Member payable প্রকাশ করতে হবে।
+- Free/Paid project automation access এবং customer service order দুটি পৃথক product flow। Free access থাকলেও সেটি paid customer work-কে free করে না; paid plan কেনাও customer order বা কাজের নিশ্চয়তা নয়।
+- Admin/Member audience আলাদা plan catalog-এ থাকবে। Paid price, period, feature/usage limits এবং refund terms অনুমোদিত না হওয়া পর্যন্ত কোনো paid catalog entry enabled হবে না। কোনো মূল্য অনুমান করে বসানো যাবে না।
+- Member paid entitlement কেবল trusted server-side provider verification-এ settled transaction, unique provider event/transaction এবং matching amount/currency যাচাইয়ের পর Active হবে। Browser redirect/screenshot/manual reference payment proof নয়।
+- Customer order execution কেবল positive-price order, verified provider settlement, order funds segregation, refund reserve verification এবং independent operating-budget verification-এর পর শুরু হতে পারবে। Gross order amount-এ Member payable, refund liability ও operating cost allocation cover না হলে order fail-closed থাকবে।
+- Member wage, customer refund reserve ও platform operating funds আলাদা থাকবে। কোনো Member-কে customer shortfall নিজের টাকা দিয়ে পূরণ করতে বলা যাবে না; Member-এর কাজ পাওয়ার জন্য deposit/recharge বাধ্যতামূলক নয়।
+- Step 3 migration source: `20261126120000_free_paid_plan_customer_order_gates.sql`; static verifier: `scripts/verify-plan-customer-order-gates.py`। Catalog rows seeded/enabled নয়; plan price/feature matrix ও payment provider integration এখনও pending।
+- **Status:** source foundation only. No customer checkout, provider webhook, plan activation, order execution, refund reserve custody, payment collection or production migration is live. Zero-loss guarantee দেওয়া যাবে না; launch-এর আগে sandbox, refund/chargeback, accounting, legal/provider, security ও operational acceptance tests আবশ্যক।
