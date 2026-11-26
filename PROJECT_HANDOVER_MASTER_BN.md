@@ -117,8 +117,7 @@ Run #85-এর log-এ স্পষ্ট লেখা আছে:
 
 ### `.github/workflows/backup-restore-preview.yml`
 - Push/ম্যানুয়াল trigger আছে।
-- Encrypted full logical backup এবং isolated restore test চালায়।
-- Remote migration history inspect করে।
+- Encrypted full logical backup এবং isolated restore test চালায়।- Remote migration history inspect করে।
 - বর্তমান সংশোধনের পর remote migration history শুধু inspect করে; স্বয়ংক্রিয় `migration repair` আর চালায় না।
 - `supabase db push --dry-run --remote` দিয়ে preview চালায়।
 - এই workflow Production migration push করে না।
@@ -237,8 +236,7 @@ GitHub Actions-এ ব্যবহৃত secret নাম:
 - এই privilege hardening Production-এ এখনো কার্যকর হয়নি; ৩০টি migration apply না হওয়া পর্যন্ত audited `profiles` table-এ আগের privilege grants থাকবে।
 
 ### Secure update workflow completeness
-- `.github/workflows/secure-supabase-db-update.yml`-এ আগে required migration check কেবল ২৬টি file যাচাই করত; শেষ ৪টি migration যোগ করে সম্পূর্ণ ৩০টি যাচাই করা হয়েছে।
-- Commit: `1b33f3eea0beedb9b02d5108c507a7210b2a5887`।
+- `.github/workflows/secure-supabase-db-update.yml`-এ আগে required migration check কেবল ২৬টি file যাচাই করত; শেষ ৪টি migration যোগ করে সম্পূর্ণ ৩০টি যাচাই করা হয়েছে।- Commit: `1b33f3eea0beedb9b02d5108c507a7210b2a5887`।
 
 
 ## 11. ভবিষ্যৎ সহকারীর জন্য সংক্ষিপ্ত নির্দেশনা
@@ -357,8 +355,7 @@ GitHub Actions-এ ব্যবহৃত secret নাম:
 ## ১৩. Owner-এর নতুন বাধ্যতামূলক product requirement — বাস্তব গ্রাহক ও Member financial safety (২৬ নভেম্বর ২০২৬)
 
 - Customer-led demand: বাস্তব customer-রা project-এ কাজের order/service request/subscription আনবেন; ভুয়া customer/order/task/revenue নিষিদ্ধ। প্রতিটি project-এর জন্য customer acquisition, catalog/discovery, order intake, payment, delivery, acceptance, support, refund/dispute flow তৈরি ও মাপতে হবে।
-- Scale ambition: ১ কোটি (১০,০০০,০০০)+ বাস্তব customer দীর্ঘমেয়াদি লক্ষ্য; বর্তমান অর্জন বা নিশ্চয়তা নয়। staged growth ও evidence ছাড়া customer count বা capacity দাবি করা যাবে না।
-- সাধারণ Member protection: কাজ পাওয়ার জন্য deposit/recharge/unlock fee বাধ্যতামূলক নয়; paid plan ঐচ্ছিক এবং কাজ/আয়ের নিশ্চয়তা নয়। Customer-funded order-এ provider settlement ও segregated funding verify না হওয়া পর্যন্ত কাজ শুরু নয়।
+- Scale ambition: ১ কোটি (১০,০০০,০০০)+ বাস্তব customer দীর্ঘমেয়াদি লক্ষ্য; বর্তমান অর্জন বা নিশ্চয়তা নয়। staged growth ও evidence ছাড়া customer count বা capacity দাবি করা যাবে না।- সাধারণ Member protection: কাজ পাওয়ার জন্য deposit/recharge/unlock fee বাধ্যতামূলক নয়; paid plan ঐচ্ছিক এবং কাজ/আয়ের নিশ্চয়তা নয়। Customer-funded order-এ provider settlement ও segregated funding verify না হওয়া পর্যন্ত কাজ শুরু নয়।
 - কাজ শুরুর আগে scope, price/currency, deadline, acceptance, revision, cancellation, dispute/refund এবং Member payable প্রকাশ করতে হবে। Member payable, customer refund liability ও platform operating funds পৃথক রাখতে হবে।
 - Screenshot/client-side payment status নয়; signed/server-side provider settlement, idempotency, duplicate/fraud checks, audit trail, chargeback/refund workflow, kill switch এবং support process আবশ্যক।
 - কোনো সফটওয়্যার সম্পূর্ণ loss-free guarantee দিতে পারে না; তবে Member-কে নিজের টাকা দিয়ে customer shortfall পূরণ করানো যাবে না এবং unfunded order-এ কাজ শুরু করানো যাবে না। Reserve, funded-order gate ও dispute controls launch blockers।
@@ -477,3 +474,53 @@ GitHub Actions-এ ব্যবহৃত secret নাম:
 - Added `docs/STAGING_AUTH_AND_WORKER_READINESS_BN.md` for exact scope and limitations.
 - **Not yet run:** no Staging secrets/project credentials are available in this conversation; workflows have been added but not dispatched. Therefore no actual Staging migration, three-account test, or Staging Edge Function deploy is claimed complete.
 - **Not Live:** PR #20 remains Draft/Open/Unmerged. No Production migration, Production Worker deploy, public deployment, or real money operation was performed. Production migration still requires explicit exact approval and backup/restore evidence.
+
+---
+
+## ১৪. ২৭ নভেম্বর ২০২৬ — Staging Workflow hardening ও পরবর্তী কাজের একক রেকর্ড
+
+### আজ সম্পন্ন — Source/Workflow/Documentation
+- .github/workflows/validate-staging-supabase.yml-এর Staging preflight আরও শক্ত করা হয়েছে:
+  - STAGING_SUPABASE_DB_URL PostgreSQL URL কি না যাচাই করে;
+  - pooler username-এ .<STAGING_SUPABASE_PROJECT_REF> suffix আছে কি না যাচাই করে, যাতে ভুল project/ref-এর DB URL ধরা যায়;
+  - পরিচিত Production project ref lztbbrzeuyjkuiyzrsxp Staging হিসেবে ব্যবহার করলে workflow বন্ধ হয়;
+  - Owner, Admin ও Member login তিনটি আলাদা Supabase Auth user ID কি না যাচাই করে;
+  - role verification output path সংশোধন করা হয়েছে।
+- Workflow-টি Staging-এ full migration chain, Owner/Admin/Member authentication ও RBAC assertions, তারপর Staging Edge Function deployment-এর জন্য প্রস্তুত। এটি Production target করার workflow নয়।
+- Staging workflow-এর প্রয়োজনীয় Secret-গুলোর নাম ও নিরাপদ setup নির্দেশনা এই handover-এর আগের Staging section-এ আছে; কোনো Secret value এখানে বা Chat-এ রাখা যাবে না।
+- Worker foundation-এর সীমা স্পষ্ট রাখা হয়েছে: service-role registration ও heartbeat আছে; allow-listed business task handler না থাকায় worker এখনো task claim/execute করে না; revenue চালু করে না; default disabled।
+- এই নথির আগের Staging/Worker section-গুলোই বিস্তারিত implementation record; একই migration বা feature আবার তৈরি করার প্রয়োজন নেই।
+
+### আজকের GitHub অবস্থা — যাচাই করা
+- Repository: rakib12301111-droid/master-world-vip
+- Branch: planning/4000-automated-project-economy
+- PR #20: https://github.com/rakib12301111-droid/master-world-vip/pull/20
+- সর্বশেষ যাচাইকৃত PR head (এই handover update-এর আগে): 84eb0ba4d17c8511e8468a980ec5854a76b90172
+- PR state: Open, Draft, Unmerged; merge হয়নি।
+- ওই head-এর জন্য workflow run ও combined status তালিকা খালি পাওয়া গেছে। তাই এই সর্বশেষ workflow-hardening commit-এর নতুন CI সফল হয়েছে—এমন দাবি করা হচ্ছে না।
+- এই handover update branch-এ আলাদা commit হিসেবে যোগ হবে; commit SHA update সম্পন্ন হওয়ার পর পরবর্তী handover record-এ নথিভুক্ত থাকবে।
+
+### এখনো অসম্পন্ন — স্পষ্টভাবে আলাদা রাখা হলো
+1. Staging project ও প্রয়োজনীয় GitHub Actions Secrets এখনো নিশ্চিত/প্রদান করা হয়নি; তাই validate-staging-supabase.yml dispatch বা বাস্তব Staging migration/Auth/RBAC test চালানো হয়নি।
+2. Staging-এ Owner/Admin/Member তিন-account login ও permission test সফল হওয়ার প্রমাণ নেই।
+3. Staging Edge Function deploy হয়নি; Worker-এর বাস্তব business task handler নেই এবং worker execution disabled।
+4. Full ordered migration chain-এর clean disposable/Staging validation সম্পন্ন হয়েছে বলে নতুন কোনো প্রমাণ নেই।
+5. বর্তমান Production read-only schema/RLS audit ও recoverable backup/restore evidence আবার যাচাই করা বাকি; আগের backup/audit record-কে নতুন Staging বা release evidence হিসেবে গণ্য করা যাবে না।
+6. Provider sandbox ও signed webhook, lawful merchant onboarding, safeguarded USD/BDT custody, refund reserve, daily reconciliation, বাস্তব payout/refund rail, plan pricing, security/load/end-to-end tests অসম্পন্ন।
+7. ২০% Admin commission কেবল proposal; সক্রিয় নয়। কোনো real customer payment, Member payout, refund transfer, commission collection বা project revenue নেই।
+
+### নিরাপত্তা ও অনুমোদনের অপরিবর্তিত সীমা
+- Production migration apply, migration-history repair, destructive SQL, live data change, real billing/payment/payout এবং public deployment এই update-এ করা হয়নি।
+- Production migration-এর আগে আলাদা স্পষ্ট approval phrase APPLY-MASTER-WORLD-VIP-MIGRATIONS এবং সব পূর্বশর্ত—clean full-chain test, read-only Production audit, valid backup ও successful restore rehearsal, release readiness—পূরণ করতে হবে। Phrase একা readiness-এর বিকল্প নয়।
+- Public/live deployment-এর জন্যও পৃথক explicit approval এবং Release Readiness pass প্রয়োজন।
+- bKash/Nagad/bank/provider KYC, merchant বা legal approval bypass করা যাবে না।
+- কোনো secret, password, token, OTP বা encryption passphrase handover-এ লেখা যাবে না।
+
+### পরবর্তী সেশনের শুরু — একই কাজ পুনরায় নয়
+1. প্রথমে এই handover এবং বর্তমান PR/branch head পড়ুন; আগের migration, registry, ledger, payout workflow, Admin Dashboard বা Staging workflow পুনরায় তৈরি করবেন না।
+2. GitHub Settings → Secrets and variables → Actions-এ কেবল Staging-এর নিজস্ব project credentials ও তিনটি পৃথক test account-এর Secret যোগ হয়েছে কি না যাচাই করুন। Secret value Chat-এ চাইবেন/নেবেন না।
+3. Secret প্রস্তুত থাকলে একই branch-এ validate-staging-supabase.yml একবার dispatch করুন; run ID, job/step ফলাফল ও log দেখে প্রতিটি সফল/ব্যর্থ ধাপ নথিভুক্ত করুন। ব্যর্থ হলে error ঠিক করে প্রয়োজনীয় ধাপটুকু পুনরায় চালান—পুরো feature/migration অকারণে আবার তৈরি নয়।
+4. Staging pass হলে allow-listed business task type, input validation, authorization, idempotency, budget/timeout/retry, audit ও sandbox test-সহ Worker handler বাস্তবায়ন/যাচাই এগিয়ে নিন; arbitrary code execution নয় এবং production worker disabled রাখুন।
+5. Backup/restore ও Production read-only audit-এর বর্তমান প্রমাণ সংগ্রহ করে Release Readiness checklist আপডেট করুন। সব gate pass না করা পর্যন্ত Production migration বা public deployment নয়।
+
+**আজকের চূড়ান্ত অবস্থা:** Source ও workflow preparation এগিয়েছে; Staging run এখনো হয়নি; PR #20 Draft/Open/Unmerged; Production অপরিবর্তিত; MASTER WORLD VIP Live নয় এবং আয়/পেমেন্ট চালু নয়। পরবর্তী কাজের একমাত্র starting point হবে উপরের “পরবর্তী সেশনের শুরু” তালিকা।
