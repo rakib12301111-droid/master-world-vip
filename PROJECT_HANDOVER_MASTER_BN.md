@@ -429,3 +429,14 @@ GitHub Actions-এ ব্যবহৃত secret নাম:
 - এটি এখনো enabled নয়; calculation basis, provider fee, tax, refund/chargeback reversal ও rounding policy নির্ধারণ এবং customer/Member disclosure ছাড়া কোনো টাকা কাটা বা ledger-এ commission post করা যাবে না।
 - অনুমোদিত হলে কাজ শুরুর আগেই rate ও Member net payable দেখাতে হবে; accepted/completed + settled/reconciled হওয়ার পর আলাদা Company Revenue Ledger-এ post হবে; USD/BDT পৃথক থাকবে।
 - Detailed policy: `docs/PAYOUT_METHODS_ADMIN_APPROVAL_AND_PLATFORM_COMMISSION_BN.md`।
+
+
+## ১৯. ২৭ নভেম্বর ২০২৬ — Release Readiness যাচাই ও লাইভ করার গেট
+
+- Owner routine engineering updates-এর মাধ্যমে Release-Ready প্রস্তুতির কাজ এগিয়ে নিতে বলেছেন। সেই অনুযায়ী `docs/RELEASE_READINESS_MASTER_WORLD_VIP_BN.md` যোগ করা হয়েছে; এতে যাচাইকৃত CI evidence, Production blockers, provider/custody prerequisites এবং ধাপে ধাপে release sequence নথিভুক্ত।
+- PR #20-এর সর্বশেষ পর্যবেক্ষিত head: `c23d565217cd53cb443fe6fb1bed51d8b64565a8`; PR এখনও Draft/Open/Unmerged।
+- 27 Nov CI: disposable PostgreSQL 16 finance-ledger/payout-refund runtime run `45872393975` success; migration safety run `45872394002` success; Auto Work static safety run `45872393894` success।
+- Runtime test কেবল isolated DB-তে ledger ও payout/refund migrations পরীক্ষা করে; এটি full migration chain বা Production schema apply-এর প্রমাণ নয়।
+- বাকি release blocker: full-chain clean disposable DB validation, Production read-only schema/RLS audit, provider-specific sandbox/webhook, lawful merchant onboarding, real segregated custody/refund reserve, daily reconciliation, actual payout/refund rails, worker service, plan/pricing/commission details, security/load/end-to-end acceptance tests।
+- ২০% Admin commission এখনও proposal-only; payout methods ও bank self-enrollment specification-only; কোনো live money movement/commission posting নয়।
+- Routine source/docs/test updates চলতে পারে। Production migration apply, migration-history repair, public deployment, live billing/payout এবং bank/provider account/KYC change আলাদা explicit approval ছাড়া করা যাবে না। Migration apply-এর exact phrase: `APPLY-MASTER-WORLD-VIP-MIGRATIONS`।
