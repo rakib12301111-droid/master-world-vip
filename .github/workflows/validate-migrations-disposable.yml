@@ -36,6 +36,7 @@ jobs:
           --health-retries 12
     env:
       TEST_DB_URL: postgresql://supabase_admin:migration_test_only@127.0.0.1:5432/mwvip_migration_test
+      LEGACY_DB_URL: postgresql://supabase_admin:migration_test_only@127.0.0.1:5432/mwvip_legacy_test
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -90,29 +91,118 @@ jobs:
           grant execute on function auth.role() to anon,authenticated,service_role;
           SQL
 
+      - name: Bootstrap audited legacy production-schema fixture
+        run: |
+          set -euo pipefail
+          export PGSSLMODE=disable
+          psql "$TEST_DB_URL" -X -v ON_ERROR_STOP=1 -c "create database mwvip_legacy_test;"
+          psql "$LEGACY_DB_URL" -X -v ON_ERROR_STOP=1 <<'SQL'
+          create schema if not exists auth;
+          create schema if not exists extensions;
+          create extension if not exists pgcrypto with schema extensions;
+          create table auth.users (
+            id uuid primary key default gen_random_uuid(),
+            email text unique,
+            phone text,
+            phone_confirmed_at timestamptz,
+            confirmed_at timestamptz,
+            banned_until timestamptz,
+            raw_user_meta_data jsonb not null default '{}'::jsonb,
+            raw_app_meta_data jsonb not null default '{}'::jsonb,
+            created_at timestamptz not null default now(),
+            updated_at timestamptz not null default now()
+          );
+          create or replace function auth.uid()
+          returns uuid language sql stable
+          as $fn$ select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid $fn$;
+          create or replace function auth.role()
+          returns text language sql stable
+          as $fn$ select nullif(current_setting('request.jwt.claim.role',true),'') $fn$;
+          create table public.profiles (
+            id uuid primary key references auth.users(id) on delete cascade,
+            display_name text,
+            country text,
+            avatar_url text,
+            created_at timestamptz not null default now(),
+            updated_at timestamptz not null default now()
+          );
+          alter table public.profiles enable row level security;
+          create policy "Users can insert own profile" on public.profiles
+            for insert to authenticated with check (auth.uid()=id);
+          create policy "Users can update own profile" on public.profiles
+            for update to authenticated using (auth.uid()=id) with check (auth.uid()=id);
+          create policy "Users can view own profile" on public.profiles
+            for select to authenticated using (auth.uid()=id);
+          create table public.update_releases (
+            id uuid primary key default gen_random_uuid(),
+            version text not null unique,
+            release_notes text,
+            manifest_url text,
+            status text not null default 'draft'
+              check (status in ('draft','published','withdrawn')),
+            created_at timestamptz not null default now(),
+            published_at timestamptz
+          );
+          create index update_releases_published_at_idx
+            on public.update_releases(published_at desc nulls last)
+            where status='published';
+          alter table public.update_releases enable row level security;
+          create policy "Read published releases" on public.update_releases
+            for select to anon,authenticated using (status='published');
+          grant select on public.update_releases to anon,authenticated;
+          SQL
+
       - name: Apply every repository migration to disposable database in order
         run: |
           set -euo pipefail
           export PGSSLMODE=disable
-          count=0
-          for migration in supabase/migrations/*.sql; do
-            echo "::group::Validating $(basename "$migration")"
-            psql "$TEST_DB_URL" -X -v ON_ERROR_STOP=1 --single-transaction -f "$migration"
-            echo "::endgroup::"
-            count=$((count+1))
+          for database_url in "$TEST_DB_URL" "$LEGACY_DB_URL"; do
+            count=0
+            if [ "$database_url" = "$TEST_DB_URL" ]; then label="fresh"; else label="legacy-production-shape"; fi
+            echo "Validating complete migration sequence against $label disposable database."
+            for migration in supabase/migrations/*.sql; do
+              echo "::group::$label — $(basename "$migration")"
+              psql "$database_url" -X -v ON_ERROR_STOP=1 --single-transaction -f "$migration"
+              echo "::endgroup::"
+              count=$((count+1))
+            done
+            test "$count" -eq 30 || { echo "::error::Expected 30 migration files in $label database; found $count."; exit 1; }
           done
-          test "$count" -eq 30 || { echo "::error::Expected 30 migration files; found $count."; exit 1; }
           echo "DISPOSABLE_MIGRATION_VALIDATION=success"
-          echo "MIGRATIONS_APPLIED_TO_TEST_DATABASE=$count"
+          echo "MIGRATIONS_APPLIED_TO_FRESH_TEST_DATABASE=30"
+          echo "MIGRATIONS_APPLIED_TO_LEGACY_SCHEMA_TEST_DATABASE=30"
           echo "PRODUCTION_DATABASE_CHANGED=false"
 
       - name: Verify expected application objects exist in disposable database
         run: |
           set -euo pipefail
           export PGSSLMODE=disable
-          psql "$TEST_DB_URL" -X -v ON_ERROR_STOP=1 -Atc "
-            select count(*) from information_schema.tables
-            where table_schema='public' and table_type='BASE TABLE';" |
-            tee /tmp/public_table_count.txt
-          test "$(cat /tmp/public_table_count.txt)" -ge 30
-          echo "Disposable database contains the expected application schema objects."
+          for database_url in "$TEST_DB_URL" "$LEGACY_DB_URL"; do
+            psql "$database_url" -X -v ON_ERROR_STOP=1 -Atc "
+              select count(*) from information_schema.tables
+              where table_schema='public' and table_type='BASE TABLE';" > /tmp/public_table_count.txt
+            test "$(cat /tmp/public_table_count.txt)" -ge 30
+          done
+          legacy_id_type="$(psql "$LEGACY_DB_URL" -X -v ON_ERROR_STOP=1 -Atc "
+            select data_type from information_schema.columns
+            where table_schema='public' and table_name='update_releases' and column_name='id';")"
+          test "$legacy_id_type" = "uuid"
+          legacy_manifest_column="$(psql "$LEGACY_DB_URL" -X -v ON_ERROR_STOP=1 -Atc "
+            select exists(select 1 from information_schema.columns
+              where table_schema='public' and table_name='update_releases' and column_name='manifest_url');")"
+          test "$legacy_manifest_column" = "t"
+          legacy_semver_not_valid="$(psql "$LEGACY_DB_URL" -X -v ON_ERROR_STOP=1 -Atc "
+            select not convalidated from pg_constraint
+            where conrelid='public.update_releases'::regclass
+              and conname='update_releases_semver_check';")"
+          test "$legacy_semver_not_valid" = "t"
+          legacy_profile_default="$(psql "$LEGACY_DB_URL" -X -v ON_ERROR_STOP=1 -Atc "
+            select column_default from information_schema.columns
+            where table_schema='public' and table_name='profiles' and column_name='display_name';")"
+          test "$legacy_profile_default" = "''::text"
+          old_policy_count="$(psql "$LEGACY_DB_URL" -X -v ON_ERROR_STOP=1 -Atc "
+            select count(*) from pg_policies where schemaname='public'
+              and tablename='update_releases' and policyname='Read published releases';")"
+          test "$old_policy_count" = "0"
+          echo "Fresh and audited legacy-schema disposable migration validations passed."
+          echo "Existing UUID IDs and manifest_url column preserved; semver check added NOT VALID."
