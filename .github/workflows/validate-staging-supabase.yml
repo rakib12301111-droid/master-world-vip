@@ -1,0 +1,94 @@
+name: MASTER WORLD VIP — Staging migrations and access-control acceptance
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: mwvip-staging-validation
+  cancel-in-progress: false
+
+jobs:
+  staging-migrations:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+      - name: Check Staging secrets without printing values
+        env:
+          TOKEN: ${{ secrets.STAGING_SUPABASE_ACCESS_TOKEN }}
+          DB_URL: ${{ secrets.STAGING_SUPABASE_DB_URL }}
+          PROJECT_REF: ${{ secrets.STAGING_SUPABASE_PROJECT_REF }}
+        run: |
+          set -euo pipefail
+          test -n "$TOKEN" || { echo "::error::Missing STAGING_SUPABASE_ACCESS_TOKEN"; exit 1; }
+          test -n "$DB_URL" || { echo "::error::Missing STAGING_SUPABASE_DB_URL"; exit 1; }
+          test -n "$PROJECT_REF" || { echo "::error::Missing STAGING_SUPABASE_PROJECT_REF"; exit 1; }
+          test "$PROJECT_REF" != "lztbbrzeuyjkuiyzrsxp" || { echo "::error::Staging project ref must not be Production"; exit 1; }
+          echo "Staging credentials present; values are masked."
+      - name: Validate the complete ordered migration set
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+          files=sorted(Path("supabase/migrations").glob("*.sql"))
+          assert files, "No migration files found"
+          versions=[p.name.split("_",1)[0] for p in files]
+          assert len(versions)==len(set(versions)), "Duplicate migration version found"
+          print(f"Found {len(files)} ordered migration files.")
+          PY
+      - name: Preview Staging migration changes
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.STAGING_SUPABASE_ACCESS_TOKEN }}
+          DB_URL: ${{ secrets.STAGING_SUPABASE_DB_URL }}
+        run: supabase db push --dry-run --db-url "$DB_URL"
+      - name: Apply ordered migrations to Staging only
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.STAGING_SUPABASE_ACCESS_TOKEN }}
+          DB_URL: ${{ secrets.STAGING_SUPABASE_DB_URL }}
+        run: supabase db push --db-url "$DB_URL"
+      - name: Verify Owner, Admin and Member Auth roles and Admin RPC access
+        env:
+          BASE_URL: ${{ secrets.STAGING_SUPABASE_URL }}
+          ANON_KEY: ${{ secrets.STAGING_SUPABASE_ANON_KEY }}
+          OWNER_JWT: ${{ secrets.STAGING_OWNER_JWT }}
+          ADMIN_JWT: ${{ secrets.STAGING_ADMIN_JWT }}
+          MEMBER_JWT: ${{ secrets.STAGING_MEMBER_JWT }}
+        run: |
+          set -euo pipefail
+          for name in BASE_URL ANON_KEY OWNER_JWT ADMIN_JWT MEMBER_JWT; do
+            test -n "${!name:-}" || { echo "::error::Missing staging test secret: $name"; exit 1; }
+          done
+          call_rpc() {
+            local token="$1" rpc="$2" output="$3" code
+            code=$(curl --silent --show-error -o "$output" -w '%{http_code}' \
+              "$BASE_URL/rest/v1/rpc/$rpc" \
+              -H "apikey: $ANON_KEY" -H "Authorization: Bearer $token" \
+              -H "Content-Type: application/json" -d '{}')
+            echo "$code"
+          }
+          for pair in "OWNER_JWT:owner" "ADMIN_JWT:admin" "MEMBER_JWT:member"; do
+            var="${pair%%:*}"; expected="${pair##*:}"; token="${!var}"
+            code=$(call_rpc "$token" get_my_admin_access "/tmp/$expected-role.json")
+            test "$code" = "200" || { echo "::error::$expected role RPC returned HTTP $code"; exit 1; }
+            actual=$(tr -d '"' < "/tmp/$expected-role.json")
+            test "$actual" = "$expected" || { echo "::error::Expected $expected role; received $actual"; exit 1; }
+            echo "PASS: $expected authenticated role verified"
+          done
+          for pair in "OWNER_JWT:yes" "ADMIN_JWT:yes" "MEMBER_JWT:no"; do
+            var="${pair%%:*}"; expected="${pair##*:}"; token="${!var}"
+            code=$(curl --silent --show-error -o /tmp/admin-overview.json -w '%{http_code}' \
+              "$BASE_URL/rest/v1/rpc/admin_project_automation_overview" \
+              -H "apikey: $ANON_KEY" -H "Authorization: Bearer $token" \
+              -H "Content-Type: application/json" -d '{}')
+            if [ "$expected" = "yes" ]; then
+              test "$code" = "200" || { echo "::error::Admin overview should allow $var (HTTP $code)"; exit 1; }
+            else
+              test "$code" -ge 400 || { echo "::error::Member unexpectedly accessed Admin overview"; exit 1; }
+            fi
+            echo "PASS: Admin overview access for $var"
+          done
