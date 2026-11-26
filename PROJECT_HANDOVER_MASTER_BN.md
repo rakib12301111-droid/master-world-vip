@@ -117,8 +117,7 @@ Run #85-এর log-এ স্পষ্ট লেখা আছে:
 
 ### `.github/workflows/backup-restore-preview.yml`
 - Push/ম্যানুয়াল trigger আছে।
-- Encrypted full logical backup এবং isolated restore test চালায়।- Remote migration history inspect করে।
-- বর্তমান সংশোধনের পর remote migration history শুধু inspect করে; স্বয়ংক্রিয় `migration repair` আর চালায় না।
+- Encrypted full logical backup এবং isolated restore test চালায়।- Remote migration history inspect করে।- বর্তমান সংশোধনের পর remote migration history শুধু inspect করে; স্বয়ংক্রিয় `migration repair` আর চালায় না।
 - `supabase db push --dry-run --remote` দিয়ে preview চালায়।
 - এই workflow Production migration push করে না।
 
@@ -238,7 +237,6 @@ GitHub Actions-এ ব্যবহৃত secret নাম:
 ### Secure update workflow completeness
 - `.github/workflows/secure-supabase-db-update.yml`-এ আগে required migration check কেবল ২৬টি file যাচাই করত; শেষ ৪টি migration যোগ করে সম্পূর্ণ ৩০টি যাচাই করা হয়েছে।- Commit: `1b33f3eea0beedb9b02d5108c507a7210b2a5887`।
 
-
 ## 11. ভবিষ্যৎ সহকারীর জন্য সংক্ষিপ্ত নির্দেশনা
 
 ব্যবহারকারীকে আবার শুরু থেকে সব করতে বলবেন না। প্রথমে এই handover ফাইল ও সর্বশেষ GitHub state পড়ুন। Run #85-এর backup/restore/preview এবং historical migration metadata repair সম্পন্ন হয়েছিল। পরের Read-only Audit নিশ্চিত করেছে remote migration history table-এ ০ row এবং ৩০টি migration pending। Disposable validation-এ SQL syntax/overload/RAISE সমস্যা সংশোধন, legacy schema compatibility এবং client privilege hardening পরীক্ষা করে সব ৩০টি migration fresh ও audited legacy-shape test database—দুইটিতেই সফলভাবে apply হয়েছে। এগুলো Production-এ apply হয়েছে—এমন নয়। Production schema comparison, recoverable backup confirmation এবং পৃথক exact approval ছাড়া কোনো Production migration চালাবেন না।
@@ -357,8 +355,7 @@ GitHub Actions-এ ব্যবহৃত secret নাম:
 - Customer-led demand: বাস্তব customer-রা project-এ কাজের order/service request/subscription আনবেন; ভুয়া customer/order/task/revenue নিষিদ্ধ। প্রতিটি project-এর জন্য customer acquisition, catalog/discovery, order intake, payment, delivery, acceptance, support, refund/dispute flow তৈরি ও মাপতে হবে।
 - Scale ambition: ১ কোটি (১০,০০০,০০০)+ বাস্তব customer দীর্ঘমেয়াদি লক্ষ্য; বর্তমান অর্জন বা নিশ্চয়তা নয়। staged growth ও evidence ছাড়া customer count বা capacity দাবি করা যাবে না।- সাধারণ Member protection: কাজ পাওয়ার জন্য deposit/recharge/unlock fee বাধ্যতামূলক নয়; paid plan ঐচ্ছিক এবং কাজ/আয়ের নিশ্চয়তা নয়। Customer-funded order-এ provider settlement ও segregated funding verify না হওয়া পর্যন্ত কাজ শুরু নয়।
 - কাজ শুরুর আগে scope, price/currency, deadline, acceptance, revision, cancellation, dispute/refund এবং Member payable প্রকাশ করতে হবে। Member payable, customer refund liability ও platform operating funds পৃথক রাখতে হবে।
-- Screenshot/client-side payment status নয়; signed/server-side provider settlement, idempotency, duplicate/fraud checks, audit trail, chargeback/refund workflow, kill switch এবং support process আবশ্যক।
-- কোনো সফটওয়্যার সম্পূর্ণ loss-free guarantee দিতে পারে না; তবে Member-কে নিজের টাকা দিয়ে customer shortfall পূরণ করানো যাবে না এবং unfunded order-এ কাজ শুরু করানো যাবে না। Reserve, funded-order gate ও dispute controls launch blockers।
+- Screenshot/client-side payment status নয়; signed/server-side provider settlement, idempotency, duplicate/fraud checks, audit trail, chargeback/refund workflow, kill switch এবং support process আবশ্যক।- কোনো সফটওয়্যার সম্পূর্ণ loss-free guarantee দিতে পারে না; তবে Member-কে নিজের টাকা দিয়ে customer shortfall পূরণ করানো যাবে না এবং unfunded order-এ কাজ শুরু করানো যাবে না। Reserve, funded-order gate ও dispute controls launch blockers।
 - এই requirements docs/4000_PROJECT_AUTOMATION_AND_DUAL_CURRENCY_REVENUE_BN.md-এর Section 10-এ যোগ করা হয়েছে। ১ কোটি customer এখনও target, actual user/customer count নয়।
 - Production migration, real payment/payout, public launch বা irreversible action-এর জন্য পৃথক approval/safety gate অপরিবর্তিত।
 
@@ -478,7 +475,6 @@ GitHub Actions-এ ব্যবহৃত secret নাম:
 ---
 
 ## ১৪. ২৭ নভেম্বর ২০২৬ — Staging Workflow hardening ও পরবর্তী কাজের একক রেকর্ড
-
 ### আজ সম্পন্ন — Source/Workflow/Documentation
 - .github/workflows/validate-staging-supabase.yml-এর Staging preflight আরও শক্ত করা হয়েছে:
   - STAGING_SUPABASE_DB_URL PostgreSQL URL কি না যাচাই করে;
@@ -524,3 +520,9 @@ GitHub Actions-এ ব্যবহৃত secret নাম:
 5. Backup/restore ও Production read-only audit-এর বর্তমান প্রমাণ সংগ্রহ করে Release Readiness checklist আপডেট করুন। সব gate pass না করা পর্যন্ত Production migration বা public deployment নয়।
 
 **আজকের চূড়ান্ত অবস্থা:** Source ও workflow preparation এগিয়েছে; Staging run এখনো হয়নি; PR #20 Draft/Open/Unmerged; Production অপরিবর্তিত; MASTER WORLD VIP Live নয় এবং আয়/পেমেন্ট চালু নয়। পরবর্তী কাজের একমাত্র starting point হবে উপরের “পরবর্তী সেশনের শুরু” তালিকা।
+
+### ১৪.১ এই handover update-এর commit confirmation
+- Handover file update commit: b85162987db2ddafedc33b87bb646682e256a8d9.
+- Update-এর পর PR #20 head একই commit SHA-তে যাচাই করা হয়েছে: Open / Draft / Unmerged.
+- Updated handover file: https://github.com/rakib12301111-droid/master-world-vip/blob/planning/4000-automated-project-economy/PROJECT_HANDOVER_MASTER_BN.md.
+- এই নথির সর্বশেষ যাচাইকৃত blob SHA: 8e1385803dce10592c467c14d2c4644ec68295cb.
