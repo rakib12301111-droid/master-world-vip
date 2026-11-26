@@ -1,6 +1,6 @@
 🧷 **পিন করা সর্বোচ্চ অগ্রাধিকার নির্দেশ — MASTER WORLD VIP**
 
-প্রকল্প-মালিকের স্থায়ী অনুমতি অনুযায়ী, সহকারী নিয়মিত রক্ষণাবেক্ষণ, GitHub code/workflow audit ও নিরাপদ সংশোধন, bug fixing, disposable tests, read-only audit, backup/restore test, dry-run/preview, ফলাফল যাচাই, প্রয়োজনীয় GitHub commit এবং এই handover update নিজ দায়িত্বে করবে। একই routine maintenance কাজের জন্য বারবার অনুমতি চাইবে না; সর্বশেষ repository state থেকে কাজ চালিয়ে যাবে এবং বাস্তব Run/log যাচাই ছাড়া সফল বলবে না। **তবে Production migration apply, destructive SQL/data change, migration-history repair বা অন্য irreversible/live পরিবর্তন এই সাধারণ অনুমতির অন্তর্ভুক্ত নয়**—এসবের জন্য পৃথক অনুমোদন ও বিদ্যমান নিরাপত্তা gate বাধ্যতামূলক। কোনো secret/password/token/OTP/passphrase চাইবে বা নথিতে লিখবে না।
+প্রকল্প-মালিকের স্থায়ী অনুমতি অনুযায়ী, সহকারী MASTER WORLD VIP-এর **ছোট ও বড়—দুই ধরনের গুরুত্বপূর্ণ কাজই** নিজ দায়িত্বে এগিয়ে নেবে। এর মধ্যে রয়েছে: পূর্ণাঙ্গ codebase ও architecture audit; বড় feature/module পরিকল্পনা ও বাস্তবায়ন; প্রয়োজনীয় refactor ও system redesign; database schema/migration source উন্নয়ন; security hardening; performance, reliability ও scalability উন্নয়ন; API/backend/frontend integration; automation ও CI/CD উন্নয়ন; বড় bug/technical debt সমাধান; backup/restore ও disaster-recovery পরিকল্পনা; comprehensive automated/integration/disposable tests; read-only production audit; documentation, release প্রস্তুতি এবং প্রয়োজনীয় GitHub commit ও handover update। কাজকে শুধু ছোটখাটো maintenance-এ সীমাবদ্ধ রাখা যাবে না। প্রতিটি বড় কাজকে নিরাপদ ধাপে ভাগ করে design, implementation, test, review ও ফলাফল যাচাইসহ শেষ পর্যন্ত এগিয়ে নিতে হবে; একই scope-এর routine বা বড় engineering কাজের প্রতিটি ধাপে বারবার অনুমতি চাইবে না। বাস্তব Run/log বা উপযুক্ত test evidence ছাড়া সফল দাবি করবে না। **তবে Production migration apply, live data delete/overwrite, migration-history repair, destructive SQL, billing/payment execution, irreversible account/service change বা external public release/deployment—যে কাজ সরাসরি live user/data/service-এ প্রভাব ফেলতে পারে—সেগুলোর জন্য পৃথক স্পষ্ট অনুমোদন ও বিদ্যমান safety gate বাধ্যতামূলক।** কোনো secret/password/token/OTP/passphrase চাইবে বা handover-এ লিখবে না।
 
 ---
 
@@ -290,10 +290,11 @@ GitHub Actions-এ ব্যবহৃত secret নাম:
 
 ## 13. ২৬ নভেম্বর ২০২৬ — প্রকল্প-মালিকের স্থায়ী রক্ষণাবেক্ষণ অনুমতি
 
-প্রকল্প-মালিকের স্পষ্ট নির্দেশ: MASTER WORLD VIP-এর ধারাবাহিক রক্ষণাবেক্ষণ, GitHub code ও workflow পর্যালোচনা, প্রয়োজনীয় নিরাপদ সংশোধন, পরীক্ষা, যাচাই, bug fixing, documentation/handover update এবং সংশ্লিষ্ট GitHub commit করার জন্য সহকারীকে অনুমতি দেওয়া হলো। প্রতিটি ছোটখাটো maintenance edit বা test চালানোর আগে আলাদা করে অনুমতি চাইতে হবে না।
+প্রকল্প-মালিকের স্পষ্ট নির্দেশ: MASTER WORLD VIP-এর ছোট ও বড় উভয় ধরনের গুরুত্বপূর্ণ engineering কাজ—সম্পূর্ণ codebase/architecture audit, বড় feature ও module design/implementation, refactor/system redesign, security/performance/reliability/scalability উন্নয়ন, database migration source উন্নয়ন, API/backend/frontend integration, automation/CI-CD, বড় bug ও technical debt সমাধান, comprehensive testing, documentation/release preparation, routine maintenance এবং সংশ্লিষ্ট GitHub commit—পরিকল্পনা থেকে যাচাই পর্যন্ত এগিয়ে নেওয়ার অনুমতি সহকারীকে দেওয়া হলো। কাজকে ছোটখাটো maintenance-এ সীমাবদ্ধ করা যাবে না; বড় কাজও নিরাপদ ধাপে ভাগ করে বাস্তবায়ন করতে হবে। একই অনুমোদিত scope-এর প্রতিটি ধাপে আলাদা অনুমতি চাইতে হবে না।
 
 ### অনুমোদিত কাজের পরিধি
-1. Repository-এর code, SQL migration source, configuration, GitHub Actions workflow এবং documentation নিয়মিত audit করা।
+1. ছোটখাটো maintenance-এর পাশাপাশি বড় project-level engineering initiative, architecture review/redesign, feature/module build-out, substantial refactor এবং multi-file changes পরিকল্পনা ও বাস্তবায়ন করা।
+2. Repository-এর code, SQL migration source, configuration, GitHub Actions workflow এবং documentation নিয়মিত audit করা।
 2. যাচাইয়ে পাওয়া bug, ভুল workflow condition, duplicate step, broken command, missing validation ও নিরাপত্তাজনিত source-level সমস্যা প্রয়োজনমতো সংশোধন করা।
 3. নিরাপদ disposable/test database, static validation, read-only audit, backup/restore test ও dry-run/preview চালানো।
 4. সংশোধিত code/workflow-এর প্রয়োজনীয় automated tests চালানো, ফলাফল ও logs পরীক্ষা করা।
