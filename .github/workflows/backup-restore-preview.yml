@@ -186,11 +186,17 @@ jobs:
             -out backup/restore-test.dump \
             -pass env:BACKUP_ENCRYPTION_PASSPHRASE
           test -s backup/restore-test.dump
+          # Restore into a fresh template0 database. The Supabase service's
+          # default database is pre-populated with platform schemas (for
+          # example auth), which would collide with schemas in the backup.
+          PGPASSWORD=restore_test_only PGSSLMODE=disable createdb \
+            --host=127.0.0.1 --port=5432 --username=supabase_admin \
+            --template=template0 mwvip_restore_empty
           PGPASSWORD=restore_test_only PGSSLMODE=disable pg_restore \
             --host=127.0.0.1 --port=5432 --username=supabase_admin \
-            --dbname=mwvip_restore_test --no-owner --no-acl \
+            --dbname=mwvip_restore_empty --no-owner --no-acl \
             --exit-on-error backup/restore-test.dump
-          PGPASSWORD=restore_test_only PGSSLMODE=disable psql -h 127.0.0.1 -U supabase_admin -d mwvip_restore_test \
+          PGPASSWORD=restore_test_only PGSSLMODE=disable psql -h 127.0.0.1 -U supabase_admin -d mwvip_restore_empty \
             -v ON_ERROR_STOP=1 -Atc "select count(*) from information_schema.tables where table_schema not in ('pg_catalog','information_schema')" \
             > backup/restored_table_count.txt
           test "$(cat backup/restored_table_count.txt)" -gt 0
