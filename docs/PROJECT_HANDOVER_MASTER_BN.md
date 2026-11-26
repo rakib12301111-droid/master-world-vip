@@ -553,3 +553,21 @@ Owner-এর স্পষ্ট দীর্ঘমেয়াদি লক্ষ�
 5. Production migration-এর জন্য আলাদা explicit Owner authorization phrase `APPLY-MASTER-WORLD-VIP-MIGRATIONS` আবশ্যক। Secret update বা password reset এই authorization নয়।
 
 **No-repeat reminder:** Supabase project locate করা, Connect dialog-এ Session pooler/URI নির্বাচন করা এবং database password reset confirmation পাওয়া—এই session-এর সম্পন্ন ধাপ। এগুলো পুনরায় করাবেন না, যদি না নতুন evidence-এ প্রয়োজন দেখা দেয়। পরবর্তী কাজ কেবল সম্পূর্ণ URI দিয়ে GitHub secret update নিশ্চিত করা।
+
+
+## 20. Owner confirmation — GitHub SUPABASE_DB_URL secret update completed (2026-11-26, Bangladesh time)
+
+### সম্পন্ন হিসেবে নথিভুক্ত
+- Owner সরাসরি নিশ্চিত করেছেন: Supabase database password reset-এর পর নতুন password-সহ সম্পূর্ণ Session Pooler PostgreSQL URI ব্যবহার করে GitHub Actions secret `SUPABASE_DB_URL` update করেছেন।
+- এই কাজ **OWNER-CONFIRMED COMPLETED** হিসেবে গণ্য হবে। Secret-এর গোপন value assistant বা handover-এ দেখা/সংরক্ষণ করা হয়নি; GitHub secret value গোপনই থাকবে।
+- আগের §19-এ secret update-কে PENDING বলা হয়েছিল; এই নতুন Owner confirmation সেই পুরোনো pending অবস্থাকে supersede করছে। §19-এর historical note মুছবেন/পেছনের ইতিহাস rewrite করবেন না; বর্তমান অবস্থা নির্ধারণে এই §20-ই authoritative।
+- **No-repeat:** Owner-কে আর database password reset, Session pooler/URI নির্বাচন, URI তৈরি, বা `SUPABASE_DB_URL` secret update করতে বলবেন না—যদি না পরবর্তী workflow evidence নতুন কোনো নির্দিষ্ট ত্রুটি প্রমাণ করে।
+
+### পরবর্তী কাজ — কেবল পরবর্তী অসম্পূর্ণ ধাপ
+1. প্রথমে বর্তমান `main` HEAD এবং সর্বশেষ প্রাসঙ্গিক GitHub Actions workflow run/job evidence read-only ভাবে যাচাই করুন।
+2. Secret update-এর পর নতুন workflow run হয়েছে কি না দেখুন। নতুন run না থাকলে, অনুমোদিত workflow dispatch/action উপলব্ধ কি না যাচাই করুন; কোনো tool/action না থাকলে সেটি স্পষ্টভাবে জানান—run হয়েছে বলে দাবি নয়।
+3. নতুন run থাকলে URI validation, PostgreSQL authentication/connection, encrypted backup, disposable restore, restored table count, migration dry-run এবং artifact preservation-এর ফলাফল পর্যায়ক্রমে পরীক্ষা করুন।
+4. কোনো gate fail করলে শুধু সেই নির্দিষ্ট failure-এর সমাধান করুন; সফল ধাপ পুনরাবৃত্তি নয়। সব backup/restore/dry-run safety gate PASS না হওয়া পর্যন্ত production migration apply নয়।
+5. Production migration-এর আগে আলাদা explicit Owner authorization phrase `APPLY-MASTER-WORLD-VIP-MIGRATIONS` আবশ্যক। এই secret update-কে migration authorization হিসেবে গণ্য করা যাবে না।
+
+**Current checkpoint:** Supabase password reset = COMPLETED; Session Pooler URI selection = COMPLETED; GitHub Actions `SUPABASE_DB_URL` secret update = OWNER-CONFIRMED COMPLETED; post-update backup/restore workflow verification = NEXT / NOT YET VERIFIED.
