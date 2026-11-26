@@ -239,7 +239,7 @@ begin
    and not exists(select 1 from public.project_automation_tasks running
      where running.project_id=t.project_id and running.status='running')
  order by t.available_at,t.created_at
- for update of t skip locked limit 1;
+ for update of t,s skip locked limit 1;
  if v_task is null then return; end if;
  v_lease:=gen_random_uuid();
  update public.project_automation_tasks set status='running',worker_id=v_worker.id,
@@ -294,9 +294,41 @@ begin
  return true;
 end $$;
 
+
+-- Recover abandoned worker leases so a crashed worker cannot strand a project forever.
+create or replace function public.scheduler_reap_expired_project_task_leases()
+returns integer language plpgsql security definer set search_path=''
+as $
+declare v_count integer;
+begin
+ if auth.role()<>'service_role' then raise exception 'Scheduler service role required'; end if;
+ with expired as (
+   update public.project_automation_tasks
+   set status=case when attempts>=max_attempts then 'dead_letter' else 'retry_wait' end,
+     worker_id=null,lease_token=null,locked_at=null,lease_expires_at=null,
+     available_at=case when attempts<max_attempts
+       then now()+make_interval(secs=>least(3600,(30*power(2,attempts))::integer))
+       else available_at end,
+     last_error='Worker lease expired before task completion',
+     finished_at=case when attempts>=max_attempts then now() else null end,
+     updated_at=now()
+   where status='running' and lease_expires_at<now()
+   returning id,project_id,worker_id,status
+ ), logged as (
+   insert into public.project_automation_audit(project_id,task_id,worker_id,action,details)
+   select project_id,id,worker_id,
+     case when status='dead_letter' then 'expired_task_dead_lettered' else 'expired_task_requeued' end,
+     jsonb_build_object('reason','worker_lease_expired')
+   from expired returning id
+ )
+ select count(*)::integer into v_count from logged;
+ return coalesce(v_count,0);
+end $;
+
 revoke all on function public.admin_project_automation_overview() from public,anon;
 revoke all on function public.admin_configure_project_schedule(text,boolean,integer,numeric,text) from public,anon;
 revoke all on function public.scheduler_enqueue_due_project_tasks() from public,anon,authenticated;
+revoke all on function public.scheduler_reap_expired_project_task_leases() from public,anon,authenticated;
 revoke all on function public.worker_register_project_automation(text,text,text[]) from public,anon,authenticated;
 revoke all on function public.worker_heartbeat_project_automation(text) from public,anon,authenticated;
 revoke all on function public.worker_claim_project_automation_task(text) from public,anon,authenticated;
@@ -304,6 +336,7 @@ revoke all on function public.worker_finish_project_automation_task(uuid,uuid,bo
 grant execute on function public.admin_project_automation_overview() to authenticated;
 grant execute on function public.admin_configure_project_schedule(text,boolean,integer,numeric,text) to authenticated;
 grant execute on function public.scheduler_enqueue_due_project_tasks() to service_role;
+grant execute on function public.scheduler_reap_expired_project_task_leases() to service_role;
 grant execute on function public.worker_register_project_automation(text,text,text[]) to service_role;
 grant execute on function public.worker_heartbeat_project_automation(text) to service_role;
 grant execute on function public.worker_claim_project_automation_task(text) to service_role;
