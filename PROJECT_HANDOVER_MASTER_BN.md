@@ -405,3 +405,10 @@ GitHub Actions-এ ব্যবহৃত secret নাম:
 - Added `20261126150000_guarded_member_payout_refund_workflows.sql`: service-only Member payout/customer refund requests, immutable terms, allowed state transitions, pending amount reservation, এবং paid state-এর আগে provider settlement + reconciliation + matching journal বাধ্যতামূলক।
 - Added static verifiers `verify-member-finance-ledger.py`, `verify-member-payout-refund.py`; disposable PostgreSQL 16 runtime workflow `verify-member-finance-ledger-runtime.yml` ও test scripts।
 - **কোনো Live rail নয়:** internal journal/request নিজে bank balance, safeguarded custody, refund reserve বা টাকা পাঠানোর প্রমাণ নয়। Provider-specific signed webhook, bank/custodian, actual payout/refund connectors ও independent daily reconciliation এখনও বাকি। Production apply/merge/deploy করা হয়নি।
+
+
+### ১৭.১ Verification result
+
+- Disposable PostgreSQL 16 runtime workflow run `45872273474`: **success** — ledger ও payout/refund migrations test database-এ apply হয়েছে; balanced/idempotent journal, currency mismatch rejection, immutable journal, Member overdraft guard, pending payout reservation এবং paid-state journal evidence পরীক্ষা পাস।
+- Migration Safety CI `45872273373`: **success**; Auto Work Static Safety `45872273321`: **success**।
+- Runtime test Production-এ নয়; Production migration apply, bank custody, live payment/payout/refund বা revenue চালু হয়নি।
