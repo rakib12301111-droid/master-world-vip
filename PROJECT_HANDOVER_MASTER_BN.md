@@ -65,9 +65,9 @@ Run #85-এর log-এ স্পষ্ট লেখা আছে:
 
 `DRY RUN: migrations will *not* be pushed to the database.`
 
-এরপর Supabase CLI `Would push these migrations:` দেখিয়ে নিচের **২৫টি local migration**-কে pending হিসেবে তালিকাভুক্ত করেছে। অর্থাৎ Preview command সফলভাবে শেষ হয়েছে, কিন্তু database-এ এই migration-গুলো প্রয়োগ করা হয়নি। Run সবুজ হওয়াকে database schema সম্পূর্ণ আপডেট হওয়ার প্রমাণ হিসেবে ধরা যাবে না।
+এরপর Supabase CLI `Would push these migrations:` দেখিয়ে নিচের **৩০টি local migration**-কে pending হিসেবে তালিকাভুক্ত করেছে। অর্থাৎ Preview command সফলভাবে শেষ হয়েছে, কিন্তু database-এ এই migration-গুলো প্রয়োগ করা হয়নি। Run সবুজ হওয়াকে database schema সম্পূর্ণ আপডেট হওয়ার প্রমাণ হিসেবে ধরা যাবে না।
 
-### Run #85-এ pending হিসেবে দেখানো migration
+### Run #85-এ pending হিসেবে দেখানো ৩০টি migration
 1. `202611180001_master_world_vip.sql`
 2. `202611190001_global_community.sql`
 3. `202611190002_privacy_rights.sql`
@@ -99,7 +99,6 @@ Run #85-এর log-এ স্পষ্ট লেখা আছে:
 29. `20261125130000_admin_auto_work_claim_concurrency_fix.sql`
 30. `20261125160000_work_earn_wallet_owner_profit.sql`
 
-**সংশোধন:** Preview log-এ আসলে ৩০টি migration তালিকাভুক্ত হয়েছে; উপরের তালিকায় ৩০টি entry-ই রাখা হয়েছে। (উপরের শিরোনামে ২৫ লেখা থাকলে সেটি নয়, ৩০টি তালিকাই প্রামাণ্য।)
 
 ### পরবর্তী নিরাপদ কাজ
 - আগে Supabase remote schema এবং migration history-এর প্রকৃত অবস্থা যাচাই করতে হবে।
