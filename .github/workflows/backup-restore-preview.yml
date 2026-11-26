@@ -27,8 +27,9 @@ jobs:
     timeout-minutes: 45
     services:
       restore-db:
-        image: postgres:17
+        image: supabase/postgres:17.6.1.136
         env:
+          POSTGRES_USER: postgres
           POSTGRES_PASSWORD: restore_test_only
           POSTGRES_DB: mwvip_restore_test
         ports:
