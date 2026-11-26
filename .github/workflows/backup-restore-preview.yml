@@ -63,7 +63,7 @@ jobs:
           # secret can be identified without revealing any URI or credentials.
           has_postgres_prefix = raw.startswith(("postgresql://", "postgres://"))
           has_key_label = raw.startswith("SUPABASE_DB_URL=")
-          has_newline = "\\n" in raw or "\\r" in raw
+          has_newline = any(ch in raw for ch in (chr(10), chr(13)))
           print(
               "Safe SUPABASE_DB_URL diagnostics: "
               f"nonempty={bool(raw)}; length={len(raw)}; "
