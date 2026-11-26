@@ -335,3 +335,11 @@ Owner commission কেবল সব member payable, refund liability, provider 
 - Funded/in-progress order transitions now require exactly three matching locked allocations, verified provider settlement, external fund-segregation timestamp, refund-reserve verification, operating-budget verification, active project and complete scope terms.
 - Added static checks for the three protected allocations and fail-closed order transition.
 - **Important limitation:** database allocation rows/timestamps are internal evidence only; they do not establish real bank custody, trust/safeguarded account, provider settlement or actual payout. Dedicated lawful custody, signed provider webhooks, daily reconciliation, dispute/chargeback operations and payout rails remain mandatory before launch. No Member funds have been collected or secured by this source change.
+
+
+## Update 28 — 2026-11-26: Member Loss-Prevention Hard Security (database guard foundation)
+
+- Added `20261126130000_member_loss_prevention_hardening.sql`: immutable customer-order financial terms, immutable funded-order scope/settlement evidence, append-only fund allocations, allow-listed forward-only order lifecycle and protected-order delete prevention.
+- The guards are database triggers and also apply to service-role writes; a correction requires cancelling/replacing the order rather than silently rewriting financial allocation history.
+- Extended `verify-plan-customer-order-gates.py` to assert these controls. This is static source-level validation, not a substitute for disposable PostgreSQL execution/integration tests.
+- **Not live:** migration not applied to Production; no actual bank custody/safeguarded reserve, signed payment webhook, solvency monitor, refund/chargeback/payout rail or compensation fund is connected. These controls reduce tampering and unsafe state changes but cannot guarantee lifetime zero loss or prove money is held.
