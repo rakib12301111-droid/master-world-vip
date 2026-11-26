@@ -2857,7 +2857,8 @@ $('submitWorkApplication')?.addEventListener('click',async()=>{
 window.mwvipGetClient=()=>client;
 window.mwvipGetUser=()=>currentUser;
 </script>
-<script src="./vip-security-center.js" defer></script>\n<script>
+<script src="./vip-security-center.js" defer></script>
+<script src="./admin-dashboard.js?v=20261127-1" defer></script>\n<script>
 // MW VIP Global Internet: honest connectivity diagnostics; no simulated satellite access.
 $('mwProviderConnect')?.addEventListener('click',()=>{const n=$('mwInternetNotice');if(n)n.textContent='সংযোগ স্থাপন করা যায়নি: কোনো অনুমোদিত স্যাটেলাইট/নেটওয়ার্ক প্রোভাইডার API বা হার্ডওয়্যার এখনো কনফিগার করা হয়নি।';});
 $('mwCheckInternet')?.addEventListener('click',async()=>{const state=$('mwNetState'),detail=$('mwNetDetail'),notice=$('mwInternetNotice'),btn=$('mwCheckInternet');btn.disabled=true;if(state)state.textContent='পরীক্ষা চলছে…';try{if(!navigator.onLine)throw new Error('এই ডিভাইসে নেটওয়ার্ক সংযোগ নেই।');const response=await fetch('./manifest.webmanifest?mwvip_health='+Date.now(),{cache:'no-store'});if(!response.ok)throw new Error('অ্যাপ সার্ভার পরীক্ষা ব্যর্থ হয়েছে।');if(state)state.textContent='APP ONLINE';if(detail)detail.textContent='অ্যাপ সার্ভারের সঙ্গে সংযোগ পাওয়া গেছে; এটি স্যাটেলাইট সংযোগের প্রমাণ নয়।';if(notice)notice.textContent='বর্তমান ডিভাইসে ইন্টারনেট পাওয়া যাচ্ছে। এটি বিদ্যমান Wi-Fi/মোবাইল নেটওয়ার্ক হতে পারে; MW VIP স্যাটেলাইট সেবা এখনো সক্রিয় নয়।';}catch(e){if(state)state.textContent='OFFLINE';if(detail)detail.textContent=e.message;if(notice)notice.textContent='লাইভ সংযোগ পাওয়া যায়নি: '+e.message;}finally{btn.disabled=false;}});
