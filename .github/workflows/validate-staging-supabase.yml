@@ -51,6 +51,43 @@ jobs:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.STAGING_SUPABASE_ACCESS_TOKEN }}
           DB_URL: ${{ secrets.STAGING_SUPABASE_DB_URL }}
         run: supabase db push --db-url "$DB_URL"
+      - name: Assign isolated Admin and Member test roles through Owner RPC
+        env:
+          BASE_URL: ${{ secrets.STAGING_SUPABASE_URL }}
+          ANON_KEY: ${{ secrets.STAGING_SUPABASE_ANON_KEY }}
+          OWNER_JWT: ${{ secrets.STAGING_OWNER_JWT }}
+          ADMIN_JWT: ${{ secrets.STAGING_ADMIN_JWT }}
+          MEMBER_JWT: ${{ secrets.STAGING_MEMBER_JWT }}
+        run: |
+          set -euo pipefail
+          user_id() {
+            python - "$1" <<'PY'
+          import base64,json,sys
+          part=sys.argv[1].split('.')[1]
+          part += '='*((4-len(part)%4)%4)
+          print(json.loads(base64.urlsafe_b64decode(part))['sub'])
+          PY
+          }
+          admin_id=$(user_id "$ADMIN_JWT")
+          member_id=$(user_id "$MEMBER_JWT")
+          for pair in "$admin_id:admin" "$member_id:member"; do
+            target="${pair%%:*}"; role="${pair##*:}"
+            code=$(curl --silent --show-error -o /tmp/role-change.json -w '%{http_code}' \
+              "$BASE_URL/rest/v1/rpc/owner_set_member_role" \
+              -H "apikey: $ANON_KEY" -H "Authorization: Bearer $OWNER_JWT" \
+              -H "Content-Type: application/json" \
+              -d "{\"p_target_user_id\":\"$target\",\"p_new_role\":\"$role\"}")
+            test "$code" = "200" || { echo "::error::Owner could not assign staging $role test role (HTTP $code)"; cat /tmp/role-change.json; exit 1; }
+            echo "PASS: staging $role test role assigned by Owner"
+          done
+      - name: Deploy queue worker to Staging (disabled until separately enabled)
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.STAGING_SUPABASE_ACCESS_TOKEN }}
+          PROJECT_REF: ${{ secrets.STAGING_SUPABASE_PROJECT_REF }}
+        run: |
+          set -euo pipefail
+          supabase functions deploy project-automation-worker --project-ref "$PROJECT_REF"
+          echo "Worker function deployed to Staging; execution remains disabled unless MWVIP_WORKER_ENABLED=true is configured."
       - name: Verify Owner, Admin and Member Auth roles and Admin RPC access
         env:
           BASE_URL: ${{ secrets.STAGING_SUPABASE_URL }}
