@@ -350,3 +350,5 @@ GitHub Actions-এ ব্যবহৃত secret নাম:
 - Added `supabase/audits/project_automation_engine_read_only.sql` and `scripts/verify-project-automation-engine.py`; added the verifier to the migration-safety GitHub Actions workflow.
 - **Verification status:** GitHub Actions run for this exact commit is pending; static verification and SQL disposable-database application have not yet been confirmed. The migration is not applied to Production. PR #20 remains Draft/Open/Unmerged.
 - **Next:** run static checks and disposable database migration validation; correct any failures; then design Step 3 Free/Paid entitlement activation without enabling member paid automation or collecting fees until existing refund-reserve, payment-provider and legal/security gates pass.
+
+- **CI evidence update:** PR migration-safety workflow Run `45866578250` completed successfully; the new `Verify central project automation engine safety` step passed (job `140070826818`, step 8). The separate Auto Work static workflow Run `45866578261` also passed. This is static source verification only; no disposable PostgreSQL apply or Production migration apply is confirmed.
