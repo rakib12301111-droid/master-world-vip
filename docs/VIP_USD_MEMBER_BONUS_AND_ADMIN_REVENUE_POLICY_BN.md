@@ -25,3 +25,20 @@ Member prize cannot replace earned work wages or be netted against member payabl
 
 ## 4. Release gates and truthful status
 No VIP UI, random draw engine, USD reserve custody, random-selection/audit service, Admin USD ledger, plan checkout, payment/FX integration, legal approval or USD payout is verified live by this document. Build and test in staging first; require legal/accounting review, funded reserves, provider settlement reconciliation, security/privacy review and controlled acceptance before production. Do not advertise guaranteed member or Admin income.
+
+
+## 5. Currency-stream commission and automatic USD-to-BDT wallet rule (Owner clarification, 2026-11-26)
+
+The 20%/35% rates are separate by work/currency stream, not a flat 35% commission:
+- USD Automatic-System / high-volume-high-value USD work stream: 35% Admin/Owner allocation.
+- Ordinary Bangladeshi-taka Work stream: 20% Admin/Owner allocation.
+
+Both rates apply only to the relevant Distributable Net Platform Revenue after member payable, taxes, payment/FX fees, direct delivery/provider/compute/operating costs, refunds/chargebacks and protected reserves are fully covered. Never apply either rate to gross receipts, member wages, member deposits, prize reserves, customer-restricted funds or unsettled receipts. Do not invent a BDT threshold or apply both rates to one transaction. The stream and rate must be disclosed before acceptance.
+
+Member wallet must show separate USD and BDT balances. Show actual available USD when present; otherwise show US$0.00. Verified USD amounts are automatically converted at a trusted server-side FX quote and credited to the BDT account. Preserve the original USD amount, FX rate/source/time, fees and exact BDT credit in linked ledger history. After full conversion, available USD becomes zero while the original USD source and BDT credit remain visible. Keep USD promotional draw prizes separate from ordinary task wages; conversion does not change the prize's source category.
+
+Admin/Owner personal out-of-pocket cost target is zero. Customer-funded contracts/settled receipts must cover disclosed member payable, provider/delivery costs, fees, tax and reserves before work is accepted. No member funds, wages or prize reserves may fund operations; no silent paid fallback. If funding/capacity is insufficient, pause/reject/requote.
+
+See the authoritative detailed rules and acceptance tests in `docs/DUAL_CURRENCY_MEMBER_WALLET_AND_COMMISSION_POLICY_BN.md`.
+
+**Status:** DOCUMENTED ONLY / NOT LIVE. No production wallet, FX conversion, commission calculation, customer contract, prize draw or payout is activated by this documentation update.
