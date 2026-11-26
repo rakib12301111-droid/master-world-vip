@@ -21,6 +21,18 @@ begin
     raise exception 'Customer order identity and financial terms are immutable; create a replacement order';
   end if;
 
+  if old.status in ('funded','in_progress','delivered','accepted','completed','disputed') and (
+    new.scope_terms is distinct from old.scope_terms
+    or new.provider_transaction_id is distinct from old.provider_transaction_id
+    or new.provider_event_id is distinct from old.provider_event_id
+    or new.provider_settled_at is distinct from old.provider_settled_at
+    or new.funds_segregated_at is distinct from old.funds_segregated_at
+    or new.refund_reserve_verified_at is distinct from old.refund_reserve_verified_at
+    or new.operating_budget_verified_at is distinct from old.operating_budget_verified_at
+  ) then
+    raise exception 'Funded order scope and settlement evidence are immutable';
+  end if;
+
   if new.status is distinct from old.status then
     if not (
       (old.status='pending_payment' and new.status in ('funded','cancelled','refunded'))
