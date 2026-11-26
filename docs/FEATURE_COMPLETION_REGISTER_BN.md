@@ -343,3 +343,11 @@ Owner commission কেবল সব member payable, refund liability, provider 
 - The guards are database triggers and also apply to service-role writes; a correction requires cancelling/replacing the order rather than silently rewriting financial allocation history.
 - Extended `verify-plan-customer-order-gates.py` to assert these controls. This is static source-level validation, not a substitute for disposable PostgreSQL execution/integration tests.
 - **Not live:** migration not applied to Production; no actual bank custody/safeguarded reserve, signed payment webhook, solvency monitor, refund/chargeback/payout rail or compensation fund is connected. These controls reduce tampering and unsafe state changes but cannot guarantee lifetime zero loss or prove money is held.
+
+
+## Update 29 — 2026-11-26: Double-entry ledger and guarded payout/refund foundation
+
+- Added immutable, balanced, idempotent USD/BDT journal posting and per-Member payable overdraft protection in `20261126140000_append_only_double_entry_finance_ledger.sql`.
+- Added guarded Member payout/customer refund requests with pending-balance reservations, immutable terms, restricted state transitions and paid-state requirements for provider settlement evidence, reconciliation and matching ledger journal in `20261126150000_guarded_member_payout_refund_workflows.sql`.
+- Added static verifiers and disposable PostgreSQL 16 runtime test workflow. The runtime test checks balanced posting, idempotent retry, cross-currency rejection, immutable journals, Member overdraw prevention and payout state completion.
+- **Not live:** no provider-specific signed webhook, safeguarded bank/custodian account, funded reserve, external payout/refund rail, or daily independent bank reconciliation is connected. Ledger/request rows are not cash custody or transfers. Production migration not applied.
