@@ -379,3 +379,12 @@ GitHub Actions-এ ব্যবহৃত secret নাম:
 - Added `scripts/verify-plan-customer-order-gates.py` and wired into Supabase migration-safety workflow.
 - **Status:** source foundation only. Provider checkout/webhook, actual reserve custody, plan activation, order worker, payout, production apply and end-to-end runtime tests are NOT LIVE / NOT VERIFIED. No customer payment or income was collected/generated.
 - Customer Free Option cannot mean free work delivery. Customer service work must be a positive-price funded order; Free may cover browsing/quote or explicitly approved non-delivery access only.
+
+
+## ১৫. ২৬ নভেম্বর ২০২৬ — Member-এর অর্থ সুরক্ষা (সর্বোচ্চ অগ্রাধিকার)
+
+- Step 3 migration-এ `customer_order_fund_allocations` যোগ: প্রতিটি অর্ডারের Member payable, refund/chargeback reserve এবং operating cost-এর জন্য তিনটি পৃথক currency-matched locked allocation।
+- অর্ডার funded/in-progress হওয়ার আগে তিনটি allocation ঠিক অর্ডারের হিসাবের সঙ্গে মেলা ও locked থাকা, provider settlement, project activation, scope terms, external segregation, refund reserve এবং operating budget verification বাধ্যতামূলক।
+- Member payable platform operating money নয়; Member-এর নিজের deposit/recharge বা customer shortfall পূরণের দায় নেই। Member payout কেবল reconciled settled funds থেকে হওয়া উচিত।
+- বাস্তব safeguarded custody account, signed webhook, daily reconciliation, dispute/chargeback workflow এবং payout integration এখনও তৈরি/যাচাইকৃত নয়। Database row বাস্তব bank custody-এর প্রমাণ নয়; Member-এর অর্থ এখনো এই কোড দ্বারা বাস্তবে সংরক্ষিত হয়নি।
+- নতুন static verifier-এ এই সুরক্ষা পরীক্ষা যুক্ত করা হয়েছে। Production apply নিষিদ্ধ/অনুমোদিত হয়নি।
