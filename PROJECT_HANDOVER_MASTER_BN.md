@@ -421,3 +421,11 @@ GitHub Actions-এ ব্যবহৃত secret নাম:
 - প্রতিটি paid completed work-এ configurable Admin commission থাকবে। কোনো percentage hard-code করা হয়নি; কাজ শুরুর আগে commission rate/basis, provider fee, reserve, operating cost ও Member net payable দেখাতে হবে। Rate order acceptance-এ immutable snapshot; commission আলাদা company-revenue ledger-এ, USD/BDT পৃথকভাবে।
 - Full design: docs/PAYOUT_METHODS_ADMIN_APPROVAL_AND_PLATFORM_COMMISSION_BN.md.
 - Status: requirement/specification only. bKash/Nagad/bank adapter, account ownership verification, live transfer, automatic payout, commission calculation/collection এখনো implemented/live নয়। Production migration/deployment বা real money movement হয়নি।
+
+
+### ১৮.১ Admin commission হার প্রস্তাব (২৭ নভেম্বর ২০২৬)
+
+- Owner-এর নির্দেশে প্রতি completed/accepted paid work order-এর Admin commission **২০% প্রস্তাবিত** হিসেবে নথিভুক্ত।
+- এটি এখনো enabled নয়; calculation basis, provider fee, tax, refund/chargeback reversal ও rounding policy নির্ধারণ এবং customer/Member disclosure ছাড়া কোনো টাকা কাটা বা ledger-এ commission post করা যাবে না।
+- অনুমোদিত হলে কাজ শুরুর আগেই rate ও Member net payable দেখাতে হবে; accepted/completed + settled/reconciled হওয়ার পর আলাদা Company Revenue Ledger-এ post হবে; USD/BDT পৃথক থাকবে।
+- Detailed policy: `docs/PAYOUT_METHODS_ADMIN_APPROVAL_AND_PLATFORM_COMMISSION_BN.md`।
