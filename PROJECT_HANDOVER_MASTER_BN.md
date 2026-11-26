@@ -467,3 +467,13 @@ GitHub Actions-এ ব্যবহৃত secret নাম:
 - Implementation notes and exact release limitations: `docs/ADMIN_DASHBOARD_IMPLEMENTATION_STATUS_BN.md`.
 - **Not Live / not yet verified:** these changes are on Draft PR #20 only. They have not been merged or deployed. Required Supabase migrations/RBAC/Owner bootstrap are not thereby applied to Production; no Production database or live deployment action was taken. The new UI cannot prove the live backend is connected until staging/Production RPC calls are tested with separate Owner/Admin/Member accounts.
 - Worker execution remains NOT READY; no worker service is deployed. Dashboard intentionally provides read-only visibility and leaves execution disabled.
+
+
+## ১৩. ২৭ নভেম্বর ২০২৬ — Staging Auth/RBAC workflow ও Worker foundation
+
+- Added `.github/workflows/validate-staging-supabase.yml`: Staging-only full ordered migration preview/apply, fresh login for three separate Owner/Admin/Member test accounts, Owner-RPC role assignment, role/RPC access assertions, and Staging Edge Function deployment. It refuses the known Production project ref.
+- Staging GitHub Actions secrets required: `STAGING_SUPABASE_ACCESS_TOKEN`, `STAGING_SUPABASE_DB_URL`, `STAGING_SUPABASE_PROJECT_REF` (must differ from Production), `STAGING_SUPABASE_URL`, `STAGING_SUPABASE_ANON_KEY`, and separate `STAGING_OWNER_EMAIL/PASSWORD`, `STAGING_ADMIN_EMAIL/PASSWORD`, `STAGING_MEMBER_EMAIL/PASSWORD`. Never paste these into chat.
+- Added `supabase/functions/project-automation-worker/index.ts` and `.github/workflows/verify-project-automation-worker.yml`. Worker foundation registers and heartbeats using service-role RPCs but intentionally stays idle; no approved business task handlers exist, so it does not claim tasks or execute revenue work. Function is disabled unless `MWVIP_WORKER_ENABLED=true` is set in the target Supabase project.
+- Added `docs/STAGING_AUTH_AND_WORKER_READINESS_BN.md` for exact scope and limitations.
+- **Not yet run:** no Staging secrets/project credentials are available in this conversation; workflows have been added but not dispatched. Therefore no actual Staging migration, three-account test, or Staging Edge Function deploy is claimed complete.
+- **Not Live:** PR #20 remains Draft/Open/Unmerged. No Production migration, Production Worker deploy, public deployment, or real money operation was performed. Production migration still requires explicit exact approval and backup/restore evidence.
