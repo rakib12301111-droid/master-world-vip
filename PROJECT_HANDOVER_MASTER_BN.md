@@ -338,3 +338,15 @@ GitHub Actions-এ ব্যবহৃত secret নাম:
 - **যাচাইকৃত product foundation:** AI Assistant Edge Function, Work & Earn board/migration, referral wallet/reward foundation, verified-payment/checkout migration source এবং Work & Earn wallet/Owner-profit settlement migration source repository-তে আছে।
 - **বড় অটোমেশন এখনো বাকি:** ৪,০০০ project registry ও orchestration/worker fleet, per-project scheduler/queue/budget controls, Company Revenue Ledger, complete Premium/AI plan catalog and checkout-to-entitlement flow, USD/BDT settlement & payout integrations, Admin/Member entitlement enforcement এবং end-to-end/load/security acceptance tests.
 - **Current verified progress:** foundation and specification stage only; ৪,০০০ earning project চালু নয়, paid plan purchase/activation production-live নয়, কোনো নতুন আয় বা payout প্রমাণিত নয়। Production DB apply, billing/payment execution এবং live deployment পৃথক অনুমোদন ছাড়া করা যাবে না।
+
+
+## ১২. ২৬ নভেম্বর ২০২৬ — ধাপ ২: Central 4,000 Project Automation Engine (source foundation)
+
+- Feature branch: `planning/4000-automated-project-economy`; PR #20 remains Draft/Open and is not merged.
+- Added `supabase/migrations/20261126110000_project_automation_engine.sql` with per-project scheduler settings, worker registry/heartbeat, idempotent task queue, task leases, bounded retries/dead-letter state, audit trail and admin overview.
+- Central controller overview aggregates all registered projects, scheduler state, worker state and recent task status. Scheduler enqueue is a server-role-only entry point and only creates tasks for projects whose registry execution flag and approved positive budget are already enabled.
+- Worker claim/finish operations require service_role, an active recent heartbeat, a valid lease token, currency compatibility and project/task daily budget checks. One running task per project is enforced.
+- New projects receive no scheduler settings, workers or tasks from this migration. Execution remains blocked because Step 1 registry seeds execution_enabled=false and budget_cap=0. No external connector, revenue collection, payment or payout is included.
+- Added `supabase/audits/project_automation_engine_read_only.sql` and `scripts/verify-project-automation-engine.py`; added the verifier to the migration-safety GitHub Actions workflow.
+- **Verification status:** GitHub Actions run for this exact commit is pending; static verification and SQL disposable-database application have not yet been confirmed. The migration is not applied to Production. PR #20 remains Draft/Open/Unmerged.
+- **Next:** run static checks and disposable database migration validation; correct any failures; then design Step 3 Free/Paid entitlement activation without enabling member paid automation or collecting fees until existing refund-reserve, payment-provider and legal/security gates pass.
