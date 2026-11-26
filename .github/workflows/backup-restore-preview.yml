@@ -29,13 +29,13 @@ jobs:
       restore-db:
         image: supabase/postgres:17.6.1.136
         env:
-          POSTGRES_USER: postgres
+          POSTGRES_USER: supabase_admin
           POSTGRES_PASSWORD: restore_test_only
           POSTGRES_DB: mwvip_restore_test
         ports:
           - 5432:5432
         options: >-
-          --health-cmd "pg_isready -U postgres -d mwvip_restore_test"
+          --health-cmd "pg_isready -U supabase_admin -d mwvip_restore_test"
           --health-interval 10s
           --health-timeout 5s
           --health-retries 12
@@ -187,10 +187,10 @@ jobs:
             -pass env:BACKUP_ENCRYPTION_PASSPHRASE
           test -s backup/restore-test.dump
           PGPASSWORD=restore_test_only PGSSLMODE=disable pg_restore \
-            --host=127.0.0.1 --port=5432 --username=postgres \
+            --host=127.0.0.1 --port=5432 --username=supabase_admin \
             --dbname=mwvip_restore_test --no-owner --no-acl \
             --exit-on-error backup/restore-test.dump
-          PGPASSWORD=restore_test_only PGSSLMODE=disable psql -h 127.0.0.1 -U postgres -d mwvip_restore_test \
+          PGPASSWORD=restore_test_only PGSSLMODE=disable psql -h 127.0.0.1 -U supabase_admin -d mwvip_restore_test \
             -v ON_ERROR_STOP=1 -Atc "select count(*) from information_schema.tables where table_schema not in ('pg_catalog','information_schema')" \
             > backup/restored_table_count.txt
           test "$(cat backup/restored_table_count.txt)" -gt 0
