@@ -10,12 +10,15 @@ end $$;
 create table if not exists auth.users(id uuid primary key);
 insert into auth.users(id) values('00000000-0000-0000-0000-000000000101') on conflict do nothing;
 \i supabase/migrations/20261126140000_append_only_double_entry_finance_ledger.sql
+select set_config('request.jwt.claim.role','service_role',false);
 do $$
 declare
- v_member uuid; v_clearing uuid; v_journal jsonb; v_retry jsonb; v_balance numeric;
+ v_member uuid; v_clearing uuid; v_personal uuid; v_journal jsonb; v_retry jsonb; v_balance numeric;
 begin
  select id into v_member from public.finance_accounts where currency='BDT' and account_code='member_payable_control';
  select id into v_clearing from public.finance_accounts where currency='BDT' and account_code='gateway_clearing';
+ insert into public.finance_accounts(currency,account_code,account_name,account_class,normal_side,owner_user_id)
+ values('BDT','member_payable','Test Member payable','liability','credit','00000000-0000-0000-0000-000000000101') returning id into v_personal;
  v_journal:=public.service_post_double_entry_journal('BDT','runtime_test','settlement-1','runtime-ledger-0001','funded customer settlement',
   jsonb_build_array(jsonb_build_object('account_id',v_clearing,'debit',1000,'credit',0),
                     jsonb_build_object('account_id',v_member,'debit',0,'credit',1000)));
@@ -30,6 +33,17 @@ begin
  end if;
  select coalesce(sum(credit-debit),0) into v_balance from public.finance_journal_lines where account_id=v_member;
  if v_balance<>1000 then raise exception 'Member control balance mismatch'; end if;
+ perform public.service_post_double_entry_journal('BDT','runtime_test','member-earned','runtime-ledger-0003','member earns payable',
+  jsonb_build_array(jsonb_build_object('account_id',v_clearing,'debit',500,'credit',0),
+                    jsonb_build_object('account_id',v_personal,'debit',0,'credit',500)));
+ begin
+   perform public.service_post_double_entry_journal('BDT','runtime_test','member-overdraw','runtime-ledger-0004','overdraw blocked',
+     jsonb_build_array(jsonb_build_object('account_id',v_personal,'debit',501,'credit',0),
+                       jsonb_build_object('account_id',v_clearing,'debit',0,'credit',501)));
+   raise exception 'Expected Member overdraw to fail';
+ exception when others then
+   if sqlerrm='Expected Member overdraw to fail' then raise; end if;
+ end;
  begin
    perform public.service_post_double_entry_journal('USD','runtime_test','bad-currency','runtime-ledger-0002','currency mismatch',
      jsonb_build_array(jsonb_build_object('account_id',v_clearing,'debit',1,'credit',0),
