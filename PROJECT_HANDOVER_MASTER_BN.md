@@ -319,3 +319,13 @@ GitHub Actions-এ ব্যবহৃত secret নাম:
 - অবশিষ্ট ঝুঁকি ও পরবর্তী প্রয়োজনীয় পদক্ষেপ।
 
 **কার্যকর নির্দেশ:** ব্যবহারকারী ইতিমধ্যে routine maintenance, পরীক্ষা ও যাচাইয়ের অনুমতি দিয়েছেন। তাই একই scope-এর কাজের জন্য বারবার অনুমতি চাইবেন না; নিরাপদে এগিয়ে কাজ করুন, ফলাফল যাচাই করুন এবং handover file আপডেট রাখুন। Production-impacting কাজের জন্য আলাদা gate বজায় রাখুন।
+
+
+## ১১. ২৬ নভেম্বর ২০২৬ — ৪,০০০ প্রজেক্টের কেন্দ্রীয় অটোমেশন ও দ্বৈত-মুদ্রা আয় পরিকল্পনা
+
+- Owner-এর সর্বশেষ নির্দেশ: মোট ৪,০০০ project slot; MW-USD-0001–2000 থেকে বাস্তব settled USD revenue এবং MW-BDT-2001–4000 থেকে বাস্তব settled BDT revenue লক্ষ্য। সব project একই central automation control plane-এর অধীনে থাকবে, তবে USD/BDT ledger, provider, FX, tax/fee ও payout reconciliation আলাদা থাকবে।
+- Admin-এর জন্য একটি Free Admin entitlement এবং একটি Paid Admin plan; সাধারণ Member paid plan কিনে verified payment settlement ও entitlement check-এর পর plan-সংশ্লিষ্ট automation চালাবেন। Plan purchase কোনো কাজ/আয়/লাভ নিশ্চিত করে না।
+- নতুন specification: docs/4000_PROJECT_AUTOMATION_AND_DUAL_CURRENCY_REVENUE_BN.md। এটি লক্ষ্য/architecture specification; ৪,০০০ project implementation বা live income নয়।
+- বর্তমান repository-তে AI assistant, Work & Earn, referral wallet, payment-state/checkout migration source ও wallet/profit RPC foundation আছে। কিন্তু Company Revenue Ledger, complete plan checkout→verified webhook→entitlement activation, ৪,০০০ project registry/orchestrator, production USD/BDT revenue/payout integration এবং production acceptance tests এখনো যাচাইকৃতভাবে Live নয়।
+- Member Auto Work paid package checkout/execution existing safety policy অনুযায়ী Disabled/Not Live থাকবে; ১০০% liquid refund reserve, separate operating budget, isolated infrastructure, provider/legal/security gates ও tests ছাড়া চালু নয়। নতুন পরিকল্পনা এই gate override করে না।
+- Production migration apply, billing/payment execution ও live deployment-এর জন্য আলাদা explicit approval বাধ্যতামূলক।
