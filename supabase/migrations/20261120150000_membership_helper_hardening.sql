@@ -1,5 +1,16 @@
 -- MASTER WORLD VIP — membership helper privacy hardening
 -- Replace helpers that accepted an arbitrary user ID with caller-scoped checks.
+-- Remove policies bound to the legacy two-argument helpers before dropping
+-- those functions. This prevents PostgreSQL overload ambiguity during upgrade.
+drop policy if exists "conversation members read" on public.conversation_members;
+drop policy if exists "conversation participants read conversations" on public.conversations;
+drop policy if exists "conversation members read messages" on public.messages;
+drop policy if exists "group members read roster" on public.group_members;
+drop policy if exists "group members read posts" on public.group_messages;
+drop policy if exists "group members send posts" on public.group_messages;
+drop function if exists public.is_conversation_member(uuid, uuid);
+drop function if exists public.is_group_member(uuid, uuid);
+
 -- This prevents authenticated clients from probing another member's conversation/group membership.
 -- Additive migration: updates RLS policies and removes the old two-argument helper signatures.
 
