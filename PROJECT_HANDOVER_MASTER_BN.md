@@ -591,3 +591,25 @@ GitHub Actions-এ ব্যবহৃত secret নাম:
 - কোনো Production বা live পরিবর্তন করা হয়নি।
 - এই যাচাইয়ে কোনো নতুন passing workflow run প্রমাণিত হয়নি; পূর্বে নথিভুক্ত passing run-গুলো তাদের নির্দিষ্ট commit/scope-এ সীমাবদ্ধ।
 - এই section বর্তমান অগ্রগতির handover; এটি ১০ ঘণ্টার কাজ সম্পন্ন হওয়ার ঘোষণা নয়।
+
+
+## ১৭. ২৭ নভেম্বর ২০২৬ — Backup/Audit/Health schedule-এর কোড সংশোধন
+
+### এই সেশনে পাওয়া প্রকৃত অসামঞ্জস্য
+- PR #19-এর বিবরণে Daily backup/restore, Monday read-only audit এবং six-hourly health monitor-এর কথা থাকলেও planning branch-এ পরীক্ষা করা backup ও read-only audit workflow YAML-এ তখন `schedule:` trigger ছিল না। শুধু `workflow_dispatch` এবং main-branch path-based push trigger ছিল। ফলে PR description একা দেখে schedule চালু আছে বলা ভুল হতো।
+
+### করা source update
+- `.github/workflows/backup-restore-preview.yml`: cron `30 2 * * *` যোগ হয়েছে — প্রতিদিন 02:30 UTC / বাংলাদেশ সময় সকাল 08:30। এটি encrypted logical backup, disposable clean database restore test, read-only remote migration history এবং `db push --dry-run` preview চালায়; Production migration apply করে না। প্রয়োজনীয় Actions secrets: `SUPABASE_DB_URL`, `BACKUP_ENCRYPTION_PASSPHRASE`।
+- `.github/workflows/read-only-db-audit.yml`: cron `15 3 * * 1` যোগ হয়েছে — প্রতি সোমবার 03:15 UTC / বাংলাদেশ সময় সকাল 09:15। এটি migration history, schema, columns, constraints, indexes, grants, RLS policies, functions ও triggers read-onlyভাবে সংগ্রহ করে। প্রয়োজনীয় Actions secret: `SUPABASE_DB_URL`।
+- নতুন `.github/workflows/database-health-monitor.yml` তৈরি হয়েছে: cron `0 */6 * * *` — প্রতি ৬ ঘণ্টায়। এটি PostgreSQL version, public table count, invalid/not-ready indexes, unvalidated constraints ও migration-history table presence read-only transaction-এ পরীক্ষা করে; issue থাকলে run fail করে এবং non-secret report artifact দেয়। প্রয়োজনীয় Actions secret: `SUPABASE_DB_URL`।
+
+### গুরুত্বপূর্ণ সক্রিয়করণ সীমা
+- এই cron trigger-গুলো এখন planning branch-এর source-এ আছে। GitHub scheduled workflow সাধারণত repository-এর default branch-এর workflow file থেকে চালায়; তাই PR merge/default branch-এ থাকা এবং Actions enabled না হওয়া পর্যন্ত এই schedule-গুলো বাস্তবে চলবে না। PR #19/#20 merge বা public deployment এই update-এ করা হয়নি।
+- Schedule যুক্ত হওয়া মানে কোনো run ইতিমধ্যে সফল হয়েছে—এমন নয়। প্রথম scheduled/manual run-এর run ID, job/step outcome, backup artifact, restore verification ও audit artifact না পাওয়া পর্যন্ত “পরীক্ষা সফল” বলা যাবে না।
+- Backup workflow-এ Production DB-তে logical dump এবং migration read/preview আছে; এটি DB content read করে। তবে workflow-টি Production migration apply, repair বা data write করে না।
+- কোনো secret value chat-এ চাইবেন/লিখবেন না। Backup secret অনুপস্থিত হলে run fail হবে; secret configure করা Owner-এর কাজ GitHub Actions Secrets-এ।
+
+### এই update-এর পর অবস্থা
+- তিনটি workflow file planning branch-এ পুনরায় fetch করে cron trigger উপস্থিতি যাচাই করা হয়েছে।
+- GitHub Actions workflow parser/runtime run এই মুহূর্তে চালানো/পাস হয়েছে—এমন প্রমাণ নেই; পরবর্তী ধাপ হলো PR CI/Workflow validation এবং merge ছাড়া manual dispatch করা সম্ভব কি না যাচাই।
+- Production data, migration history, live deployment, payment/payout বা provider settings পরিবর্তন করা হয়নি।
