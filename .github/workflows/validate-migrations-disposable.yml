@@ -204,5 +204,16 @@ jobs:
             select count(*) from pg_policies where schemaname='public'
               and tablename='update_releases' and policyname='Read published releases';")"
           test "$old_policy_count" = "0"
+          forbidden_privilege_count="$(psql "$LEGACY_DB_URL" -X -v ON_ERROR_STOP=1 -Atc "
+            select count(*)
+            from pg_tables t
+            cross join (values ('anon'),('authenticated')) as roles(role_name)
+            where t.schemaname='public'
+              and (
+                has_table_privilege(roles.role_name, format('%I.%I',t.schemaname,t.tablename), 'TRUNCATE')
+                or has_table_privilege(roles.role_name, format('%I.%I',t.schemaname,t.tablename), 'REFERENCES')
+                or has_table_privilege(roles.role_name, format('%I.%I',t.schemaname,t.tablename), 'TRIGGER')
+              );")"
+          test "$forbidden_privilege_count" = "0"
           echo "Fresh and audited legacy-schema disposable migration validations passed."
           echo "Existing UUID IDs and manifest_url column preserved; semver check added NOT VALID."
