@@ -5,8 +5,8 @@ import re
 
 base = Path("supabase/migrations/20261126120000_free_paid_plan_customer_order_gates.sql").read_text(encoding="utf-8")
 hardening = Path("supabase/migrations/20261126130000_member_loss_prevention_hardening.sql").read_text(encoding="utf-8")
-flat = re.sub(r"\\s+", " ", base.lower())
-hard = re.sub(r"\\s+", " ", hardening.lower())
+flat = re.sub(r"\s+", " ", base.lower())
+hard = re.sub(r"\s+", " ", hardening.lower())
 checks = {
     "Free/Paid catalog separates Admin and Member audiences": all(x in flat for x in ["project_plan_catalog", "audience in ('admin','member')", "plan_kind in ('free','paid')"]),
     "paid plan requires positive price and billing period": "plan_kind='paid' and price>0 and billing_period is not null" in flat,
