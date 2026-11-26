@@ -101,3 +101,12 @@ Work & Earn wallet/Owner profit backend migration source থাকলেও prod
 - production deployment and monitoring evidence recorded.
 
 **সত্যতা-নীতি:** ৪,০০০ project, ২,০০০ USD + ২,০০০ BDT split এবং Admin/Member plan rules হলো Owner-এর লক্ষ্য ও specification। এই document commit কোনো project চালু করে না, customer/payment আনে না, dollar/BDT তৈরি করে না এবং income guarantee দেয় না।
+
+
+## ৯. ৪,০০০ প্রজেক্টের Free Option ও Paid Automatic Plan — Owner clarification
+
+- প্রতিটি ৪,০০০ project slot-এ দুটি access option থাকবে: **Free Option** এবং **Paid Automatic Plan**। অর্থাৎ ২,০০০ USD project ও ২,০০০ BDT project—সব ৪,০০০টিরই Free entry/option এবং paid automation plan থাকবে।
+- **Admin:** সব ৪,০০০ project-এর Free Option ব্যবহার করতে পারবেন; প্রয়োজন হলে নির্ধারিত Paid Automatic Plan কিনে paid entitlement নিতে পারবেন।
+- **সাধারণ Member:** Free Option/paid earning automation-এ Admin-এর মতো free paid-plan entitlement পাবেন না; paid plan-এর মূল্য বাস্তবে provider-এর মাধ্যমে settle ও server-side verify হওয়ার পরেই সংশ্লিষ্ট project-এর paid automation entitlement চালু হবে।
+- Paid plan-এর সুনির্দিষ্ট মূল্য, মেয়াদ, feature limits, কোন project-এ কী সুবিধা এবং refund/renewal terms পরে লিখিতভাবে নির্ধারণ ও প্রকাশ করতে হবে। কোনো paid plan কাজ, customer demand, নির্দিষ্ট আয় বা profit নিশ্চিত করে না।
+- এই ব্যাখ্যা **দুটি access option (Free + Paid)** বোঝায়; এখানে Basic/Premium নামে দুটি আলাদা paid tier অনুমান করা হয়নি।
