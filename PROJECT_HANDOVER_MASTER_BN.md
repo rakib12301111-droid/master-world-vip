@@ -559,3 +559,35 @@ GitHub Actions-এ ব্যবহৃত secret নাম:
 - এই সেশনের সময় যাচাই: বাংলাদেশ সময় ২৭ নভেম্বর ২০২৬, রাত ১:১০ (প্রায় ১:১০:৫৪, UTC+06:00)।
 - Owner শুভরাত্রি জানিয়েছেন; পরের সেশনে উপরের ধাপ ১ থেকে সর্বশেষ অবস্থা যাচাই করে শুরু করতে হবে।
 - বর্তমান অবস্থা: পূর্ণ প্ল্যাটফর্ম Production Live নয়; বাস্তব payment/payout বা আয় চালু হওয়ার প্রমাণ নেই।
+
+
+## ১৬. ২৭ নভেম্বর ২০২৬ — পূর্ণ প্রকল্প পুনঃযাচাই সেশন (চলমান; কোনো Live অনুমোদন নয়)
+
+### Owner-এর ১০ ঘণ্টার নির্দেশ ও বাস্তব সীমা
+- Owner শুরু থেকে শেষ পর্যন্ত পুরো MASTER WORLD VIP যাচাই, ভুল সংশোধন, পরীক্ষা এবং কাজ শেষ হলে পরবর্তী অসম্পন্ন কাজ চালিয়ে যাওয়ার নির্দেশ দিয়েছেন; একই কাজ পুনরায় না করার শর্ত বহাল।
+- এই ChatGPT কথোপকথন নিজে থেকে একটানা ১০ ঘণ্টা ব্যাকগ্রাউন্ডে কাজ চালাতে বা প্রতি ঘণ্টায় নিজে থেকে নতুন বার্তা পাঠাতে পারে না। Hourly automation cadence-ও উপলভ্য নয়। তাই ১০ ঘণ্টা সম্পূর্ণ কাজ হয়েছে বা প্রতি ঘণ্টার update নিশ্চিত—এমন দাবি করা যাবে না।
+- বর্তমান সেশনে বাস্তবে যাচাই করা তথ্য ও সীমাবদ্ধতা নিচে লেখা হলো; পরবর্তী সেশনে এখান থেকে এগোতে হবে।
+
+### ২৭ নভেম্বরের পুনঃযাচাই
+- Planning branch: `planning/4000-automated-project-economy`; সাম্প্রতিক commit search-এ সর্বশেষ দেখা commit `9c504237e8698ccacc891dc82a8aa23d98747585` — “Document Staging access tests and worker service gates”।
+- একই branch-এর আগের commit `88fadcb5e13acf768495f7bc031683f8b44b0f70`-এ Worker Deno type-check workflow যোগ হয়েছে।
+- PR #20 খোলা Draft PR; PR description-এ 4,000-project foundation, dual-currency ledger, guarded payout/refund এবং release gate বর্ণিত। বর্তমান পূর্ণ Production readiness প্রমাণিত নয়।
+- PR #19-এর বিবরণে daily encrypted backup + disposable restore test (02:30 UTC), weekly read-only schema/migration audit (Monday 03:15 UTC), এবং 6-hourly read-only DB health monitor প্রস্তাব করা হয়েছে। PR #19 Draft/Unmerged থাকায় এই schedule main branch-এ কার্যকর হয়েছে বলে ধরে নেওয়া যাবে না।
+- 02:30 UTC = বাংলাদেশ সময় সকাল ৮:৩০; Monday 03:15 UTC = বাংলাদেশ সময় সোমবার সকাল ৯:১৫। এগুলো PR-এ বর্ণিত পরিকল্পিত সময়, বাস্তব সফল run-এর প্রমাণ নয়।
+- বর্তমান branch head `9c504...`-এর জন্য connector-এর commit-workflow-run এবং combined-status query কোনো run/status ফেরত দেয়নি। এটি “ব্যর্থ” প্রমাণ করে না; বরং ওই query থেকে ফল পাওয়া যায়নি। Worker commit-এর run/status query-ও এই সেশনে remote protocol error-এ সম্পন্ন হয়নি।
+- Staging workflow/Secrets বাস্তবে dispatch বা pass হয়েছে—এমন নতুন প্রমাণ এই সেশনে পাওয়া যায়নি। Secrets কখনো chat-এ চাওয়া বা প্রকাশ করা যাবে না।
+- Release Readiness নথি এখনও **NOT READY FOR PRODUCTION / NOT LIVE** বলে। Production migration, public deployment, live billing/payment/payout, provider account/KYC পরিবর্তন বা real money transfer করা হয়নি।
+
+### সংশোধন ও পরবর্তী কাজের নির্ভুল ক্রম
+1. PR #19-এর head/branch এবং সংশ্লিষ্ট workflow YAML সরাসরি খুলে schedule, timezone, permissions, secret names, backup encryption, restore target ও read-only transaction semantics line-by-line যাচাই করতে হবে। PR #19 merge না হওয়া পর্যন্ত schedule সক্রিয় নয়।
+2. PR #20-এর latest head/diff, Staging workflow-এর প্রকৃত secret contract এবং handover/spec-এর secret নামের সামঞ্জস্য যাচাই করতে হবে; কোনো secret value chat-এ নয়।
+3. GitHub Actions-এর repository-wide recent runs UI/API থেকে actual run IDs, workflow names, branch/SHA, conclusion, job/step status সংগ্রহ করতে হবে। Commit-filtered query empty হলে “No run” সিদ্ধান্ত নয়; অন্য read-only query দিয়ে cross-check করতে হবে।
+4. Full ordered migration chain clean disposable PostgreSQL/Supabase-compatible Staging-এ চালাতে হবে; শুধু finance migrations-এর isolated test-কে full-chain pass বলা যাবে না।
+5. Owner/Admin/Member Auth/RBAC, RLS, worker Deno type-check এবং Staging Edge Function deploy test আলাদা করে যাচাই করতে হবে। Worker-এর approved business handlers না থাকলে production execution/revenue বন্ধ থাকবে।
+6. Backup/restore rehearsal, Production read-only audit, provider sandbox, safeguarded custody, reconciliation, payout/refund rails, pricing, security/load/E2E evidence সম্পন্ন না হওয়া পর্যন্ত Release Readiness NOT READY থাকবে।
+7. Routine source/docs/disposable test সংশোধন চালানো যাবে; Production migration apply, migration-history repair, destructive SQL, Production data write, public deployment, live billing/payment/payout এবং provider/bank account পরিবর্তন আলাদা explicit approval ও readiness gate ছাড়া করা যাবে না।
+
+### এই সেশনের নির্দিষ্ট ফল
+- কোনো Production বা live পরিবর্তন করা হয়নি।
+- এই যাচাইয়ে কোনো নতুন passing workflow run প্রমাণিত হয়নি; পূর্বে নথিভুক্ত passing run-গুলো তাদের নির্দিষ্ট commit/scope-এ সীমাবদ্ধ।
+- এই section বর্তমান অগ্রগতির handover; এটি ১০ ঘণ্টার কাজ সম্পন্ন হওয়ার ঘোষণা নয়।
