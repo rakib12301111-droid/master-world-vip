@@ -71,3 +71,14 @@ The following are not authorized by routine update permission: Production databa
 ## Current conclusion
 
 Continue improving the branch and tests. Do not describe the project as Production-ready, payment-live, income-generating, or Member-funds-secured in real custody until the evidence above exists.
+
+
+## ২৭ নভেম্বর ২০২৬ — Owner-এর পরবর্তী প্রস্তুতি নির্দেশনা
+
+Owner বলেছেন বাকি release/payment readiness কাজগুলো routine update-এর মাধ্যমে এগিয়ে নিতে এবং সহজ payout experience রাখতে; তবে KYC/Merchant approval এড়িয়ে live transfer চান। নিরাপত্তা/আইনগত সীমা অনুযায়ী live provider/bank approval bypass করা যাবে না। তাই সহজ UI + Admin approval + mock/simulated sandbox প্রস্তুত করা যাবে; mock transaction বাস্তব অর্থ নয়। Official sandbox integration কেবল provider-এর অনুমোদিত sandbox access/terms থাকলে।
+
+- Payout specification-এ no-KYC-bypass boundary, test-only mock adapter আচরণ এবং ২০% commission-এর একটি নিরাপদ **proposal-only** calculation base যোগ হয়েছে।
+- প্রস্তাবিত base: settled customer gross থেকে provider fees, tax, full Member payable, refund reserve funding ও approved direct operating cost বাদ দিয়ে যে distributable platform margin থাকে, তার ২০%; margin শূন্য/ঋণাত্মক হলে commission শূন্য। এটি এখনো Owner-এর চূড়ান্ত approval নয় এবং live accounting-এ সক্রিয় নয়।
+- Full ordered migration chain এখনও isolated Supabase-compatible environment-এ execute করা হয়নি; Production read-only audit-এর জন্য অনুমোদিত DB connection/secret-backed environment প্রয়োজন, যা chat-এ চাওয়া হবে না।
+- Real custody/reserve funding, bank/provider reconciliation, live worker, signed payment webhooks এবং payout/refund rails external institutional setup ছাড়া বাস্তবায়ন/যাচাই করা যাবে না।
+- এই ধাপে Production DB, live deployment, live payment, bank account/KYC বা provider settings পরিবর্তন করা হয়নি।
