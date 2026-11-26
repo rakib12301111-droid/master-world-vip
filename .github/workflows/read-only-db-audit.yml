@@ -65,49 +65,34 @@ jobs:
         run: |
           set -euo pipefail
           export PGSSLMODE=require
-          python3 - <<'PY'
-          import os
-          from urllib.parse import urlsplit, unquote
-          p = urlsplit(os.environ["SUPABASE_DB_URL"])
-          for key, value in {
-              "PGHOST": p.hostname or "",
-              "PGPORT": str(p.port or 5432),
-              "PGDATABASE": p.path.lstrip("/"),
-              "PGUSER": unquote(p.username or ""),
-              "PGPASSWORD": unquote(p.password or ""),
-          }.items():
-              print(f"::add-mask::{value}")
-              with open(os.environ["GITHUB_ENV"], "a", encoding="utf-8") as f:
-                  f.write(f"{key}={value}\n")
-          PY
           {
             echo "AUDIT TIMESTAMP (UTC): $(date -u +%Y-%m-%dT%H:%M:%SZ)"
             echo
             echo "=== DATABASE VERSION ==="
-            psql -X -v ON_ERROR_STOP=1 -Atc "select version();"
+            psql "$SUPABASE_DB_URL" -X -v ON_ERROR_STOP=1 -Atc "select version();"
             echo
             echo "=== SUPABASE MIGRATION HISTORY TABLE ==="
-            psql -X -v ON_ERROR_STOP=1 -P pager=off -c "
+            psql "$SUPABASE_DB_URL" -X -v ON_ERROR_STOP=1 -P pager=off -c "
               select version, name
               from supabase_migrations.schema_migrations
               order by version;"
             echo
             echo "=== USER TABLES AND VIEWS ==="
-            psql -X -v ON_ERROR_STOP=1 -P pager=off -c "
+            psql "$SUPABASE_DB_URL" -X -v ON_ERROR_STOP=1 -P pager=off -c "
               select table_schema, table_name, table_type
               from information_schema.tables
               where table_schema not in ('pg_catalog','information_schema','auth','storage','realtime','_realtime')
               order by table_schema, table_name;"
             echo
             echo "=== ROW LEVEL SECURITY POLICIES ==="
-            psql -X -v ON_ERROR_STOP=1 -P pager=off -c "
+            psql "$SUPABASE_DB_URL" -X -v ON_ERROR_STOP=1 -P pager=off -c "
               select schemaname, tablename, policyname, permissive, roles, cmd, qual, with_check
               from pg_policies
               where schemaname not in ('pg_catalog','information_schema')
               order by schemaname, tablename, policyname;"
             echo
             echo "=== USER-DEFINED FUNCTIONS ==="
-            psql -X -v ON_ERROR_STOP=1 -P pager=off -c "
+            psql "$SUPABASE_DB_URL" -X -v ON_ERROR_STOP=1 -P pager=off -c "
               select n.nspname as schema_name, p.proname as function_name,
                      pg_get_function_identity_arguments(p.oid) as arguments
               from pg_proc p join pg_namespace n on n.oid=p.pronamespace
@@ -115,7 +100,7 @@ jobs:
               order by 1,2,3;"
             echo
             echo "=== TRIGGERS ==="
-            psql -X -v ON_ERROR_STOP=1 -P pager=off -c "
+            psql "$SUPABASE_DB_URL" -X -v ON_ERROR_STOP=1 -P pager=off -c "
               select event_object_schema, event_object_table, trigger_name, action_timing, event_manipulation
               from information_schema.triggers
               where trigger_schema not in ('pg_catalog','information_schema')
