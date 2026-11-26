@@ -148,7 +148,7 @@ begin
  end loop;
 
  -- A Member payable liability may only be debited up to its own accrued balance.
- for v_line in select x from jsonb_array_elements(p_lines) as e(line) loop
+ for v_line in select line from jsonb_array_elements(p_lines) as e(line) loop
    select * into v_account from public.finance_accounts
     where id=(v_line->>'account_id')::uuid;
    if v_account.account_code='member_payable' then
