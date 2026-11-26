@@ -12,11 +12,11 @@ No Production migration, live money movement, public release or revenue activati
 
 ## Verified evidence
 
-Latest PR head observed during this review: `c23d565217cd53cb443fe6fb1bed51d8b64565a8`.
+Latest PR head after release-readiness documentation updates: `2ba5af6027f2f8fecd23ae5ce837079ca6e7b44d`.
 
-- PostgreSQL 16 disposable runtime workflow run `45872393975`: success. It runs the ledger and payout/refund migration tests against an isolated disposable database.
-- Supabase migration safety run `45872394002`: success. Static verifier steps for the project registry, automation engine, plan/order gates, finance ledger and payout/refund safety all passed; the existing community readiness and other static checks also passed.
-- Auto Work static safety run `45872393894`: success.
+- PostgreSQL 16 disposable runtime workflow run `45874411633`: success. It runs the ledger and payout/refund migration tests against an isolated disposable database.
+- Supabase migration safety run `45874411687`: success. Static verifier steps for the project registry, automation engine, plan/order gates, finance ledger and payout/refund safety all passed; the existing community readiness and other static checks also passed.
+- Auto Work static safety run `45874411490`: success.
 - The PR is still Draft, Open and Unmerged. Its base is `main`.
 - The registry seeds 4,000 planned slots, but execution and revenue collection remain disabled and project budgets are zero.
 - No worker fleet, customer checkout/webhook integration, safeguarded custody account, funded refund reserve, bKash/Nagad/bank payout adapter, or live Admin commission posting is connected by these changes.
