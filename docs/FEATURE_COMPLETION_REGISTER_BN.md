@@ -295,3 +295,12 @@ Owner commission কেবল সব member payable, refund liability, provider 
 - Safety defaults: execution_enabled=false, revenue_collection_enabled=false, budget_cap=0. No payment, worker, revenue or payout is initiated.
 - Added read-only audit query at `supabase/audits/4000_project_registry_read_only.sql`, and documented migration order in Supabase README.
 - **Status:** migration and audit source committed to feature branch; not applied to Supabase production. Disposable CI validation must pass before Step 1 can be marked verified. This is a project catalog registry, not 4,000 working/earning projects.
+
+
+## Update 24 — 2026-11-26: Step 2 — Central 4,000-project automation engine source
+
+- Added `20261126110000_project_automation_engine.sql`: per-project scheduler configuration, worker registry and heartbeat, idempotent task queue, lease-based worker claims, bounded retries/dead-letter handling, audit log and Admin overview RPC.
+- Added hard gates: all scheduler rows are opt-in and absent by default; scheduler enqueue only considers registry projects with execution_enabled=true and a positive approved project budget; worker RPCs are service_role-only; worker currency support, fresh heartbeat, lease token, per-task budget and per-project daily budget are checked. One running task per project is enforced.
+- Added a read-only audit SQL file and static verifier, and wired the verifier into the Supabase migration safety workflow.
+- No worker service, external provider connector, payment collection, revenue recording or payout is deployed by this source migration. No project is enabled by default; the 4,000 registry rows still have execution disabled and zero budget.
+- **Status:** source files committed to the feature branch; GitHub Actions and disposable SQL validation pending. Not applied to Production, not deployed, and not generating income.
