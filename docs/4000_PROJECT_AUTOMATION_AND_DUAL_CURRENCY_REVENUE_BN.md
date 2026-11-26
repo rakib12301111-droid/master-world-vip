@@ -183,3 +183,12 @@ Work & Earn wallet/Owner profit backend migration source থাকলেও prod
 - GitHub Actions disposable PostgreSQL 16 run `45872273474` — migration/runtime test step **success**। এতে দুই migration বাস্তব PostgreSQL-এ apply, balanced journal posting, idempotent retry, currency mismatch rejection, journal immutability, Member payable overdraw rejection, pending payout reservation ও payout paid-state journal gate পরীক্ষা হয়েছে।
 - Migration Safety CI run `45872273373` — **success**; Auto Work Static Safety run `45872273321` — **success**।
 - এই পরীক্ষা disposable CI database-এ; Production Supabase database নয়।
+
+## ১৪. Payout methods, withdrawal authorization ও Admin commission (২৭ নভেম্বর ২০২৬)
+
+- Member payout destination হিসেবে bKash, Nagad এবং bank account যোগ করার সহজ flow থাকবে; account ownership/identity verify, sensitive data encryption/tokenization, masked display এবং OTP/PIN/password never collect বাধ্যতামূলক।
+- bKash/Nagad withdrawal Admin approval-gated হবে। Admin approval ছাড়া transfer call নয়; approval-এর পরও official provider payout channel, account eligibility, provider settlement ও reconciliation আবশ্যক। Provider/company permission, KYC বা আইন bypass নয়।
+- Bank destination Member self-enroll করতে পারবে। Ownership verification, KYC/AML/fraud checks এবং bank/payment partner-approved transfer rail প্রস্তুত থাকলে low-risk payout policy অনুযায়ী per-request Admin approval ছাড়াই auto payout হতে পারে। এটি bank/provider permission bypass নয়; new/changed destination, unusual/high-value activity, limits বা reconciliation alert হলে manual review/fail-closed।
+- প্রতিটি paid work order-এ Admin commission configurable হবে; rate অনুমান করে hard-code নয়। Order acceptance-এর আগে gross price, currency, provider fee, refund reserve, operating cost, Admin commission ও Member net payable disclose করতে হবে। Commission basis/rate order snapshot immutable; completed + settled/reconciled কাজের পর আলাদা company-revenue account-এ post হবে। USD ও BDT আলাদা।
+- Full design ও launch gates: docs/PAYOUT_METHODS_ADMIN_APPROVAL_AND_PLATFORM_COMMISSION_BN.md.
+- Status: requirement/design only. Provider adapters, ownership verification, bank mandate/API, commission posting logic, live payouts/collection এবং production apply বাকি।
