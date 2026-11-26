@@ -52,6 +52,59 @@ create table if not exists public.project_plan_subscriptions (
 create index if not exists project_plan_subscriptions_user_idx
   on public.project_plan_subscriptions(user_id,status,created_at desc);
 
+-- Enforce exact catalog price/currency and an explicitly enabled paid offer at activation time.
+create or replace function public.validate_project_plan_subscription()
+returns trigger language plpgsql security definer set search_path=''
+as $
+declare v_plan public.project_plan_catalog%rowtype;
+begin
+  if new.status='active' then
+    select * into v_plan from public.project_plan_catalog where id=new.plan_id for share;
+    if not found or v_plan.plan_kind<>'paid' or not v_plan.enabled
+      or not v_plan.paid_activation_enabled then
+      raise exception 'Paid plan is not enabled for activation';
+    end if;
+    if new.settled_amount is distinct from v_plan.price
+      or new.currency is distinct from v_plan.currency then
+      raise exception 'Settled plan amount/currency does not match catalog';
+    end if;
+  end if;
+  return new;
+end;
+$;
+revoke all on function public.validate_project_plan_subscription() from public,anon,authenticated;
+create trigger project_plan_subscription_validate
+  before insert or update on public.project_plan_subscriptions
+  for each row execute function public.validate_project_plan_subscription();
+
+-- Prevent an order from being funded for a disabled project or the wrong currency.
+create or replace function public.validate_customer_service_order()
+returns trigger language plpgsql security definer set search_path=''
+as $
+declare v_project public.earning_project_registry%rowtype;
+begin
+  select * into v_project from public.earning_project_registry where id=new.project_id for share;
+  if not found or new.currency is distinct from v_project.revenue_currency then
+    raise exception 'Customer order project/currency mismatch';
+  end if;
+  if new.status in ('funded','in_progress','delivered','accepted','completed') then
+    if not v_project.execution_enabled or not v_project.revenue_collection_enabled
+      or v_project.lifecycle_status<>'active' then
+      raise exception 'Project is not approved for customer order execution';
+    end if;
+    if new.scope_terms='{}'::jsonb then
+      raise exception 'Customer scope and order terms must be recorded before funding';
+    end if;
+  end if;
+  return new;
+end;
+$;
+revoke all on function public.validate_customer_service_order() from public,anon,authenticated;
+create trigger customer_service_order_validate
+  before insert or update on public.customer_service_orders
+  for each row execute function public.validate_customer_service_order();
+
+
 -- A customer may browse/quote for free, but a delivered service/order is never a free plan benefit.
 -- A positive-price order must be provider-settled and fully funded before work can start.
 create table if not exists public.customer_service_orders (
