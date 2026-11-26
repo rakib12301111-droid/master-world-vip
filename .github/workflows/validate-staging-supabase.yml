@@ -29,6 +29,18 @@ jobs:
           test -n "$DB_URL" || { echo "::error::Missing STAGING_SUPABASE_DB_URL"; exit 1; }
           test -n "$PROJECT_REF" || { echo "::error::Missing STAGING_SUPABASE_PROJECT_REF"; exit 1; }
           test "$PROJECT_REF" != "lztbbrzeuyjkuiyzrsxp" || { echo "::error::Staging project ref must not be Production"; exit 1; }
+          python - "$DB_URL" "$PROJECT_REF" <<'PY'
+          import sys
+          from urllib.parse import urlparse, unquote
+          u=urlparse(sys.argv[1])
+          expected=sys.argv[2]
+          username=unquote(u.username or "")
+          if u.scheme not in ("postgres","postgresql") or not u.hostname:
+              raise SystemExit("::error::Staging DB URL is not a PostgreSQL URL")
+          if not username.endswith("." + expected):
+              raise SystemExit("::error::DB URL username must end with the configured Staging project ref; refusing an unverified target")
+          print("Staging DB URL project-ref binding verified without printing credentials.")
+          PY
           echo "Staging credentials present; values are masked."
       - name: Validate the complete ordered migration set
         run: |
@@ -87,8 +99,12 @@ jobs:
           print(json.loads(base64.urlsafe_b64decode(part))['sub'])
           PY
           }
+          owner_id=$(user_id "$OWNER_JWT")
           admin_id=$(user_id "$ADMIN_JWT")
           member_id=$(user_id "$MEMBER_JWT")
+          test "$owner_id" != "$admin_id" && test "$owner_id" != "$member_id" && test "$admin_id" != "$member_id" || {
+            echo "::error::Owner, Admin and Member must be three distinct Staging Auth users"; exit 1;
+          }
           echo "OWNER_JWT=$OWNER_JWT" >> "$GITHUB_ENV"
           echo "ADMIN_JWT=$ADMIN_JWT" >> "$GITHUB_ENV"
           echo "MEMBER_JWT=$MEMBER_JWT" >> "$GITHUB_ENV"
@@ -121,9 +137,9 @@ jobs:
           }
           for pair in "OWNER_JWT:owner" "ADMIN_JWT:admin" "MEMBER_JWT:member"; do
             var="${pair%%:*}"; expected="${pair##*:}"; token="${!var}"
-            code=$(call_rpc "$token" get_my_admin_access "/tmp/$expected-role.json")
+            code=$(call_rpc "$token" get_my_admin_access "/tmp/$expected.json")
             test "$code" = "200" || { echo "::error::$expected role RPC returned HTTP $code"; exit 1; }
-            actual=$(tr -d '"' < "/tmp/$expected-role.json")
+            actual=$(tr -d '"' < "/tmp/$expected.json")
             test "$actual" = "$expected" || { echo "::error::Expected $expected role; received $actual"; exit 1; }
             echo "PASS: $expected authenticated role verified"
           done
