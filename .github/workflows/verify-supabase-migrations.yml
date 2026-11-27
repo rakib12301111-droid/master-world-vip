@@ -33,6 +33,8 @@ on:
       - ".github/workflows/test-two-member-rls.yml"
       - ".github/workflows/android-release.yml"
       - ".github/workflows/verify-supabase-migrations.yml"
+      - ".github/workflows/apply-staging-supabase-migrations.yml"
+      - "docs/CUSTOMER_QUOTE_WORKFLOW_ACCEPTANCE_TEST_BN.md"
       - "docs/EMERGENCY_OFFLINE_SATELLITE_GAMES.md"
       - "docs/GLOBAL_COMMUNICATION_OFFLINE_NEWS_ROADMAP.md"
       - "docs/COMMUNITY_LIVE_READINESS.md"
