@@ -1,6 +1,10 @@
 #!/usr/bin/env python3
 """Static safety checks for the customer quote workflow."""
 from pathlib import Path
+import re
+import shutil
+import subprocess
+import tempfile
 
 root = Path(__file__).resolve().parents[1]
 migration = (root / "supabase/migrations/20261127140000_customer_quote_workflow.sql").read_text()
@@ -37,3 +41,19 @@ for name, passed in checks.items():
 if failed:
     raise SystemExit(f"{len(failed)} customer quote workflow check(s) failed")
 print(f"PASS all {len(checks)} customer quote workflow checks")
+
+# The repository safety workflow installs Node.js before invoking this verifier.
+node = shutil.which("node")
+if not node:
+    raise SystemExit("Node.js is required to syntax-check customer quote UI scripts")
+for html_path in (root / "www/services.html", root / "www/admin-quotes.html"):
+    html = html_path.read_text()
+    inline_scripts = re.findall(r"<script(?:\\s[^>]*)?>(.*?)</script>", html, flags=re.S | re.I)
+    for index, source in enumerate(inline_scripts):
+        if not source.strip():
+            continue
+        with tempfile.NamedTemporaryFile("w", suffix=".js", encoding="utf-8") as tmp:
+            tmp.write(source)
+            tmp.flush()
+            subprocess.run([node, "--check", tmp.name], check=True)
+    print("PASS JavaScript syntax " + html_path.name)
