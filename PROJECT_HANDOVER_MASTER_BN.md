@@ -1014,3 +1014,11 @@ Owner নির্দেশ: নিচের কাজগুলোকে MASTER 
 5. Production migration, Production Worker execution, real payment/payout এবং Live Deployment—প্রতিটির পৃথক approval, security review, Staging acceptance ও backup/restore evidence।
 
 **এই আপডেট কোনো Worker execution, payment, payout, commission posting, Production migration বা Live Deployment চালু করেনি। কোনো বাস্তব আয়/৪,০০০ Project-এর ব্যবসায়িক কাজ সম্পন্ন হয়েছে—এমন দাবি করা যাবে না।**
+
+
+### ২৭ নভেম্বর ২০২৬ — এই সেশনের শেষ যাচাই
+- আগের Handover update commit: `ec808d67e63614186cd37490b15a8110c7abefc6`।
+- Worker source পুনরায় পরিদর্শন: `supabase/functions/project-automation-worker/index.ts` এখনো কেবল `system_health_check` execute করে; অন্য task type fail-closed।
+- Static verifier-ও স্পষ্টভাবে কেবল `system_health_check` implementation প্রত্যাশা করে। তাই এই সেশনে নতুন business handler code/allowlist enable করা হয়নি; catalog-কে বাস্তবায়নের আগে reviewable specification হিসেবে রাখা হয়েছে।
+- নতুন commit-গুলো documentation-only হওয়ায় Worker code validation workflow-এর path filter trigger হয়নি। এই নতুন docs commit-গুলোর জন্য CI pass দাবি করা হচ্ছে না। আগের সফল runtime/worker test কেবল আগের tested source commit-গুলোর জন্য প্রযোজ্য।
+- এই final handover note-এ আগের docs commits ও বর্তমান নিরাপত্তা সীমা রেকর্ড করা হলো; পরবর্তী session-এ catalog Phase A implementation শুরু করার আগে existing SQL allowlist/RPC contracts পুনরায় পরীক্ষা করতে হবে।
