@@ -132,3 +132,17 @@ Member ও Admin-এর জন্য সহজ payout interface রাখা: �
 - Staging validation workflow-এ guarded PR trigger যুক্ত হয়েছে; Staging project ref Production ref-এর সঙ্গে মিলে গেলে workflow fail-closed হবে। Staging secrets ও isolated role accounts ছাড়া Staging acceptance সম্ভব নয়।
 - Synthetic encrypted backup/restore-এর জন্য `verify-disposable-backup-restore.yml` যোগ হয়েছে; fake fixture data আলাদা disposable PostgreSQL database-এ restore ও count-check হবে।
 - **Execution status:** latest branch head-এর জন্য নতুন CI, Finance Runtime, synthetic Backup/Restore বা Staging run/check এখনো পাওয়া যায়নি। অতএব সবগুলো PENDING; আগের commit-এর successful runtime run বর্তমান commit-এর pass নয়। Production migration ও Live Deployment চালানো হয়নি।
+
+
+## ১২. Owner-এর সর্বশেষ বাধ্যতামূলক কমিশন নীতি — পূর্বের ২০% একক-হার প্রস্তাব superseded (২৭ নভেম্বর ২০২৬)
+
+এই section-এর নীতি আগের Section 8 ও Section 10-এ থাকা একক ২০% প্রস্তাবকে প্রতিস্থাপন করে:
+
+- যোগ্য high-volume, USD-settled automated work: Admin commission rate **৩৫%**।
+- সাধারণ BDT-settled কাজ: Admin commission rate **২০%**।
+- USD ও BDT আলাদা ledger/currency-তে থাকবে; কোনো cross-currency netting নয়। USD আয় না থাকলে USD balance 0 দেখাতে হবে। FX conversion হলে rate, timestamp, fee ও exchange journal আলাদা সংরক্ষণ করতে হবে।
+- নিরাপদ calculation base হলো positive Distributable Platform Margin: settled customer gross − provider/payment fees − applicable tax/withholding − full Member payable − refund/chargeback reserve funding − approved direct operating costs।
+- Eligible USD work-এ Admin commission = positive distributable margin × 35%; ordinary BDT work-এ = positive distributable margin × 20%。 Margin শূন্য/ঋণাত্মক হলে commission 0।
+- Member payable, refund/chargeback reserve, tax বা provider fee থেকে commission নেওয়া যাবে না। Gross order value Admin profit নয়।
+- Eligibility, rate, calculation basis, fees/tax, rounding, refund reversal এবং Member net payable order acceptance-এর আগে Customer/Member-কে দেখিয়ে immutable snapshot করতে হবে। Commission কেবল accepted/completed work এবং settled/reconciled funds-এর পর আলাদা Admin/company ledger-এ post হবে।
+- এই policy নথিভুক্ত; production commission এখনো disabled। Provider sandbox/webhook, Staging finance acceptance, legal/tax review এবং পৃথক release approval ছাড়া live deduction/posting হবে না।
