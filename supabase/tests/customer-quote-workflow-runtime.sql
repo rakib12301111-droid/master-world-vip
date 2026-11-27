@@ -61,26 +61,26 @@ begin
   ) then raise exception 'Customer did not receive the quote'; end if;
 end $$;
 select public.customer_respond_to_quote(:'quote_id'::uuid,true);
-do $
+do $$
 begin
   if not exists (select 1 from public.customer_quote_requests
     where id=current_setting('mwvip.test_quote_id')::uuid and status='accepted') then
     raise exception 'Customer quote acceptance was not recorded';
   end if;
-end $;
+end $$;
 
 select public.submit_my_customer_quote_request(
  'document_formatting','Bangladesh','Please format a short two-page report.'
 ) as cancel_quote_id \gset
 select set_config('mwvip.test_cancel_quote_id', :'cancel_quote_id', true);
 select public.cancel_my_customer_quote_request(:'cancel_quote_id'::uuid);
-do $
+do $$
 begin
   if not exists (select 1 from public.customer_quote_requests
     where id=current_setting('mwvip.test_cancel_quote_id')::uuid and status='cancelled') then
     raise exception 'Customer quote cancellation was not recorded';
   end if;
-end $;
+end $$;
 
 -- Even the database owner cannot rewrite the append-only event history.
 reset role;
@@ -96,7 +96,7 @@ begin
   end;
 end $$;
 
-do $
+do $$
 begin
   begin
     update public.customer_quote_requests
@@ -113,6 +113,6 @@ begin
   exception when others then
     if sqlerrm not like '%cannot be deleted%' then raise; end if;
   end;
-end $;
+end $$;
 
 rollback;
