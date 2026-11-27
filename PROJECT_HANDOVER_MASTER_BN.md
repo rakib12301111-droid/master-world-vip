@@ -1750,3 +1750,32 @@ Run links:
 - USD/BDT cross-currency conversion করে অন্য হার প্রয়োগ করা নিষিদ্ধ; FX হলে আলাদা exchange journal।
 - এই commit documentation correction only; commission runtime code, live settlement, collection বা payout সক্রিয় হয়নি।
 - Commit-এর PR-triggered workflow lookup-এ কোনো run ফেরত আসেনি; তাই CI success দাবি করা হচ্ছে না। পরবর্তী finance runtime test-এ USD 35%, BDT 20%, zero income, currency isolation, refund/chargeback reversal ও settlement-only posting যাচাই করতে হবে।
+
+## ২৭ নভেম্বর ২০২৬ — Staging Backup/Restore Gate বাস্তব Workflow-এ সংযুক্ত
+
+### Supabase Dashboard থেকে Owner-প্রদত্ত Staging তথ্য
+- Source Organization: `MASTER WORLD VIP`; বিদ্যমান Staging Project: `MASTER-WORLD-VIP-STAGING`।
+- Project Reference: `awatzrapqrteybgspqlq`; Region: `ap-northeast-1`; Dashboard status: `Healthy`।
+- Project Settings-এ বর্তমান Owner হিসেবে `rakib12301111@gmail.com` দেখা গেছে।
+- Project Overview-তে GitHub: `No repository connected`, Last migration: `No migrations`, Last backup: `No backups` দেখা গেছে।
+- Owner Transfer Project পেজে Target Organization `MASTER-WORLD-VIP-STAGING` নির্বাচন করেছেন; Transfer Project সম্পন্ন করেননি। Production `MASTER-WORLD-VIP` অপরিবর্তিত।
+- Target Organization membership/role এবং Transfer eligibility-এর পূর্ণ Checks এখনো প্রমাণিত নয়; Transfer স্থগিত থাকবে।
+
+### Code/workflow update
+- `.github/workflows/validate-staging-supabase.yml`-এ `staging-backup-restore` job যুক্ত হয়েছে।
+- Jobটি কেবল নিশ্চিত Staging ref `awatzrapqrteybgspqlq` গ্রহণ করে; Production ref `lztbbrzeuyjkuiyzrsxp` স্পষ্টভাবে নিষিদ্ধ।
+- নতুন বাধ্যতামূলক GitHub Actions secret: `STAGING_BACKUP_ENCRYPTION_PASSPHRASE`। Secret value কখনো ChatGPT-তে দেবেন না।
+- Staging Session Pooler URI-এর host/port/database/project-ref binding যাচাই, encrypted logical backup, runner-এ plaintext dump মুছে ফেলা, disposable Supabase PostgreSQL service-এ decrypt/restore এবং non-empty table count যাচাই যুক্ত।
+- Encrypted backup ও non-secret restore evidence ৭ দিনের Actions artifact হিসেবে রাখা হবে।
+- `staging-migrations` job এখন `needs: staging-backup-restore`; Backup/restore সফল না হলে migration preview/apply, Auth/RBAC test বা Worker deploy job শুরু হবে না।
+- Workflow manual-only; কোনো Supabase job এই documentation/code update-এর ফলে স্বয়ংক্রিয়ভাবে চালানো হয়নি।
+
+### এখনো অসম্পন্ন / বাস্তব প্রমাণ বাকি
+- GitHub Actions-এ Staging-only secrets উপস্থিতি যাচাই (secret value দেখা/শেয়ার করা হবে না): `STAGING_SUPABASE_ACCESS_TOKEN`, `STAGING_SUPABASE_DB_URL`, `STAGING_SUPABASE_PROJECT_REF`, `STAGING_SUPABASE_URL`, `STAGING_SUPABASE_ANON_KEY`, Owner/Admin/Member test account secrets এবং `STAGING_BACKUP_ENCRYPTION_PASSPHRASE`।
+- Staging backup job চালিয়ে encrypted artifact ও isolated restore success প্রমাণ সংগ্রহ।
+- এরপরই Staging migration dry-run/apply এবং Owner/Admin/Member Auth/RBAC acceptance বিবেচনা করা যাবে।
+- Workflow execution, backup/restore success, migration success বা Transfer eligibility এখনো দাবি করা হচ্ছে না।
+- Production database, secrets, migrations, backup workflow বা deployment-এ কোনো পরিবর্তন করা হয়নি।
+
+**পরবর্তী নিরাপদ ধাপ:** Owner GitHub repository Settings → Secrets and variables → Actions-এ Staging-only secret names/value নিজে configure করবেন। সব প্রয়োজনীয় secrets তৈরি ও test account প্রস্তুত না হওয়া পর্যন্ত manual Staging workflow চালাবেন না। প্রথমে backup/restore job-এর সফল run ও artifact যাচাই করতে হবে।
+
