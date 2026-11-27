@@ -1784,7 +1784,7 @@ Run links:
 ## ২৮ নভেম্বর ২০২৬ — Staging Secrets উপস্থিতি ও Validation Workflow preflight
 
 ### GitHub Repository Secrets — Owner-এর স্ক্রিনশট থেকে নাম যাচাই
-নিচের ১১টি Staging Secret-এর নাম Repository Settings → Secrets and variables → Actions-এ দৃশ্যমান ছিল:
+নিচের ১২টি Staging Secret-এর নাম Repository Settings → Secrets and variables → Actions-এ দৃশ্যমান ছিল:
 - `STAGING_SUPABASE_ACCESS_TOKEN`
 - `STAGING_SUPABASE_URL`
 - `STAGING_SUPABASE_ANON_KEY`
@@ -1798,7 +1798,7 @@ Run links:
 - `STAGING_MEMBER_EMAIL`
 - `STAGING_MEMBER_PASSWORD`
 
-দ্রষ্টব্য: উপরের তালিকায় ১২টি নাম আছে; Owner-এর স্ক্রিনশটে Staging-সম্পর্কিত মোট ১১টি Secret দেখা গিয়েছিল বলে প্রাথমিক গণনা ভুল ছিল। এই নথিতে সঠিক গণনা হবে **১২টি Staging Secret**। Secret values GitHub UI থেকে দেখা যায় না; তাই value সঠিক, বর্তমান বা কার্যকর—এটি এই স্ক্রিনশট দিয়ে প্রমাণিত নয়। কোনো secret value এই নথিতে সংরক্ষণ করা হয়নি।
+Secret values GitHub UI থেকে দেখা যায় না; তাই value সঠিক, বর্তমান বা কার্যকর—এটি এই স্ক্রিনশট দিয়ে প্রমাণিত নয়। কোনো secret value এই নথিতে সংরক্ষণ করা হয়নি।
 
 ### Workflow source preflight
 - Workflow: `.github/workflows/validate-staging-supabase.yml`
