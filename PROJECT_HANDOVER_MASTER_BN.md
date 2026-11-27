@@ -478,3 +478,10 @@ The Owner has directed that the following four gates be treated as critical and 
 - Production migration and public release: not authorized/performed.
 
 **Next action:** Owner completes only the Staging project identity and three secret setup using the runbook; then verify the preview-only workflow before any Staging apply.
+
+
+### Backup artifact retention recheck — 27 Nov 2026
+- GitHub Actions artifact lookup confirms artifact `15111217500` is currently present and `expired=false`; recorded expiry is **2026-12-03 11:24:58 UTC**.
+- The original run's `backup-restore-preview` job and every listed step completed SUCCESS, including encrypted logical backup creation, decrypt + disposable PostgreSQL restore, production migration dry-run and encrypted artifact upload.
+- Therefore the existing Production backup/restore proof is currently available for review; preserve the encrypted artifact and ensure the separately stored passphrase is recoverable before expiry. This does not replace a fresh backup if the artifact expires before Production apply.
+- No new backup run was started, and no database was changed by this recheck.
