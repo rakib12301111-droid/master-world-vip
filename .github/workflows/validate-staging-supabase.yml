@@ -246,23 +246,58 @@ jobs:
           if u.scheme != "https" or u.hostname != ref + ".supabase.co" or u.path not in ("","/") or u.query or u.fragment:
               raise SystemExit("::error::Staging API URL does not match the configured Staging project ref")
           PY
+          auth_failures=0
           for role in OWNER ADMIN MEMBER; do
             email_var="${role}_EMAIL"
             password_var="${role}_PASSWORD"
             email="${!email_var}"
             password="${!password_var}"
-            response=$(curl --silent --show-error "$BASE_URL/auth/v1/token?grant_type=password" \
+            response_file=$(mktemp)
+            http_code=$(curl --silent --show-error --connect-timeout 15 --max-time 30 \
+              --output "$response_file" --write-out '%{http_code}' \
+              "$BASE_URL/auth/v1/token?grant_type=password" \
               -H "apikey: $ANON_KEY" -H "Content-Type: application/json" \
-              -d "$(jq -n --arg email "$email" --arg password "$password" '{email:$email,password:$password}')")
-            token=$(printf '%s' "$response" | jq -r '.access_token // empty')
-            if [ -z "$token" ]; then
-              echo "::error::Staging $role Auth preflight failed. Ensure this account already exists, is email-confirmed, and the GitHub password secret matches its current password."
-              exit 1
+              -d "$(jq -n --arg email "$email" --arg password "$password" '{email:$email,password:$password}')") || {
+                echo "::error::Staging $role Auth request could not reach the API (network/TLS/timeout)."
+                rm -f "$response_file"
+                auth_failures=$((auth_failures + 1))
+                unset password
+                continue
+              }
+            token=$(jq -r '.access_token // empty' "$response_file" 2>/dev/null || true)
+            if [ -n "$token" ]; then
+              echo "::add-mask::$token"
+              echo "PASS: Staging $role account can authenticate (HTTP $http_code)."
+            else
+              error_code=$(jq -r '[.error_code, .code, .error] | map(select(type == "string")) | join(" ")' "$response_file" 2>/dev/null || true)
+              error_code=$(printf '%s' "$error_code" | tr '[:upper:]' '[:lower:]' | tr -cd 'a-z0-9_ -')
+              case "$error_code" in
+                *invalid_api_key*|*apikey*|*api_key*)
+                  reason="API key rejected; verify STAGING_SUPABASE_ANON_KEY belongs to this Staging project and is the anon/publishable key."
+                  ;;
+                *email_not_confirmed*|*email_not_verified*)
+                  reason="Email is not confirmed in this Staging project."
+                  ;;
+                *invalid_credentials*|*invalid_grant*|*user_not_found*|*invalid_login_credentials*)
+                  reason="Credentials rejected or account not found in this Staging project; verify the exact email and current password Secret."
+                  ;;
+                *too_many_requests*|*rate_limit*)
+                  reason="Auth rate limit reached; wait before retrying."
+                  ;;
+                *)
+                  reason="Auth rejected the request (HTTP $http_code; safe error code: ${error_code:-not_returned}). Check the Staging Auth logs for the detailed server-side cause."
+                  ;;
+              esac
+              echo "::error::Staging $role Auth preflight failed: $reason"
+              auth_failures=$((auth_failures + 1))
             fi
-            echo "::add-mask::$token"
-            unset token response password
-            echo "PASS: Staging $role account can authenticate."
+            rm -f "$response_file"
+            unset token response_file password
           done
+          if [ "$auth_failures" -gt 0 ]; then
+            echo "::error::Staging Auth preflight failed for $auth_failures account(s); no migration preview or apply was run."
+            exit 1
+          fi
       - name: Preview Staging migration changes
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.STAGING_SUPABASE_ACCESS_TOKEN }}
