@@ -1444,3 +1444,21 @@ GitHub Commit Check Runs endpoint-এ মোট ৭টি check পাওয়া 
 - bKash/Nagad এখন বাধ্যতামূলক নয়; Ledger → Withdrawal Request → Admin Approval থাকবে; provider authorization না পাওয়া পর্যন্ত বাস্তব payout disabled।
 
 **সত্যতা-সীমা:** Planning branch-এর CI ৭/৭ PASS এবং worker source/type-check সেখানে ঠিক। Main branch-এ পুরোনো failure এখনো ইতিহাসে আছে; referral secrets ও Staging unresolved। Full automated business engine Production Live নয়।
+
+
+## ২৭ নভেম্বর ২০২৬ — সর্বশেষ Handover commit-এর CI পুনরায় যাচাই
+
+- Planning branch-এর বর্তমান HEAD: `613d28ad17c9af6df3b960f46d255e83d07c7ca1`।
+- এই নির্দিষ্ট commit-এর জন্য নতুন করে চালানো ৭টি CI workflow-ই SUCCESS:
+  - Worker verification/type-check — Run `45975039998`.
+  - Disposable finance ledger — Run `45975039360`.
+  - Supabase migration safety — Run `45975039265`.
+  - Update-system validation — Run `45975038570`.
+  - Disposable backup/restore — Run `45975038503`.
+  - Auto Work static safety — Run `45975038456`.
+  - Disposable migration validation — Run `45975041281`.
+- আগের commit `b64ba621e41638cac62379dafacbb9f876c29123`-এর ৭/৭ PASS-এর পাশাপাশি বর্তমান handover commit `613d28a...`-এও ৭/৭ PASS নিশ্চিত হয়েছে। এটি planning-branch/disposable CI; Staging বা Production acceptance নয়।
+- PR #20: Open, Draft, Unmerged; head `613d28a...`, base `main`। PR #23: Open, Draft, Unmerged; PR #20-এর উপর stacked dependency, স্বাধীনভাবে merge করা যাবে না।
+- কোনো Staging project/secrets এখনো উপলব্ধ নয়; তাই Staging migration/Auth/RBAC/Worker acceptance হয়নি। Production migration, Worker activation, real payment/payout চালু করা হয়নি। Referral processor-এর missing protected secrets-ও এখনো user-side configuration চায়।
+- পরবর্তী একমাত্র নিরাপদ user input: আলাদা Supabase Staging Project তৈরি করে তার **Project Reference** জানানো। Secret/password/token/DB URL chat-এ পাঠাবেন না; GitHub Actions secrets সরাসরি GitHub Settings-এ এবং Function secrets Supabase dashboard-এ configure করতে হবে।
+- **সত্যতা-সীমা:** বর্তমান planning commit-এর CI ৭/৭ PASS; পূর্ণ business automation/earning engine Production Live নয় এবং আয় নিশ্চিত নয়।
