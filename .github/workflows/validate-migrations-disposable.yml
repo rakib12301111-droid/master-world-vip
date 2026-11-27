@@ -177,8 +177,8 @@ jobs:
             test "$count" -eq 31 || { echo "::error::Expected 31 migration files in $label database; found $count."; exit 1; }
           done
           echo "DISPOSABLE_MIGRATION_VALIDATION=success"
-          echo "MIGRATIONS_APPLIED_TO_FRESH_TEST_DATABASE=30"
-          echo "MIGRATIONS_APPLIED_TO_LEGACY_SCHEMA_TEST_DATABASE=30"
+          echo "MIGRATIONS_APPLIED_TO_FRESH_TEST_DATABASE=31"
+          echo "MIGRATIONS_APPLIED_TO_LEGACY_SCHEMA_TEST_DATABASE=31"
           echo "PRODUCTION_DATABASE_CHANGED=false"
 
       - name: Verify customer quote workflow static safety
