@@ -67,7 +67,7 @@ jobs:
             --env POSTGRES_PASSWORD=restore_test_only \
             --env POSTGRES_DB=mwvip_staging_restore \
             --publish 5432:5432 \
-            --health-cmd='pg_isready -U restore_test -d mwvip_staging_restore' \
+            --health-cmd='pg_isready -h 127.0.0.1 -p 5432 -U restore_test -d mwvip_staging_restore' \
             --health-interval=10s --health-timeout=5s --health-retries=12 \
             "$image"
           for attempt in $(seq 1 36); do
