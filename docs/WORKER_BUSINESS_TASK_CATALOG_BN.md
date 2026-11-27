@@ -68,3 +68,17 @@ No payment collection, refund, payout submission, bank transfer, bKash/Nagad tra
 ## Current decision
 
 Only `system_health_check` is enabled. All candidate tasks above remain **SPECIFIED / NOT IMPLEMENTED / NOT ALLOWLISTED**. Do not flip Worker execution or project schedules on because this catalog exists.
+
+
+## Phase A implementation status — 27 Nov 2026
+
+The following two catalog handlers are now implemented in source and database migrations on the planning branch:
+
+1. `project_usage_digest` — read-only 30-day task-state counts, project currency/lifecycle, scheduler status and daily budget/spent/reserved. It does not read customer/member profiles or order details.
+2. `work_order_validate` — read-only validation flags for a supplied order ID within the claimed task's project scope. It returns status, currency/scope/settlement checks and locked-allocation count; it does not return customer identity or financial amounts and does not mutate the order.
+
+Both are registered as `read_only`, require service-role RPC, pass through the global emergency stop, active worker heartbeat, project/scheduler/budget gates, claim lease, budget reservation and audit flow. Worker source has explicit branches for these exact task types; unknown types remain fail-closed.
+
+**Runtime acceptance:** disposable PostgreSQL workflow was triggered as run `45959311813` on commit `89c485235bee2b84e65d8e3667ad42a65beb37bc`. At the time of this documentation update it was still pending; do not call Phase A runtime acceptance passed until the run completes successfully. Worker static CI run `45959327873` passed on commit `52bfc611d2f7669a6f0534f87bbdadcb4a3b4469`.
+
+Not implemented: reminders, file integrity/malware scan, acceptance escalation, referral reconciliation, payout preflight, payment-event reconciliation, commission preview, daily finance reconciliation. These remain specified only.
