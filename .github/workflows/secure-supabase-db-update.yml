@@ -125,7 +125,17 @@ jobs:
             20261125100000_admin_auto_work_control_plane.sql \
             20261125120000_anti_theft_device_recovery.sql \
             20261125130000_admin_auto_work_claim_concurrency_fix.sql \
-            20261125160000_work_earn_wallet_owner_profit.sql; do
+            20261125160000_work_earn_wallet_owner_profit.sql \
+            20261126100000_earning_project_registry.sql \
+            20261126110000_project_automation_engine.sql \
+            20261126120000_free_paid_plan_customer_order_gates.sql \
+            20261126130000_member_loss_prevention_hardening.sql \
+            20261126140000_append_only_double_entry_finance_ledger.sql \
+            20261126150000_guarded_member_payout_refund_workflows.sql \
+            20261127100000_worker_execution_kill_switch_and_handler_allowlist.sql \
+            20261127120000_project_usage_digest_read_only_handler.sql \
+            20261127130000_work_order_validate_read_only_handler.sql \
+            20261127150000_admin_free_member_paid_plan_gates.sql; do
             test -f "supabase/migrations/$migration" || { echo "::error::Missing required migration: $migration"; exit 1; }
           done
 
