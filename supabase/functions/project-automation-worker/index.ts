@@ -17,7 +17,7 @@ Deno.serve(async (req) => {
   const rpc = async (name: string, body: Record<string, unknown> = {}) => {
     const response = await fetch(`${url}/rest/v1/rpc/${name}`, { method: "POST", headers, body: JSON.stringify(body) });
     const text = await response.text();
-    if (!response.ok) throw new Error(`${name} failed (${response.status}): ${text.slice(0, 500)}`);
+    if (!response.ok) throw new Error(`${name} failed (${response.status})`);
     return text ? JSON.parse(text) : null;
   };
   try {
@@ -28,13 +28,15 @@ Deno.serve(async (req) => {
     const registeredHandlerCount = 0;
     return json({
       status: "idle",
-      worker: workerKey,
+      worker_registered: true,
+      worker_name: "MASTER WORLD VIP Edge Worker",
       claimed: 0,
       execution_handlers_ready: registeredHandlerCount > 0,
       revenue_enabled: false,
       note: "Worker registration and heartbeat are active; no approved business task handlers are deployed, so queue claims remain disabled."
     });
-  } catch (error) {
-    return json({ error: error instanceof Error ? error.message : String(error) }, 500);
+  } catch {
+    console.error("Worker operation failed; inspect protected function logs.");
+    return json({ error: "Worker operation failed" }, 500);
   }
 });
