@@ -63,7 +63,7 @@ create table if not exists public.customer_quote_request_events (
   request_id uuid not null references public.customer_quote_requests(id) on delete restrict,
   actor_user_id uuid references auth.users(id) on delete set null,
   event_type text not null check (event_type in (
-    'submitted','review_started','quote_sent','quote_accepted','quote_declined','rejected','cancelled'
+    'submitted','review_started','quote_sent','quote_accepted','quote_declined','quote_expired','rejected','cancelled'
   )),
   details jsonb not null default '{}'::jsonb check (jsonb_typeof(details)='object'),
   created_at timestamptz not null default now()
@@ -153,6 +153,8 @@ begin
   if char_length(v_scope) not between 10 and 2000 then raise exception 'Work description must be 10 to 2000 characters'; end if;
   if v_deadline is not null and char_length(v_deadline)>100 then raise exception 'Deadline is too long'; end if;
   if v_budget is not null and char_length(v_budget)>100 then raise exception 'Budget hint is too long'; end if;
+
+  perform pg_advisory_xact_lock(hashtextextended(v_user::text,0));
 
   if (select count(*) from public.customer_quote_requests q
       where q.customer_user_id=v_user and q.created_at>now()-interval '24 hours') >= 5 then
@@ -309,7 +311,7 @@ begin
   if v_expiry<=now() then
     update public.customer_quote_requests set status='expired' where id=p_request_id;
     insert into public.customer_quote_request_events(request_id,actor_user_id,event_type)
-    values(p_request_id,v_user,'cancelled');
+    values(p_request_id,v_user,'quote_expired');
     return 'expired';
   end if;
 
