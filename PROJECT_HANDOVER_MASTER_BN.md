@@ -391,3 +391,16 @@ GitHub Actions-এ ব্যবহৃত secret নাম:
 6. Production apply/deploy remains separate explicit release approval.
 
 **Current status: Quote Request backend + customer submission UI + Admin inbox code committed; NOT YET CI-VERIFIED, NOT STAGING-APPLIED, NOT PRODUCTION-LIVE.**
+
+
+---
+
+## Handover correction — PR #22 and latest verification state (27 Nov 2026)
+
+- Backend stack PR #22 is now created: https://github.com/rakib12301111-droid/master-world-vip/pull/22
+- PR #22 head code commit tested by latest static migration safety workflow: `bbe94dc33262673b7dd52fd13208ffb728900ca4`.
+- Static Migration Safety run `45963158918`: **SUCCESS**, including Customer Quote workflow security verifier and Node syntax checks for `www/services.html` and `www/admin-quotes.html`.
+- Update System check run `45963158906`: **SUCCESS**.
+- Full disposable migration + quote runtime run `45963158978`: queued/pending at the time of this handover update. An earlier run exposed SQL dollar-quote delimiters in the new lifecycle guards; those delimiters were corrected and the latest static checks pass. Do not mark SQL runtime PASS until the fresh+legacy disposable migration and quote runtime steps complete successfully.
+- Earlier disposable run `45962723921` failed on the first SQL delimiter defect; that failure is resolved in source but must be superseded by a successful later run.
+- PR #22 remains Draft/Open/Unmerged and is stacked on PR #21. No Production migration, Supabase Staging apply, Pages deployment, real customer request or payment was performed.
