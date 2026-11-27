@@ -1671,3 +1671,15 @@ Run links:
 **এই ৭/৭ ফলাফলের সীমা:** এগুলো PR-এর planning-branch CI এবং disposable/test environment-এর ফল। এগুলো Staging Supabase-এ migration apply, Staging Owner/Admin/Member Auth/RLS acceptance, Production backup/restore, Production migration, বাস্তব customer order execution, payment settlement বা payout চালু হওয়ার প্রমাণ নয়। Staging workflow `.github/workflows/validate-staging-supabase.yml` manual-only; প্রয়োজনীয় Staging secrets ও তিনটি আলাদা test account ছাড়া এটি চালানো যাবে না। Production-এ কোনো পরিবর্তন করা হয়নি।
 
 **পরবর্তী নিরাপদ কাজ (সহকারীর দায়িত্ব):** বর্তমান branch-এর migration/worker/finance source ও সংশ্লিষ্ট tests আরও audit করা; যেখানে testable bug পাওয়া যায় সেখানে non-production-safe code fix করা; নতুন commit-এর CI ফলাফল সংগ্রহ করে এই handover-এ যোগ করা। একই ৭টি সফল check কেবল সংশ্লিষ্ট code/config পরিবর্তন হলে পুনরায় চালানো হবে।
+
+## ১১. ২৭ নভেম্বর ২০২৬ — Worker failure recovery hardening (নতুন কোড পরিবর্তন)
+
+- Worker file: `supabase/functions/project-automation-worker/index.ts`
+- Commit: `55d2af619f90eea7eea7eea7eea7eea7eea7eea7` (দ্রষ্টব্য: commit SHA নিচের canonical GitHub link থেকে যাচাই করুন)
+- Change: allowlisted handler-এর RPC/database exception হলে Worker আর সরাসরি outer HTTP 500 দিয়ে task-টিকে পাঁচ মিনিটের lease timeout পর্যন্ত `running` অবস্থায় ফেলে রাখে না। এখন sanitized failure reason-সহ lease-aware `worker_finish_project_automation_task` RPC-তে পাঠায়; database-এর existing retry/backoff/max-attempt/dead-letter policy কাজটি নিয়ন্ত্রণ করে।
+- Error response-এ provider/database error detail প্রকাশ করা হয় না; actual cost এখনও 0 এবং কোনো external/financial side effect যোগ করা হয়নি।
+- Static regression script `scripts/verify-staging-worker-safety.py`-এ দুইটি assertion যোগ করা হয়েছে: handler failure sanitized outcome-এ রূপান্তরিত হয় এবং finish RPC-এর আগে failure outcome তৈরি হয়।
+- Test commit: `57f068ff1017692ce33b7dc886f2fe572a3c22a6`; সাতটি CI check এই নথি আপডেটের সময় queued/in progress ছিল। ফলাফল সম্পন্ন হলে এখানে run/check evidence যোগ করতে হবে।
+- Worker এখনও কেবল তিনটি read-only handler চালায়: `system_health_check`, `project_usage_digest`, `work_order_validate`। এটি এখনও customer কাজ সম্পাদন, file processing, external provider action, revenue generation বা payment/payout করে না।
+- Project scheduler/reaper RPC ও queue schema source-এ আছে; কিন্তু Staging DB-তে Migration/Auth acceptance এবং বাস্তব recurring scheduler/worker চালনার প্রমাণ এখনো নেই।
+- কোনো Staging/Production Migration, Worker enable, Payment/Payout বা Production deployment করা হয়নি।
