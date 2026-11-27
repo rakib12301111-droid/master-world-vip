@@ -87,3 +87,8 @@ Not implemented: reminders, file integrity/malware scan, acceptance escalation, 
 - First combined Phase A runtime run `45959311813` failed closed at the work-order task claim because the preceding digest test had deliberately re-engaged the global emergency stop and the next test had not reopened it inside its disposable fixture.
 - This was a test sequencing issue, not a production setting change. The work-order test now explicitly releases the kill switch only inside the disposable test transaction and re-engages it at completion.
 - Corrected runtime rerun: `45959527467`, pending at documentation update. Do not claim work-order runtime acceptance until this rerun succeeds.
+
+### Phase A corrected runtime result — 27 Nov 2026
+- Corrected run `45959527467`: **SUCCESS** on disposable PostgreSQL, commit `1b2e57bfbdaad7d9b24bf9ff46ef4bf81f682379`.
+- Full ordered migration chain, fresh and legacy-shape disposable DBs, kill-switch checks, synthetic order-to-member ledger tests, usage digest handler, work-order validation handler, budget reservation release and final emergency-stop restoration all passed.
+- The prior run `45959311813` remains a failed attempt caused by the test fixture leaving the emergency stop engaged; the corrected fixture passed. No Production/Staging database was touched.
