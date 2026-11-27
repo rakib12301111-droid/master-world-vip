@@ -444,3 +444,37 @@ GitHub Actions-এ ব্যবহৃত secret নাম:
 - These are disposable/static CI results only. No Supabase Staging or Production project was changed; no public deployment or real payment/order occurred.
 
 **Current status: Customer quote code + 31-migration fresh/legacy runtime CI + static CI VERIFIED; guarded Staging workflow PREPARED BUT NOT RUN; manual Staging acceptance and Production release remain pending.**
+
+
+---
+
+## Owner-priority execution update — Staging, Android, accounts and backup gates (27 Nov 2026)
+
+The Owner has directed that the following four gates be treated as critical and completed through safe repository updates plus the required Owner-side dashboard actions:
+
+1. Android phone acceptance using Chrome and a Staging-only site configuration.
+2. Encrypted Staging secrets added to GitHub Actions; never request or record secret values in chat.
+3. Separate Customer A, Customer B and Admin test accounts created in the Staging Supabase Auth project, with Admin role assigned only through the protected Owner role-management path.
+4. Recoverable encrypted backup plus a successful disposable restore test before any database migration apply; verify existing Production backup evidence remains available before any Production migration.
+
+### Repository preparation completed in this update
+- Added `docs/STAGING_ANDROID_ACCOUNT_BACKUP_RUNBOOK_BN.md` with exact current secret names, Staging-only workflow steps, account setup, Android acceptance and evidence rules.
+- Current Staging migration workflow uses exactly these three repository Actions secrets: `SUPABASE_STAGING_ACCESS_TOKEN`, `SUPABASE_STAGING_PROJECT_REF`, `SUPABASE_STAGING_DB_URL`.
+- The workflow defaults to preview-only and refuses the known Production project ref. It does not create/restore the Staging backup itself; therefore a separate backup/restore proof is mandatory before Staging apply.
+- Existing Customer Quote acceptance instructions remain in `docs/CUSTOMER_QUOTE_WORKFLOW_ACCEPTANCE_TEST_BN.md`; do not repeat disposable CI tests already recorded above.
+
+### Existing backup evidence — verify retention before relying on it
+- The prior handover records encrypted Production logical backup, disposable restore test and migration dry-run in run `45810029561`; backup reference `mwvip-logical-45810029561-1`; encrypted artifact ID `15111217500`, originally retained for seven days.
+- This is historical evidence for that run only. Before Production migration, confirm artifact availability and safe passphrase recovery; if expired/unavailable, produce a fresh encrypted backup and restore test.
+- This record does not authorize Production migration. Exact Production approval remains `APPLY-MASTER-WORLD-VIP-MIGRATIONS`.
+
+### Current execution status — NOT YET COMPLETE
+- Staging Project URL/ref confirmation: Owner confirmation required.
+- Three Staging secrets: Owner must add them in GitHub Actions; values must never be shared in chat.
+- Staging backup/restore: no current Staging-specific PASS evidence.
+- Staging migration: not run / not applied.
+- Customer A/B/Admin accounts and RBAC acceptance: pending.
+- Android Chrome/accessibility acceptance: pending.
+- Production migration and public release: not authorized/performed.
+
+**Next action:** Owner completes only the Staging project identity and three secret setup using the runbook; then verify the preview-only workflow before any Staging apply.
