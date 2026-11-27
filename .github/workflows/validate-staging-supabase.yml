@@ -1,0 +1,322 @@
+name: MASTER WORLD VIP — Staging migrations and access-control acceptance
+
+on:
+  # Deliberately manual only: this workflow applies migrations and deploys to Staging.
+  # A pull_request event must never trigger database writes or function deployment.
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: mwvip-staging-validation
+  cancel-in-progress: false
+
+jobs:
+  staging-backup-restore:
+    name: Encrypted Staging backup and isolated restore proof
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    services:
+      restore-db:
+        image: supabase/postgres:17.6.1.136
+        env:
+          POSTGRES_USER: restore_test
+          POSTGRES_PASSWORD: restore_test_only
+          POSTGRES_DB: mwvip_staging_restore
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U restore_test -d mwvip_staging_restore"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 12
+    env:
+      DB_URL: ${{ secrets.STAGING_SUPABASE_DB_URL }}
+      PROJECT_REF: ${{ secrets.STAGING_SUPABASE_PROJECT_REF }}
+      BACKUP_PASSPHRASE: ${{ secrets.STAGING_BACKUP_ENCRYPTION_PASSPHRASE }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate Staging-only backup inputs without printing secrets
+        run: |
+          set -euo pipefail
+          test -n "$DB_URL" || { echo "::error::Missing STAGING_SUPABASE_DB_URL"; exit 1; }
+          test -n "$PROJECT_REF" || { echo "::error::Missing STAGING_SUPABASE_PROJECT_REF"; exit 1; }
+          test -n "$BACKUP_PASSPHRASE" || { echo "::error::Missing STAGING_BACKUP_ENCRYPTION_PASSPHRASE"; exit 1; }
+          test "$PROJECT_REF" = "awatzrapqrteybgspqlq" || { echo "::error::Staging project ref does not match the Owner-confirmed Staging project"; exit 1; }
+          test "$PROJECT_REF" != "lztbbrzeuyjkuiyzrsxp" || { echo "::error::Production project ref is forbidden"; exit 1; }
+          python - "$DB_URL" "$PROJECT_REF" <<'PY'
+          import sys
+          from urllib.parse import urlsplit, unquote
+          u=urlsplit(sys.argv[1])
+          ref=sys.argv[2]
+          if u.scheme not in ("postgres","postgresql") or not u.hostname or not u.hostname.endswith(".pooler.supabase.com"):
+              raise SystemExit("::error::Staging DB URL must use a Supabase Session Pooler URI")
+          if u.port != 5432 or u.path != "/postgres" or u.query or u.fragment:
+              raise SystemExit("::error::Staging DB URL must use port 5432, database /postgres, and no query/fragment")
+          if unquote(u.username or "") != "postgres."+ref or not unquote(u.password or ""):
+              raise SystemExit("::error::Staging DB URL credentials are not bound to the confirmed Staging project ref")
+          print("Staging DB URL binding validated; no credentials printed.")
+          PY
+      - name: Install PostgreSQL client
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install --yes postgresql-client openssl
+          pg_dump --version
+          pg_restore --version
+      - name: Create encrypted logical backup of Staging
+        id: backup
+        run: |
+          set -euo pipefail
+          python - "$DB_URL" <<'PY'
+          import os,sys
+          from urllib.parse import urlsplit,unquote
+          u=urlsplit(sys.argv[1])
+          values={"PGHOST":u.hostname,"PGPORT":str(u.port),"PGDATABASE":u.path.lstrip("/"),"PGUSER":unquote(u.username or ""),"PGPASSWORD":unquote(u.password or ""),"PGSSLMODE":"require"}
+          with open(os.environ["GITHUB_ENV"],"a") as f:
+              for k,v in values.items(): f.write(f"{k}={v}\n")
+          PY
+          mkdir -p backup
+          pg_dump --host="$PGHOST" --port="$PGPORT" --username="$PGUSER" --dbname="$PGDATABASE" --format=custom --no-owner --no-acl --file=backup/staging.dump
+          openssl enc -aes-256-cbc -pbkdf2 -salt -in backup/staging.dump -out backup/staging.dump.enc -pass env:BACKUP_PASSPHRASE
+          rm -f backup/staging.dump
+          test -s backup/staging.dump.enc
+          echo "Encrypted Staging backup created; plaintext dump removed."
+      - name: Decrypt and restore into isolated disposable PostgreSQL
+        run: |
+          set -euo pipefail
+          openssl enc -d -aes-256-cbc -pbkdf2 -in backup/staging.dump.enc -out backup/restore.dump -pass env:BACKUP_PASSPHRASE
+          test -s backup/restore.dump
+          PGPASSWORD=restore_test_only PGSSLMODE=disable createdb -h 127.0.0.1 -p 5432 -U restore_test --template=template0 mwvip_staging_restore_empty
+          PGPASSWORD=restore_test_only PGSSLMODE=disable pg_restore -h 127.0.0.1 -p 5432 -U restore_test -d mwvip_staging_restore_empty --no-owner --no-acl --exit-on-error backup/restore.dump
+          PGPASSWORD=restore_test_only PGSSLMODE=disable psql -h 127.0.0.1 -p 5432 -U restore_test -d mwvip_staging_restore_empty -v ON_ERROR_STOP=1 -Atc "select count(*) from information_schema.tables where table_schema not in ('pg_catalog','information_schema')" > backup/restored_table_count.txt
+          test "$(cat backup/restored_table_count.txt)" -gt 0
+          rm -f backup/restore.dump
+          echo "Isolated Staging restore passed with a non-empty schema."
+      - name: Upload encrypted backup and non-secret restore evidence
+        if: always() && steps.backup.outcome == 'success'
+        uses: actions/upload-artifact@v4
+        with:
+          name: mwvip-staging-encrypted-backup-${{ github.run_id }}
+          path: |
+            backup/staging.dump.enc
+            backup/restored_table_count.txt
+          retention-days: 7
+          if-no-files-found: warn
+
+  staging-migrations:
+    needs: staging-backup-restore
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+      - name: Check Staging secrets without printing values
+        env:
+          TOKEN: ${{ secrets.STAGING_SUPABASE_ACCESS_TOKEN }}
+          DB_URL: ${{ secrets.STAGING_SUPABASE_DB_URL }}
+          PROJECT_REF: ${{ secrets.STAGING_SUPABASE_PROJECT_REF }}
+        run: |
+          set -euo pipefail
+          test -n "$TOKEN" || { echo "::error::Missing STAGING_SUPABASE_ACCESS_TOKEN"; exit 1; }
+          test -n "$DB_URL" || { echo "::error::Missing STAGING_SUPABASE_DB_URL"; exit 1; }
+          test -n "$PROJECT_REF" || { echo "::error::Missing STAGING_SUPABASE_PROJECT_REF"; exit 1; }
+          test "$PROJECT_REF" != "lztbbrzeuyjkuiyzrsxp" || { echo "::error::Staging project ref must not be Production"; exit 1; }
+          python - "$DB_URL" "$PROJECT_REF" <<'PY'
+          import sys
+          from urllib.parse import urlparse, unquote
+          import re
+          u=urlparse(sys.argv[1])
+          expected=sys.argv[2]
+          username=unquote(u.username or "")
+          password=unquote(u.password or "")
+          if not re.fullmatch(r"[a-z0-9]{20}", expected):
+              raise SystemExit("::error::Staging project ref format is invalid")
+          if u.scheme not in ("postgres","postgresql") or not u.hostname:
+              raise SystemExit("::error::Staging DB URL is not a PostgreSQL URL")
+          if not u.hostname.endswith(".pooler.supabase.com"):
+              raise SystemExit("::error::Staging DB URL must use a Supabase Session Pooler host")
+          if u.port != 5432 or u.path != "/postgres" or u.query or u.fragment:
+              raise SystemExit("::error::Staging DB URL must use pooler port 5432 and database /postgres without query or fragment")
+          if username != "postgres." + expected or not password:
+              raise SystemExit("::error::Staging DB URL credentials are not bound to the configured Staging project ref")
+          print("Staging Session Pooler host, port, database and project-ref binding verified without printing credentials.")
+          PY
+          echo "Staging credentials present; values are masked."
+      - name: Validate the complete ordered migration set
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+          files=sorted(Path("supabase/migrations").glob("*.sql"))
+          assert files, "No migration files found"
+          versions=[p.name.split("_",1)[0] for p in files]
+          assert len(versions)==len(set(versions)), "Duplicate migration version found"
+          print(f"Found {len(files)} ordered migration files.")
+          PY
+      - name: Preflight existing confirmed Owner, Admin and Member Auth accounts before any migration
+        env:
+          BASE_URL: ${{ secrets.STAGING_SUPABASE_URL }}
+          PROJECT_REF: ${{ secrets.STAGING_SUPABASE_PROJECT_REF }}
+          ANON_KEY: ${{ secrets.STAGING_SUPABASE_ANON_KEY }}
+          OWNER_EMAIL: ${{ secrets.STAGING_OWNER_EMAIL }}
+          OWNER_PASSWORD: ${{ secrets.STAGING_OWNER_PASSWORD }}
+          ADMIN_EMAIL: ${{ secrets.STAGING_ADMIN_EMAIL }}
+          ADMIN_PASSWORD: ${{ secrets.STAGING_ADMIN_PASSWORD }}
+          MEMBER_EMAIL: ${{ secrets.STAGING_MEMBER_EMAIL }}
+          MEMBER_PASSWORD: ${{ secrets.STAGING_MEMBER_PASSWORD }}
+        run: |
+          set -euo pipefail
+          for name in BASE_URL PROJECT_REF ANON_KEY OWNER_EMAIL OWNER_PASSWORD ADMIN_EMAIL ADMIN_PASSWORD MEMBER_EMAIL MEMBER_PASSWORD; do
+            test -n "${!name:-}" || { echo "::error::Missing staging test secret: $name"; exit 1; }
+          done
+          python - "$BASE_URL" "$PROJECT_REF" <<'PY'
+          import sys
+          from urllib.parse import urlparse
+          u=urlparse(sys.argv[1])
+          ref=sys.argv[2]
+          if u.scheme != "https" or u.hostname != ref + ".supabase.co" or u.path not in ("","/") or u.query or u.fragment:
+              raise SystemExit("::error::Staging API URL does not match the configured Staging project ref")
+          PY
+          for role in OWNER ADMIN MEMBER; do
+            email_var="${role}_EMAIL"
+            password_var="${role}_PASSWORD"
+            email="${!email_var}"
+            password="${!password_var}"
+            response=$(curl --silent --show-error "$BASE_URL/auth/v1/token?grant_type=password" \
+              -H "apikey: $ANON_KEY" -H "Content-Type: application/json" \
+              -d "$(jq -n --arg email "$email" --arg password "$password" '{email:$email,password:$password}')")
+            token=$(printf '%s' "$response" | jq -r '.access_token // empty')
+            if [ -z "$token" ]; then
+              echo "::error::Staging $role Auth preflight failed. Ensure this account already exists, is email-confirmed, and the GitHub password secret matches its current password."
+              exit 1
+            fi
+            echo "::add-mask::$token"
+            unset token response password
+            echo "PASS: Staging $role account can authenticate."
+          done
+      - name: Preview Staging migration changes
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.STAGING_SUPABASE_ACCESS_TOKEN }}
+          DB_URL: ${{ secrets.STAGING_SUPABASE_DB_URL }}
+        run: supabase db push --dry-run --db-url "$DB_URL"
+      - name: Apply ordered migrations to Staging only
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.STAGING_SUPABASE_ACCESS_TOKEN }}
+          DB_URL: ${{ secrets.STAGING_SUPABASE_DB_URL }}
+        run: supabase db push --db-url "$DB_URL"
+      - name: Assign isolated Admin and Member test roles through Owner RPC
+        env:
+          BASE_URL: ${{ secrets.STAGING_SUPABASE_URL }}
+          PROJECT_REF: ${{ secrets.STAGING_SUPABASE_PROJECT_REF }}
+          ANON_KEY: ${{ secrets.STAGING_SUPABASE_ANON_KEY }}
+          OWNER_EMAIL: ${{ secrets.STAGING_OWNER_EMAIL }}
+          OWNER_PASSWORD: ${{ secrets.STAGING_OWNER_PASSWORD }}
+          ADMIN_EMAIL: ${{ secrets.STAGING_ADMIN_EMAIL }}
+          ADMIN_PASSWORD: ${{ secrets.STAGING_ADMIN_PASSWORD }}
+          MEMBER_EMAIL: ${{ secrets.STAGING_MEMBER_EMAIL }}
+          MEMBER_PASSWORD: ${{ secrets.STAGING_MEMBER_PASSWORD }}
+        run: |
+          set -euo pipefail
+          for name in BASE_URL PROJECT_REF ANON_KEY OWNER_EMAIL OWNER_PASSWORD ADMIN_EMAIL ADMIN_PASSWORD MEMBER_EMAIL MEMBER_PASSWORD; do
+            test -n "${!name:-}" || { echo "::error::Missing staging test secret: $name"; exit 1; }
+          done
+          python - "$BASE_URL" "$PROJECT_REF" <<'PY'
+          import sys
+          from urllib.parse import urlparse
+          u=urlparse(sys.argv[1])
+          expected=sys.argv[2]
+          if u.scheme != "https" or u.hostname != expected + ".supabase.co":
+              raise SystemExit("::error::Staging API URL must match the configured Staging project ref")
+          if u.port not in (None,443) or u.path not in ("","/") or u.username or u.password or u.query or u.fragment:
+              raise SystemExit("::error::Staging API URL contains an unexpected port, path, credential, query or fragment")
+          print("Staging API URL project-ref binding verified.")
+          PY
+          auth_token() {
+            local email="$1" password="$2" output_name="$3" response token
+            response=$(curl --silent --show-error "$BASE_URL/auth/v1/token?grant_type=password" \
+              -H "apikey: $ANON_KEY" -H "Content-Type: application/json" \
+              -d "$(jq -n --arg email "$email" --arg password "$password" '{email:$email,password:$password}')")
+            token=$(printf '%s' "$response" | jq -r '.access_token // empty')
+            test -n "$token" || { echo "::error::Staging Auth login failed for a test account"; exit 1; }
+            echo "::add-mask::$token"
+            printf -v "$output_name" '%s' "$token"
+          }
+          auth_token "$OWNER_EMAIL" "$OWNER_PASSWORD" OWNER_JWT
+          auth_token "$ADMIN_EMAIL" "$ADMIN_PASSWORD" ADMIN_JWT
+          auth_token "$MEMBER_EMAIL" "$MEMBER_PASSWORD" MEMBER_JWT
+          user_id() {
+            python - "$1" <<'PY'
+          import base64,json,sys
+          part=sys.argv[1].split('.')[1]
+          part += '='*((4-len(part)%4)%4)
+          print(json.loads(base64.urlsafe_b64decode(part))['sub'])
+          PY
+          }
+          owner_id=$(user_id "$OWNER_JWT")
+          admin_id=$(user_id "$ADMIN_JWT")
+          member_id=$(user_id "$MEMBER_JWT")
+          test "$owner_id" != "$admin_id" && test "$owner_id" != "$member_id" && test "$admin_id" != "$member_id" || {
+            echo "::error::Owner, Admin and Member must be three distinct Staging Auth users"; exit 1;
+          }
+          echo "OWNER_JWT=$OWNER_JWT" >> "$GITHUB_ENV"
+          echo "ADMIN_JWT=$ADMIN_JWT" >> "$GITHUB_ENV"
+          echo "MEMBER_JWT=$MEMBER_JWT" >> "$GITHUB_ENV"
+          for pair in "$admin_id:admin" "$member_id:member"; do
+            target="${pair%%:*}"; role="${pair##*:}"
+            code=$(curl --silent --show-error -o /tmp/role-change.json -w '%{http_code}' \
+              "$BASE_URL/rest/v1/rpc/owner_set_member_role" \
+              -H "apikey: $ANON_KEY" -H "Authorization: Bearer $OWNER_JWT" \
+              -H "Content-Type: application/json" \
+              -d "{\"p_target_user_id\":\"$target\",\"p_new_role\":\"$role\"}")
+            test "$code" = "200" || { echo "::error::Owner could not assign staging $role test role (HTTP $code)"; cat /tmp/role-change.json; exit 1; }
+            echo "PASS: staging $role test role assigned by Owner"
+          done
+      - name: Verify Owner, Admin and Member Auth roles and Admin RPC access
+        env:
+          BASE_URL: ${{ secrets.STAGING_SUPABASE_URL }}
+          ANON_KEY: ${{ secrets.STAGING_SUPABASE_ANON_KEY }}
+        run: |
+          set -euo pipefail
+          for name in BASE_URL ANON_KEY OWNER_JWT ADMIN_JWT MEMBER_JWT; do
+            test -n "${!name:-}" || { echo "::error::Missing staging test secret: $name"; exit 1; }
+          done
+          call_rpc() {
+            local token="$1" rpc="$2" output="$3" code
+            code=$(curl --silent --show-error -o "$output" -w '%{http_code}' \
+              "$BASE_URL/rest/v1/rpc/$rpc" \
+              -H "apikey: $ANON_KEY" -H "Authorization: Bearer $token" \
+              -H "Content-Type: application/json" -d '{}')
+            echo "$code"
+          }
+          for pair in "OWNER_JWT:owner" "ADMIN_JWT:admin" "MEMBER_JWT:member"; do
+            var="${pair%%:*}"; expected="${pair##*:}"; token="${!var}"
+            code=$(call_rpc "$token" get_my_admin_access "/tmp/$expected.json")
+            test "$code" = "200" || { echo "::error::$expected role RPC returned HTTP $code"; exit 1; }
+            actual=$(tr -d '"' < "/tmp/$expected.json")
+            test "$actual" = "$expected" || { echo "::error::Expected $expected role; received $actual"; exit 1; }
+            echo "PASS: $expected authenticated role verified"
+          done
+          for pair in "OWNER_JWT:yes" "ADMIN_JWT:yes" "MEMBER_JWT:no"; do
+            var="${pair%%:*}"; expected="${pair##*:}"; token="${!var}"
+            code=$(curl --silent --show-error -o /tmp/admin-overview.json -w '%{http_code}' \
+              "$BASE_URL/rest/v1/rpc/admin_project_automation_overview" \
+              -H "apikey: $ANON_KEY" -H "Authorization: Bearer $token" \
+              -H "Content-Type: application/json" -d '{}')
+            if [ "$expected" = "yes" ]; then
+              test "$code" = "200" || { echo "::error::Admin overview should allow $var (HTTP $code)"; exit 1; }
+            else
+              test "$code" -ge 400 || { echo "::error::Member unexpectedly accessed Admin overview"; exit 1; }
+            fi
+            echo "PASS: Admin overview access for $var"
+          done
+      - name: Deploy queue worker to Staging (disabled until separately enabled)
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.STAGING_SUPABASE_ACCESS_TOKEN }}
+          PROJECT_REF: ${{ secrets.STAGING_SUPABASE_PROJECT_REF }}
+        run: |
+          set -euo pipefail
+          supabase functions deploy project-automation-worker --project-ref "$PROJECT_REF"
+          echo "Worker function deployed to Staging; execution remains disabled unless MWVIP_WORKER_ENABLED=true is configured."
