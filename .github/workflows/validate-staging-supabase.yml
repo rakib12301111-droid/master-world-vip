@@ -125,9 +125,9 @@ jobs:
           set -euo pipefail
           openssl enc -d -aes-256-cbc -pbkdf2 -in backup/staging.dump.enc -out backup/restore.dump -pass env:BACKUP_PASSPHRASE
           test -s backup/restore.dump
-          PGPASSWORD=restore_test_only PGSSLMODE=disable createdb -h 127.0.0.1 -p 5432 -U postgres --template=template0 mwvip_staging_restore_empty
-          PGPASSWORD=restore_test_only PGSSLMODE=disable pg_restore -h 127.0.0.1 -p 5432 -U postgres -d mwvip_staging_restore_empty --no-owner --no-acl --exit-on-error backup/restore.dump
-          PGPASSWORD=restore_test_only PGSSLMODE=disable psql -h 127.0.0.1 -p 5432 -U postgres -d mwvip_staging_restore_empty -v ON_ERROR_STOP=1 -Atc "select count(*) from information_schema.tables where table_schema not in ('pg_catalog','information_schema')" > backup/restored_table_count.txt
+          PGPASSWORD=restore_test_only PGSSLMODE=disable createdb -h 127.0.0.1 -p 5432 -U supabase_admin --template=template0 mwvip_staging_restore_empty
+          PGPASSWORD=restore_test_only PGSSLMODE=disable pg_restore -h 127.0.0.1 -p 5432 -U supabase_admin -d mwvip_staging_restore_empty --no-owner --no-acl --exit-on-error backup/restore.dump
+          PGPASSWORD=restore_test_only PGSSLMODE=disable psql -h 127.0.0.1 -p 5432 -U supabase_admin -d mwvip_staging_restore_empty -v ON_ERROR_STOP=1 -Atc "select count(*) from information_schema.tables where table_schema not in ('pg_catalog','information_schema')" > backup/restored_table_count.txt
           test "$(cat backup/restored_table_count.txt)" -gt 0
           rm -f backup/restore.dump
           echo "Isolated Staging restore passed with a non-empty schema."
