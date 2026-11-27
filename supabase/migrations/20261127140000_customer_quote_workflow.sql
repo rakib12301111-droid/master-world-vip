@@ -287,6 +287,68 @@ begin
 end;
 $$;
 
+create or replace function public.cancel_my_customer_quote_request(p_request_id uuid)
+returns boolean
+language plpgsql
+security definer
+set search_path = ''
+as $
+declare
+  v_user uuid := auth.uid();
+  v_status text;
+begin
+  if v_user is null then raise exception 'Authentication required'; end if;
+  select q.status into v_status
+  from public.customer_quote_requests q
+  where q.id=p_request_id and q.customer_user_id=v_user
+  for update;
+  if not found then raise exception 'Quote request not found'; end if;
+  if v_status not in ('submitted','under_review','quote_sent') then
+    raise exception 'This quote request can no longer be cancelled';
+  end if;
+  update public.customer_quote_requests set status='cancelled' where id=p_request_id;
+  insert into public.customer_quote_request_events(request_id,actor_user_id,event_type)
+  values(p_request_id,v_user,'cancelled');
+  insert into public.notifications(user_id,title,body,category)
+  select r.user_id,'Customer quote request cancelled','একজন গ্রাহক একটি Quote Request বাতিল করেছেন।','customer_quote'
+  from public.app_user_roles r where r.role in ('owner','super_admin','admin');
+  return true;
+end;
+$;
+
+create or replace function public.admin_expire_customer_quotes()
+returns integer
+language plpgsql
+security definer
+set search_path = ''
+as $
+declare
+  v_actor uuid := auth.uid();
+  v_count integer := 0;
+begin
+  if v_actor is null or not public.is_customer_quote_staff() then
+    raise exception 'Authorized Admin staff only';
+  end if;
+  with expired as (
+    update public.customer_quote_requests q
+    set status='expired'
+    where q.status='quote_sent' and q.quote_expires_at<=now()
+    returning q.id,q.customer_user_id
+  ), events as (
+    insert into public.customer_quote_request_events(request_id,actor_user_id,event_type)
+    select e.id,v_actor,'quote_expired' from expired e
+    returning request_id
+  )
+  select count(*) into v_count from events;
+  insert into public.notifications(user_id,title,body,category)
+  select e.customer_user_id,'আপনার Quote-এর মেয়াদ শেষ','আপনার Quote-এর মেয়াদ শেষ হয়েছে। নতুন Quote চাইলে নতুন অনুরোধ পাঠান।','customer_quote'
+  from public.customer_quote_requests e
+  where e.status='expired' and e.updated_at > now()-interval '1 minute'
+    and e.customer_user_id is not null;
+  return v_count;
+end;
+$;
+
 create or replace function public.customer_respond_to_quote(
   p_request_id uuid,
   p_accept boolean
@@ -338,10 +400,14 @@ revoke all on function public.submit_my_customer_quote_request(text,text,text,te
 revoke all on function public.admin_review_customer_quote_request(uuid,text,text) from public,anon;
 revoke all on function public.admin_send_customer_quote(uuid,numeric,text,text,integer,timestamptz,text) from public,anon;
 revoke all on function public.customer_respond_to_quote(uuid,boolean) from public,anon;
+revoke all on function public.cancel_my_customer_quote_request(uuid) from public,anon;
+revoke all on function public.admin_expire_customer_quotes() from public,anon;
 grant execute on function public.submit_my_customer_quote_request(text,text,text,text,text) to authenticated;
 grant execute on function public.admin_review_customer_quote_request(uuid,text,text) to authenticated;
 grant execute on function public.admin_send_customer_quote(uuid,numeric,text,text,integer,timestamptz,text) to authenticated;
 grant execute on function public.customer_respond_to_quote(uuid,boolean) to authenticated;
+grant execute on function public.cancel_my_customer_quote_request(uuid) to authenticated;
+grant execute on function public.admin_expire_customer_quotes() to authenticated;
 
 comment on table public.customer_quote_requests is
 'Private authenticated customer quote intake and Admin quote workflow. Accepted quote is not a paid order and does not collect funds.';
