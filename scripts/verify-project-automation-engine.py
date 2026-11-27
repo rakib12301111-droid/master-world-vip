@@ -6,10 +6,12 @@ import re
 sql = Path("supabase/migrations/20261126110000_project_automation_engine.sql").read_text(encoding="utf-8")
 controls = Path("supabase/migrations/20261127100000_worker_execution_kill_switch_and_handler_allowlist.sql").read_text(encoding="utf-8")
 phase_a = Path("supabase/migrations/20261127120000_project_usage_digest_read_only_handler.sql").read_text(encoding="utf-8")
+phase_b = Path("supabase/migrations/20261127130000_work_order_validate_read_only_handler.sql").read_text(encoding="utf-8")
 worker = Path("supabase/functions/project-automation-worker/index.ts").read_text(encoding="utf-8")
 flat = re.sub(r"\s+", " ", sql.lower())
 gate = re.sub(r"\s+", " ", controls.lower())
 phase = re.sub(r"\s+", " ", phase_a.lower())
+phase2 = re.sub(r"\s+", " ", phase_b.lower())
 checks = {
     "project scheduler, worker, queue and audit tables exist": all(x in flat for x in (
         "create table if not exists public.project_automation_settings",
@@ -37,6 +39,10 @@ checks = {
     "Phase A claim routine remains restricted to source-implemented allowlist": "t.task_type in ('system_health_check','project_usage_digest')" in phase and "h.enabled and h.side_effect_class='read_only'" in phase,
     "Phase A digest exposes project metadata, budget and task counts only": "'project_code',r.project_code" in phase and "'tasks',jsonb_build_object(" in phase and "'customer'" not in phase and "'member'" not in phase,
     "Phase A worker invokes read-only digest RPC and declares no financial effects": 'task.task_type === "project_usage_digest"' in worker and "worker_read_project_usage_digest" in worker and "financial_effects: false" in worker,
+    "Phase A work order validator is read-only and service-role only": "'work_order_validate',true,'read_only','1.0.0'" in phase2 and "worker_validate_work_order(uuid,uuid) to service_role" in phase2,
+    "Phase A work order validation enforces project scope and returns flags only": "o.id=p_order_id and o.project_id=p_project_id" in phase2 and "'validation_passed'" in phase2 and "'read_only',true" in phase2,
+    "Phase A latest claim allowlist contains only three implemented read-only handlers": "t.task_type in ('system_health_check','project_usage_digest','work_order_validate')" in phase2 and "h.enabled and h.side_effect_class='read_only'" in phase2,
+    "Phase A worker validates order UUID and calls scoped read-only RPC": 'task.task_type === "work_order_validate"' in worker and "worker_validate_work_order" in worker and "p_project_id: task.project_id" in worker,
     "worker completes using the lease token and zero cost": "p_lease_token: task.lease_token" in worker and "p_actual_cost: 0" in worker,
     "no external payments or revenue collection": not any(x in flat for x in ("stripe.checkout", "sslcommerz", "bkash", "nagad", "net.http_post", "http_post(")),
 }
