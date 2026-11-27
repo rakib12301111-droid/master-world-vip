@@ -346,6 +346,12 @@ begin
   where idempotency_key='mwvip-e2e-order-0001' and project_id=v_project;
   if v_order is null then raise exception 'Synthetic work order fixture missing'; end if;
 
+  -- The preceding Phase A digest test deliberately restores the global stop.
+  -- Re-open it only inside this disposable test transaction, then re-engage below.
+  update public.project_automation_runtime_control
+  set emergency_stop=false,stop_reason='Disposable Phase A work-order validation test',updated_at=now()
+  where singleton=true;
+
   v_worker:=public.worker_register_project_automation(
     'worker-phase-a-order-validation','Phase A Order Validation Worker',array['BDT']::text[]
   );
