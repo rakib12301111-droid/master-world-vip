@@ -573,3 +573,15 @@ The Owner has directed that the following four gates be treated as critical and 
 - Rechecked both PRs and the latest current-head CI evidence.
 - Updated this handover so the Staging project is no longer incorrectly described as uncreated and the latest PR #22 checks are recorded.
 - No secrets were read or changed. No Staging or Production database was connected to or modified. No migration, merge, payment, Android-device test or public deployment was performed.
+
+
+## 2026-11-27 — সর্বশেষ CI যাচাই
+
+- Handover commit `24903d388704782593e3ae393ebbd923db4597e8`-এর জন্য চারটি GitHub Actions workflow পুনরায় যাচাই করা হয়েছে; চারটিই `completed / success`:
+  - Update System — run `45986063475` (#231)
+  - Supabase Migration Safety — run `45986063439` (#437)
+  - Auto Work Static Safety — run `45986063458` (#140)
+  - Disposable Migration Validation — run `45986063577` (#101)
+- PR #21 ও PR #22 উভয়ই এখনও `OPEN / DRAFT`; merge হয়নি। PR metadata-তে mergeable=true দেখা গেছে, কিন্তু এটি review/approval বা release approval নয়।
+- এই CI ফলাফলগুলো Staging secrets, Staging backup/restore, Staging migration apply, Customer/Admin acceptance, Android acceptance বা Live deployment-এর প্রমাণ নয়। এই গেটগুলো আলাদাভাবে pending থাকবে।
+- কোনো Supabase database পরিবর্তন, secret access/change, PR merge বা deployment করা হয়নি।
