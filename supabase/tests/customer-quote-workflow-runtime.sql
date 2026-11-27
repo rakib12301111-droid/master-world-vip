@@ -69,7 +69,7 @@ begin
 end $$;
 
 -- Even a privileged service role cannot rewrite the append-only event history.
-set local role service_role;
+reset role;
 do $$
 begin
   begin
