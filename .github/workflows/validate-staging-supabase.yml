@@ -352,7 +352,8 @@ jobs:
             fi
             echo "PASS: Admin overview access for $var"
           done
-      - name: Deploy queue worker to Staging (disabled until separately enabled)
+      - name: Deploy queue worker to Staging only when its source exists
+        if: ${{ hashFiles('supabase/functions/project-automation-worker/**') != '' }}
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.STAGING_SUPABASE_ACCESS_TOKEN }}
           PROJECT_REF: ${{ secrets.STAGING_SUPABASE_PROJECT_REF }}
@@ -360,3 +361,7 @@ jobs:
           set -euo pipefail
           supabase functions deploy project-automation-worker --project-ref "$PROJECT_REF"
           echo "Worker function deployed to Staging; execution remains disabled unless MWVIP_WORKER_ENABLED=true is configured."
+      - name: Report queue worker source not present
+        if: ${{ hashFiles('supabase/functions/project-automation-worker/**') == '' }}
+        run: |
+          echo "::warning::project-automation-worker source folder is not present in this repository commit; deployment was safely skipped. Add and review the function source before enabling worker deployment."
