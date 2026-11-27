@@ -790,3 +790,28 @@ Owner নির্দেশ: নিচের কাজগুলোকে MASTER 
 - নতুন workflows-এ disposable PostgreSQL fixture ব্যবহার করে backup/restore ও migration runtime যাচাইয়ের ব্যবস্থা; Production migration workflow চালানো হয়নি।
 - Staging workflow কেবল আলাদা Staging project ref যাচাইয়ের পর Staging target-এ কাজ করবে; Production project ref reject করে।
 - কোনো test run-এর result না পাওয়া পর্যন্ত status PENDING-ই থাকবে; আগের commit-এর SUCCESS নতুন commit-এ স্থানান্তর করা যাবে না।
+
+## ২৭ নভেম্বর ২০২৬ — CI চালু করার Trigger সংশোধন ও বাস্তব Run (সর্বশেষ আপডেট)
+
+### এই আপডেটে করা কাজ
+- Finance Runtime workflow-এ planning branch-এর push trigger যোগ করা হয়েছে; শুধু PR path event-এর ওপর নির্ভরশীলতা কমানো হয়েছে।
+- সম্পূর্ণ Disposable Migration Validation workflow-এ একই planning branch push trigger যোগ করা হয়েছে।
+- Synthetic Disposable Backup/Restore workflow-এ planning branch push trigger যোগ করা হয়েছে।
+- পরিবর্তনগুলো একই PR #20 branch-এ commit করা হয়েছে; Production branch বা database-এ কোনো পরিবর্তন নয়।
+
+### বাস্তব GitHub Actions Run — ২৭ নভেম্বর ২০২৬
+- Finance Runtime: Run **45955906370**, commit `777766977ee55fb7ca7c3a882f7ca3e249969f3b`, status সর্বশেষ পর্যবেক্ষণে **IN_PROGRESS**। Link: https://github.com/rakib12301111-droid/master-world-vip/actions/runs/45955906370
+- Full Disposable Migration Validation: Run **45955911378**, commit `fd6c61e5d345d13d0ed4e36685f5ca0b0998cfb0`, status সর্বশেষ পর্যবেক্ষণে **IN_PROGRESS**। Link: https://github.com/rakib12301111-droid/master-world-vip/actions/runs/45955911378
+- Synthetic Backup/Restore: Run **45955918336**, commit `4bd170e47182ba84f0badf51a54acf94bac931be`, status সর্বশেষ পর্যবেক্ষণে **IN_PROGRESS**। Job শুরু হয়েছে; PostgreSQL service container initialization চলছিল। Link: https://github.com/rakib12301111-droid/master-world-vip/actions/runs/45955918336
+- উপরের তিনটি Run তিনটি ধারাবাহিক workflow-trigger commit-এ শুরু হয়েছে; এগুলোকে একই SHA-তে চালানো পরীক্ষা বলে দাবি করা যাবে না। প্রতিটি Run-এর চূড়ান্ত conclusion ও logs পুনরায় যাচাই করতে হবে।
+- PR #20 বর্তমান head ছিল `4bd170e47182ba84f0badf51a54acf94bac931be`; PR Draft/Open/Unmerged।
+- Staging Database: **PENDING / NOT RUN**। পৃথক Staging project ও required secrets/test identities-এর উপস্থিতি নিশ্চিত হয়নি; কোনো Staging migration apply বা Auth/RBAC acceptance test চালানো হয়নি।
+- Production Migration: **NOT RUN**। Production database-এ কোনো migration apply হয়নি।
+- Live Deployment: **NOT RUN / NOT LIVE**। কোনো public release/deployment বা real payment/payout হয়নি।
+
+### পরবর্তী যাচাই
+1. তিনটি চলমান Run-এর final status, প্রতিটি job/step ও failure log যাচাই করে ফল এখানে যোগ করতে হবে।
+2. Staging-এর জন্য আলাদা project, project-ref-bound DB URL এবং পৃথক Owner/Admin/Member test accounts প্রস্তুত হলে GitHub Actions Secrets-এ configure করতে হবে; secret value কখনো chat-এ পাঠানো যাবে না।
+3. Staging workflow কেবল Staging target-এ চালাতে হবে। Missing secret বা Production ref হলে fail-closed হওয়াই প্রত্যাশিত।
+4. Disposable tests সফল হলেও তা Production schema readiness, real payment provider approval বা custody প্রমাণ করে না।
+5. Production migration approval gate, backup/restore evidence, Staging acceptance এবং পৃথক Live Deployment approval অপরিবর্তিত থাকবে।
