@@ -1167,3 +1167,39 @@ Owner নির্দেশ: নিচের কাজগুলোকে MASTER 
 6. প্রতিটি নতুন session শেষে একই কাজের দ্বিতীয় তালিকা না বানিয়ে এই handover-এর existing section edit/append করুন; commit SHA, run ID/link, exact result ও blockers যোগ করুন।
 
 **এই ledger-এর সীমা:** ২৭ নভেম্বর ২০২৬, ১৩:৩৯ বাংলাদেশ সময় পর্যন্ত এই session-এ যাচাই/সম্পাদিত তথ্য। Production, Staging, provider sandbox বা Live Deployment সম্পন্ন হয়েছে—এমন কোনো দাবি নয়।
+
+
+---
+
+# Controlled Live MVP release request — ২৭ নভেম্বর ২০২৬
+
+ব্যবহারকারীর লক্ষ্য: ইতিমধ্যে সম্পন্ন ও নিরাপদ অংশগুলো দিয়ে এমন একটি সীমিত Live MVP প্রস্তুত করা, যাতে Owner ওয়েবসাইটে প্রবেশ করে UI ও সত্যিকারের প্রস্তুত ফিচার ব্যবহার/পরীক্ষা করতে পারেন। এই লক্ষ্যকে পূরণ করতে আলাদা release plan নথি তৈরি হয়েছে:
+
+- docs/CONTROLLED_LIVE_MVP_RELEASE_PLAN_BN.md
+- Commit: 69390f506deda0d142218748807fd6d0c4c5514a
+
+## যাচাইকৃত deployment architecture
+- Root landing page-এ public homepage ও /www/ app entry-এর canonical URL আছে।
+- .github/workflows/pages.yml GitHub Pages workflow main branch push-এ auto deploy হয়; manual workflow_dispatch-ও আছে।
+- Planning branch-এ commit করলেই Pages live হয় না।
+- Existing app shell www/index.html-এ One-Click Setup, local settings ও বহু feature navigation আছে; UI marker থাকা মানে backend service live/usable প্রমাণ নয়।
+- Repository workflow-এর live verification static HTML/manifest/service worker markers যাচাই করে; workflow নিজেই বলে এটি real email OTP, Supabase Auth, DB migrations বা end-to-end feature behavior প্রমাণ করে না।
+- এই session-এ public URL-এর HTTP response tool দিয়ে independently verify করা যায়নি; তাই current live availability/real login status NOT VERIFIED.
+
+## Release boundary
+- পুরো Draft PR #20-কে শুধু ওয়েবসাইট প্রকাশের জন্য merge করা যাবে না। প্রথমে current main HEAD, PR base/head, changed files ও release scope মিলিয়ে একটি narrow release PR করতে হবে।
+- MVP-তে landing page, static app shell, local-only setup/settings এবং নিরাপদ public/read-only content রাখা যেতে পারে, তবে Pages live verification ও content audit পাস করতে হবে।
+- Auth/OTP/profile/community/chat/admin/finance/referral/Work & Earn/AI/provider/location/recovery/helpdesk feature backend acceptance না হওয়া পর্যন্ত preview/disabled থাকবে।
+- Production migration, worker activation, project schedule enablement, kill-switch disable, customer payment, bKash/Nagad/bank payout, refund ও commission posting নিষিদ্ধ/অনুমোদনহীন থাকবে।
+- Existing Staging 11-secret gate, separate Supabase project, Owner/Admin/Member acceptance এবং official payment-provider approval আগের মতোই বাধ্যতামূলক।
+
+## পরবর্তী release কাজ — anti-duplication
+1. Actual main HEAD ও PR #20 base/head যাচাই; planning branch-কে main বা deployed ধরে নেবেন না।
+2. Existing Pages workflow-র current main deploy run ও published root + /www/ live checks যাচাই করুন। Already deployed identical main commit হলে deploy পুনরাবৃত্তি নয়।
+3. যদি main-এ safe MVP content ইতিমধ্যে থাকে, narrow release PR-এ শুধু missing, reviewed safe changes আনুন; PR #20-এর unrelated backend/migration changes টেনে আনবেন না।
+4. Affected static checks চালান; exact commit/run record করুন। Unchanged successful checks পুনরায় নয়।
+5. Pages deploy/verify-এর পর Android Chrome-এ Owner-এর নিজের ডিভাইসে navigation, install/PWA, refresh ও offline shell পরীক্ষা করুন।
+6. Backend-dependent functionality-এর জন্য Staging credentials ও test accounts না পাওয়া পর্যন্ত Auth/DB acceptance NOT RUN লিখুন।
+7. Release record পূর্ণ না হওয়া পর্যন্ত deployment state NOT VERIFIED / NOT DEPLOYED হিসেবে রাখুন।
+
+**এই plan/commit কোনো Pages deployment trigger করেনি, PR merge করেনি, Production migration চালায়নি, Worker activate করেনি, payment/payout করেনি।**
