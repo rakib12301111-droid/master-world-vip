@@ -1217,3 +1217,46 @@ Owner নির্দেশ: নিচের কাজগুলোকে MASTER 
 - গুরুত্বপূর্ণ: resolver helper যোগ হয়েছে; প্রতিটি worker/task/order execution entry point-এ server-side entitlement enforcement এখনো সম্পূর্ণ প্রমাণিত নয়। তাই সাধারণ সদস্যদের কাজ Paid Plan ছাড়া বাস্তবে বন্ধ হয়েছে—এমন দাবি করা যাবে না।
 - Plan price/feature/period seed হয়নি; checkout, bKash/Nagad/Bank/SSLCommerz, signed webhook, merchant approval, refund/payout integration নেই। আজ কোনো প্রকৃত আয়/পেমেন্ট নিশ্চিত নয়।
 - পরবর্তী ধাপ: PR review + static verifier + disposable PostgreSQL tests; এরপর সব execution entry point-এ entitlement enforcement; তারপর Staging acceptance. Production migration/deployment আলাদা অনুমোদন ছাড়া নয়।
+
+
+## 15. ২৭ নভেম্বর ২০২৬ — Admin Free Plan Live-readiness correction
+
+ব্যবহারকারীর স্পষ্ট লক্ষ্য: Owner/Admin Free Plan দিয়ে প্রবেশ করে কাজ শুরু করবেন; সাধারণ Member-এর কাজ Paid Plan ছাড়া অনুমোদিত হবে না। Live activation এখনো হয়নি।
+
+### এই সেশনে যাচাইকৃত GitHub অবস্থা
+- PR #23: Draft/Open/Unmerged; head-এর আগে যাচাইকৃত SHA `32d7796bcd9ae0956cd366f38f907d664306e238`; base `planning/4000-automated-project-economy`।
+- PR #20: Draft/Open/Unmerged; head `24d9d00eafce4ff877a347d1242693ff07e9f839`; mergeable=false দেখিয়েছে। PR #23-এর dependency হিসেবে আছে।
+- PR #23 commit-এর Disposable Migration Validation run `45965215676`: SUCCESS; Auto Work Static Safety run `45965215664`: SUCCESS।
+- একই PR commit-এর Verify Supabase migration safety run `45965216489`: FAILURE; `scripts/verify-community-live-readiness.py`-এর “production workflow covers every SQL migration exactly once” assertion ব্যর্থ হয়েছিল।
+- Branch-এর migration directory-তে মোট ৪০টি SQL migration পাওয়া গেছে। Production workflow allowlist-এ সর্বশেষ ৪টি migration অনুপস্থিত ছিল:
+  - `20261127100000_worker_execution_kill_switch_and_handler_allowlist.sql`
+  - `20261127120000_project_usage_digest_read_only_handler.sql`
+  - `20261127130000_work_order_validate_read_only_handler.sql`
+  - `20261127150000_admin_free_member_paid_plan_gates.sql`
+
+### এই সেশনে করা সংশোধন
+- `.github/workflows/apply-supabase-migrations.yml`-এ ৪টি অনুপস্থিত migration যুক্ত।
+- `.github/workflows/secure-supabase-db-update.yml`-এ ২৬ নভেম্বরের ৬টি এবং ২৭ নভেম্বরের ৪টি migration যুক্ত; এখন ৪০টি migration-ই তালিকাভুক্ত।
+- পরবর্তী read-only structural comparison-এ দুই workflow-এর migration list এবং repository-র ৪০টি SQL filename মিলেছে; কোনো missing/extra filename নেই।
+- সংশোধন দুটি feature branch-এ আলাদা commit:
+  - `f80ecb5b65b134e80c3d2c2fb5ef40bff303d948`
+  - `da7bb631e9b3e7ef7e9622424be5f93e74631f93`
+- GitHub Actions নতুন commit-এ rerun/trigger হয়েছে—এমন প্রমাণ এখনো পাওয়া যায়নি। তাই সংশোধিত workflow-এর CI ফলাফল PENDING; আগের failure-কে PASS বলা যাবে না।
+
+### Live activation blocker — এখনো অমীমাংসিত
+1. PR #23 Draft; PR #20 dependency Draft এবং mergeability unresolved। PR #23-কে main-এ একা merge করা যাবে না।
+2. Admin Free/Member Paid migration কেবল feature branch-এ; Production-এ apply হয়নি।
+3. `my_project_plan_access(project_id)` resolver আছে, কিন্তু প্রতিটি worker/task/order execution entry point-এ enforcement সম্পূর্ণ হয়েছে—এমন প্রমাণ নেই।
+4. Staging Supabase project, ১১টি Staging secret এবং Owner/Admin/Member acceptance evidence নেই।
+5. বর্তমান Production migration baseline/remote history-র নিরাপদ reconciliation এবং বর্তমান recoverable backup + সফল restore-test reference নতুন করে যাচাই করা হয়নি।
+6. GitHub Pages-এর static shell deployment আর backend Admin Free entitlement activation এক জিনিস নয়; Pages live থাকলেও Admin Free Plan DB-backed feature চালু হয়েছে বলা যাবে না।
+7. Provider checkout/payout, bKash/Nagad merchant/API approval, real income ও withdrawal এখনো disabled/unverified।
+
+### পরবর্তী কাজ — anti-duplication
+- প্রথমে নতুন দুই workflow commit-এর CI result সংগ্রহ; migration allowlist exact-match check আরেকবার চালাবেন কেবল নতুন commit-এ CI evidence না এলে।
+- এরপর PR #20 dependency-র বর্তমান mergeability/base/head এবং migration/runtime tests পর্যালোচনা; dependency-safe integration plan ছাড়া PR merge নয়।
+- সব task/order/worker server entry point-এর তালিকা তৈরি করে Admin Free ও Member Paid gate enforce + disposable runtime tests যোগ করতে হবে।
+- আলাদা Staging project/secrets না পাওয়া পর্যন্ত backend Staging acceptance NOT RUN।
+- Production migration কেবল বর্তমান backup/restore proof, full migration preview/schema diff, exact explicit approval gate এবং rollback plan যাচাইয়ের পরে; এই সেশনে কোনো Production write/apply/deploy হয়নি।
+
+**সেশনের ফল:** দুটি migration workflow allowlist সংশোধিত ও commit হয়েছে; ৪০/৪০ migration filename coverage static read-only comparison-এ মিলেছে। CI rerun, Staging, Production migration, Live deployment, Admin login acceptance, real payment/payout বা আয়—কোনোটিই এই সংশোধনের ফলে সম্পন্ন হয়েছে বলে দাবি করা হচ্ছে না।
