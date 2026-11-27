@@ -1355,3 +1355,45 @@ GitHub Commit Check Runs endpoint-এ মোট ৭টি check পাওয়া 
 5. সবশেষে Production migration ও Worker activation-এর জন্য আলাদা safety review/অনুমোদন; কোনো live data বা টাকা ঝুঁকিতে নয়।
 
 **সত্যতা-সীমা:** ৭/৭ CI PASS; PR এখনো Draft/Open। ব্যবহারকারী safe code/test preparation শুরু করতে পারেন, কিন্তু পূর্ণ automated earning system বা live website/backend/worker/payment system এখনো চালু হয়েছে—এমন দাবি করা যাবে না।
+
+
+---
+
+## ২৭ নভেম্বর ২০২৬ — Public Pages Deployment যাচাই ও Automation Live Blocker
+
+### Public website deployment — main branch
+- Main HEAD: `9c504237e8698ccacc891dc82a8aa23d98747585`.
+- GitHub Pages workflow Run `45879349896`: `completed / success`.
+  https://github.com/rakib12301111-droid/master-world-vip/actions/runs/45879349896
+- একই Run-এর build, deploy এবং **Verify live GitHub Pages release** — তিনটি job-ই `success`; verify step published HTML, audit link, manifest এবং PWA cache marker পরীক্ষা করেছে।
+- GitHub Pages dynamic build/deployment Run `45879349584`: `completed / success`.
+  https://github.com/rakib12301111-droid/master-world-vip/actions/runs/45879349584
+- Public URL configured by repository workflow: https://rakib12301111-droid.github.io/master-world-vip/
+- Deployment workflow-এর successful verification অনুযায়ী main branch-এর static website প্রকাশিত। এই chat runtime থেকে সরাসরি browser fetch করা যায়নি; GitHub Actions-এর live verification job-ই এখানে deployment evidence।
+- Deployment-এর source main HEAD; planning branch-এর নতুন PR commit `d9910828200359a26342351edbe0d56fea805ec6` এই deployment-এ অন্তর্ভুক্ত নয়।
+
+### Automation এখনো Live নয় — main branch blocker evidence
+- Main branch scheduled referral reward processor Run `45926250050`: `failure`; `Validate protected secrets` step failed এবং reward processing skipped।
+  https://github.com/rakib12301111-droid/master-world-vip/actions/runs/45926250050
+- Main branch worker verification Run `45879345354`: `failure`; `Type-check Supabase Edge Worker` step failed।
+  https://github.com/rakib12301111-droid/master-world-vip/actions/runs/45879345354
+- তাই static site deployment success-কে 4,000-project scheduler, business-task worker, member earnings, referral rewards বা income generation live হওয়ার প্রমাণ হিসেবে গণ্য করা যাবে না।
+- PR #20-এর planning branch-এ নতুন automation/ledger changes এখনো Draft/Open/Unmerged; main-এ আসেনি। PR-এর disposable CI PASS main Production readiness নয়।
+- আলাদা Supabase Staging project ও secrets/accounts এখনো অনুপস্থিত; Staging acceptance হয়নি।
+- Production migration, production worker activation, schedule enablement এবং real revenue/payment/payout এখনো চালু নয়।
+
+### User-এর launch sequencing
+- User চেয়েছেন আগে public website ও automation live করা হোক; bKash/Nagad payment method পরে application/provider approval অনুযায়ী যোগ হবে।
+- Member ledger → Withdrawal Request → Admin Approval → authorized Payment Provider architecture বজায় থাকবে; provider integration না হওয়া পর্যন্ত real withdrawal/transfer disabled।
+- Public website already deployed and verified as above. **Automation launch-এর আগে worker type-check failure, scheduled job protected-secret validation failure, Staging acceptance এবং Production safety gates সমাধান আবশ্যক।**
+- Income guaranteed নয়; genuine customers/orders এবং বৈধ revenue/collection model কার্যকর না হলে automation নিজে থেকে টাকা তৈরি করবে না।
+
+### পরবর্তী পদক্ষেপ — no unsafe bypass
+1. Main worker type-check failure-এর exact log ও source cause diagnose/fix করে targeted CI rerun।
+2. Referral processor-এর missing protected-secret *names/availability* যাচাই; secret values কখনো log/chat-এ নয়। প্রয়োজনীয় secret user-side GitHub Actions Secrets-এ configure না হওয়া পর্যন্ত reward processing বন্ধ।
+3. Separate Supabase Staging project তৈরি; staging-only workflow দিয়ে schema/auth/RBAC/Edge Function acceptance।
+4. Main branch-এর জন্য narrow release PR; broad PR #20 অন্ধভাবে merge নয়।
+5. Worker activation-এর আগে approved business handlers, budget/kill-switch, idempotency, audit, genuine order/customer funding এবং end-to-end acceptance।
+6. Production migration/worker activation-এর জন্য পৃথক safety approval ও recoverable backup; কোনো gate bypass নয়।
+
+**সত্যতা-সীমা:** Public static website GitHub Pages-এ deployed ও workflow verification PASS। Full automated business/earning engine এখনো Live নয়; উপরের দুইটি main-branch failure ও Staging/Production gate unresolved।
