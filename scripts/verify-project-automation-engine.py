@@ -22,6 +22,7 @@ checks = {
     "scheduler only queues due, enabled projects": "where s.enabled and s.next_run_at<=now()" in flat,
     "admin scheduler enable requires approved positive project budget": "project execution must be separately enabled" in flat and "p_daily_budget>v_project.budget_cap" in flat,
     "daily and per-task budgets enforced": "project daily budget cap exceeded" in flat and "task budget cap exceeded" in flat,
+    "task budget is reserved at claim and released on finish or lease expiry": "daily_reserved" in gate and "budget_reserved" in gate and "daily_spent+daily_reserved" in gate and "budget_reservation_released" in gate,
     "expired worker leases are recovered": "scheduler_reap_expired_project_task_leases" in flat and "worker lease expired before task completion" in flat,
     "retries become dead letters after max attempts": "dead_letter" in flat and "attempts>=max_attempts" in flat,
     "task claim and finish are service-role only": "auth.role()<>'service_role'" in flat and "worker_finish_project_automation_task" in flat,
