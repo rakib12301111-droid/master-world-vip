@@ -1,5 +1,14 @@
 name: Verify Member finance ledger on disposable PostgreSQL
 on:
+  push:
+    branches: [planning/4000-automated-project-economy]
+    paths:
+      - "supabase/migrations/20261126140000_append_only_double_entry_finance_ledger.sql"
+      - "supabase/tests/member-finance-ledger-runtime.sql"
+      - "supabase/migrations/20261126150000_guarded_member_payout_refund_workflows.sql"
+      - "supabase/tests/member-payout-refund-runtime.sql"
+      - "scripts/verify-member-payout-refund.py"
+      - ".github/workflows/verify-member-finance-ledger-runtime.yml"
   pull_request:
     paths:
       - "supabase/migrations/20261126140000_append_only_double_entry_finance_ledger.sql"
