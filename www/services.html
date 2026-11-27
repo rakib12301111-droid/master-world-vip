@@ -37,7 +37,7 @@ section{margin-top:30px}h2{color:var(--gold)}label{display:block;font-size:14px;
 </section>
 <section aria-labelledby="request-title">
 <h2 id="request-title">Quote Request প্রস্তুত করুন</h2>
-<p class="muted">আপনার কাজের বিবরণ দিয়ে একটি অনুরোধের খসড়া তৈরি করুন। কোনো তথ্য এই পেজে পাঠানো বা সংরক্ষণ করা হবে না।</p>
+<p class="muted">Quote Request পাঠাতে আগে MASTER WORLD VIP-এ লগইন করুন। আপনার অনুরোধ Admin-এর ব্যক্তিগত review queue-তে যাবে।</p><p id="authStatus" class="notice" role="status">লগইন অবস্থা যাচাই হচ্ছে…</p><p><a href="./index.html">লগইন / অ্যাকাউন্ট খুলুন</a></p>
 <form id="quoteForm">
 <div class="formgrid">
 <div><label for="service">কোন সার্ভিস প্রয়োজন?</label><select id="service" required><option value="">সার্ভিস নির্বাচন করুন</option><option>বাংলা ও ইংরেজি টাইপিং</option><option>PDF ও ডকুমেন্ট ফরম্যাটিং</option><option>সাধারণ ডিজাইন সহায়তা</option><option>সোশ্যাল মিডিয়া কনটেন্ট</option><option>অন্যান্য বৈধ ডিজিটাল কাজ</option></select></div>
@@ -48,7 +48,7 @@ section{margin-top:30px}h2{color:var(--gold)}label{display:block;font-size:14px;
 <label for="budget">আপনার আনুমানিক বাজেট (ঐচ্ছিক; মুদ্রাসহ)</label><input id="budget" maxlength="100" placeholder="যেমন: BDT 500">
 <button class="btn" type="submit">অনুরোধের খসড়া তৈরি করুন</button>
 </form>
-<div id="requestOutput" class="output" aria-live="polite"></div>
+<div id="requestOutput" class="output" aria-live="polite"></div><section><h2>আমার Quote Requests</h2><div id="myRequests" class="muted">লগইন হলে আপনার অনুরোধগুলো এখানে দেখা যাবে।</div></section>
 <button id="copyRequest" class="btn alt" type="button" hidden>খসড়া কপি করুন</button>
 <p class="muted" id="copyStatus" role="status"></p>
 </section>
@@ -61,29 +61,96 @@ section{margin-top:30px}h2{color:var(--gold)}label{display:block;font-size:14px;
 <li>এই পেজে তৈরি খসড়া অর্ডার নয়; প্ল্যাটফর্মের মাধ্যমে কোনো টাকা নেওয়া হচ্ছে না।</li>
 </ul>
 </section>
-<footer class="foot">© 2026 MASTER WORLD VIP · Initial customer-services catalogue · Quote submission backend not connected.</footer>
+<footer class="foot">© 2026 MASTER WORLD VIP · Customer quote workflow · Quote acceptance does not create a paid order or collect money.</footer>
 </main>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 const form=document.getElementById('quoteForm');
 const output=document.getElementById('requestOutput');
-const copy=document.getElementById('copyRequest');
-const status=document.getElementById('copyStatus');
-let draft='';
-form.addEventListener('submit',event=>{
+const authStatus=document.getElementById('authStatus');
+const requestsBox=document.getElementById('myRequests');
+const SUPABASE_PROJECT_URL='https://lztbbrzeuyjkuiyzrsxp.supabase.co';
+const SUPABASE_PUBLISHABLE_KEY='sb_publishable_r6Qq3bM6nSgbqvKTYQZdU_ux2kUc8r';
+let client=null,currentUser=null;
+function getConfig(){
+ try{const saved=JSON.parse(localStorage.getItem('mwvip_supabase_config')||'{}');return {url:saved.url||SUPABASE_PROJECT_URL,key:saved.key||SUPABASE_PUBLISHABLE_KEY};}
+ catch(_e){return {url:SUPABASE_PROJECT_URL,key:SUPABASE_PUBLISHABLE_KEY};}
+}
+function serviceKey(label){
+ return ({'বাংলা ও ইংরেজি টাইপিং':'typing','PDF ও ডকুমেন্ট ফরম্যাটিং':'document_formatting','সাধারণ ডিজাইন সহায়তা':'general_design','সোশ্যাল মিডিয়া কনটেন্ট':'social_content','অন্যান্য বৈধ ডিজিটাল কাজ':'other'})[label]||'';
+}
+function statusLabel(status){
+ return ({submitted:'জমা হয়েছে — Admin review অপেক্ষমাণ',under_review:'Admin পর্যালোচনা করছেন',quote_sent:'Quote পাঠানো হয়েছে',accepted:'আপনি Quote গ্রহণ করেছেন — এখনো অর্ডার/পেমেন্ট নয়',declined:'Quote প্রত্যাখ্যান করেছেন',rejected:'অনুরোধ গ্রহণ করা হয়নি',expired:'Quote-এর মেয়াদ শেষ',cancelled:'বাতিল'})[status]||status;
+}
+function node(tag,text,className){
+ const el=document.createElement(tag);el.textContent=text;if(className)el.className=className;return el;
+}
+async function connect(){
+ if(!window.supabase){authStatus.textContent='Supabase SDK লোড হয়নি। ইন্টারনেট পরীক্ষা করুন।';return;}
+ const cfg=getConfig();
+ try{
+  client=window.supabase.createClient(cfg.url,cfg.key,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+  const {data,error}=await client.auth.getSession();if(error)throw error;
+  currentUser=data.session?.user||null;
+  if(!currentUser){authStatus.textContent='Quote Request পাঠাতে আগে লগইন করুন। লগইন শেষে এই পেজে ফিরে আসুন।';form.querySelector('button[type="submit"]').disabled=true;return;}
+  authStatus.textContent='লগইন আছে: '+(currentUser.email||'আপনার অ্যাকাউন্ট')+' · Quote Request জমা দিতে পারবেন।';
+  form.querySelector('button[type="submit"]').disabled=false;
+  await loadMyRequests();
+ }catch(error){authStatus.textContent='সংযোগ/লগইন যাচাই হয়নি: '+(error.message||String(error));}
+}
+async function loadMyRequests(){
+ if(!client||!currentUser)return;
+ requestsBox.textContent='আপনার অনুরোধ লোড হচ্ছে…';
+ const {data,error}=await client.from('customer_quote_requests')
+  .select('id,service_key,country,scope_description,status,quote_amount,quote_currency,quote_scope,delivery_days,quote_expires_at,created_at')
+  .eq('customer_user_id',currentUser.id).order('created_at',{ascending:false}).limit(30);
+ if(error){requestsBox.textContent='Quote workflow database এখনো প্রস্তুত/প্রকাশিত হয়নি অথবা অনুরোধ লোড হয়নি: '+error.message;return;}
+ requestsBox.replaceChildren();
+ if(!data?.length){requestsBox.append(node('p','এখনো কোনো Quote Request নেই।'));return;}
+ for(const item of data){
+  const card=node('article','');card.className='card section';
+  const names={typing:'বাংলা ও ইংরেজি টাইপিং',document_formatting:'PDF ও ডকুমেন্ট ফরম্যাটিং',general_design:'সাধারণ ডিজাইন সহায়তা',social_content:'সোশ্যাল মিডিয়া কনটেন্ট',other:'অন্যান্য'};
+  card.append(node('h3',names[item.service_key]||item.service_key),node('p',statusLabel(item.status)),node('p','জমার তারিখ: '+new Date(item.created_at).toLocaleString('bn-BD')),node('p',item.scope_description));
+  if(item.status==='quote_sent'){
+   card.append(node('p','Quote: '+item.quote_amount+' '+item.quote_currency+' · ডেলিভারি: '+item.delivery_days+' দিন'));
+   card.append(node('p','কাজের পরিধি: '+item.quote_scope));
+   card.append(node('p','Quote মেয়াদ: '+new Date(item.quote_expires_at).toLocaleString('bn-BD')));
+   const actions=node('div','');actions.className='actions';
+   const accept=node('button','Quote গ্রহণ করুন');accept.className='btn';accept.type='button';
+   const decline=node('button','প্রত্যাখ্যান');decline.className='btn alt';decline.type='button';
+   accept.addEventListener('click',()=>respond(item.id,true,accept,decline));
+   decline.addEventListener('click',()=>respond(item.id,false,accept,decline));
+   actions.append(accept,decline);card.append(actions);
+  }
+  if(item.status==='accepted')card.append(node('p','গুরুত্বপূর্ণ: Quote গ্রহণ মানে এখনো paid order তৈরি হয়নি। Scope, project availability, final order terms এবং নিরাপদ payment/funding ধাপ আলাদাভাবে নিশ্চিত হবে।','notice'));
+  requestsBox.append(card);
+ }
+}
+async function respond(id,accept,acceptButton,declineButton){
+ acceptButton.disabled=true;declineButton.disabled=true;
+ const {data,error}=await client.rpc('customer_respond_to_quote',{p_request_id:id,p_accept:accept});
+ if(error){output.style.display='block';output.textContent='উত্তর সংরক্ষণ হয়নি: '+error.message;acceptButton.disabled=false;declineButton.disabled=false;return;}
+ output.style.display='block';output.textContent=data==='accepted'?'Quote গ্রহণের উত্তর সংরক্ষিত হয়েছে। এটি এখনো অর্ডার বা পেমেন্ট নয়।':data==='expired'?'Quote-এর মেয়াদ শেষ হয়েছে।':'Quote প্রত্যাখ্যানের উত্তর সংরক্ষিত হয়েছে।';
+ await loadMyRequests();
+}
+form.addEventListener('submit',async event=>{
  event.preventDefault();
- const service=document.getElementById('service').value;
+ if(!client||!currentUser){output.style.display='block';output.textContent='প্রথমে লগইন করুন।';return;}
+ const serviceLabel=document.getElementById('service').value;
  const country=document.getElementById('country').value.trim();
  const scope=document.getElementById('scope').value.trim();
- const deadline=document.getElementById('deadline').value.trim()||'উল্লেখ করা হয়নি';
- const budget=document.getElementById('budget').value.trim()||'উল্লেখ করা হয়নি';
- if(!service||!country||!scope){status.textContent='প্রয়োজনীয় তথ্য পূরণ করুন।';return;}
- draft=['MASTER WORLD VIP — QUOTE REQUEST DRAFT','Status: NOT SUBMITTED','Service: '+service,'Country: '+country,'Scope: '+scope,'Preferred deadline: '+deadline,'Indicative budget: '+budget,'','এই খসড়া শুধু ব্যবহারকারীর ডিভাইসে তৈরি হয়েছে। এটি MASTER WORLD VIP-এ পাঠানো হয়নি এবং কোনো অর্ডার/মূল্য/পেমেন্ট নিশ্চিত করে না।'].join('\n');
- output.textContent=draft;output.style.display='block';copy.hidden=false;status.textContent='খসড়া তৈরি হয়েছে। এটি এখনো জমা হয়নি।';
+ const deadline=document.getElementById('deadline').value.trim();
+ const budget=document.getElementById('budget').value.trim();
+ const {data,error}=await client.rpc('submit_my_customer_quote_request',{
+  p_service_key:serviceKey(serviceLabel),p_country:country,p_scope_description:scope,
+  p_requested_deadline:deadline||null,p_budget_hint:budget||null
+ });
+ output.style.display='block';
+ if(error){output.textContent='Quote Request জমা হয়নি: '+error.message;return;}
+ output.textContent='আপনার Quote Request সফলভাবে জমা হয়েছে। Request ID: '+data+'। Admin review শেষে এই পেজে Quote দেখতে পাবেন। এখনো কোনো অর্ডার বা পেমেন্ট তৈরি হয়নি।';
+ form.reset();await loadMyRequests();
 });
-copy.addEventListener('click',async()=>{
- try{await navigator.clipboard.writeText(draft);status.textContent='খসড়া কপি হয়েছে। নিরাপদে সংরক্ষণ করুন।';}
- catch(_e){status.textContent='স্বয়ংক্রিয় কপি সম্ভব হয়নি। নিচের খসড়া চেপে ধরে কপি করুন।';}
-});
+connect();
 </script>
 </body>
 </html>
