@@ -1077,3 +1077,11 @@ Owner নির্দেশ: নিচের কাজগুলোকে MASTER 
 - 20% commission remains proposal-only; no commission config or posting enabled.
 - No Production migration, Production Worker deployment/execution, live payment/payout or public deployment occurred.
 - PR #20 remains Draft/Open/Unmerged. Do not merge or deploy without the separately required approval.
+
+
+### Phase A runtime correction — ২৭ নভেম্বর ২০২৬
+- Combined run `45959311813` **FAILED** at the work-order task claim. Log evidence: the previous Phase A digest test had intentionally restored `emergency_stop=true`; the next work-order test fixture did not reopen it before claim. The database correctly blocked the task.
+- Corrected test fixture in commit `1b2e57bfbdaad7d9b24bf9ff46ef4bf81f682379`: release the global stop only inside the disposable work-order test, then re-engage it after assertions. No Staging or Production setting was touched.
+- Corrected rerun `45959527467` was **IN PROGRESS** when this correction was recorded. Work-order runtime pass is not yet claimed.
+- Earlier digest handler acceptance remains successful in run `45959276433`; migration chain passed on fresh and legacy-shape disposable databases.
+- Worker Static CI `45959327873` remains SUCCESS for source commit `52bfc611d2f7669a6f0534f87bbdadcb4a3b4469`.
