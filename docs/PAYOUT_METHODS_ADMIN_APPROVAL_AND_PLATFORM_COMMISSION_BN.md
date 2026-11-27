@@ -123,3 +123,12 @@ Member ও Admin-এর জন্য সহজ payout interface রাখা: �
 - Migration approval থাকলেও real bKash/Nagad/Bank transfer, payout activation, ২০% commission deduction বা public deployment অনুমোদিত হয় না; এগুলোর পৃথক provider/legal/finance ও release gates আছে।
 - Live release-এর আগে CI/runtime, Staging acceptance, official provider sandbox, complete Order-to-Payout finance tests, recoverable backup/restore এবং security review-এর evidence বাধ্যতামূলক।
 - **Status: CI PENDING; STAGING PENDING; PRODUCTION MIGRATION NOT RUN; LIVE DEPLOYMENT NOT LIVE.**
+
+
+## ২৭ নভেম্বর ২০২৬ — Safe Validation Workflow Update
+
+- Finance Runtime workflow-এ payout/refund static safety validation যুক্ত হয়েছে; database runtime test disposable PostgreSQL-এ সীমাবদ্ধ।
+- Full migration-chain validation workflow-এ PR trigger যোগ হয়েছে; fresh ও legacy-shape test database-এ migration পরীক্ষা করবে, Production-এ নয়।
+- Staging validation workflow-এ guarded PR trigger যুক্ত হয়েছে; Staging project ref Production ref-এর সঙ্গে মিলে গেলে workflow fail-closed হবে। Staging secrets ও isolated role accounts ছাড়া Staging acceptance সম্ভব নয়।
+- Synthetic encrypted backup/restore-এর জন্য `verify-disposable-backup-restore.yml` যোগ হয়েছে; fake fixture data আলাদা disposable PostgreSQL database-এ restore ও count-check হবে।
+- **Execution status:** latest branch head-এর জন্য নতুন CI, Finance Runtime, synthetic Backup/Restore বা Staging run/check এখনো পাওয়া যায়নি। অতএব সবগুলো PENDING; আগের commit-এর successful runtime run বর্তমান commit-এর pass নয়। Production migration ও Live Deployment চালানো হয়নি।
