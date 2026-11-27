@@ -1,0 +1,95 @@
+name: MASTER WORLD VIP - Read-only Database Health Monitor
+run-name: MASTER WORLD VIP Read-only Health Check
+
+on:
+  schedule:
+    - cron: '0 */6 * * *' # every six hours (UTC)
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/database-health-monitor.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: master-world-vip-read-only-health-monitor
+  cancel-in-progress: false
+
+jobs:
+  health-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+      PGSSLMODE: require
+      PGOPTIONS: '-c default_transaction_read_only=on'
+    steps:
+      - name: Validate database connection secret without printing it
+        run: |
+          set -euo pipefail
+          test -n "${SUPABASE_DB_URL:-}" || { echo "::error::Missing Actions secret SUPABASE_DB_URL."; exit 1; }
+          python3 - <<'PY'
+          import os
+          from urllib.parse import urlsplit
+          raw = os.environ["SUPABASE_DB_URL"].strip()
+          parsed = urlsplit(raw)
+          if parsed.scheme not in ("postgres", "postgresql") or not parsed.hostname:
+              raise SystemExit("::error::SUPABASE_DB_URL is not a valid PostgreSQL URI.")
+          if not parsed.hostname.endswith(".pooler.supabase.com") or parsed.port != 5432:
+              raise SystemExit("::error::Expected Supabase Session Pooler on port 5432.")
+          if parsed.path.lstrip("/") != "postgres" or not parsed.username or not parsed.password:
+              raise SystemExit("::error::Database URI is missing required connection components.")
+          print("Database URI structure validated; credential values were not displayed.")
+          PY
+
+      - name: Install PostgreSQL client
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install --yes postgresql-client
+
+      - name: Collect read-only database health report
+        run: |
+          set -euo pipefail
+          mkdir -p health-report
+          {
+            echo "AUDIT TIMESTAMP (UTC): $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+            echo
+            psql "$SUPABASE_DB_URL" -X -v ON_ERROR_STOP=1 -P pager=off -c "
+              BEGIN READ ONLY;
+              SELECT current_setting('server_version') AS database_version;
+              SELECT count(*) AS public_table_count
+                FROM information_schema.tables
+                WHERE table_schema='public' AND table_type='BASE TABLE';
+              SELECT count(*) AS invalid_or_not_ready_indexes
+                FROM pg_index WHERE NOT indisvalid OR NOT indisready;
+              SELECT count(*) AS unvalidated_constraints
+                FROM pg_constraint WHERE NOT convalidated;
+              SELECT (to_regclass('supabase_migrations.schema_migrations') IS NOT NULL)
+                AS migration_history_table_present;
+              COMMIT;"
+          } > health-report/database-health.txt
+          cat health-report/database-health.txt
+
+      - name: Fail health check on detected schema health issues
+        run: |
+          set -euo pipefail
+          INVALID_INDEXES="$(psql "$SUPABASE_DB_URL" -X -v ON_ERROR_STOP=1 -Atc "SELECT count(*) FROM pg_index WHERE NOT indisvalid OR NOT indisready;")"
+          UNVALIDATED_CONSTRAINTS="$(psql "$SUPABASE_DB_URL" -X -v ON_ERROR_STOP=1 -Atc "SELECT count(*) FROM pg_constraint WHERE NOT convalidated;")"
+          HISTORY_PRESENT="$(psql "$SUPABASE_DB_URL" -X -v ON_ERROR_STOP=1 -Atc "SELECT (to_regclass('supabase_migrations.schema_migrations') IS NOT NULL)::int;")"
+          if [ "$INVALID_INDEXES" -gt 0 ] || [ "$UNVALIDATED_CONSTRAINTS" -gt 0 ] || [ "$HISTORY_PRESENT" != "1" ]; then
+            echo "::error::Database health gate failed. See the read-only report artifact."
+            exit 1
+          fi
+          echo "Read-only database health gate passed."
+
+      - name: Upload non-secret health report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: master-world-vip-db-health-${{ github.run_id }}
+          path: health-report/
+          retention-days: 14
+          if-no-files-found: warn

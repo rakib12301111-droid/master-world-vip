@@ -265,3 +265,114 @@ Owner commission কেবল সব member payable, refund liability, provider 
 - Owner requested Admin USD accounting across Free and Paid plan activity. Clarified that Free Plan activation itself creates no USD revenue; actual customer-paid work/services performed under Free Plan may generate eligible settled net revenue. Paid plan fees count only after real provider-verified settlement and deduction of taxes, payment/FX fees, refunds/chargebacks, delivery costs, member payable and required reserves. Admin's own plan purchase is an operating expense, not income.
 - The “100% confirmed Admin USD” requirement is recorded as 100% accurate ledger posting/reconciliation of an approved Admin entitlement from actual eligible settled net revenue—not 100% of gross receipts, fabricated USD, guaranteed fixed amounts or income merely because a plan is active. No eligible settled revenue = zero accrual.
 - Updated policy/marketplace/earning requirements and handover. **Documentation only / NOT LIVE:** no VIP UI, USD draw engine, funded prize reserve, RNG/audit system, Admin USD ledger, plan checkout, payment/FX integration, legal approval or payout was implemented by this update. Existing database backup/restore and migration gates remain unchanged.
+
+
+## Update 21 — 2026-11-26: 4,000-project dual-currency automation target
+
+- Recorded Owner target: 4,000 project slots under one automation control plane: 2,000 USD-denominated revenue projects and 2,000 BDT-denominated revenue projects, with separate immutable currency ledgers and settlement/reconciliation.
+- Recorded Admin access model: one Free Admin entitlement plus one Paid Admin plan. Ordinary Members activate plan-linked automation only after a real provider-verified paid-plan settlement and entitlement checks. A paid plan does not guarantee tasks, work, income or profit; no fabricated balance or self-purchase revenue.
+- Added docs/4000_PROJECT_AUTOMATION_AND_DUAL_CURRENCY_REVENUE_BN.md with architecture, accounting, status and acceptance gates.
+- Existing repository foundations include AI assistant function, Work & Earn board/migration, referral wallet/reward foundation, verified-payment/checkout migration source and Work & Earn wallet/Owner-profit settlement migration source. These are not proof of a live 4,000-project fleet, production checkout/entitlement activation, company revenue ledger, USD/BDT payout or settled income.
+- Member Auto Work paid package checkout/execution remains DISABLED / NOT LIVE until its existing 100% liquid refund reserve, separate operating budget, isolated infrastructure, verified provider integration, legal/security review and acceptance tests pass.
+- **Status: requirements/specification only — NOT LIVE.** No new customer payments, project workers, income, migration apply or deployment resulted from this update.
+
+
+## Update 22 — 2026-11-26: Free + Paid option clarified for every project; automation progress audit
+
+- Owner clarified that all 4,000 project slots (2,000 USD + 2,000 BDT) must each expose two access options: Free Option and Paid Automatic Plan.
+- Admin may use the Free Option across the project portfolio and may purchase the Paid Plan. Ordinary Members activate paid automation only after provider-confirmed settlement and server-side entitlement checks. The two options mean Free + Paid, not two paid tiers; pricing/limits/features remain to be specified.
+- Progress audit: repository contains operational GitHub Actions workflow source for daily backup/restore preview, weekly read-only database audit and six-hour database health monitoring; these automate infrastructure checks, not customer earning projects.
+- Existing product foundations include AI Assistant Edge Function, Work & Earn board/migration, referral wallet/reward foundation, verified-payment/checkout migration source, and Work & Earn wallet/Owner-profit settlement migration source.
+- Missing/not verified as live: 4,000-project registry/orchestrator/worker fleet; project queues/schedulers/budget enforcement; Company Revenue Ledger; complete plan checkout→verified webhook→entitlement activation; production USD/BDT revenue and payout integrations; Admin/Member entitlement enforcement; full acceptance/load/security tests.
+- **Status: foundation + specification only; NOT LIVE as a 4,000-project earning system.** No new customer payment, revenue, payout, production migration or deployment was performed.
+
+
+## Update 23 — 2026-11-26: Step 1 implementation — 4,000-project registry source
+
+- Added `supabase/migrations/20261126100000_earning_project_registry.sql`.
+- Registry schema includes stable project code/number, USD/BDT group, lifecycle state, Free/Paid option flags, paid-plan configuration state, execution/revenue kill-switch defaults, payer model, budget cap and JSON configuration.
+- Seeds exactly 4,000 planned slots: MW-USD-0001..2000 and MW-BDT-0001..2000. Both option flags are enabled for every catalog row; paid plans remain unconfigured.
+- Safety defaults: execution_enabled=false, revenue_collection_enabled=false, budget_cap=0. No payment, worker, revenue or payout is initiated.
+- Added read-only audit query at `supabase/audits/4000_project_registry_read_only.sql`, and documented migration order in Supabase README.
+- **Status:** migration and audit source committed to feature branch; not applied to Supabase production. Disposable CI validation must pass before Step 1 can be marked verified. This is a project catalog registry, not 4,000 working/earning projects.
+
+
+## Update 24 — 2026-11-26: Step 2 — Central 4,000-project automation engine source
+
+- Added `20261126110000_project_automation_engine.sql`: per-project scheduler configuration, worker registry and heartbeat, idempotent task queue, lease-based worker claims, bounded retries/dead-letter handling, audit log and Admin overview RPC.
+- Added hard gates: all scheduler rows are opt-in and absent by default; scheduler enqueue only considers registry projects with execution_enabled=true and a positive approved project budget; worker RPCs are service_role-only; worker currency support, fresh heartbeat, lease token, per-task budget and per-project daily budget are checked. One running task per project is enforced.
+- Added a read-only audit SQL file and static verifier, and wired the verifier into the Supabase migration safety workflow.
+- No worker service, external provider connector, payment collection, revenue recording or payout is deployed by this source migration. No project is enabled by default; the 4,000 registry rows still have execution disabled and zero budget.
+- **Status:** source files committed to the feature branch; GitHub Actions and disposable SQL validation pending. Not applied to Production, not deployed, and not generating income.
+
+- **CI result:** GitHub Actions migration-safety Run `45866578250` passed, including the new central automation verifier (job `140070826818`, step 8). Auto Work static safety Run `45866578261` also passed. Static checks do not prove PostgreSQL runtime correctness; disposable-database SQL validation remains pending.
+
+
+## Update 25 — 2026-11-26: Customer-led projects, 10M+ customer ambition and Member financial protection
+
+- Owner requirement: real customers must bring genuine paid work/orders/service requests to the relevant projects; fake customers, fake orders, fake tasks and artificial revenue are prohibited.
+- Long-term ambition: 10,000,000+ real customers. This is a target, not an achieved customer count, forecast or guarantee. Growth and capacity claims require measured acquisition, retention, support, fraud, load and unit-economics evidence.
+- Member safety requirements: no mandatory deposit/recharge/unlock fee to access work; paid plans remain optional and never guarantee work or income; customer-funded orders must have server-side verified settlement and segregated funding before a Member starts work.
+- Scope, price/currency, deadlines, acceptance, cancellation, dispute/refund and Member payable must be clear before work starts. Member payable, refund liabilities and platform operating funds must be accounted separately.
+- Require idempotent provider settlement, duplicate/fraud checks, audit trails, chargeback/refund workflow, incident freeze/kill switch and customer support. Never ask Members to cover customer payment shortfalls from personal funds.
+- No software can guarantee zero risk in every circumstance; funded-order gates, reserves, controls and dispute handling are mandatory launch acceptance criteria.
+- Updated the main architecture spec Section 10 and handover. Requirement recorded only: no customer acquisition system, customer count, funded reserve, payment integration or loss-free guarantee is thereby live.
+
+
+## Update 26 — 2026-11-26: Step 3 — Free/Paid plan catalog ও customer funded-order gates (source foundation)
+
+- Added `20261126120000_free_paid_plan_customer_order_gates.sql` with separate Admin/Member plan catalog, paid-plan subscription entitlement records and customer service order records.
+- Paid catalog rows are not seeded/enabled; paid plan requires a positive configured price and billing period. Active subscription requires provider transaction/event identifiers, positive settled amount and server-settled timestamp.
+- Customer service orders require a strictly positive customer price; funded/in-progress/delivered/accepted/completed states require server-verified provider settlement, segregated funds, independently verified refund reserve and operating budget, plus sufficient gross allocation to cover Member payable, refund liability and operating costs.
+- Customer free browsing/quote is distinct from paid work delivery. No zero-price customer service order can be created by this schema.
+- RLS restricts reads to enabled catalog / own subscriptions / own orders; all writes are service-role only. Added static verifier `scripts/verify-plan-customer-order-gates.py` and wired it into migration-safety workflow.
+- **Not live:** no checkout, provider webhook, payment capture, plan activation, reserve custody, worker execution, payout, production migration apply or live deployment. Prices/features remain intentionally unconfigured; no fees should be collected on the basis of this schema alone.
+
+
+## Update 27 — 2026-11-26: Member fund protection hardening
+
+- Strengthened Step 3 migration with `customer_order_fund_allocations`: three separate order-level buckets (Member payable, refund reserve, operating cost), unique per order/bucket, currency and reconciliation reference.
+- Funded/in-progress order transitions now require exactly three matching locked allocations, verified provider settlement, external fund-segregation timestamp, refund-reserve verification, operating-budget verification, active project and complete scope terms.
+- Added static checks for the three protected allocations and fail-closed order transition.
+- **Important limitation:** database allocation rows/timestamps are internal evidence only; they do not establish real bank custody, trust/safeguarded account, provider settlement or actual payout. Dedicated lawful custody, signed provider webhooks, daily reconciliation, dispute/chargeback operations and payout rails remain mandatory before launch. No Member funds have been collected or secured by this source change.
+
+
+## Update 28 — 2026-11-26: Member Loss-Prevention Hard Security (database guard foundation)
+
+- Added `20261126130000_member_loss_prevention_hardening.sql`: immutable customer-order financial terms, immutable funded-order scope/settlement evidence, append-only fund allocations, allow-listed forward-only order lifecycle and protected-order delete prevention.
+- The guards are database triggers and also apply to service-role writes; a correction requires cancelling/replacing the order rather than silently rewriting financial allocation history.
+- Extended `verify-plan-customer-order-gates.py` to assert these controls. This is static source-level validation, not a substitute for disposable PostgreSQL execution/integration tests.
+- **Not live:** migration not applied to Production; no actual bank custody/safeguarded reserve, signed payment webhook, solvency monitor, refund/chargeback/payout rail or compensation fund is connected. These controls reduce tampering and unsafe state changes but cannot guarantee lifetime zero loss or prove money is held.
+
+
+## Update 29 — 2026-11-26: Double-entry ledger and guarded payout/refund foundation
+
+- Added immutable, balanced, idempotent USD/BDT journal posting and per-Member payable overdraft protection in `20261126140000_append_only_double_entry_finance_ledger.sql`.
+- Added guarded Member payout/customer refund requests with pending-balance reservations, immutable terms, restricted state transitions and paid-state requirements for provider settlement evidence, reconciliation and matching ledger journal in `20261126150000_guarded_member_payout_refund_workflows.sql`.
+- Added static verifiers and disposable PostgreSQL 16 runtime test workflow. The runtime test checks balanced posting, idempotent retry, cross-currency rejection, immutable journals, Member overdraw prevention and payout state completion.
+- **Not live:** no provider-specific signed webhook, safeguarded bank/custodian account, funded reserve, external payout/refund rail, or daily independent bank reconciliation is connected. Ledger/request rows are not cash custody or transfers. Production migration not applied.
+
+
+### Update 29.1 — Runtime validation result (2026-11-26)
+
+- Disposable PostgreSQL 16 workflow `45872273474` passed. Both ledger and payout/refund migrations applied successfully in the isolated CI database; tests passed for balanced journals, idempotent retries, cross-currency rejection, immutable journals, Member overdraft protection, pending payout reservations and paid-state journal evidence.
+- Migration Safety CI `45872273373` and Auto Work Static Safety `45872273321` passed.
+- This is isolated runtime validation only, not Production apply, live custody, payment, refund, payout or revenue.
+
+### Update 30 — 2026-11-27: bKash/Nagad/Bank payout policy and Admin commission specification
+
+- Added docs/PAYOUT_METHODS_ADMIN_APPROVAL_AND_PLATFORM_COMMISSION_BN.md.
+- Spec records Member self-enrollment for bKash/Nagad/bank destinations with encrypted/tokenized sensitive data, masked account display and ownership verification; no OTP/PIN/password collection.
+- bKash/Nagad payout requests require Admin approval plus official provider payout eligibility/settlement/reconciliation. No provider/company/KYC/legal permission bypass.
+- Bank destination can be self-added; policy-based per-request Admin-approval-free automatic payout is allowed only after ownership verification, KYC/AML/fraud checks and activation of a bank/payment-partner-approved transfer rail. High-risk/new destinations and reconciliation alerts fail closed to manual review.
+- Configurable Admin commission per paid work is required. No default rate is invented; rate/basis and Member net payable must be disclosed before work, snapshotted immutably at order acceptance and posted to a separate company-revenue account after accepted/completed and settled/reconciled work. USD and BDT remain separate.
+- Status: specification only, NOT LIVE. No provider adapters, bank integration, account verification, automatic withdrawal, commission posting/collection or production money movement has been implemented. Provider and legal permissions cannot be bypassed.
+
+
+### Update 30.1 — 2026-11-27: Owner proposes 20% Admin commission
+
+- Recorded the owner's requested **20% proposed Admin commission** for each completed/accepted paid work order in the payout/commission specification and handover.
+- The 20% is a proposal only, not an enabled production rate and not authorization to deduct or collect money.
+- Before activation, define and disclose the calculation basis, provider fees, tax, refund/chargeback reversal and rounding policy; show Member net payable before work; post commission only after accepted/completed work and settled/reconciled funds to a separate Company Revenue Ledger.
+- Keep USD and BDT calculations separate. No retroactive changes to accepted order terms.
+- **Status: recorded proposal only; no commission calculation, deduction, collection or live revenue is active.**

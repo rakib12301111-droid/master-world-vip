@@ -2,6 +2,8 @@ name: MASTER WORLD VIP - Read Only Supabase Migration and Schema Audit
 run-name: MASTER WORLD VIP Read-only Database Audit
 
 on:
+  schedule:
+    - cron: '15 3 * * 1' # Monday 09:15 Bangladesh time
   workflow_dispatch:
   push:
     branches: [main]
