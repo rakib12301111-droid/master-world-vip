@@ -88,6 +88,27 @@ Deno.serve(async (req) => {
           digest,
         },
       };
+    } else if (task.task_type === "work_order_validate") {
+      const orderId = task.payload?.order_id;
+      if (typeof orderId !== "string" || !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(orderId)) {
+        outcome = { success: false, result: {}, error: "Invalid or missing order_id in task payload." };
+      } else {
+        const validation = await rpc("worker_validate_work_order", {
+          p_project_id: task.project_id,
+          p_order_id: orderId,
+        });
+        outcome = {
+          success: true,
+          result: {
+            handler: "work_order_validate",
+            handler_version: "1.0.0",
+            read_only: true,
+            external_side_effects: false,
+            financial_effects: false,
+            validation,
+          },
+        };
+      }
     } else {
       outcome = { success: false, result: {}, error: "Task type is not implemented by this worker." };
     }
