@@ -1690,3 +1690,21 @@ Run links:
 - সাতটি GitHub check-ই `completed/success`: `auto-work-static-safety`, `static-migration-safety`, `worker-static-check` (দুটি run), `backup-restore`, `validate`, `postgres-runtime`।
 - Checks: https://github.com/rakib12301111-droid/master-world-vip/commit/57f068ff1017692ce33b7dc886f2fe572a3c22a6/checks
 - এই CI ফলাফল code/static/disposable runtime validation; Staging Supabase-এ বাস্তব migration/auth acceptance বা Production execution নয়।
+
+
+## ২৭ নভেম্বর ২০২৬ — Global Business Vision অ্যাপে সংযোজন
+
+- বিদ্যমান অ্যাপেই নতুন **Global Business Vision** navigation/page যোগ করা হয়েছে; আলাদা অ্যাপ তৈরি করা হয়নি।
+- Commit: `3721d3da3c305350c1c95219d15914c483de7210` — `www/index.html`।
+- নতুন পেজে Worldwide Customer Order Portal, 24/7 AI Automation & Worker Network, Global Member Work Opportunities এবং USD/BDT Business Accounting-এর দীর্ঘমেয়াদি লক্ষ্য দেখানো হয়েছে।
+- Scenario Calculator-এ ব্যবহারকারী অর্ডার সংখ্যা, গড় অর্ডার মূল্য, BDT/USD এবং উদাহরণ কমিশন নির্বাচন করে সম্ভাব্য মোট অর্ডার মূল্য ও উদাহরণ কমিশন দেখতে পারবেন। এটি browser-local গাণিতিক হিসাব; কোনো database record, real order, earning বা payment তৈরি করে না।
+- উদাহরণ নীতি: সাধারণ BDT-ভিত্তিক কাজ ২০%; কেবল নীতিতে নির্ধারিত যোগ্য high-volume USD-settled কাজ ৩৫%। USD ও BDT আলাদা দেখানো হয়; FX conversion অনুমান করা হয় না।
+- UI-তে স্পষ্ট সতর্কতা যোগ করা হয়েছে: gross order value Admin profit নয়; Member payable, refunds/chargebacks, provider fees, tax, infrastructure/AI costs ও অন্যান্য ব্যয় বাদ দিতে হবে। ভবিষ্যৎ লক্ষ্যকে বর্তমান Live সক্ষমতা বা নিশ্চিত আয়ের দাবি হিসেবে দেখানো হয় না।
+- Free-tier development/testing যেখানে সম্ভব তা অগ্রাধিকার; paid service/scale-up-এর আগে খরচ, budget ও অনুমোদন প্রয়োজন—এটি UI-তে উল্লেখ আছে।
+- আগের Referral, Member Hub, Auth, Finance, Worker, Migration ও অন্যান্য পেজ/কোড মুছে বা প্রতিস্থাপন করা হয়নি; নতুন navigation item ও page যুক্ত হয়েছে।
+- এই commit-এর পর GitHub Actions CI ফলাফল আলাদাভাবে যাচাই করতে হবে। এই UI সংযোজন Production deployment নয়; PR #20 Draft/Open, Staging acceptance, Production Migration, Worker enablement, real payment/payout এখনো বাকি।
+
+### পরবর্তী যাচাই
+- [ ] Commit `3721d3da3c305350c1c95219d15914c483de7210`-এর CI checks completed/success যাচাই।
+- [ ] Mobile viewport-এ Global Business Vision page ও calculator display পরীক্ষা।
+- [ ] Calculator-এর BDT 100,000 × ৳2,000 = ৳20 কোটি gross scenario এবং ২০% illustrative commission-এর arithmetic যাচাই; USD mode ও ৩৫% eligible scenario আলাদা যাচাই।
