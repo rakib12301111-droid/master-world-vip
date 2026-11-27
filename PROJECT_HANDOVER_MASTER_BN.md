@@ -404,3 +404,26 @@ GitHub Actions-এ ব্যবহৃত secret নাম:
 - Full disposable migration + quote runtime run `45963158978`: queued/pending at the time of this handover update. An earlier run exposed SQL dollar-quote delimiters in the new lifecycle guards; those delimiters were corrected and the latest static checks pass. Do not mark SQL runtime PASS until the fresh+legacy disposable migration and quote runtime steps complete successfully.
 - Earlier disposable run `45962723921` failed on the first SQL delimiter defect; that failure is resolved in source but must be superseded by a successful later run.
 - PR #22 remains Draft/Open/Unmerged and is stacked on PR #21. No Production migration, Supabase Staging apply, Pages deployment, real customer request or payment was performed.
+
+
+---
+
+## Customer Quote Workflow — Disposable CI verified (27 Nov 2026)
+
+**Code-equivalent tested commit:** `f032f214130e7616e09da02aaae9b73dbca1a689`
+
+- Disposable full migration validation run `45963538524`: **SUCCESS**. All 31 repository migrations applied in order to both fresh and audited legacy-shape disposable PostgreSQL databases. Customer Quote workflow runtime SQL passed in both databases, including Customer A/B row isolation, Admin inbox visibility, review, quote send, customer accept, customer cancel, append-only event guard, immutable submitted scope and no-delete guard. Expected application object checks passed. No Production database was touched.
+- Static Migration Safety run `45963538501`: **SUCCESS**, including Customer Quote workflow static security checks and Node syntax checks for the customer and Admin pages.
+- Update System run `45963538516`: **SUCCESS**.
+- Auto Work Static Safety run `45963538476`: **SUCCESS**.
+- The earlier legacy-fixture auth schema permission failure was fixed by granting the test roles usage/execute on the disposable `auth` schema/functions only. This is test-fixture configuration, not a Production permission change.
+- The initial dollar-quote defects in migration/runtime test were corrected; the final disposable run above passed.
+
+## Current release boundary
+- PR #22 is Draft/Open/Unmerged and stacked on PR #21. Both remain unmerged.
+- Staging Supabase migration has NOT been applied. Real browser/customer/Admin manual acceptance, Android Chrome/accessibility review and actual notification delivery remain pending.
+- No Pages deployment, Production migration, real order, payment collection, fund custody, Member assignment or payout was performed.
+- The accepted-quote → existing `customer_service_orders` conversion is still a separate next implementation. PR #20's protected customer-order/fund-allocation foundation is not yet in `main`; do not create a duplicate order/ledger or mark a quote as funded.
+- Next: perform the Staging A/B/Admin acceptance test after an authorized Staging project is available; then design the conversion bridge against the merged existing customer-order migration and its funding gates.
+
+**Current status: Customer Quote workflow CODE + STATIC CI + FULL DISPOSABLE MIGRATION/RUNTIME CI VERIFIED; NOT STAGING-APPLIED; NOT PRODUCTION-LIVE.**
