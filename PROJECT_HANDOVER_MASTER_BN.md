@@ -613,3 +613,56 @@ GitHub Actions-এ ব্যবহৃত secret নাম:
 - তিনটি workflow file planning branch-এ পুনরায় fetch করে cron trigger উপস্থিতি যাচাই করা হয়েছে।
 - GitHub Actions workflow parser/runtime run এই মুহূর্তে চালানো/পাস হয়েছে—এমন প্রমাণ নেই; পরবর্তী ধাপ হলো PR CI/Workflow validation এবং merge ছাড়া manual dispatch করা সম্ভব কি না যাচাই।
 - Production data, migration history, live deployment, payment/payout বা provider settings পরিবর্তন করা হয়নি।
+
+
+## ১৮. ২৭ নভেম্বর ২০২৬ — আজকের GitHub পরীক্ষা ও ধারাবাহিকতা হালনাগাদ
+
+এই অংশটি ২৭ নভেম্বরের বর্তমান যাচাইয়ের ফল। আগের handover sections অপরিবর্তিত রাখা হয়েছে।
+
+### Repository / PR অবস্থা
+- Repository: `rakib12301111-droid/master-world-vip`
+- PR #19 — `automation/scheduled-safety-monitoring`; head `5cd0f45220ad33e9cc98c2d9aeb2ee72188fac35`; Draft/Open/Unmerged। এই branch-এর জন্য Actions runs তালিকায় কোনো run পাওয়া যায়নি। তাই PR #19-এর schedule/health workflow বাস্তবে সফলভাবে চলছে—এমন প্রমাণ নেই।
+- PR #20 — `planning/4000-automated-project-economy`; যাচাইয়ের সময় head `56ae2952a0cf4affe04d14b2b8f8a6476e8278ed`; Draft/Open/Unmerged। PR #20 merge করা হয়নি।
+- PR #20 head-এর জন্য সরাসরি SHA-filtered Actions run পাওয়া যায়নি। সর্বশেষ যাচাইকৃত PR CI run-গুলো আগের code-equivalent commit `9f0a4c7cf2f3b7aeb50f9a5fd40b6ed163493741`-এ সফল হয়েছিল; বর্তমান documentation-only head-এর জন্য নতুন run ছাড়া ওই ফলকে নতুন head-এর CI বলা যাবে না।
+
+### PR #20-এ সর্বশেষ যাচাইকৃত CI evidence
+নিচের সবগুলো Run ২৬ নভেম্বর ২০২৬-এ `9f0a4c7cf2f3b7aeb50f9a5fd40b6ed163493741` commit-এ Pull Request event-এ `success`:
+- Migration Safety: Run `45879443133` — https://github.com/rakib12301111-droid/master-world-vip/actions/runs/45879443133
+- Disposable PostgreSQL finance-ledger runtime: Run `45879443167` — https://github.com/rakib12301111-droid/master-world-vip/actions/runs/45879443167
+- Auto Work Static Safety: Run `45879443153` — https://github.com/rakib12301111-droid/master-world-vip/actions/runs/45879443153
+- Update-system check: Run `45879443137` — https://github.com/rakib12301111-droid/master-world-vip/actions/runs/45879443137
+- Worker Deno/static verification: Run `45879443174` — https://github.com/rakib12301111-droid/master-world-vip/actions/runs/45879443174
+- আলাদা করে আগের Admin Dashboard batch-এর disposable PostgreSQL Run `45878490800`, Migration Safety Run `45878490751`, Auto Work Static Safety Run `45878490762` এবং Update-system Run `45878490881`-ও success ছিল।
+- এগুলো static/disposable test evidence; Production schema, real Staging Auth/RBAC বা live worker execution-এর প্রমাণ নয়।
+
+### Commit `9c504237e8698ccacc891dc82a8aa23d98747585`-এর প্রকৃত Actions ফল
+- Referral Rewards scheduled workflow Run `45879613849` এবং `45926250050` — দুটিই failed; উভয় ক্ষেত্রেই `Validate protected secrets` ধাপে failure হয়েছে এবং `Process verified eligible referrals` ধাপ skipped হয়েছে। অর্থাৎ reward processing/payout সম্পন্ন হয়নি; কোনো টাকা পাঠানোর প্রমাণ নেই। Secret value কখনো log বা chat-এ প্রকাশ করা যাবে না।
+- GitHub Pages build/deployment Run `45879349584` success এবং `Deploy MASTER WORLD VIP to GitHub Pages` Run `45879349896` success; দ্বিতীয় Run-এ live release verification-ও success। এটি `main` branch-এর `9c504...` commit-এর public Pages deployment evidence; PR #20 merge বা Production database migration apply-এর প্রমাণ নয়।
+- উল্লিখিত 9c504 commit-এ PR #20 branch-এর Staging readiness documentation যোগ হয়েছিল; ওই commit-এর Staging workflow dispatch বা real Staging acceptance test হয়েছে—এমন প্রমাণ পাওয়া যায়নি।
+
+### Staging / Worker readiness — এখনো BLOCKED
+- `.github/workflows/validate-staging-supabase.yml` এবং Staging readiness documentation PR #20 branch-এ আছে।
+- Required Staging Actions secrets ও আলাদা non-Production Supabase Staging project এই execution-এ যাচাই/উপলব্ধ নয়। তাই Staging workflow dispatch করা হয়নি; migration, তিনটি পৃথক Owner/Admin/Member Auth/RBAC acceptance test বা Staging Edge Function deploy সম্পন্ন হয়নি।
+- Worker Edge Function এখনো registration/heartbeat foundation; approved business-task handler নেই। Worker idle/disabled থাকবে; task claim, customer work execution বা revenue processing চালু নয়।
+- ৪,০০০ Project হলো পরিকল্পিত registry capacity; ২,০০০ USD + ২,০০০ BDT slots বাস্তবে seeded/active হয়েছে—এমন প্রমাণ নেই। Execution readiness false, budget zero, real customer/order/payment/payout/revenue live নয়।
+
+### PR #19 schedule-এর বাস্তব সক্রিয়তা
+- Backup/restore daily 02:30 UTC, read-only audit Monday 03:15 UTC এবং health monitor প্রতি ৬ ঘণ্টার schedule PR #19 branch-এ source-level proposal হিসেবে আছে।
+- PR #19 branch-এর জন্য কোনো Actions run পাওয়া যায়নি। GitHub scheduled workflow default branch থেকে কার্যকর হয়; PR merge/default branch-এ না থাকায় এই schedule-গুলো active production schedule বলে গণ্য করা যাবে না।
+- PR #19 merge করলে main-এর GitHub Pages push deployment trigger হওয়ার ঝুঁকি আছে। আলাদা অনুমোদন ছাড়া PR merge/live deployment করা যাবে না।
+
+### Production safety boundary
+- Production database migration apply, migration-history repair, destructive SQL বা live data write করা হয়নি।
+- Production migration-এর জন্য আলাদা exact approval `APPLY-MASTER-WORLD-VIP-MIGRATIONS`, সর্বশেষ recoverable backup এবং restore evidence বাধ্যতামূলক। এই handover update নিজে কোনো Production approval নয়।
+- Public Pages deployment-এর উপরের Run evidence আলাদা; ভবিষ্যৎ public release/deployment-এর আগে নির্দিষ্ট scope ও অনুমোদন gate বজায় থাকবে।
+- Staging secrets, password, token, OTP বা encryption passphrase এই handover-এ লেখা হয়নি।
+
+### পরবর্তী কাজ — এখান থেকেই শুরু করতে হবে
+1. এই handover update-এর পর নতুন PR #20 commit-এর CI runs পরীক্ষা করে সব নতুন workflow-এর বাস্তব result নথিভুক্ত করা।
+2. PR #20-তে Staging secrets/project Owner কর্তৃক GitHub Actions Secrets-এ প্রস্তুত হলে কেবল manual Staging workflow চালানো; Production project ref reject হচ্ছে তা নিশ্চিত করা।
+3. Staging migration + তিন পৃথক Auth/RBAC role test + Admin overview authorization + Edge Function Staging deploy-এর logs/acceptance result যাচাই করা।
+4. Worker-এর জন্য বাস্তব business-task handler, idempotency, budget guard, approved external integration এবং end-to-end tests তৈরি না হওয়া পর্যন্ত worker idle রাখা।
+5. PR #19 schedule workflow-এর YAML/CI validation এবং default-branch activation gate পর্যালোচনা; merge নয়।
+6. Production read-only schema audit ও full-chain disposable migration test-এর বর্তমান evidence সংগ্রহ; কোনো Production apply নয়।
+
+**এই update-এর সময় কোনো Staging secret value পড়া/প্রকাশ, Production migration apply, payout, referral reward transfer, PR merge বা নতুন public deployment চালানো হয়নি।**
