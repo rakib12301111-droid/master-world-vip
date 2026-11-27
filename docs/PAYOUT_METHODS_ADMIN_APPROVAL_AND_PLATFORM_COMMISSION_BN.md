@@ -146,3 +146,36 @@ Member ও Admin-এর জন্য সহজ payout interface রাখা: �
 - Member payable, refund/chargeback reserve, tax বা provider fee থেকে commission নেওয়া যাবে না। Gross order value Admin profit নয়।
 - Eligibility, rate, calculation basis, fees/tax, rounding, refund reversal এবং Member net payable order acceptance-এর আগে Customer/Member-কে দেখিয়ে immutable snapshot করতে হবে। Commission কেবল accepted/completed work এবং settled/reconciled funds-এর পর আলাদা Admin/company ledger-এ post হবে।
 - এই policy নথিভুক্ত; production commission এখনো disabled। Provider sandbox/webhook, Staging finance acceptance, legal/tax review এবং পৃথক release approval ছাড়া live deduction/posting হবে না।
+
+
+## ১৩. Owner-এর সর্বশেষ স্পষ্ট কমিশন নির্দেশ — Section 8, 10, 11 ও 12-এর বিরোধী হিসাব বাতিল (২৭ নভেম্বর ২০২৬)
+
+**এই Section 13-ই কমিশন হারের ও calculation base-এর সর্বশেষ authoritative policy।** এই নীতির সঙ্গে বিরোধী Section 8, 10, 11 ও 12-এর পুরোনো একক ২০% বা Distributable Platform Margin-ভিত্তিক হিসাব আর অনুসরণ করা যাবে না।
+
+### নির্ধারিত হার ও হিসাবের ভিত্তি
+
+- **USD income:** USD currency-তে বাস্তবে settled/credited income amount-এর **৩৫% Admin commission**। হিসাব USD-তেই হবে।
+- **BDT income:** BDT currency-তে বাস্তবে settled/credited income amount-এর **২০% Admin commission**। হিসাব BDT-তেই হবে।
+- উদাহরণ: $100 settled USD income হলে Admin commission $35; ৳10,000 settled BDT income হলে Admin commission ৳2,000।
+- USD-কে আগে BDT-তে convert করে ২০% প্রয়োগ করা যাবে না। USD ও BDT ledger, payable ও commission আলাদা থাকবে। FX conversion প্রয়োজন হলে সেটি আলাদা exchange transaction/journal, exchange rate, timestamp ও fee-সহ রেকর্ড হবে।
+- এখানে commission base হলো সংশ্লিষ্ট currency-তে verified settlement record-এ income হিসেবে credited/settled হওয়া amount। **Distributable Platform Margin, positive margin, Member payable বাদ দেওয়ার পর অবশিষ্ট, অথবা operating-cost margin—এগুলোর কোনোটি Owner-এর নির্ধারিত commission base নয়।**
+
+### পৃথক হিসাব ও reversal controls
+
+- Provider/payment fees, applicable tax/withholding, Member payable, refund/chargeback reserve, operating costs এবং Admin commission আলাদা ledger line/account-এ দেখাতে হবে। এগুলো আলাদা accounting item; কমিশনের base-কে margin-এ রূপান্তর করার অনুমতি নয়।
+- Refund/chargeback হলে সংশ্লিষ্ট order-এর settled income ও commission-এর proportionate reversal আলাদা auditable journal-এ করতে হবে; একই অর্থ দুইবার reverse বা collect করা যাবে না।
+- Commission কেবল genuine accepted/completed work-এর বিপরীতে verified settled income-এর পর post হবে। Pending, failed, disputed বা unsettled payment earned income নয় এবং commission তৈরি করবে না।
+- Order/customer/member terms-এ currency, applicable rate, calculation amount, fees/tax, Member payable, refund/chargeback reversal ও rounding order acceptance-এর আগে দেখাতে হবে এবং immutable snapshot রাখতে হবে।
+- USD eligibility: Owner-এর নির্ধারিত qualified high-volume USD-settled automated work-এর জন্য ৩৫%; অন্য সাধারণ BDT-settled কাজের জন্য ২০%। কোনো কাজ USD-তে settled হলে সেটিকে BDT rate-এ পুনর্গণনা করা যাবে না।
+- বাস্তব provider settlement payload-এ gross capture ও net bank settlement আলাদা field হলে দুটিই সংরক্ষণ করতে হবে; commission base হবে যে amount-টি platform-এর verified settlement ledger-এ income হিসেবে credited হয়েছে। Provider fee আলাদা debit/expense হিসেবে রেকর্ড হবে, নীরবে commission base থেকে বাদ নয়।
+
+### উদাহরণ
+
+| Settled income currency | Settled income | Admin rate | Admin commission |
+|---|---:|---:|---:|
+| USD | $100.00 | 35% | $35.00 |
+| BDT | ৳10,000.00 | 20% | ৳2,000.00 |
+| USD | $0.00 | 35% | $0.00 |
+| BDT | ৳0.00 | 20% | ৳0.00 |
+
+**Implementation status:** এই Section 13 নীতিকে সঠিকভাবে নথিভুক্ত করে; এটি নিজে থেকে finance code, provider integration, Staging acceptance, live collection, commission posting বা payout চালু করে না। এগুলোর জন্য পৃথক code/runtime tests, Staging verification, provider/legal approvals এবং release gates এখনও প্রযোজ্য।
