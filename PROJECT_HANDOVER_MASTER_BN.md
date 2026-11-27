@@ -1257,3 +1257,31 @@ Owner নির্দেশ: নিচের কাজগুলোকে MASTER 
 - কোনো secret/password/token/OTP/encryption passphrase handover-এ লেখা যাবে না।
 
 **২৭ নভেম্বরের সারাংশ:** বড় engineering ও disposable validation অগ্রগতি হয়েছে; কিন্তু পৃথক Staging Project/credentials, Production migration approval, production worker activation এবং provider-authorized payment/payout ছাড়া সম্পূর্ণ automated earning system Live বলা যাবে না। কোনো বাস্তব Production database পরিবর্তন, live worker execution, payment/payout বা public deployment এই update দ্বারা সম্পন্ন হয়নি।
+
+
+---
+
+## ২৭ নভেম্বর ২০২৬ — পরবর্তী সিদ্ধান্ত: প্রথম লঞ্চে Member Withdrawal স্থগিত
+
+ব্যবহারকারীর নতুন নির্দেশ/পছন্দ:
+- bKash/Nagad-এর Member Payment/Payout integration প্রথম লঞ্চের বাধ্যতামূলক শর্ত না রেখে পরবর্তী ধাপে করা হবে।
+- প্রথম ধাপে বৈধভাবে platform revenue গ্রহণের ব্যবস্থা থাকলে তা চালু করার উপযোগিতা যাচাই করতে হবে; কিন্তু Member Withdrawal/বাহ্যিক payout feature default-এ DISABLED থাকবে।
+- Member balance/earnings ledger থাকলে সেটি কেবল হিসাব/দায় (liability) হিসেবে স্পষ্টভাবে দেখাতে হবে; অনুমোদিত payout channel ও compliance ছাড়া টাকা পাঠানো, cash-out promise, বা withdrawable balance দাবি করা যাবে না।
+- Admin approval workflow, immutable audit trail, reconciliation, refund/dispute handling এবং emergency stop design করতে হবে। Admin approval একা bKash/Nagad/ব্যাংকের provider permission বা আইনগত অনুমোদনের বিকল্প নয়।
+- Platform-এর নিজস্ব revenue (যেমন subscription/service/advertising) এবং সদস্যদের পাওনা/commission আলাদা ledger ও আলাদা account treatment-এ রাখতে হবে। সদস্যদের পাওনা Admin-এর ব্যক্তিগত আয় হিসেবে গণ্য করা যাবে না।
+- টাকা কোনো ব্যক্তিগত বা ব্যবসায়িক অ্যাকাউন্টে জমা থাকলেই তা “কেউ ধরতে পারবে না” বা ঝুঁকিমুক্ত—এমন নিশ্চয়তা নেই। অ্যাকাউন্টের ধরন, provider terms, tax, consumer-protection, AML/KYC ও স্থানীয় আইন প্রযোজ্য হতে পারে। অনুমোদিত ব্যবসায়িক collection route যাচাই ছাড়া live collection চালু করা যাবে না।
+- bKash/Nagad-এর official merchant/API approval ও compliance না পাওয়া পর্যন্ত তাদের নাম/লোগো দিয়ে payment গ্রহণ বা payout support আছে বলে দেখানো যাবে না। Manual payout-ও provider terms ও প্রযোজ্য আইন মেনে, যথাযথ record রেখে করতে হবে।
+
+### নতুন phased launch scope (আগের অসম্পূর্ণতার তালিকার পরিপূরক; আগের evidence মুছে নয়)
+1. **Phase 1 — Safe public MVP:** public UI/static site ও non-financial features আলাদা narrow release-এ; GitHub Actions/Pages live URL সত্যিই deploy ও verify না করা পর্যন্ত Live বলা যাবে না।
+2. **Phase 1 finance boundary:** Member deposit, withdrawal, cash-out, real-money task execution ও payout বন্ধ থাকবে যতক্ষণ না বৈধ collection/payment route, terms, accounting, compliance এবং test evidence অনুমোদিত হয়। কোনো ভুয়া balance বা নিশ্চিত আয়ের প্রতিশ্রুতি নয়।
+3. **Platform revenue:** subscription/service/ad revenue feature কেবল provider অনুমোদন, বৈধ account/merchant setup, pricing/terms, webhook verification, refund/reconciliation ও tax/compliance review শেষে চালু করা যাবে। Provider permission ছাড়া ব্যক্তিগত bKash/Nagad account-কে merchant gateway হিসেবে ধরে নেওয়া যাবে না।
+4. **Member payout later:** bKash/Nagad payout integration ও Member withdrawal আলাদা পরবর্তী release; official provider authorization, KYC/compliance, signed webhook, idempotency, fraud controls, reconciliation, Admin dual-control/audit এবং end-to-end sandbox test আবশ্যক।
+5. **Staging/Production boundary অপরিবর্তিত:** Supabase project ref `lztbbrzeuyjkuiyzrsxp` Production target; Staging-এর জন্য আলাদা Free Project ও আলাদা credentials আবশ্যক। Production migration, worker activation ও money movement-এর safety gate আলাদা থাকবে।
+
+### Anti-duplication note
+- উপরের সিদ্ধান্তটি আগের “bKash/Nagad payout এখনো live নয়” অবস্থাকে বাতিল করে না; কেবল launch sequencing বদলায়: Member payout পরে, প্রথম launch-এ নয়।
+- আগে সম্পন্ন CI/disposable migration/backup evidence পুনরায় চালানোর আগে latest commit/run status যাচাই করতে হবে; একই disposable test অকারণে পুনরাবৃত্তি নয়।
+- এই নথিতে কোনো credential, password, API key, service-role key, OTP বা full connection string সংরক্ষণ করা যাবে না।
+
+**সত্যতা-সীমা:** এই নথি update করা মানে GitHub planning branch-এ পরিকল্পনা সংরক্ষণ; এটি নিজে থেকে PR merge, Supabase migration, live payment collection, public deployment বা Production worker activation করে না।
