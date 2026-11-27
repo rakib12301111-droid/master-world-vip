@@ -815,3 +815,27 @@ Owner নির্দেশ: নিচের কাজগুলোকে MASTER 
 3. Staging workflow কেবল Staging target-এ চালাতে হবে। Missing secret বা Production ref হলে fail-closed হওয়াই প্রত্যাশিত।
 4. Disposable tests সফল হলেও তা Production schema readiness, real payment provider approval বা custody প্রমাণ করে না।
 5. Production migration approval gate, backup/restore evidence, Staging acceptance এবং পৃথক Live Deployment approval অপরিবর্তিত থাকবে।
+
+## ২৭ নভেম্বর ২০২৬ — CI ফলাফল, Failure Fix ও পুনঃপরীক্ষা
+
+### সফল পরীক্ষা
+- **Finance Runtime — SUCCESS:** Run `45955906370`, commit `777766977ee55fb7ca7c3a882f7ca3e249969f3b`। Disposable PostgreSQL 16-এ payout/refund static safety এবং finance ledger + guarded payout/refund runtime SQL ধাপ সফল। Run: https://github.com/rakib12301111-droid/master-world-vip/actions/runs/45955906370
+- **Synthetic Backup/Restore — SUCCESS (সংশোধনের পর):** Run `45956031760`, commit `309e1c8c5998538835620ca6d273b1ed03d484fb`। দুইটি fake order row-এর encrypted logical backup, decrypt, separate database restore এবং row/amount check সফল। Run: https://github.com/rakib12301111-droid/master-world-vip/actions/runs/45956031760
+- Backup workflow-এর আগের Run `45955918336` failure হয়েছিল কারণ runner-এর নতুন pg_dump/pg_restore client PostgreSQL 16 restore target-এ `transaction_timeout` সেটিং পাঠায়, যা PG16 চেনে না। Workflow-এ এখন PostgreSQL 16 image-এর matching pg_dump/pg_restore ব্যবহার করা হয়েছে। সফল retry-তে Restore step-ও SUCCESS।
+
+### Full migration-chain validation
+- প্রথম Run `45955911378` failure: `20261126110000_project_automation_engine.sql`-এর `scheduler_reap_expired_project_task_leases()` function-এ malformed opening delimiter `as $` এবং closing delimiter `end $;` ছিল। Log-এ PostgreSQL syntax error near `$` পাওয়া গেছে। Run: https://github.com/rakib12301111-droid/master-world-vip/actions/runs/45955911378
+- SQL source-এ ওই function-এর delimiter সঠিক `as $$` / `end $$;` করা হয়েছে। Fix commit: `0f1eef4c61e17d092233d18abe677897179cef89`।
+- Fix commit-এর জন্য নতুন Full Disposable Migration Validation Run **45956160044** তৈরি হয়েছে; সর্বশেষ পর্যবেক্ষণে **IN_PROGRESS** (PostgreSQL service container initialization পর্যায়ে)। Run: https://github.com/rakib12301111-droid/master-world-vip/actions/runs/45956160044
+- এই migration run-এর চূড়ান্ত ফল না আসা পর্যন্ত সম্পূর্ণ migration chain **PENDING**। প্রথম failure-কে pass হিসেবে গণ্য করা যাবে না।
+
+### Staging / Production / Live
+- **Staging Database: PENDING / NOT RUN** — আলাদা Staging project, project-bound DB URL, required GitHub Actions secrets এবং তিনটি পৃথক Owner/Admin/Member test identity প্রস্তুত/যাচাইকৃত নয়। Secret values এই execution-এ পড়া বা চ্যাটে প্রকাশ করা হয়নি।
+- **Production Migration: NOT RUN** — কোনো Production migration apply বা migration-history repair হয়নি।
+- **Live Deployment: NOT RUN / NOT LIVE** — public deployment, real payment/payout বা customer revenue activation হয়নি।
+- PR #20 Draft/Open/Unmerged; সব source changes planning branch-এ। Production নিরাপত্তা gate অপরিবর্তিত।
+
+### পরবর্তী কাজ
+1. Run `45956160044`-এর final conclusion, job/step ও log যাচাই; ব্যর্থ হলে নির্দিষ্ট SQL error ঠিক করে একই test পুনরায় চালানো।
+2. Staging credentials ও identities প্রস্তুত না হওয়া পর্যন্ত Staging workflow চালানো/তার ফল অনুমান করা যাবে না।
+3. সব disposable/static tests pass হলেও Production apply বা Live Deployment স্বয়ংক্রিয়ভাবে অনুমোদিত হবে না; পৃথক approval ও release prerequisites বাধ্যতামূলক।
