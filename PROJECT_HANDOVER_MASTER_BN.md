@@ -1635,7 +1635,7 @@ GitHub repository → Settings → Secrets and variables → Actions-এ শু�
 ### বর্তমান সামগ্রিক সিদ্ধান্ত
 - Static GitHub Pages website: previously deployed and workflow-verified.
 - Staging project: user-confirmed created; Project Reference and secrets not yet independently verified.
-- Planning branch CI: previous commit 7/7 PASS; newest handover commit status was not available at update time.
+- Planning branch CI: commit `55a2f99832d95f08b1764f1d9153566d81adc33a`-এ ৭টি PR-triggered workflow ৭/৭ `success` (২৭ নভেম্বর ২০২৬); Staging workflow আলাদা, manual-only এবং এখনো চালানো হয়নি।
 - Staging migration/Auth/RBAC/Worker acceptance: not run.
 - Worker: limited read-only handlers only; not a full business-task executor.
 - Customer-funded task delivery, real revenue settlement, 24/7 business execution, member cash-out and Production automation: not Live.
@@ -1643,3 +1643,31 @@ GitHub repository → Settings → Secrets and variables → Actions-এ শু�
 
 ### User interaction rule — reduce repeated requests
 সহকারীকে এই master checklist ও বর্তমান repository state পড়ে নিজে যতটা নিরাপদে সম্ভব code audit, fixes, tests, docs, CI ও handover updates একসঙ্গে করতে হবে। ব্যবহারকারীকে বারবার পুরো অবস্থা বলতে বা একই কাজ করতে বলা যাবে না। কেবল যেসব action-এর জন্য account owner-কে Supabase/GitHub dashboard-এ secret বসাতে, Project Reference দিতে, test account তৈরি করতে বা Production-impacting action অনুমোদন করতে হয়—সেসবের জন্য একবারে একটিমাত্র নির্দিষ্ট user action চাইতে হবে। Secret value কখনো চাওয়া যাবে না।
+
+
+## 12. ২৭ নভেম্বর ২০২৬ — সর্বশেষ Planning Commit-এর CI যাচাই
+
+Planning branch-এর handover commit `55a2f99832d95f08b1764f1d9153566d81adc33a`-এর জন্য GitHub Actions-এর সর্বশেষ PR-triggered ফলাফল সরাসরি যাচাই করা হয়েছে। একই commit SHA-তে নিচের ৭টি workflow-ই `completed / success`:
+
+| পরীক্ষা | Run ID | ফলাফল |
+|---|---:|---|
+| Project automation worker verification | 45977369208 | success |
+| Supabase migration safety | 45977369192 | success |
+| Auto Work static safety | 45977369158 | success |
+| Update system check | 45977369110 | success |
+| Member finance ledger runtime (disposable PostgreSQL) | 45977369107 | success |
+| Disposable migration validation | 45977369084 | success |
+| Disposable backup and restore verification | 45977369004 | success |
+
+Run links:
+- https://github.com/rakib12301111-droid/master-world-vip/actions/runs/45977369208
+- https://github.com/rakib12301111-droid/master-world-vip/actions/runs/45977369192
+- https://github.com/rakib12301111-droid/master-world-vip/actions/runs/45977369158
+- https://github.com/rakib12301111-droid/master-world-vip/actions/runs/45977369110
+- https://github.com/rakib12301111-droid/master-world-vip/actions/runs/45977369107
+- https://github.com/rakib12301111-droid/master-world-vip/actions/runs/45977369084
+- https://github.com/rakib12301111-droid/master-world-vip/actions/runs/45977369004
+
+**এই ৭/৭ ফলাফলের সীমা:** এগুলো PR-এর planning-branch CI এবং disposable/test environment-এর ফল। এগুলো Staging Supabase-এ migration apply, Staging Owner/Admin/Member Auth/RLS acceptance, Production backup/restore, Production migration, বাস্তব customer order execution, payment settlement বা payout চালু হওয়ার প্রমাণ নয়। Staging workflow `.github/workflows/validate-staging-supabase.yml` manual-only; প্রয়োজনীয় Staging secrets ও তিনটি আলাদা test account ছাড়া এটি চালানো যাবে না। Production-এ কোনো পরিবর্তন করা হয়নি।
+
+**পরবর্তী নিরাপদ কাজ (সহকারীর দায়িত্ব):** বর্তমান branch-এর migration/worker/finance source ও সংশ্লিষ্ট tests আরও audit করা; যেখানে testable bug পাওয়া যায় সেখানে non-production-safe code fix করা; নতুন commit-এর CI ফলাফল সংগ্রহ করে এই handover-এ যোগ করা। একই ৭টি সফল check কেবল সংশ্লিষ্ট code/config পরিবর্তন হলে পুনরায় চালানো হবে।
