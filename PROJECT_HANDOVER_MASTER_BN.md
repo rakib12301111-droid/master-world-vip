@@ -1260,3 +1260,34 @@ Owner নির্দেশ: নিচের কাজগুলোকে MASTER 
 - Production migration কেবল বর্তমান backup/restore proof, full migration preview/schema diff, exact explicit approval gate এবং rollback plan যাচাইয়ের পরে; এই সেশনে কোনো Production write/apply/deploy হয়নি।
 
 **সেশনের ফল:** দুটি migration workflow allowlist সংশোধিত ও commit হয়েছে; ৪০/৪০ migration filename coverage static read-only comparison-এ মিলেছে। CI rerun, Staging, Production migration, Live deployment, Admin login acceptance, real payment/payout বা আয়—কোনোটিই এই সংশোধনের ফলে সম্পন্ন হয়েছে বলে দাবি করা হচ্ছে না।
+
+
+## 16. ২৭ নভেম্বর ২০২৬ — Admin Free dedicated tests: PASS
+
+### Dedicated CI evidence
+- Latest relevant code/test commit: `0c71a92c0c46d2521fb81bed7646966622b4b1aa`।
+- Verify Supabase migration safety: Run `45966853898` — SUCCESS. Admin Free static verifier step included and passed.
+- Disposable Migration Validation: Run `45966853744` — SUCCESS. All ৪০টি migration fresh এবং audited legacy-shape disposable PostgreSQL database-এ ক্রমানুসারে apply হয়েছে; Admin Free runtime SQL test উভয় database-এ সফল; worker kill-switch এবং synthetic customer-order/member settlement runtime checks-ও সফল।
+- Auto Work Static Safety: Run `45967023075` on documentation-only follow-up commit `faa004a3fe77a4a256f0607f51205c74a08f5e3f` — SUCCESS।
+- Run `45967023050` documentation-only follow-up commit-এর disposable validation; এই addendum লেখার সময় IN PROGRESS ছিল। আগের code/test commit `0c71a92`-এর complete disposable run `45966853744` SUCCESS হওয়াই Admin Free runtime test-এর প্রমাণ।
+
+### Dedicated Admin Free runtime coverage
+- Owner/Admin Free entitlement resolves to `admin_free` without a Member Paid subscription.
+- Member without Paid subscription resolves to `no_access`.
+- Valid synthetic exact-amount/currency Paid settlement resolves to `member_paid`.
+- Expired subscription loses access.
+- Member Free catalog row is rejected.
+- Admin Paid catalog row is rejected.
+- Mismatched settlement amount is rejected.
+- Admin cannot activate a Member Paid subscription.
+- Test identities and provider references are synthetic; transaction is rolled back. No real payment was made or verified.
+
+### Current state remains NOT LIVE
+- PR #23 remains Draft/Open/Unmerged and stacked on PR #20; no merge to main.
+- Staging project/secrets and Owner/Admin/Member live acceptance remain unavailable/unverified.
+- No Production migration preview/reconciliation/apply was run as part of this task; no Production data changed.
+- No Admin login, live entitlement, public website deployment, task execution, payment, payout or revenue was verified.
+- Resolver still requires integration into every relevant server-side task/order/work entry point before claiming complete Paid-only enforcement.
+- Existing worker execution remains fail-closed/disabled; Free entitlement alone does not create jobs, customers or income.
+
+**সেশনের প্রমাণিত ফল:** migration allowlist correction, Admin Free static verifier, dedicated runtime SQL test এবং সংশ্লিষ্ট CI PASS। এটি source/CI validation; Production/Staging/Live activation নয়।
