@@ -968,3 +968,49 @@ Owner নির্দেশ: নিচের কাজগুলোকে MASTER 
 - Worker Static CI Run `45958179014` — SUCCESS, commit `b560c4354f7b4a1abeaf62a1e089634228eec8bc`; Deno type-check এবং Staging/worker/task-engine safety static checks SUCCESS।
 - PR #20 current observed head: `d850e47b8eb8461fc9e87a3e6998261c07c92e2d`; state `OPEN`; draft `true`; URL https://github.com/rakib12301111-droid/master-world-vip/pull/20 ।
 - এই successful Run-ও কেবল disposable test database-এ। Production database unchanged; Staging, real provider, real funds ও Live Deployment পরীক্ষা/চালু হয়নি।
+
+
+---
+
+## ২৭ নভেম্বর ২০২৬ — Business Task Catalog, Commission Policy ও Provider Sandbox Handover Update
+
+### এই সেশনে repository-তে যোগ করা হয়েছে
+- `docs/WORKER_BUSINESS_TASK_CATALOG_BN.md` — Worker-এর ব্যবসায়িক Task Definition baseline।
+- `docs/COMMISSION_POLICY_DECISION_BN.md` — প্রস্তাবিত ২০% Admin commission-এর Distributable Platform Margin formula, উদাহরণ, rounding, immutable snapshot, posting/reversal ও approval gates।
+- `docs/PAYMENT_PROVIDER_SANDBOX_ACCEPTANCE_BN.md` — official provider adapter contract, webhook/idempotency/reconciliation acceptance matrix, mock-only test boundary ও go-live gates।
+
+### Business Worker Task Catalog
+- Candidate tasks নির্দিষ্ট করা হয়েছে: work order validation, project usage digest, reminder scheduling, delivery integrity check, acceptance timeout escalation, referral attribution reconciliation, payout preflight, payment event reconciliation, commission preview এবং daily finance reconciliation।
+- প্রতিটি task-এর input/purpose, permitted effect, evidence/acceptance ও risk level সংজ্ঞায়িত।
+- Common envelope-এ schema version, tenant scope, server-side authorization, idempotency/input hash, timeout, retry, budget cap, audit ও secret/PII redaction বাধ্যতামূলক।
+- Rollout order: read-only → controlled internal records → finance-adjacent reconciliation/preview।
+- **গুরুত্বপূর্ণ:** এগুলো specification; কোনো business handler বাস্তবায়িত বা allowlist-এ enabled হয়নি। Database allowlist-এ এখনো কেবল `system_health_check`। Worker, project schedule ও emergency-stop default বন্ধ/নিরাপদ অবস্থায় থাকবে।
+
+### Admin ২০% Commission — সিদ্ধান্ত খসড়া
+- Owner-এর ২০% হারটি proposal হিসেবেই রাখা হয়েছে।
+- সুপারিশকৃত basis: Distributable Platform Margin = settled gross − provider fee − applicable tax − full Member payable − refund/chargeback reserve allocation − approved direct order cost।
+- Commission = positive margin × 20%; margin শূন্য/ঋণাত্মক হলে commission শূন্য।
+- Member payable বা refund reserve থেকে commission নেওয়া যাবে না; BDT ও USD আলাদা currency ledger-এ থাকবে।
+- Order acceptance-এর আগে disclosure, immutable policy snapshot, settled/reconciled completion, idempotent double-entry posting ও reversal policy বাধ্যতামূলক।
+- **Status: decision draft only; Owner final approval, legal/accounting/tax review ও disclosure ছাড়া rate/formula সক্রিয় করা হয়নি।**
+
+### Payment Provider Sandbox
+- SSLCommerz/bKash/Nagad/Bank-এর official sandbox credentials, merchant/provider approval, contract ও webhook signing key এই সেশনে পাওয়া যায়নি।
+- Official provider API call বা official sandbox test চালানো হয়নি।
+- Adapter contract ও test matrix নথিভুক্ত: signed webhook, timestamp/replay protection, amount/currency/order matching, status inquiry, settlement evidence, refund/payout idempotency এবং reconciliation mismatch-এ fail-closed।
+- Mock provider test হলে TEST-ONLY, synthetic IDs, isolated database/project এবং fake balance-এ সীমাবদ্ধ থাকবে; mock pass কখনো official provider acceptance নয়।
+
+### Commit trail
+- Task catalog: `a4280370ce96fcd979c7afecbfa48d451e87ace1`
+- Commission policy draft: `321aa714e6be6847953ede7b2250096e3fc89d15`
+- Provider sandbox plan: `7aa6942fc5a96860f1e51e7a34209464bc5cc20c`
+- এই handover update-এর commit পরবর্তী যাচাইয়ে নথিভুক্ত করতে হবে।
+
+### অবশিষ্ট কাজ / Go-live blockers
+1. Catalog-এর Phase A থেকে read-only handler implement করে schema/RBAC/tenant isolation/idempotency/budget/audit/kill-switch tests চালানো।
+2. আলাদা Staging Supabase project ও ১১টি Staging GitHub Actions secret এবং পৃথক Owner/Admin/Member test identity configure করা; তারপর manual Staging workflow চালিয়ে migration/Auth/RBAC/Worker acceptance যাচাই।
+3. নির্বাচিত provider থেকে official sandbox access, merchant approval, docs, credentials ও signed webhook key সংগ্রহ; তারপর provider-specific adapter এবং official sandbox contract tests।
+4. Owner-এর ২০% commission calculation basis/rate-এর লিখিত final approval; legal/accounting/tax review ও customer/Member disclosure।
+5. Production migration, Production Worker execution, real payment/payout এবং Live Deployment—প্রতিটির পৃথক approval, security review, Staging acceptance ও backup/restore evidence।
+
+**এই আপডেট কোনো Worker execution, payment, payout, commission posting, Production migration বা Live Deployment চালু করেনি। কোনো বাস্তব আয়/৪,০০০ Project-এর ব্যবসায়িক কাজ সম্পন্ন হয়েছে—এমন দাবি করা যাবে না।**
