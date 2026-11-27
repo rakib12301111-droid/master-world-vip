@@ -25,7 +25,7 @@ declare
 begin
   select id into v_project
   from public.earning_project_registry
-  where project_code='MW-BDT-4000';
+  where project_code='MW-BDT-2000';
   if v_project is null then raise exception 'Synthetic test project missing'; end if;
 
   update public.earning_project_registry
@@ -163,7 +163,7 @@ declare
   v_daily_spent numeric(14,2);
   v_dead_count integer;
 begin
-  select id into v_project from public.earning_project_registry where project_code='MW-BDT-4000';
+  select id into v_project from public.earning_project_registry where project_code='MW-BDT-2000';
 
   insert into public.project_automation_settings(
     project_id,enabled,task_type,schedule_interval_minutes,next_run_at,
