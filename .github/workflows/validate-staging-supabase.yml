@@ -17,20 +17,6 @@ jobs:
     name: Encrypted Staging backup and isolated restore proof
     runs-on: ubuntu-latest
     timeout-minutes: 45
-    services:
-      restore-db:
-        image: supabase/postgres:17.6.1.136
-        env:
-          POSTGRES_USER: restore_test
-          POSTGRES_PASSWORD: restore_test_only
-          POSTGRES_DB: mwvip_staging_restore
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd "pg_isready -U restore_test -d mwvip_staging_restore"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 12
     env:
       DB_URL: ${{ secrets.STAGING_SUPABASE_DB_URL }}
       PROJECT_REF: ${{ secrets.STAGING_SUPABASE_PROJECT_REF }}
@@ -65,6 +51,36 @@ jobs:
           sudo apt-get install --yes postgresql-client openssl
           pg_dump --version
           pg_restore --version
+      - name: Start isolated restore PostgreSQL container
+        run: |
+          set -euo pipefail
+          image="supabase/postgres:17.6.1.136"
+          echo "Pulling isolated restore image..."
+          docker pull "$image"
+          docker run --detach --name mwvip-staging-restore-db \
+            --env POSTGRES_USER=restore_test \
+            --env POSTGRES_PASSWORD=restore_test_only \
+            --env POSTGRES_DB=mwvip_staging_restore \
+            --publish 5432:5432 \
+            --health-cmd='pg_isready -U restore_test -d mwvip_staging_restore' \
+            --health-interval=10s --health-timeout=5s --health-retries=12 \
+            "$image"
+          for attempt in $(seq 1 36); do
+            state=$(docker inspect --format '{{.State.Health.Status}}' mwvip-staging-restore-db 2>/dev/null || true)
+            if [ "$state" = "healthy" ]; then
+              echo "Isolated restore PostgreSQL is healthy."
+              exit 0
+            fi
+            if [ "$state" = "unhealthy" ]; then
+              docker logs mwvip-staging-restore-db
+              echo "::error::Isolated restore PostgreSQL became unhealthy."
+              exit 1
+            fi
+            sleep 5
+          done
+          docker logs mwvip-staging-restore-db || true
+          echo "::error::Timed out waiting for isolated restore PostgreSQL health."
+          exit 1
       - name: Create encrypted logical backup of Staging
         id: backup
         run: |
@@ -104,6 +120,9 @@ jobs:
             backup/restored_table_count.txt
           retention-days: 7
           if-no-files-found: warn
+      - name: Remove isolated restore container
+        if: always()
+        run: docker rm --force mwvip-staging-restore-db 2>/dev/null || true
 
   staging-migrations:
     needs: staging-backup-restore
