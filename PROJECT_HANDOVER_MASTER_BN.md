@@ -350,3 +350,21 @@ GitHub Actions-এ ব্যবহৃত secret নাম:
 - Change: split the combined credential check into separate safe error messages for username mismatch vs empty password; no credential values are printed.
 - **Next:** run the Staging workflow on `main` once more. The next failure, if any, will identify which field needs correction without exposing secrets. If username mismatch is reported, update GitHub Secret `STAGING_SUPABASE_DB_URL` using Supabase Connect > Session pooler URI, with username `postgres.<Staging project ref>`; if password empty is reported, recreate the URI with the Staging database password and URL-encode special characters. Never share the URI/password in chat.
 - Run #2 does not test PR #25's Docker change because it failed at the earlier DB URL preflight.
+
+
+## 16. ২৮ নভেম্বর ২০২৬ — Staging Run #3: Username mismatch নিশ্চিত
+
+- Run ID: `46061518224`; Run number: 3; conclusion: `failure`.
+- Run URL: https://github.com/rakib12301111-droid/master-world-vip/actions/runs/46061518224
+- Checked-out commit: `08fc57d7ea0881ec39147b23996588490186d42c`.
+- Job: `Encrypted Staging backup and isolated restore proof`; Job ID: `140716657177`.
+- Failure step: `Validate Staging-only backup inputs without printing secrets`.
+- Exact safe error: `Staging DB URL username mismatch. In Supabase Connect > Session pooler, use the exact username postgres.<Staging project ref>; do not use the direct-connection username.`
+- This proves the parsed URI username does not equal the expected Session Pooler username. The password-empty condition was not the failing condition in this run.
+- No credential value was printed or stored in this handover.
+- PostgreSQL client install, Docker restore container, encrypted backup, isolated restore, artifact upload, migration dry-run/apply, Auth/RBAC and Edge Function stages were not reached; the downstream `staging-migrations` job was skipped.
+- Production database unchanged; no Production migration was applied.
+- Workflow code's separate username/password diagnostics are now confirmed active in Run #3. This run still checks out commit `08fc57d`, which includes the diagnostic change.
+- **Next required correction (GitHub Secret, not code):** update `STAGING_SUPABASE_DB_URL` from Supabase Dashboard → Staging project → Connect → Session pooler → URI. Ensure the username portion is exactly `postgres.awatzrapqrteybgspqlq` (not `postgres` alone and not a direct-connection username); retain the Staging database password in the URI and URL-encode special characters. Save only in GitHub Actions Repository Secret. Never send the URI or password in chat.
+- Do not weaken or remove the exact username-to-project-ref validation; it is a Staging isolation safety control.
+- After the secret is corrected, rerun the Staging workflow and inspect logs. Only then can the Docker/backup/restore/preview stages be evaluated.
