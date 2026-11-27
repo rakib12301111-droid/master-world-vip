@@ -5,6 +5,8 @@ on:
     paths:
       - "supabase/functions/project-automation-worker/**"
       - "scripts/verify-staging-worker-safety.py"
+      - "supabase/migrations/20261127100000_worker_execution_kill_switch_and_handler_allowlist.sql"
+      - "supabase/tests/project-automation-kill-switch-runtime.sql"
       - ".github/workflows/verify-project-automation-worker.yml"
   push:
     branches: [main, planning/4000-automated-project-economy]
