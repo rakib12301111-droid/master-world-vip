@@ -83,4 +83,23 @@ begin
   end;
 end $$;
 
+do $
+begin
+  begin
+    update public.customer_quote_requests
+    set scope_description='tampered scope'
+    where id=current_setting('mwvip.test_quote_id')::uuid;
+    raise exception 'Customer quote scope mutation unexpectedly succeeded';
+  exception when others then
+    if sqlerrm not like '%identity and submitted scope are immutable%' then raise; end if;
+  end;
+  begin
+    delete from public.customer_quote_requests
+    where id=current_setting('mwvip.test_quote_id')::uuid;
+    raise exception 'Customer quote deletion unexpectedly succeeded';
+  exception when others then
+    if sqlerrm not like '%cannot be deleted%' then raise; end if;
+  end;
+end $;
+
 rollback;
