@@ -254,7 +254,7 @@ begin
   if v_actor is null or not public.is_customer_quote_staff() then
     raise exception 'Authorized Admin staff only';
   end if;
-  if p_quote_amount is null or p_quote_amount<=0 then raise exception 'Quote amount must be positive'; end if;
+  if p_quote_amount is null or p_quote_amount<=0 or p_quote_amount::text in ('NaN','Infinity','-Infinity') then raise exception 'Quote amount must be a finite positive value'; end if;
   if v_currency not in ('BDT','USD') then raise exception 'Quote currency must be BDT or USD'; end if;
   if char_length(v_scope) not between 10 and 2000 then raise exception 'Quote scope must be 10 to 2000 characters'; end if;
   if p_delivery_days is null or p_delivery_days not between 1 and 365 then raise exception 'Delivery days must be between 1 and 365'; end if;
@@ -321,7 +321,7 @@ returns integer
 language plpgsql
 security definer
 set search_path = ''
-as $
+as $$
 declare
   v_actor uuid := auth.uid();
   v_count integer := 0;
@@ -338,16 +338,17 @@ begin
     insert into public.customer_quote_request_events(request_id,actor_user_id,event_type)
     select e.id,v_actor,'quote_expired' from expired e
     returning request_id
+  ), notifications_sent as (
+    insert into public.notifications(user_id,title,body,category)
+    select e.customer_user_id,'আপনার Quote-এর মেয়াদ শেষ',
+      'আপনার Quote-এর মেয়াদ শেষ হয়েছে। নতুন Quote চাইলে নতুন অনুরোধ পাঠান।','customer_quote'
+    from expired e
+    returning id
   )
-  select count(*) into v_count from events;
-  insert into public.notifications(user_id,title,body,category)
-  select e.customer_user_id,'আপনার Quote-এর মেয়াদ শেষ','আপনার Quote-এর মেয়াদ শেষ হয়েছে। নতুন Quote চাইলে নতুন অনুরোধ পাঠান।','customer_quote'
-  from public.customer_quote_requests e
-  where e.status='expired' and e.updated_at > now()-interval '1 minute'
-    and e.customer_user_id is not null;
+  select count(*) into v_count from expired;
   return v_count;
 end;
-$;
+$$;
 
 create or replace function public.customer_respond_to_quote(
   p_request_id uuid,
