@@ -82,3 +82,8 @@ Both are registered as `read_only`, require service-role RPC, pass through the g
 **Runtime acceptance:** disposable PostgreSQL workflow was triggered as run `45959311813` on commit `89c485235bee2b84e65d8e3667ad42a65beb37bc`. At the time of this documentation update it was still pending; do not call Phase A runtime acceptance passed until the run completes successfully. Worker static CI run `45959327873` passed on commit `52bfc611d2f7669a6f0534f87bbdadcb4a3b4469`.
 
 Not implemented: reminders, file integrity/malware scan, acceptance escalation, referral reconciliation, payout preflight, payment-event reconciliation, commission preview, daily finance reconciliation. These remain specified only.
+
+### Runtime test correction — 27 Nov 2026
+- First combined Phase A runtime run `45959311813` failed closed at the work-order task claim because the preceding digest test had deliberately re-engaged the global emergency stop and the next test had not reopened it inside its disposable fixture.
+- This was a test sequencing issue, not a production setting change. The work-order test now explicitly releases the kill switch only inside the disposable test transaction and re-engages it at completion.
+- Corrected runtime rerun: `45959527467`, pending at documentation update. Do not claim work-order runtime acceptance until this rerun succeeds.
