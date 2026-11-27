@@ -20,6 +20,7 @@ Migration: supabase/migrations/20261127150000_admin_free_member_paid_plan_gates.
 
 ## Acceptance checklist
 - [ ] Disposable PostgreSQL migration/runtime test.
+- [ ] Dedicated disposable runtime assertions: Admin Free, Member without plan denied, exact verified Member Paid grant, expired plan denied, invalid audience rejected, settlement mismatch rejected, Admin cannot use Member Paid subscription.
 - [ ] Admin Free, Member without plan, valid Paid Plan, expired plan, amount/currency mismatch ও duplicate provider event tests.
 - [ ] All project work/order entry points enforce my_project_plan_access server-side.
 - [ ] Staging Auth/RLS/Admin/Member acceptance.
