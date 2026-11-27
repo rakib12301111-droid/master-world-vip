@@ -485,3 +485,38 @@ The Owner has directed that the following four gates be treated as critical and 
 - The original run's `backup-restore-preview` job and every listed step completed SUCCESS, including encrypted logical backup creation, decrypt + disposable PostgreSQL restore, production migration dry-run and encrypted artifact upload.
 - Therefore the existing Production backup/restore proof is currently available for review; preserve the encrypted artifact and ensure the separately stored passphrase is recoverable before expiry. This does not replace a fresh backup if the artifact expires before Production apply.
 - No new backup run was started, and no database was changed by this recheck.
+
+
+---
+
+## 27 November 2026 — Owner follow-up: five remaining release gates
+
+### Current PR state (read-only GitHub verification)
+- PR #21: OPEN / DRAFT / NOT MERGED; head branch `feature/customer-services-mvp`, base `main`.
+- PR #22: OPEN / DRAFT / NOT MERGED; head branch `feature/customer-quote-workflow`, base `feature/customer-services-mvp`.
+- Do not mark either PR released or deployed. PR #22 depends on PR #21; preserve this order and review the combined diff before any merge.
+- Existing disposable/static CI passes recorded in earlier sections remain evidence only for those exact commits; they do not establish current Staging, account, Android or live deployment acceptance.
+
+### Safe repository work completed in this update
+- Added manual-only workflow `.github/workflows/backup-staging-restore-preview.yml`.
+- It validates the configured Staging project ref and Session Pooler URI, refuses the known Production ref, creates an encrypted logical backup, decrypts it inside the isolated GitHub runner, restores it into a disposable PostgreSQL database, and uploads the encrypted artifact for seven days.
+- The workflow does not apply migrations, alter the Staging database, or target Production.
+- Commits:
+  - `06bff3ed18e708e10e035ac4c955bbf88f1748aa` — initial workflow.
+  - `7a39d2fe9568a4bb4742749de9bf2dab16fb0a7b` — restore outcome tracking.
+  - `f44efb2a7e7cfe05f3b7caedee2113d787602692` — runbook update.
+  - `87c49e117f20f67b63cfa28a004516e207c99c8f` — wording correction.
+- Updated runbook: `docs/STAGING_ANDROID_ACCOUNT_BACKUP_RUNBOOK_BN.md`.
+- Required repository Actions secrets now include `STAGING_BACKUP_ENCRYPTION_PASSPHRASE` in addition to `SUPABASE_STAGING_ACCESS_TOKEN`, `SUPABASE_STAGING_PROJECT_REF`, and `SUPABASE_STAGING_DB_URL`. Use a unique Staging-only passphrase; do not reuse Production's.
+
+### Remaining gates — NOT YET VERIFIED
+1. **Staging secrets:** Owner must add the four exact Staging secrets in GitHub Actions. No secret values may be sent in chat.
+2. **Staging backup/restore:** Run the new manual workflow and verify its job, encrypted artifact, non-secret backup reference and successful disposable restore. The workflow has been committed but not executed; no backup success is claimed.
+3. **Staging migration and runtime acceptance:** First run migration workflow in preview-only mode; review the migration inventory and dry-run. Staging apply remains gated by current Staging backup/restore proof and the exact phrase `APPLY-MASTER-WORLD-VIP-STAGING-MIGRATIONS`. After apply, perform Customer A/B/Admin quote workflow and RBAC/privacy tests.
+4. **Customer/Admin accounts:** Create dedicated test-only accounts in Staging Auth and assign Admin only through the protected Owner role-management path. No account has been created by this repository update.
+5. **Android and release:** Perform real Android Chrome acceptance against a Staging-connected preview, including privacy, quote lifecycle, notifications, responsive/accessibility and refresh/back tests. Public Pages deployment/Production release remains separately gated and was not performed.
+
+### Important distinction
+- This update is repository workflow/documentation work only. It does not prove that Staging secrets exist, a Staging backup has run, any Staging migration was applied, test users exist, Android tests passed, or a public deployment occurred.
+- Production remains untouched. No Production migration, live payment, customer intake, payout, or deployment was performed.
+- Continue from this section and do not repeat successful disposable/static CI checks unless the relevant source/configuration changes.
