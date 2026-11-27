@@ -225,3 +225,11 @@ jobs:
           test "$forbidden_privilege_count" = "0"
           echo "Fresh and audited legacy-schema disposable migration validations passed."
           echo "Existing UUID IDs and manifest_url column preserved; semver check added NOT VALID."
+
+      - name: Verify worker kill switch and handler allowlist on both disposable databases
+        run: |
+          set -euo pipefail
+          export PGSSLMODE=disable
+          for database_url in "$TEST_DB_URL" "$LEGACY_DB_URL"; do
+            psql "$database_url" -X -v ON_ERROR_STOP=1 -f supabase/tests/project-automation-kill-switch-runtime.sql
+          done
