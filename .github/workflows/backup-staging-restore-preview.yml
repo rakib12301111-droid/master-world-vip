@@ -96,6 +96,7 @@ jobs:
           echo "Encrypted Staging backup created; plaintext dump removed."
 
       - name: Decrypt and restore into isolated disposable PostgreSQL
+        id: restore
         run: |
           set -euo pipefail
           openssl enc -d -aes-256-cbc -pbkdf2 -in staging-backup/master-world-vip-staging.dump.enc -out staging-backup/restore-test.dump -pass env:BACKUP_ENCRYPTION_PASSPHRASE
