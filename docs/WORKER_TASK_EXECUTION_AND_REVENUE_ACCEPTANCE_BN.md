@@ -100,3 +100,8 @@ The new business handlers expose no customer identity, make no order or ledger m
 Verification:
 - Worker Static CI run `45959327873`: success, commit `52bfc611d2f7669a6f0534f87bbdadcb4a3b4469`.
 - Disposable full-chain migration/runtime run `45959311813`: pending at the time recorded; its result must be checked before claiming runtime acceptance.
+
+### Runtime test correction — 27 November 2026
+- Combined Phase A run `45959311813` failed at the work-order claim because the preceding digest test correctly restored the global emergency stop; the following test fixture did not reopen it before claiming.
+- Corrected only the disposable test fixture: it now releases the stop for that isolated work-order test and sets it back to TRUE at the end. No Staging/Production control was changed.
+- Corrected runtime rerun `45959527467` was pending when this note was added. Work-order validation runtime pass is not claimed until that run completes successfully.
