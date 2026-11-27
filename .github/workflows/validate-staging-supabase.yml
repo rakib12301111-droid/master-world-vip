@@ -13,7 +13,100 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  staging-backup-restore:
+    name: Encrypted Staging backup and isolated restore proof
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    services:
+      restore-db:
+        image: postgres:17
+        env:
+          POSTGRES_USER: restore_test
+          POSTGRES_PASSWORD: restore_test_only
+          POSTGRES_DB: mwvip_staging_restore
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U restore_test -d mwvip_staging_restore"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 12
+    env:
+      DB_URL: ${{ secrets.STAGING_SUPABASE_DB_URL }}
+      PROJECT_REF: ${{ secrets.STAGING_SUPABASE_PROJECT_REF }}
+      BACKUP_PASSPHRASE: ${{ secrets.STAGING_BACKUP_ENCRYPTION_PASSPHRASE }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate Staging-only backup inputs without printing secrets
+        run: |
+          set -euo pipefail
+          test -n "$DB_URL" || { echo "::error::Missing STAGING_SUPABASE_DB_URL"; exit 1; }
+          test -n "$PROJECT_REF" || { echo "::error::Missing STAGING_SUPABASE_PROJECT_REF"; exit 1; }
+          test -n "$BACKUP_PASSPHRASE" || { echo "::error::Missing STAGING_BACKUP_ENCRYPTION_PASSPHRASE"; exit 1; }
+          test "$PROJECT_REF" = "awatzrapqrteybgspqlq" || { echo "::error::Staging project ref does not match the Owner-confirmed Staging project"; exit 1; }
+          test "$PROJECT_REF" != "lztbbrzeuyjkuiyzrsxp" || { echo "::error::Production project ref is forbidden"; exit 1; }
+          python - "$DB_URL" "$PROJECT_REF" <<'PY'
+          import sys
+          from urllib.parse import urlsplit, unquote
+          u=urlsplit(sys.argv[1])
+          ref=sys.argv[2]
+          if u.scheme not in ("postgres","postgresql") or not u.hostname or not u.hostname.endswith(".pooler.supabase.com"):
+              raise SystemExit("::error::Staging DB URL must use a Supabase Session Pooler URI")
+          if u.port != 5432 or u.path != "/postgres" or u.query or u.fragment:
+              raise SystemExit("::error::Staging DB URL must use port 5432, database /postgres, and no query/fragment")
+          if unquote(u.username or "") != "postgres."+ref or not unquote(u.password or ""):
+              raise SystemExit("::error::Staging DB URL credentials are not bound to the confirmed Staging project ref")
+          print("Staging DB URL binding validated; no credentials printed.")
+          PY
+      - name: Install PostgreSQL client
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install --yes postgresql-client openssl
+          pg_dump --version
+          pg_restore --version
+      - name: Create encrypted logical backup of Staging
+        id: backup
+        run: |
+          set -euo pipefail
+          python - "$DB_URL" <<'PY'
+          import os,sys
+          from urllib.parse import urlsplit,unquote
+          u=urlsplit(sys.argv[1])
+          values={"PGHOST":u.hostname,"PGPORT":str(u.port),"PGDATABASE":u.path.lstrip("/"),"PGUSER":unquote(u.username or ""),"PGPASSWORD":unquote(u.password or ""),"PGSSLMODE":"require"}
+          with open(os.environ["GITHUB_ENV"],"a") as f:
+              for k,v in values.items(): f.write(f"{k}={v}\n")
+          PY
+          mkdir -p backup
+          pg_dump --host="$PGHOST" --port="$PGPORT" --username="$PGUSER" --dbname="$PGDATABASE" --format=custom --no-owner --no-acl --file=backup/staging.dump
+          openssl enc -aes-256-cbc -pbkdf2 -salt -in backup/staging.dump -out backup/staging.dump.enc -pass env:BACKUP_PASSPHRASE
+          rm -f backup/staging.dump
+          test -s backup/staging.dump.enc
+          echo "Encrypted Staging backup created; plaintext dump removed."
+      - name: Decrypt and restore into isolated disposable PostgreSQL
+        run: |
+          set -euo pipefail
+          openssl enc -d -aes-256-cbc -pbkdf2 -in backup/staging.dump.enc -out backup/restore.dump -pass env:BACKUP_PASSPHRASE
+          test -s backup/restore.dump
+          PGPASSWORD=restore_test_only PGSSLMODE=disable createdb -h 127.0.0.1 -p 5432 -U restore_test --template=template0 mwvip_staging_restore_empty
+          PGPASSWORD=restore_test_only PGSSLMODE=disable pg_restore -h 127.0.0.1 -p 5432 -U restore_test -d mwvip_staging_restore_empty --no-owner --no-acl --exit-on-error backup/restore.dump
+          PGPASSWORD=restore_test_only PGSSLMODE=disable psql -h 127.0.0.1 -p 5432 -U restore_test -d mwvip_staging_restore_empty -v ON_ERROR_STOP=1 -Atc "select count(*) from information_schema.tables where table_schema not in ('pg_catalog','information_schema')" > backup/restored_table_count.txt
+          test "$(cat backup/restored_table_count.txt)" -gt 0
+          rm -f backup/restore.dump
+          echo "Isolated Staging restore passed with a non-empty schema."
+      - name: Upload encrypted backup and non-secret restore evidence
+        if: always() && steps.backup.outcome == 'success'
+        uses: actions/upload-artifact@v4
+        with:
+          name: mwvip-staging-encrypted-backup-${{ github.run_id }}
+          path: |
+            backup/staging.dump.enc
+            backup/restored_table_count.txt
+          retention-days: 7
+          if-no-files-found: warn
+
   staging-migrations:
+    needs: staging-backup-restore
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
