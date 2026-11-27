@@ -113,3 +113,13 @@ Member ও Admin-এর জন্য সহজ payout interface রাখা: �
 - ২০% Admin commission এখনো proposal only; customer/Member-কে order acceptance-এর আগে disclosed approved calculation না দেখানো পর্যন্ত deduct/post করা যাবে না।
 - APPLY-MASTER-WORLD-VIP-MIGRATIONS কেবল Production database migration apply-এর আলাদা exact approval। এটি provider money transfer, payout activation বা public deployment অনুমোদন করে না।
 - Current status: architecture/policy documented; existing ledger/runtime foundations only. Official provider integration, staging acceptance, live collection/payout, commission activation এবং Production migration NOT LIVE / PENDING।
+
+
+## ২৭ নভেম্বর ২০২৬ — CI, Staging ও Production-এর বর্তমান Gate Status
+
+- **Latest correction CI/runtime: PENDING** — সর্বশেষ পরিবর্তনের পর CI এবং disposable PostgreSQL full-chain finance runtime-এর সফল Run ID/logs এখনো যাচাই করা হয়নি।
+- **Staging Database: PENDING** — isolated Staging project/secrets ও Owner/Admin/Member test identities প্রস্তুত/যাচাই না হওয়ায় Staging migration, RLS/RBAC এবং end-to-end acceptance pass বলা যাচ্ছে না।
+- **Production Migration: NOT RUN / BLOCKED** — Production Database-এ কোনো migration apply হয়নি। APPLY-MASTER-WORLD-VIP-MIGRATIONS কেবল Production migration apply-এর exact approval gate। বর্তমান বার্তায় token-এর অর্থ জানতে চাওয়া হয়েছে, তাই token-টি apply approval হিসেবে গণ্য নয়।
+- Migration approval থাকলেও real bKash/Nagad/Bank transfer, payout activation, ২০% commission deduction বা public deployment অনুমোদিত হয় না; এগুলোর পৃথক provider/legal/finance ও release gates আছে।
+- Live release-এর আগে CI/runtime, Staging acceptance, official provider sandbox, complete Order-to-Payout finance tests, recoverable backup/restore এবং security review-এর evidence বাধ্যতামূলক।
+- **Status: CI PENDING; STAGING PENDING; PRODUCTION MIGRATION NOT RUN; LIVE DEPLOYMENT NOT LIVE.**
