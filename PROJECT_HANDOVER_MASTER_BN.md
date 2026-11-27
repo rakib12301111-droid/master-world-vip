@@ -1817,3 +1817,12 @@ Secret values GitHub UI থেকে দেখা যায় না; তাই va
 - GitHub UI screenshot থেকে Secret **নাম** উপস্থিতি যাচাই হয়েছে; Secret values, Auth users/password match, encrypted backup, restore, migrations বা role tests যাচাই হয়নি।
 - এই পর্যালোচনায় Staging Validation Workflow dispatch করা হয়নি; কোনো Staging migration apply বা Edge Function deploy করা হয়নি। Production অপরিবর্তিত।
 - পরবর্তী ধাপ: (১) প্রকাশিত Staging token revoke/rotate; (২) Staging Auth-এ তিনটি পৃথক, confirmed test account ও matching passwords নিশ্চিত; (৩) manual-only workflow file default branch-এ পৌঁছানোর জন্য PR #20-কে অপ্রাসঙ্গিক feature-সহ merge না করে আলাদা নিরাপদ PR/merge path তৈরি; (৪) তারপর Staging-only workflow run করে প্রতিটি job/log/artifact যাচাই।
+
+
+### ২৮ নভেম্বর ২০২৬ — Staging Workflow execution safety correction ও আলাদা PR
+- Workflow-এর Auth login helper-এ command substitution-এর কারণে `::add-mask::` stdout token variable-এর সঙ্গে মিশে যাওয়ার সম্ভাব্য bug পাওয়া যায়; এটি সংশোধন করে `printf -v` দিয়ে JWT shell variable-এ রাখা হয়েছে, mask command আলাদাভাবে runner-এ পাঠানো হয়।
+- Migration dry-run/apply-এর আগে Owner/Admin/Member-এর password-grant login preflight যোগ করা হয়েছে। কোনো account অনুপস্থিত, unconfirmed, বা Secret password-এর সঙ্গে mismatch হলে migration শুরু হওয়ার আগেই workflow fail করবে।
+- সংশোধিত workflow branch commit: `fd4e2fee0a8699cbd2be87ea4074b6d126edcfaa`।
+- Default branch `main`-এ workflow file পৌঁছানোর জন্য PR #24 আলাদা করে তৈরি করা হয়েছে: https://github.com/rakib12301111-droid/master-world-vip/pull/24 । এটি শুধু Staging workflow file যোগ করে; PR #20-এর অন্য feature scope merge করার প্রয়োজন নেই।
+- PR #24 Open/Unmerged; GitHub response-এ `mergeable=false` দেখা গেছে, তাই mergeability/branch status আরও যাচাই ছাড়া merge করা হয়নি।
+- Workflow এখনো dispatch করা হয়নি। Backup, restore, migration, Auth/RBAC acceptance বা Edge Function deploy-এর কোনো runtime success দাবি করা হচ্ছে না। Production অপরিবর্তিত।
