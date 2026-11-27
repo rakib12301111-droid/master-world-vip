@@ -1,5 +1,6 @@
 // MASTER WORLD VIP queue worker — fail-closed, allowlisted execution.
-// Only system_health_check is implemented. It is read-only and performs no external or financial effects.
+// Implemented read-only handlers: system_health_check, project_usage_digest, work_order_validate.
+// No handler performs external or financial effects; database gates remain authoritative.
 // The database kill switch and per-project execution/budget checks are authoritative.
 const cors = { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type", "Access-Control-Allow-Methods": "POST, OPTIONS" };
 const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status, headers: { ...cors, "Content-Type": "application/json" } });
