@@ -160,21 +160,25 @@ jobs:
         run: |
           set -euo pipefail
           export PGSSLMODE=disable
+          migration_files=(supabase/migrations/*.sql)
+          expected_count="${#migration_files[@]}"
+          test "$expected_count" -gt 0 || { echo "::error::No migration files found."; exit 1; }
           for database_url in "$TEST_DB_URL" "$LEGACY_DB_URL"; do
             count=0
             if [ "$database_url" = "$TEST_DB_URL" ]; then label="fresh"; else label="legacy-production-shape"; fi
-            echo "Validating complete migration sequence against $label disposable database."
-            for migration in supabase/migrations/*.sql; do
+            echo "Validating $expected_count migration files against $label disposable database."
+            for migration in "${migration_files[@]}"; do
               echo "::group::$label — $(basename "$migration")"
               psql "$database_url" -X -v ON_ERROR_STOP=1 --single-transaction -f "$migration"
               echo "::endgroup::"
               count=$((count+1))
             done
-            test "$count" -eq 30 || { echo "::error::Expected 30 migration files in $label database; found $count."; exit 1; }
+            test "$count" -eq "$expected_count" || { echo "::error::Expected $expected_count migration files in $label database; found $count."; exit 1; }
           done
           echo "DISPOSABLE_MIGRATION_VALIDATION=success"
-          echo "MIGRATIONS_APPLIED_TO_FRESH_TEST_DATABASE=30"
-          echo "MIGRATIONS_APPLIED_TO_LEGACY_SCHEMA_TEST_DATABASE=30"
+          echo "MIGRATION_FILE_COUNT=$expected_count"
+          echo "MIGRATIONS_APPLIED_TO_FRESH_TEST_DATABASE=$expected_count"
+          echo "MIGRATIONS_APPLIED_TO_LEGACY_SCHEMA_TEST_DATABASE=$expected_count"
           echo "PRODUCTION_DATABASE_CHANGED=false"
 
       - name: Verify expected application objects exist in disposable database
