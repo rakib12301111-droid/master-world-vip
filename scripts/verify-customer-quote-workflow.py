@@ -48,7 +48,7 @@ if not node:
     raise SystemExit("Node.js is required to syntax-check customer quote UI scripts")
 for html_path in (root / "www/services.html", root / "www/admin-quotes.html"):
     html = html_path.read_text()
-    inline_scripts = re.findall(r"<script(?:\\s[^>]*)?>(.*?)</script>", html, flags=re.S | re.I)
+    inline_scripts = re.findall(r"<script[^>]*>(.*?)</script>", html, flags=re.S | re.I)
     for index, source in enumerate(inline_scripts):
         if not source.strip():
             continue
