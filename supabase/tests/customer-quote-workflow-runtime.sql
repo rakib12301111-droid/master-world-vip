@@ -22,7 +22,7 @@ select public.submit_my_customer_quote_request(
 do $$
 begin
   if (select count(*) from public.customer_quote_requests
-      where id=:'quote_id'::uuid and customer_user_id=auth.uid()) <> 1 then
+      where id=current_setting('mwvip.test_quote_id')::uuid and customer_user_id=auth.uid()) <> 1 then
     raise exception 'Customer A cannot read own quote request';
   end if;
 end $$;
@@ -55,7 +55,7 @@ do $$
 begin
   if not exists (
     select 1 from public.customer_quote_requests
-    where id=:'quote_id'::uuid and status='quote_sent'
+    where id=current_setting('mwvip.test_quote_id')::uuid and status='quote_sent'
       and quote_amount=1250.00 and quote_currency='BDT'
   ) then raise exception 'Customer did not receive the quote'; end if;
 end $$;
@@ -63,7 +63,7 @@ select public.customer_respond_to_quote(:'quote_id'::uuid,true);
 do $$
 begin
   if not exists (select 1 from public.customer_quote_requests
-    where id=:'quote_id'::uuid and status='accepted') then
+    where id=current_setting('mwvip.test_quote_id')::uuid and status='accepted') then
     raise exception 'Customer quote acceptance was not recorded';
   end if;
 end $$;
@@ -75,7 +75,7 @@ begin
   begin
     update public.customer_quote_request_events
     set details='{"tampered":true}'::jsonb
-    where request_id=:'quote_id'::uuid;
+    where request_id=current_setting('mwvip.test_quote_id')::uuid;
     raise exception 'Append-only quote event mutation unexpectedly succeeded';
   exception when others then
     if sqlerrm not like '%append-only%' then raise; end if;
