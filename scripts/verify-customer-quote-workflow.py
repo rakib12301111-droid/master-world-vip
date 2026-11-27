@@ -32,6 +32,7 @@ checks = {
     "Admin link hidden until role verification": "customerQuoteAdminLink" in dashboard and "quoteLink.hidden=!canViewAutoWork" in dashboard,
     "runtime test covers cross-customer privacy": "Customer B can read another customer quote request" in runtime,
     "runtime test covers Admin quote and customer acceptance": "admin_send_customer_quote" in runtime and "customer_respond_to_quote" in runtime,
+    "runtime test covers customer cancellation": "cancel_my_customer_quote_request" in runtime and "Customer quote cancellation was not recorded" in runtime,
     "runtime test covers append-only event guard": "Append-only quote event mutation unexpectedly succeeded" in runtime,
 }
 
