@@ -423,3 +423,13 @@ GitHub Actions-এ ব্যবহৃত secret নাম:
 - **এখনো চালানো/প্রমাণিত নয়:** নতুন commit-এর পর GitHub Actions workflow run, Auth diagnostic ফলাফল, backup/restore, migration preview/apply, Owner RPC role assignment, Admin RPC access ও queue-worker ধাপ। GitHub connector দিয়ে encrypted Actions Secrets পড়া/পরিবর্তন করা যায় না; Auth credential/API key-এর প্রকৃত মানও chat-এ প্রকাশ করা যাবে না।
 - **বর্তমান blocker:** Auth preflight এখন প্রকৃত নিরাপদ error category প্রকাশ করবে। পরবর্তী Staging run-এ কোন account এবং কোন category ব্যর্থ তা দেখে সংশ্লিষ্ট Secret বা Supabase Auth configuration ঠিক করতে হবে। Secret ঠিক না হওয়া পর্যন্ত পরবর্তী ধাপগুলো নিরাপত্তার কারণে চলবে না।
 - Production database-এ কোনো পরিবর্তন হয়নি; Production migration gate অপরিবর্তিত।
+
+## 20. ২৮ নভেম্বর ২০২৬ — Staging Auth Diagnostic আরও নির্ভুল করা
+
+- Workflow `.github/workflows/validate-staging-supabase.yml`-এ নতুন commit `99898b74556410b5d64aab4335677525d28f5de5`।
+- Auth response-এর নিরাপদ diagnostic এখন Supabase-এর একাধিক সম্ভাব্য field (`error_code`, `code`, `error`, `msg`, `message`, `error_description`) পরীক্ষা করে। ফলে Supabase Auth সংস্করণভেদে error field আলাদা হলেও invalid API key, unconfirmed email, invalid credentials/account missing এবং rate limit শ্রেণিবদ্ধ করার সুযোগ বাড়ে।
+- অচেনা error-এর ক্ষেত্রে raw response/message log করা হয় না; শুধু HTTP status ও `unclassified` category দেখায়। Email, password, API key, response body বা JWT প্রকাশ করা হয় না।
+- আগের তিন-অ্যাকাউন্ট preflight বজায় আছে: OWNER, ADMIN, MEMBER—সবগুলো পরীক্ষা; যেকোনো ব্যর্থতায় migration preview/apply বন্ধ।
+- ব্যবহারকারী জানিয়েছেন OWNER Email/Password এবং Staging Auth account-এর সঙ্গে মিল ঠিক আছে। এটি ব্যবহারকারীর নিশ্চিতকরণ; GitHub encrypted Secret-এর প্রকৃত মান assistant পড়তে পারে না।
+- Workflow ও handover code update সম্পন্ন; কিন্তু নতুন commit-এর পর Actions run চালানো/ফলাফল যাচাই করা হয়নি। তাই Auth diagnostic pass, backup/restore, migration, role/RPC এবং queue-worker ধাপগুলো এখনো সম্পন্ন বলে গণ্য নয়।
+- পরবর্তী ধাপ: GitHub Actions থেকে `validate-staging-supabase.yml`-এর `main` branch-এ নতুন run চালিয়ে নতুন Auth Diagnostic ফলাফল দেখা। কোনো Production secret/database/migration স্পর্শ করা হয়নি; Staging-only সীমা বহাল।
