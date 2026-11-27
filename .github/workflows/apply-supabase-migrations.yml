@@ -108,7 +108,11 @@ jobs:
             20261126120000_free_paid_plan_customer_order_gates.sql \
             20261126130000_member_loss_prevention_hardening.sql \
             20261126140000_append_only_double_entry_finance_ledger.sql \
-            20261126150000_guarded_member_payout_refund_workflows.sql; do
+            20261126150000_guarded_member_payout_refund_workflows.sql \
+            20261127100000_worker_execution_kill_switch_and_handler_allowlist.sql \
+            20261127120000_project_usage_digest_read_only_handler.sql \
+            20261127130000_work_order_validate_read_only_handler.sql \
+            20261127150000_admin_free_member_paid_plan_gates.sql; do
             test -f "supabase/migrations/$migration" || { echo "::error::Missing expected migration: $migration"; exit 1; }
           done
 
