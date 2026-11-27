@@ -6,12 +6,18 @@ on:
   pull_request:
     paths:
       - 'supabase/migrations/**'
+      - 'supabase/tests/project-automation-kill-switch-runtime.sql'
+      - 'supabase/tests/revenue-order-to-member-settlement-runtime.sql'
+      - 'scripts/verify-plan-customer-order-gates.py'
       - '.github/workflows/validate-migrations-disposable.yml'
   push:
     branches: [main, planning/4000-automated-project-economy]
     paths:
       - '.github/workflows/validate-migrations-disposable.yml'
       - 'supabase/migrations/**'
+      - 'supabase/tests/project-automation-kill-switch-runtime.sql'
+      - 'supabase/tests/revenue-order-to-member-settlement-runtime.sql'
+      - 'scripts/verify-plan-customer-order-gates.py'
 
 permissions:
   contents: read
