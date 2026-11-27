@@ -1,10 +1,13 @@
 #!/usr/bin/env python3
-"""Static safety checks for the central 4,000-project orchestration migration."""
+"""Static safety checks for the 4,000-project orchestration and worker execution controls."""
 from pathlib import Path
 import re
 
 sql = Path("supabase/migrations/20261126110000_project_automation_engine.sql").read_text(encoding="utf-8")
-flat = re.sub(r"\s+", " ", sql.lower())
+controls = Path("supabase/migrations/20261127100000_worker_execution_kill_switch_and_handler_allowlist.sql").read_text(encoding="utf-8")
+worker = Path("supabase/functions/project-automation-worker/index.ts").read_text(encoding="utf-8")
+flat = re.sub(r"\\s+", " ", sql.lower())
+gate = re.sub(r"\\s+", " ", controls.lower())
 checks = {
     "project scheduler, worker, queue and audit tables exist": all(x in flat for x in (
         "create table if not exists public.project_automation_settings",
@@ -21,12 +24,16 @@ checks = {
     "daily and per-task budgets enforced": "project daily budget cap exceeded" in flat and "task budget cap exceeded" in flat,
     "expired worker leases are recovered": "scheduler_reap_expired_project_task_leases" in flat and "worker lease expired before task completion" in flat,
     "retries become dead letters after max attempts": "dead_letter" in flat and "attempts>=max_attempts" in flat,
-    "worker operations are service-role only": all(f"to service_role" in flat for _ in [0]) and "auth.role()<>'service_role'" in flat,
+    "task claim and finish are service-role only": "auth.role()<>'service_role'" in flat and "worker_finish_project_automation_task" in flat,
     "RLS enabled and client table access revoked": "enable row level security" in flat and "from anon,authenticated" in flat,
+    "emergency stop defaults to stopped": "emergency_stop boolean not null default true" in gate,
+    "admin kill switch changes are audited": "admin_set_project_automation_kill_switch" in gate and "global_kill_switch_engaged" in gate and "global_kill_switch_released" in gate,
+    "claim routine enforces emergency stop and read-only handler allowlist": "emergency_stop=false" in gate and "h.side_effect_class='read_only'" in gate and "t.task_type='system_health_check'" in gate,
+    "worker implements only read-only system health check": "system_health_check" in worker and "external_side_effects: false" in worker and "financial_effects: false" in worker,
+    "worker completes using the lease token and zero cost": "p_lease_token: task.lease_token" in worker and "p_actual_cost: 0" in worker,
     "no external payments or revenue collection": not any(x in flat for x in ("stripe.checkout", "sslcommerz", "bkash", "nagad", "net.http_post", "http_post(")),
 }
-failed = [name for name, ok in checks.items() if not ok]
 for name, ok in checks.items():
     print(("PASS" if ok else "FAIL") + " - " + name)
-if failed:
+if not all(checks.values()):
     raise SystemExit(1)
