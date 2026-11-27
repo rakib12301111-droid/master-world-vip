@@ -298,7 +298,7 @@ end $$;
 -- Recover abandoned worker leases so a crashed worker cannot strand a project forever.
 create or replace function public.scheduler_reap_expired_project_task_leases()
 returns integer language plpgsql security definer set search_path=''
-as $
+as $$
 declare v_count integer;
 begin
  if auth.role()<>'service_role' then raise exception 'Scheduler service role required'; end if;
@@ -323,7 +323,7 @@ begin
  )
  select count(*)::integer into v_count from logged;
  return coalesce(v_count,0);
-end $;
+end $$;
 
 revoke all on function public.admin_project_automation_overview() from public,anon;
 revoke all on function public.admin_configure_project_schedule(text,boolean,integer,numeric,text) from public,anon;
