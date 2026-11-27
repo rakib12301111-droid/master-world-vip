@@ -44,6 +44,8 @@ This repository contains the database foundation, community, privacy, admin/broa
 30. `20261125160000_work_earn_wallet_owner_profit.sql` — separate member Work & Earn wallet and Owner profit ledgers, audited 20% default commission setting, provider-settlement intake and atomic idempotent posting RPC (backend foundation only; no payment gateway or payout is live).
 31. `20261127140000_customer_quote_workflow.sql` — authenticated customer Quote Request intake, private Admin inbox/RBAC, quote issue/accept/decline/cancel/expiry, notifications and append-only audit events. Accepted quotes are not paid orders; payment/funding and conversion to the existing customer service order workflow remain separate.
 
+Customer Quote Workflow Staging acceptance checklist: [docs/CUSTOMER_QUOTE_WORKFLOW_ACCEPTANCE_TEST_BN.md](../docs/CUSTOMER_QUOTE_WORKFLOW_ACCEPTANCE_TEST_BN.md). Apply and test the quote migration in a separate Staging project first; accepted quotes are not paid orders.
+
 **Important:** Repository files and this checklist do not prove that any migration has been applied to your Supabase project. SQL is not run by the website automatically. Keep a record of each successfully applied migration. Do not rerun a migration blindly if the project already has part or all of its schema; inspect the database first.
 
 ### Browser connection and Auth test
