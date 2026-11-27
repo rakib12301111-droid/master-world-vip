@@ -1424,3 +1424,23 @@ GitHub Commit Check Runs endpoint-এ মোট ৭টি check পাওয়া 
 - পরবর্তী কাজ: planning branch-এর worker source ও main-এর সঙ্গে পার্থক্য যাচাই; source সত্যিই সম্পূর্ণ হলে narrow PR-এ worker path/type-check fix এবং disposable tests। এরপর পৃথক Staging project, Staging secrets ও function secrets configure করে একবার controlled test।
 - Payment design অপরিবর্তিত: Member Ledger → Withdrawal Request → Admin Approval → authorized Provider; provider approval/integration না হওয়া পর্যন্ত বাস্তব transfer বন্ধ।
 - **সত্যতা-সীমা:** blocker diagnosis সম্পন্ন; blocker resolution, Staging acceptance, Production migration/worker activation এবং automated income engine Live—কোনোটিই এখনো সম্পন্ন নয়।
+
+
+## ২৭ নভেম্বর ২০২৬ — Handover commit CI পুনরায় যাচাই
+
+- Handover diagnosis commit `b64ba621e41638cac62379dafacbb9f876c29123`-এর জন্য planning branch-এ ৭টি CI workflow/job সফল হয়েছে:
+  - Worker Deno type-check: Run `45974520381` — success.
+  - Disposable PostgreSQL finance ledger: Run `45974521666` — success.
+  - Supabase migration safety: Run `45974521969` — success.
+  - Auto Work static safety: Run `45974521071` — success.
+  - Disposable backup/restore: Run `45974520300` — success.
+  - Disposable migration validation: Run `45974520236` — success.
+  - Update-system validation: Run `45974522193` — success.
+- Planning branch-এ `supabase/functions/project-automation-worker/index.ts` ফাইলটি আছে এবং worker type-check সফল। আগের main-branch failure `45879345354` ছিল পুরোনো main checkout `88fadcb5e13acf768495f7bc031683f8b44b0f70`-এ; সেখানে worker source ছিল না। অর্থাৎ planning branch-এ source/path mismatch সংশোধিত ও CI-তে যাচাইকৃত, কিন্তু PR merge না হওয়ায় main/Production-এ এই fix এখনো যায়নি।
+- PR #20 এখনো Draft/Open; এই CI pass PR merge, Staging acceptance বা Production readiness নয়।
+- Referral workflow failure-এর root cause আগের মতোই: GitHub Actions-এ `SUPABASE_URL` ও `REFERRAL_CRON_SECRET` configured নয়। এগুলো user-side secret setup ছাড়া workflow চালানো যাবে না। Edge Function runtime-এ `SUPABASE_SERVICE_ROLE_KEY` প্রয়োজন। Staging secrets/doc-এর পূর্ণ তালিকা `docs/STAGING_AUTH_AND_WORKER_READINESS_BN.md`-এ আছে।
+- **কোনো Production secret, migration, schedule বা Worker activation করা হয়নি।** Staging Project/credentials না থাকায় manual Staging acceptance workflow চালানো হয়নি।
+- পরবর্তী gate: (১) ব্যবহারকারী পৃথক Supabase Staging Project তৈরি ও প্রয়োজনীয় STAGING_* secrets নিরাপদে configure করবেন; (২) Staging workflow manual dispatch করে migration/Auth/RBAC/Worker deployment পরীক্ষা; (৩) ফল review; (৪) PR #20-র scope review ও merge approval; (৫) Production migration/worker activation-এর জন্য পৃথক backup, kill-switch, idempotency, audit ও business revenue readiness review।
+- bKash/Nagad এখন বাধ্যতামূলক নয়; Ledger → Withdrawal Request → Admin Approval থাকবে; provider authorization না পাওয়া পর্যন্ত বাস্তব payout disabled।
+
+**সত্যতা-সীমা:** Planning branch-এর CI ৭/৭ PASS এবং worker source/type-check সেখানে ঠিক। Main branch-এ পুরোনো failure এখনো ইতিহাসে আছে; referral secrets ও Staging unresolved। Full automated business engine Production Live নয়।
