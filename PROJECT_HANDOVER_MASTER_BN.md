@@ -1097,3 +1097,73 @@ Owner নির্দেশ: নিচের কাজগুলোকে MASTER 
 - Earlier failed test run `45959311813` is retained as historical evidence; failure was due to a test fixture trying to claim while the global stop was correctly engaged. The disposable fixture correction in `1b2e57bfbdaad7d9b24bf9ff46ef4bf81f682379` passed in run `45959527467`.
 - **Verified code boundary:** two business read-only handlers are now implemented and runtime-tested; only the exact three read-only handler types are claimable. All other business handlers remain specification-only.
 - **No live activation:** Staging credentials/project were not used; no Production migration, Production Worker execution, payment, payout, commission posting or public deployment occurred.
+
+
+---
+
+# ২৭ নভেম্বর ২০২৬ — Session ledger, consistency repair ও anti-duplication register (১৩:৩৯ বাংলাদেশ সময়)
+
+এই অংশটি আগের সব handover entry-র সঙ্গে যুক্ত। নিচের তালিকায় আগে সম্পন্ন কাজ পুনরায় করা হবে না; নতুন কাজ শুরুর আগে সংশ্লিষ্ট commit/run/file যাচাই করতে হবে। কোনো পুরোনো section-এর status এই অংশের সঙ্গে বিরোধ করলে এই সর্বশেষ section এবং বর্তমান source code-কে অগ্রাধিকার দিতে হবে।
+
+## A. সকাল থেকে এই সেশনের যাচাইকৃত কাজের রেকর্ড
+
+### আগে থেকে সম্পন্ন এবং এই সেশনে পুনরায় চালানো হয়নি
+- Phase A-এর project_usage_digest ও work_order_validate source implementation, SQL migrations, worker dispatch, allowlist, static verifier ও disposable runtime test আগের entry-তে নথিভুক্ত।
+- Corrected disposable full migration/runtime run 45959527467 SUCCESS; link: https://github.com/rakib12301111-droid/master-world-vip/actions/runs/45959527467
+- Worker Static CI run 45959327873 SUCCESS; link: https://github.com/rakib12301111-droid/master-world-vip/actions/runs/45959327873
+- Failed attempt 45959311813 কেবল historical failure; disposable fixture-এ kill-switch sequencing ঠিক করে 45959527467-এ pass হয়েছে। এটি পুনরায় করানোর প্রয়োজন নেই, যদি না test logic/source পরিবর্তন হয়।
+- আগের Phase A commit trail, migration names, test coverage এবং safety gates এই নথির পূর্ববর্তী অংশে অক্ষুণ্ণ আছে।
+
+### এই সেশনে নতুন consistency repair
+1. supabase/functions/project-automation-worker/index.ts-এর header comment ভুলভাবে শুধু system_health_check implemented বলছিল। Actual dispatch code তিনটি exact read-only type চালায়; header comment সংশোধন করা হয়েছে।
+   - Commit: a0a07ca0a73122cc99f1b9e4eddcb9d080b0f37e
+   - এটি comment-only পরিবর্তন; runtime behavior পরিবর্তন নয়।
+2. docs/WORKER_BUSINESS_TASK_CATALOG_BN.md-এর top-level status ও current decision Phase A-এর আগের অবস্থায় আটকে ছিল। এখন তিনটি allowlisted type এবং দুইটি business handler-এর disposable acceptance সঠিকভাবে লেখা হয়েছে।
+   - Commit: 8304f59ff038e9e6779e255b33790669f4f9fcb8
+3. docs/WORKER_TASK_EXECUTION_AND_REVENUE_ACCEPTANCE_BN.md-এর allowlisted handler section-এ শুধু health check লেখা ছিল। এখন তিনটি exact allowlisted type ও Phase A runtime evidence প্রতিফলিত হয়েছে।
+   - Commit: f60865dfaa2f6838110bfc88753950f9980b82a7
+
+**নতুন test দাবি:** এই তিনটি consistency commit-এর পর কোনো নতুন GitHub Actions run সফল হয়েছে—এমন প্রমাণ এই ledger তৈরির সময় পাওয়া যায়নি। আগের CI success কেবল তাদের নির্দিষ্ট code commit-এর জন্য প্রযোজ্য। Worker header change comment-only; catalog ও acceptance পরিবর্তন documentation-only।
+
+## B. Anti-duplication register — একই কাজ পুনরায় নয়
+
+| কাজ / Deliverable | অবস্থা | প্রমাণ / কোথায় আছে | পুনরায় করার নিয়ম |
+|---|---|---|---|
+| Global worker kill-switch ও claim allowlist | সম্পন্ন; fail-closed | migrations 20261127100000..., 20261127120000..., 20261127130000...; disposable run 45959527467 | Migration chain পরিবর্তন না হলে একই test পুনরায় নয় |
+| project_usage_digest | implemented + disposable runtime pass | migration 20261127120000...; Worker source; run 45959527467 | নতুন schema/logic change ছাড়া পুনরায় নয় |
+| work_order_validate | implemented + disposable runtime pass | migration 20261127130000...; Worker source; run 45959527467 | নতুন validation rule/schema change ছাড়া পুনরায় নয় |
+| Worker static type/safety checks | আগের source commit-এ pass | run 45959327873 | source change হলে সংশ্লিষ্ট CI run যাচাই; অকারণে manual rerun নয় |
+| Full migration chain + synthetic revenue runtime | disposable DB-তে pass | run 45959527467 | migration/test SQL বদলালে তবেই rerun |
+| Phase A failed fixture attempt | root cause corrected; historical | failed run 45959311813, corrected run 45959527467 | পুরোনো failed run পুনরায় চালাবেন না |
+| Task Catalog ও Worker Acceptance docs | status consistency update সম্পন্ন | commits 8304f59..., f60865d... | একই তথ্য পুনরায় append নয়; existing section edit করুন |
+| Worker header comment | consistency fix সম্পন্ন | commit a0a07ca... | একই comment fix আর নয় |
+
+## C. এখনো বাকি — নতুন কাজের queue (কাজের ক্রম)
+
+1. **Remaining safe read-only handler audit/implementation:** প্রথমে প্রতিটি candidate-এর source schema, tenant/project ownership binding, data minimization, service-role authorization ও test fixture যাচাই। যে handler-এর ownership/beneficiary/file metadata binding প্রমাণিত নয়, সেটি implement বা allowlist করা যাবে না।
+   - member_payout_preflight: বর্তমানে payout schema থেকে project ownership + beneficiary verification নির্ভরযোগ্যভাবে প্রমাণিত নয়; তাই BLOCKED, implementation নয়।
+   - work_delivery_integrity_check: delivery artifact metadata/storage ownership schema ও safe hash/size/type source না পাওয়া পর্যন্ত BLOCKED।
+   - work_order_reminder_schedule এবং work_acceptance_timeout_escalate: এগুলো read-only নয়; controlled internal write এবং consent/admin-review policy লাগবে, Phase A-এর সঙ্গে মেশানো যাবে না।
+2. **Staging full acceptance:** আলাদা Supabase project এবং নিচের ১১টি GitHub Actions secret না থাকায় এখনো চালানো হয়নি। Secret value কখনো chat-এ পাঠাবেন না; GitHub repository Actions Secrets-এ configure করতে হবে:
+   - STAGING_SUPABASE_ACCESS_TOKEN
+   - STAGING_SUPABASE_DB_URL (Session Pooler; username-এ .STAGING_PROJECT_REF suffix)
+   - STAGING_SUPABASE_PROJECT_REF (Production ref থেকে আলাদা)
+   - STAGING_SUPABASE_URL
+   - STAGING_SUPABASE_ANON_KEY
+   - STAGING_OWNER_EMAIL, STAGING_OWNER_PASSWORD
+   - STAGING_ADMIN_EMAIL, STAGING_ADMIN_PASSWORD
+   - STAGING_MEMBER_EMAIL, STAGING_MEMBER_PASSWORD
+3. **Official Payment Sandbox / Finance Integration:** provider/merchant অনুমোদন, sandbox credentials, signed webhook secret, verified beneficiary, provider settlement test data, legal/KYC/AML/tax review এবং reconciliation contract ছাড়া এগোনো যাবে না। কোনো unofficial bKash/Nagad transfer bypass নয়।
+4. **20% Admin commission:** এখনো proposal only; Owner policy approval, fee/tax/refund/chargeback cost basis, Member payable disclosure এবং legal/tax review ছাড়া active নয়। কোনো commission posting নেই।
+5. **Production / Live Deployment:** PR #20 user-confirmed state Draft/Open/Unmerged। এই handover বা successful disposable CI কোনো Production migration, Worker activation, payment/payout বা public deployment অনুমোদন করে না। আলাদা explicit approval এবং prerequisites ছাড়া কোনো live change নয়।
+
+## D. পরবর্তী সহকারী/ডেভেলপারের বাধ্যতামূলক start procedure
+
+1. এই PROJECT_HANDOVER_MASTER_BN.md-এর সর্বশেষ অংশ পড়ুন।
+2. Branch planning/4000-automated-project-economy-এর বর্তমান file content ও latest commit দেখুন; handover-এ দেওয়া commit-কে অন্ধভাবে latest ধরে নেবেন না।
+3. উপরের Anti-duplication register-এ কাজটি সম্পন্ন থাকলে আবার code/test চালাবেন না। কেবল নতুন পরিবর্তন বা নতুন evidence-এর প্রয়োজন থাকলে পুনরায় চালান এবং কারণ লিখুন।
+4. নতুন handler-এর আগে schema/ownership/RBAC/data-scope audit; পরে source + migration + static verifier + disposable runtime test; সব শেষে catalog, acceptance doc, এই handover ও PR comment একবারে reconcile করুন।
+5. কোনো test/run না চালালে স্পষ্টভাবে লিখুন not run / no evidence; আগের commit-এর run-কে নতুন commit-এর test বলে চালাবেন না।
+6. প্রতিটি নতুন session শেষে একই কাজের দ্বিতীয় তালিকা না বানিয়ে এই handover-এর existing section edit/append করুন; commit SHA, run ID/link, exact result ও blockers যোগ করুন।
+
+**এই ledger-এর সীমা:** ২৭ নভেম্বর ২০২৬, ১৩:৩৯ বাংলাদেশ সময় পর্যন্ত এই session-এ যাচাই/সম্পাদিত তথ্য। Production, Staging, provider sandbox বা Live Deployment সম্পন্ন হয়েছে—এমন কোনো দাবি নয়।
