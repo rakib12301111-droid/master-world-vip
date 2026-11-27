@@ -594,6 +594,11 @@
 <div class="feature"><strong>Support & Notifications</strong><div class="status">পরবর্তী service integration প্রয়োজন</div></div>
 </div>
 </div>
+<section class="section item" id="customerQuoteAdminLink" hidden>
+ <h3>📥 Customer Quote Inbox</h3>
+ <p class="muted small">গ্রাহকের Quote Request দেখুন, পর্যালোচনা করুন এবং নির্দিষ্ট মূল্য/কাজের পরিধি/ডেলিভারি সময়সহ Quote পাঠান।</p>
+ <a class="btn" href="./admin-quotes.html">Open Customer Quote Inbox</a>
+</section>
 <section class="section item" id="adminAutoWorkPanel" hidden>
  <h3>🤖 Admin Auto Work — পাঁচটি মডিউল</h3>
  <p class="muted small">এটি Admin-only status panel। পাঁচটি module একসঙ্গে সর্বোচ্চ একটি করে job চালানোর জন্য নকশা করা। Provider connector ও server worker live না হওয়া পর্যন্ত এখানে কোনো job execute হবে না; সব module default-এ disabled থাকবে।</p>
@@ -2033,6 +2038,7 @@ async function refreshAdminAccess(){
   if(compPanel)compPanel.hidden=data!=='owner';
   const autoPanel=$('adminAutoWorkPanel');
   const canViewAutoWork=['owner','super_admin','admin'].includes(data);
+  const quoteLink=$('customerQuoteAdminLink');if(quoteLink)quoteLink.hidden=!canViewAutoWork;
   if(autoPanel)autoPanel.hidden=!canViewAutoWork;
   if(canViewAutoWork)await loadAdminAutoWorkOverview();
   if(data==='owner'){await loadOwnerCompensation();await loadOwnerWorkProfit();}
