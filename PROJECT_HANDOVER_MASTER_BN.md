@@ -332,3 +332,21 @@ GitHub Actions-এ ব্যবহৃত secret নাম:
 - **এখনো যাচাই হয়নি:** Merge-এর পর Staging workflow নতুন করে চালানো হয়নি; তাই container startup, encrypted backup, isolated restore, migration dry-run, Auth/RBAC এবং পুরো workflow-এর সবুজ ফলাফল এখনো প্রমাণিত নয়।
 - Production database-এ কোনো migration/apply করা হয়নি।
 - পরবর্তী পদক্ষেপ: GitHub Actions-এ `MASTER WORLD VIP — Staging migrations and access-control acceptance` workflow-এর `Run workflow` দিয়ে `main` branch-এ manual run শুরু করতে হবে; এরপর প্রতিটি job/step ও log যাচাই করে ফলাফল এখানে যোগ করতে হবে।
+
+
+## 15. ২৮ নভেম্বর ২০২৬ — Staging Run #2 ব্যর্থতা ও নিরাপদ ডায়াগনস্টিক সংশোধন
+
+- Run ID: `46061219987`
+- Run URL: https://github.com/rakib12301111-droid/master-world-vip/actions/runs/46061219987
+- Commit checked out: `9ecc77d17aca34c8c0e210abace2199adf870f59`
+- Job: `Encrypted Staging backup and isolated restore proof`
+- Job ID: `140715676843`
+- Failure step: `Validate Staging-only backup inputs without printing secrets`
+- Exact safe error: `Staging DB URL credentials are not bound to the confirmed Staging project ref`
+- Root cause narrowed to one of two checks: parsed Session Pooler username does not exactly equal `postgres.<Staging project ref>`, or parsed password is empty. The log intentionally does not reveal either credential.
+- Docker restore container, encrypted backup, isolated restore, migration preview/apply and Auth/RBAC stages were not reached; downstream migration job was skipped.
+- Production database unchanged.
+- Corrective diagnostic commit: `17c48038963684d986812290ab68fa5fe11f9a90`
+- Change: split the combined credential check into separate safe error messages for username mismatch vs empty password; no credential values are printed.
+- **Next:** run the Staging workflow on `main` once more. The next failure, if any, will identify which field needs correction without exposing secrets. If username mismatch is reported, update GitHub Secret `STAGING_SUPABASE_DB_URL` using Supabase Connect > Session pooler URI, with username `postgres.<Staging project ref>`; if password empty is reported, recreate the URI with the Staging database password and URL-encode special characters. Never share the URI/password in chat.
+- Run #2 does not test PR #25's Docker change because it failed at the earlier DB URL preflight.
