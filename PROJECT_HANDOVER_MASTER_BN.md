@@ -1826,3 +1826,12 @@ Secret values GitHub UI থেকে দেখা যায় না; তাই va
 - Default branch `main`-এ workflow file পৌঁছানোর জন্য PR #24 আলাদা করে তৈরি করা হয়েছে: https://github.com/rakib12301111-droid/master-world-vip/pull/24 । এটি শুধু Staging workflow file যোগ করে; PR #20-এর অন্য feature scope merge করার প্রয়োজন নেই।
 - PR #24 Open/Unmerged; GitHub response-এ `mergeable=false` দেখা গেছে, তাই mergeability/branch status আরও যাচাই ছাড়া merge করা হয়নি।
 - Workflow এখনো dispatch করা হয়নি। Backup, restore, migration, Auth/RBAC acceptance বা Edge Function deploy-এর কোনো runtime success দাবি করা হচ্ছে না। Production অপরিবর্তিত।
+
+
+### ২৮ নভেম্বর ২০২৬ — Dedicated Staging Workflow main-এ যুক্ত ও source-verified
+- PR #24 (Add safe manual Staging validation workflow) squash-merge হয়েছে: https://github.com/rakib12301111-droid/master-world-vip/pull/24
+- Merge commit: `4e6e5ebea89a47b051123519f663784f7ae8e629`।
+- Default branch `main`-এ `.github/workflows/validate-staging-supabase.yml` পুনরায় fetch করে যাচাই করা হয়েছে। File-এ `workflow_dispatch`, pre-migration Owner/Admin/Member Auth preflight এবং corrected JWT assignment helper উপস্থিত।
+- PR #20-এর unrelated feature scope merge করা হয়নি।
+- এটি workflow source যোগ/সংশোধন মাত্র; merge-এর ফলে কোনো Actions run শুরু হয়নি। Staging backup, restore, migration, role acceptance বা Edge Function deploy এখনো runtime-এ চালানো/যাচাই করা হয়নি। Production অপরিবর্তিত।
+- পরবর্তী নিরাপদ কাজ: প্রকাশিত Staging access token revoke/rotate করে GitHub secret update; Staging Auth-এ তিনটি পৃথক confirmed user এবং matching password নিশ্চিত; তারপর GitHub Actions থেকে manual workflow dispatch করে backup/restore artifact ও প্রতিটি job result যাচাই।
