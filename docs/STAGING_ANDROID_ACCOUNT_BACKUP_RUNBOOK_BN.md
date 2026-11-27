@@ -29,7 +29,7 @@ Create these exact repository secrets from the matching values in the Staging Su
 1. `SUPABASE_STAGING_ACCESS_TOKEN` — Supabase access token with only the access needed for the Staging project; used by the migration preview/apply workflow.
 2. `SUPABASE_STAGING_PROJECT_REF` — Staging Project Reference ID.
 3. `SUPABASE_STAGING_DB_URL` — Staging Session Pooler PostgreSQL URI; never Production.
-4. `STAGING_BACKUP_ENCRYPTION_PASSPHRASE` — a strong, unique passphrase used only to encrypt/decrypt Stagering backup artifacts. Store it separately in the Owner's password manager; never reuse or paste the Production passphrase.
+4. `STAGING_BACKUP_ENCRYPTION_PASSPHRASE` — a strong, unique passphrase used only to encrypt/decrypt Staging backup artifacts. Store it separately in the Owner's password manager; never reuse or paste the Production passphrase.
 
 Do not create placeholder values. Do not use Production secrets. Do not add JWT, anon key or project URL secrets to these workflows. The migration workflow uses the first three secrets; the Staging backup workflow uses secrets 2–4. Secret values remain visible only to GitHub's encrypted secret store.
 
