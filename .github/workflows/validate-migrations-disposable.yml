@@ -233,3 +233,12 @@ jobs:
           for database_url in "$TEST_DB_URL" "$LEGACY_DB_URL"; do
             psql "$database_url" -X -v ON_ERROR_STOP=1 -f supabase/tests/project-automation-kill-switch-runtime.sql
           done
+
+      - name: Verify synthetic customer order to Member settlement on both disposable databases
+        run: |
+          set -euo pipefail
+          export PGSSLMODE=disable
+          python scripts/verify-plan-customer-order-gates.py
+          for database_url in "$TEST_DB_URL" "$LEGACY_DB_URL"; do
+            psql "$database_url" -X -v ON_ERROR_STOP=1 -f supabase/tests/revenue-order-to-member-settlement-runtime.sql
+          done
