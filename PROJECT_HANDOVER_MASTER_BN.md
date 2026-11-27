@@ -1291,3 +1291,37 @@ Owner নির্দেশ: নিচের কাজগুলোকে MASTER 
 - Existing worker execution remains fail-closed/disabled; Free entitlement alone does not create jobs, customers or income.
 
 **সেশনের প্রমাণিত ফল:** migration allowlist correction, Admin Free static verifier, dedicated runtime SQL test এবং সংশ্লিষ্ট CI PASS। এটি source/CI validation; Production/Staging/Live activation নয়।
+
+
+---
+
+## 17. ২৭ নভেম্বর ২০২৬ — সর্বশেষ CI পুনরায় যাচাই ও চালুর বর্তমান অবস্থা
+
+### এই সেশনে সরাসরি যাচাইকৃত GitHub অবস্থা
+- PR #20: Draft/Open/Unmerged; branch `planning/4000-automated-project-economy`; head `24d9d00eafce4ff877a347d1242693ff07e9f839`; base `main` at `bfa7b582223b0c1caa9c1efd59858a3e94c66a3b`; GitHub API এখনও `mergeable=false`, `mergeable_state=dirty` দেখিয়েছে। এই সেশনে conflict resolution commit তৈরি হয়নি।
+- PR #23: Draft/Open/Unmerged; branch `feature/admin-free-member-paid-plan-gates`; head `4ae16bd0da6ce566a18c48b1197b31550d83ac25`; base PR #20-এর planning branch। PR #23 একা main-এ merge করার উপযোগী নয়; এটি PR #20-এর ওপর নির্ভরশীল।
+- PR #20 head SHA-র জন্য GitHub-এর PR-triggered workflow-run lookup কোনো run ফেরত দেয়নি; এটিকে PASS বা FAIL বলা হচ্ছে না।
+
+### PR #23-এর সর্বশেষ head-এ CI — তিনটিই SUCCESS
+একই head commit `4ae16bd0da6ce566a18c48b1197b31550d83ac25`-এ ২৭ নভেম্বরের GitHub Actions:
+- Verify Supabase migration safety — Run [45967143531](https://github.com/rakib12301111-droid/master-world-vip/actions/runs/45967143531) — SUCCESS.
+- MASTER WORLD VIP - Auto Work Static Safety — Run [45967143486](https://github.com/rakib12301111-droid/master-world-vip/actions/runs/45967143486) — SUCCESS.
+- Disposable migration validation — Run [45967143483](https://github.com/rakib12301111-droid/master-world-vip/actions/runs/45967143483) — SUCCESS.
+
+এগুলো PR #23-এর বর্তমান head-এ static/migration validation CI-র প্রমাণ; Staging বা Production acceptance নয়।
+
+### এখনো চালু নয় — স্পষ্ট সীমা
+1. PR #20 merge conflict / GitHub dirty state অমীমাংসিত।
+2. PR #23-এর `my_project_plan_access(project_id)` resolver আছে, কিন্তু সব worker/task/order execution entry point-এ enforcement সম্পূর্ণ—এমন প্রমাণ নেই। Member Paid-only বাস্তবে সব কাজের পথে বাধ্যতামূলক হয়েছে বলা যাবে না।
+3. Staging Supabase project, পৃথক credentials/secrets এবং Owner/Admin/Member acceptance এখনো যাচাই করা হয়নি।
+4. বর্তমান Production migration history/schema reconciliation, নতুন recoverable backup + restore-test, schema diff ও rollback readiness এই সেশনে চালানো হয়নি।
+5. কোনো Production migration, live backend deployment, worker activation, real login acceptance, real payment/payout বা revenue এই সেশনে সম্পন্ন হয়নি।
+
+### পরবর্তী প্রকৃত কাজ — পুনরাবৃত্তি এড়ানোর নির্দেশ
+- PR #20-এর mergeability dirty থাকার সুনির্দিষ্ট conflict path শনাক্ত করে main ও feature branch-এর পরিবর্তন একত্র করে নতুন যাচাইযোগ্য commit তৈরি করতে হবে; conflict না বুঝে force-push/merge নয়।
+- Plan entitlement resolver-কে service-role worker context-এ সরাসরি `auth.uid()`-এর ওপর নির্ভর না করিয়ে task owner/requester identity ও project mapping-সহ নিরাপদভাবে enforce করতে হবে; schema/ownership audit ছাড়া অনুমানভিত্তিক SQL নয়।
+- সব execution entry point-এর inventory, negative/positive disposable runtime tests এবং CI evidence ছাড়া Paid-only gate সম্পূর্ণ বলে চিহ্নিত করা যাবে না।
+- Staging credentials/secret values চ্যাটে নয়; পৃথক Staging project ও GitHub Actions secrets-এ থাকতে হবে। সেগুলো না থাকলে Staging apply/acceptance NOT RUN।
+- Production apply/deploy-এর আগে আলাদা production safety gates—remote history reconciliation, current backup, successful restore test, preview/schema diff, rollback plan—অবশ্যই পূরণ করতে হবে। পূর্বে দেওয়া Production approval-কে পুনরায় চাইতে হবে না; কিন্তু সেটি অনুপস্থিত backup/restore বা schema evidence-এর বিকল্প নয়।
+
+**এই addendum-এর ফল:** PR #23-এর সর্বশেষ head-এ তিনটি CI run SUCCESS হিসেবে যাচাই করা হয়েছে এবং এই handover-এ নথিভুক্ত করা হয়েছে। PR #20 conflict, entitlement integration, Staging, Production ও Live acceptance এখনো বাকি। কোনো Live launch দাবি করা হচ্ছে না।
