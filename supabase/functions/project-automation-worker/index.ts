@@ -6,6 +6,7 @@ const json = (body: unknown, status = 200) => new Response(JSON.stringify(body),
 
 type ClaimedTask = {
   id: string;
+  project_id: string;
   task_type: string;
   payload: Record<string, unknown>;
   lease_token: string;
@@ -69,7 +70,27 @@ Deno.serve(async (req) => {
       });
     }
 
-    const outcome = executeAllowlistedTask(task);
+    let outcome: { success: boolean; result: Record<string, unknown>; error?: string };
+    if (task.task_type === "system_health_check") {
+      outcome = executeAllowlistedTask(task);
+    } else if (task.task_type === "project_usage_digest") {
+      const digest = await rpc("worker_read_project_usage_digest", {
+        p_project_id: task.project_id,
+      });
+      outcome = {
+        success: true,
+        result: {
+          handler: "project_usage_digest",
+          handler_version: "1.0.0",
+          read_only: true,
+          external_side_effects: false,
+          financial_effects: false,
+          digest,
+        },
+      };
+    } else {
+      outcome = { success: false, result: {}, error: "Task type is not implemented by this worker." };
+    }
     await rpc("worker_finish_project_automation_task", {
       p_task_id: task.id,
       p_lease_token: task.lease_token,
