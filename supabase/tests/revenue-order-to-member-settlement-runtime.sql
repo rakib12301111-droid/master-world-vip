@@ -247,3 +247,84 @@ $task_test$;
 
 select 'TASK_CLAIM_EXECUTION_IDEMPOTENCY_RETRY_DEAD_LETTER_BUDGET_AUDIT=PASS' as result;
 select 'GLOBAL_EMERGENCY_STOP_REENABLED=true' as result;
+
+
+-- Phase A: read-only project usage digest Worker handler acceptance.
+-- Disposable database only. The digest excludes customer/member data and performs no writes.
+do $phase_a$
+declare
+  v_project uuid;
+  v_worker uuid;
+  v_task uuid;
+  v_lease uuid;
+  v_digest jsonb;
+begin
+  select id into v_project
+  from public.earning_project_registry
+  where project_code='MW-BDT-2000';
+  if v_project is null then raise exception 'Phase A synthetic project missing'; end if;
+
+  update public.project_automation_runtime_control
+  set emergency_stop=false,stop_reason='Disposable Phase A read-only handler test',updated_at=now()
+  where singleton=true;
+
+  update public.earning_project_registry
+  set lifecycle_status='active',execution_enabled=true,budget_cap=1000
+  where id=v_project;
+
+  insert into public.project_automation_settings(
+    project_id,enabled,task_type,schedule_interval_minutes,next_run_at,
+    daily_budget,daily_spent,daily_reserved,budget_date,max_attempts
+  ) values(v_project,true,'project_usage_digest',60,now(),10,0,0,current_date,2)
+  on conflict(project_id) do update set
+    enabled=true,task_type='project_usage_digest',next_run_at=now(),
+    daily_budget=10,daily_spent=0,daily_reserved=0,budget_date=current_date,max_attempts=2;
+
+  v_worker:=public.worker_register_project_automation(
+    'worker-phase-a-digest','Phase A Digest Runtime Worker',array['BDT']::text[]
+  );
+  perform public.worker_heartbeat_project_automation('worker-phase-a-digest');
+
+  insert into public.project_automation_tasks(
+    project_id,task_type,payload,idempotency_key,max_attempts,budget_cap,available_at
+  ) values(
+    v_project,'project_usage_digest','{}'::jsonb,
+    'phase-a-project-usage-digest-001',2,1,now()
+  );
+
+  select id,lease_token into v_task,v_lease
+  from public.worker_claim_project_automation_task('worker-phase-a-digest')
+  limit 1;
+  if v_task is null or v_lease is null then
+    raise exception 'Phase A digest task was not claimed';
+  end if;
+
+  v_digest:=public.worker_read_project_usage_digest(v_project);
+  if v_digest->>'project_code'<>'MW-BDT-2000'
+    or v_digest->>'currency'<>'BDT'
+    or v_digest->'tasks' is null
+    or (v_digest->'tasks'->>'queued') is null
+    or v_digest ? 'customer'
+    or v_digest ? 'member'
+  then
+    raise exception 'Phase A digest schema or data-scope assertion failed: %',v_digest;
+  end if;
+
+  perform public.worker_finish_project_automation_task(v_task,v_lease,true,0,null);
+
+  if exists(
+    select 1 from public.project_automation_tasks
+    where id=v_task and (status<>'succeeded' or budget_reserved<>0)
+  ) then
+    raise exception 'Phase A task did not complete and release its reservation';
+  end if;
+
+  update public.project_automation_runtime_control
+  set emergency_stop=true,stop_reason='Disposable Phase A test completed; restore safe state',updated_at=now()
+  where singleton=true;
+end;
+$phase_a$;
+
+select 'PHASE_A_PROJECT_USAGE_DIGEST_READ_ONLY_HANDLER=PASS' as result;
+select 'PHASE_A_NO_CUSTOMER_MEMBER_DATA_OR_EXTERNAL_FINANCIAL_EFFECTS=true' as result;
+select 'PHASE_A_GLOBAL_EMERGENCY_STOP_REENABLED=true' as result;
