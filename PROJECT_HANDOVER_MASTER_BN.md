@@ -666,3 +666,40 @@ GitHub Actions-এ ব্যবহৃত secret নাম:
 6. Production read-only schema audit ও full-chain disposable migration test-এর বর্তমান evidence সংগ্রহ; কোনো Production apply নয়।
 
 **এই update-এর সময় কোনো Staging secret value পড়া/প্রকাশ, Production migration apply, payout, referral reward transfer, PR merge বা নতুন public deployment চালানো হয়নি।**
+
+
+## ১৯. ২৭ নভেম্বর ২০২৬ — Staging target binding ও Worker response hardening
+
+### Source-level audit-এ পাওয়া ঝুঁকি ও সংশোধন
+- `.github/workflows/validate-staging-supabase.yml`-এ আগে DB URL-এর username শুধু configured project ref-এর suffix দিয়ে যাচাই হতো। এখন আরও কঠোরভাবে:
+  - Project ref ২০ অক্ষরের lowercase alphanumeric হতে হবে এবং Production ref `lztbbrzeuyjkuiyzrsxp` প্রত্যাখ্যাত হবে।
+  - DB host অবশ্যই Supabase Session Pooler host `*.pooler.supabase.com` হতে হবে।
+  - Port অবশ্যই `5432`, database path অবশ্যই `/postgres`, URL-এ query/fragment থাকা যাবে না।
+  - Username অবশ্যই `postgres.<STAGING_SUPABASE_PROJECT_REF>` এবং password অনুপস্থিত হলে workflow বন্ধ হবে।
+  - Auth API URL অবশ্যই `https://<STAGING_SUPABASE_PROJECT_REF>.supabase.co`-এর সঙ্গে হুবহু মিলবে; unexpected port/path/credentials/query/fragment reject হবে।
+- `supabase/functions/project-automation-worker/index.ts`-এ response body থেকে worker key সরানো হয়েছে। RPC error body আর caller-কে ফেরত দেওয়া হয় না; generic error response দেওয়া হয়।
+- Worker এখনো শুধু registration/heartbeat করে; task claim বা business handler নেই। `MWVIP_WORKER_ENABLED=true` না থাকলে disabled থাকে; revenue/payment/payout চালু করে না।
+
+### নতুন verification source
+- `scripts/verify-staging-worker-safety.py` যোগ হয়েছে। এটি Staging target binding, Production ref rejection, তিনটি পৃথক Auth identity, worker disable gate, service-role authorization, no-task-claim এবং secret/error-response leakage না থাকার static invariant পরীক্ষা করবে।
+- `.github/workflows/verify-supabase-migrations.yml`-এ verifier step ও সংশ্লিষ্ট path triggers যোগ হয়েছে।
+- Dedicated `.github/workflows/verify-project-automation-worker.yml` যোগ হয়েছে; এতে Deno v2 type-check এবং একই safety verifier চালানোর কথা।
+- সংশ্লিষ্ট GitHub commits:
+  - Staging URL binding: `ece5e77d5d368e08468db8af9ba57387d953d8f3`
+  - Worker response hardening: `a050af4160c70b15a1ecb8eb53be44bf4c9ef41f`
+  - Static verifier: `a874a78ac2aaf16d42a88097d2020409dbc6d217`
+  - Migration-safety CI integration: `aeff5d0b0c2935681c30a2d74e8ed51d2dfbf7af`
+  - Dedicated Deno workflow: `45e4597c5f4b2ce592a2711a32c02c66360f49e9`
+
+### বাস্তব যাচাইয়ের অবস্থা
+- PR #20 বর্তমান head: `45e4597c5f4b2ce592a2711a32c02c66360f49e9`; Draft/Open/Unmerged।
+- এই head SHA-তে নতুন GitHub Actions run এখনো পাওয়া যায়নি। তাই নতুন static verifier/Deno type-check pass হয়েছে বলা যাবে না।
+- Staging secrets/project এই execution-এ পাওয়া যায়নি; Staging workflow dispatch হয়নি। কোনো Staging migration apply, Auth/RBAC acceptance test বা Edge Function deployment হয়নি।
+- Production database, live migration history, payments/payouts বা public deployment এই source update-গুলোতে পরিবর্তন করা হয়নি।
+
+### পরবর্তী কাজ — এই অবস্থান থেকে চালিয়ে যেতে হবে
+1. PR #20-এর নতুন head-এর CI ফলাফল না আসা পর্যন্ত নতুন verifier/type-check-কে pending হিসেবে ধরতে হবে; run evidence এলে এই handover-এ Run ID যোগ করতে হবে।
+2. Owner GitHub Actions Secrets-এ আলাদা Staging project-এর প্রয়োজনীয় secrets configure করলে manual Staging workflow চালিয়ে full migration + Owner/Admin/Member + Admin RPC acceptance test করতে হবে।
+3. Staging acceptance pass না হওয়া পর্যন্ত Worker disabled/idle থাকবে; কোনো customer task বা revenue execution নয়।
+4. PR #19 schedule branch এখনো আলাদা Draft PR; default branch-এ merge বা public deployment আলাদা অনুমোদন ছাড়া নয়।
+5. Production migration gate `APPLY-MASTER-WORLD-VIP-MIGRATIONS` অপরিবর্তিত থাকবে।
