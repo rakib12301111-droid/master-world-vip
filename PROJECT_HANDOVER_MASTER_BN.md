@@ -769,3 +769,24 @@ Owner নির্দেশ: নিচের কাজগুলোকে MASTER 
 - APPLY-MASTER-WORLD-VIP-MIGRATIONS হলো কেবল Production Database Migration Apply-এর exact approval gate। এই বার্তায় token-এর কাজ জানতে চাওয়া হয়েছে; তাই এটিকে Production apply-এর অনুমোদন হিসেবে গণ্য করা হয়নি। Token দিলেও provider payout, real-money transfer, commission activation বা public Live Deployment স্বয়ংক্রিয়ভাবে অনুমোদিত হবে না।
 - **Live Deployment: PENDING / NOT LIVE** — Production migration-এর পরেও আলাদা deployment approval, provider/legal readiness ও post-deploy smoke test প্রয়োজন।
 - নিরাপদ পরবর্তী ক্রম: (১) source সংশোধন শেষ ও CI/runtime pass, (২) Staging project/secrets ও acceptance pass, (৩) provider-approved sandbox এবং order-to-payout test pass, (৪) backup/restore ও security review, (৫) আলাদা Production migration approval, (৬) পৃথক Live deployment approval।
+
+
+## ২৭ নভেম্বর ২০২৬ — নিরাপদ পরীক্ষার ব্যবস্থা আপডেট
+
+### এই আপডেটে করা Source/Workflow পরিবর্তন
+- Finance Runtime workflow-এ PR-triggered validation-এর বিদ্যমান path বজায় রেখে payout/refund static safety script চালানোর ধাপ যোগ করা হয়েছে; disposable PostgreSQL test-এ ledger এবং guarded payout/refund migration/runtime SQL যাচাই করার উদ্দেশ্য নির্ধারিত।
+- সম্পূর্ণ migration chain-এর fresh ও audited legacy-shape disposable database validation workflow-এ PR trigger যোগ করা হয়েছে; Production database target নয়।
+- Staging validation workflow-এ PR trigger যোগ করা হয়েছে। Workflow নিজেই Staging project ref Production-এর সঙ্গে এক হতে দেয় না; required isolated Staging secrets/account না থাকলে প্রথম secret check-এই থামবে।
+- নতুন `verify-disposable-backup-restore.yml` workflow যোগ করা হয়েছে। এটি synthetic test data-র encrypted backup নিয়ে আলাদা disposable PostgreSQL database-এ restore ও row-count যাচাই করবে; Production database বা real customer data ব্যবহার করে না।
+
+### সর্বশেষ বাস্তব পরীক্ষার ফল (এই branch head: `e1c526ab6fe516ba766e1479a613e4790b62587e`)
+- **CI / Migration Safety / Finance Runtime: PENDING** — সর্বশেষ branch head-এর জন্য GitHub Actions workflow run/check পাওয়া যায়নি। আগের commit `9f0a4c7cf2f3b7aeb50f9a5fd40b6ed163493741`-এ Finance Runtime run `45879443167` ও Migration Safety run `45879443133` SUCCESS ছিল; এগুলো বর্তমান head-এর পরীক্ষার প্রমাণ নয়।
+- **Disposable Backup/Restore: PENDING** — test-only workflow যোগ হয়েছে, কিন্তু বর্তমান head-এর জন্য run/result পাওয়া যায়নি।
+- **Staging Database: PENDING** — guarded PR workflow যোগ হয়েছে; বর্তমান head-এ কোনো Staging run/result পাওয়া যায়নি। Staging secrets/test identities উপস্থিত কি না যাচাই করা হয়নি।
+- **Production Migration: NOT RUN** — কোনো Production schema change/apply হয়নি; exact migration approval এবং সব prerequisite gate বহাল।
+- **Live Deployment: NOT RUN / NOT LIVE** — public deployment বা real payment/payout চালু হয়নি।
+
+### নিরাপত্তা সীমা
+- নতুন workflows-এ disposable PostgreSQL fixture ব্যবহার করে backup/restore ও migration runtime যাচাইয়ের ব্যবস্থা; Production migration workflow চালানো হয়নি।
+- Staging workflow কেবল আলাদা Staging project ref যাচাইয়ের পর Staging target-এ কাজ করবে; Production project ref reject করে।
+- কোনো test run-এর result না পাওয়া পর্যন্ত status PENDING-ই থাকবে; আগের commit-এর SUCCESS নতুন commit-এ স্থানান্তর করা যাবে না।
