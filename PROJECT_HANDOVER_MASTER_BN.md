@@ -839,3 +839,33 @@ Owner নির্দেশ: নিচের কাজগুলোকে MASTER 
 1. Run `45956160044`-এর final conclusion, job/step ও log যাচাই; ব্যর্থ হলে নির্দিষ্ট SQL error ঠিক করে একই test পুনরায় চালানো।
 2. Staging credentials ও identities প্রস্তুত না হওয়া পর্যন্ত Staging workflow চালানো/তার ফল অনুমান করা যাবে না।
 3. সব disposable/static tests pass হলেও Production apply বা Live Deployment স্বয়ংক্রিয়ভাবে অনুমোদিত হবে না; পৃথক approval ও release prerequisites বাধ্যতামূলক।
+
+
+## ২৭ নভেম্বর ২০২৬ — Migration Validation গণনা-ত্রুটি সংশোধন ও নতুন Run
+
+### Run `45956160044`-এর Log থেকে নিশ্চিত ফল
+- Run `45956160044` (commit `0f1eef4c61e17d092233d18abe677897179cef89`) **FAILURE** হয়েছে। SQL delimiter সংশোধনের পর ৩৬টি migration ফাইল সফলভাবে execute হয়েছে; workflow-এর শেষে পুরোনো hard-coded expected count `30` থাকায় check ব্যর্থ হয়েছে: `Expected 30 migration files in fresh database; found 36`। অর্থাৎ এই Run-এ SQL apply-তে error ধরা পড়েনি, কিন্তু workflow validation সম্পূর্ণ pass করেনি; fresh/legacy দুই target-এর acceptance check-ও সম্পূর্ণ হয়নি।
+- এই failure Production database-এ নয়; disposable PostgreSQL test service-এ ঘটেছে।
+
+### Source correction
+- `.github/workflows/validate-migrations-disposable.yml-এ hard-coded ৩০-এর বদলে `supabase/migrations/*.sql` থেকে migration file count dynamic করা হয়েছে। একই dynamic list fresh ও audited legacy-shape disposable database—দুইটিতেই apply হবে; actual count echo করা হবে।
+- Fix commit: `56f198fdff7add5c649e0dc96247d3b66170ee4a`।
+- নতুন Migration Validation Run **45956925398** একই fix commit-এ শুরু হয়েছে; সর্বশেষ যাচাইয়ে **IN_PROGRESS**। Run: https://github.com/rakib12301111-droid/master-world-vip/actions/runs/45956925398 । Final result না আসা পর্যন্ত migration-chain status PENDING থাকবে।
+
+### অন্যান্য পরীক্ষার যাচাইকৃত ফল
+- Finance Runtime Run `45955906370` — **SUCCESS**, commit `777766977ee55fb7ca7c3a882f7ca3e249969f3b`; disposable PostgreSQL runtime/static payout-refund safety checks। Run: https://github.com/rakib12301111-droid/master-world-vip/actions/runs/45955906370
+- Synthetic Backup/Restore Run `45956031760` — **SUCCESS**, commit `309e1c8c5998538835620ca6d273b1ed03d484fb`; দুইটি synthetic row-এর encrypted backup এবং পৃথক disposable database-এ decrypt/restore ও row/amount verification। এটি Production backup নয়। Run: https://github.com/rakib12301111-droid/master-world-vip/actions/runs/45956031760
+- Backup/Restore-এর আগের Run `45955918336` PostgreSQL client/server version mismatch-এর কারণে failure হয়েছিল; matching PostgreSQL 16 tools দিয়ে পরের Run সফল হয়েছে।
+
+### Staging / Worker / Production gate
+- Staging workflow source-এ আছে; কিন্তু আলাদা Staging project এবং ১১টি required secret/test credential বাস্তবে configure করা হয়েছে—এমন কোনো প্রমাণ নেই। তাই Staging migration/Auth/RBAC test **NOT RUN**; Owner/Admin/Member permission acceptance **PENDING**। Secret value চ্যাটে দেওয়া যাবে না।
+- Worker source এখনো Registration + Heartbeat foundation; বাস্তব approved task handler নেই। Worker execution/deploy **BLOCKED / NOT LIVE**।
+- PR #20 **OPEN / DRAFT / UNMERGED**।
+- Production migration **NOT RUN**; Production migration-history repair **NOT RUN**; Live Deployment **NOT RUN**; real payment/payout **NOT RUN**।
+
+### পরবর্তী কাজ
+1. Run `45956925398`-এর final status, job/step এবং logs যাচাই; failure হলে নির্দিষ্ট error অনুযায়ী সংশোধন করে পুনরায় disposable validation।
+2. আলাদা Staging project ও documented ১১টি secret প্রস্তুত হলে Staging workflow dispatch করে Owner/Admin/Member RBAC পরীক্ষা।
+3. Worker-এর জন্য অনুমোদিত business task definitions, idempotency, budget/limits, retry/dead-letter, audit trail ও kill switch বাস্তবায়ন এবং disposable/staging test; তার আগে worker idle থাকবে।
+4. Revenue/payment provider-এর official sandbox/contract/legal/KYC readiness এবং mock-to-sandbox end-to-end test।
+5. Production migration ও Live Deployment পৃথক explicit approval gate-এ থাকবে।
