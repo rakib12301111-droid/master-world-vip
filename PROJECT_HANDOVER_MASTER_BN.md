@@ -384,3 +384,30 @@ GitHub Actions-এ ব্যবহৃত secret নাম:
 - PostgreSQL client installation, Docker container startup, encrypted backup, isolated restore, artifact upload, migration preview/apply, Auth/RBAC and Edge Function stages were not reached; downstream `staging-migrations` job was skipped.
 - Production database unchanged; no Production migration applied.
 - Do not weaken the Session Pooler/port/project-ref checks. After updating the Secret from the exact Session Pooler URI, run the workflow again and inspect the next safe preflight result.
+
+
+## 18. ২৮ নভেম্বর ২০২৬ — Session Pooler সমস্যা: Supabase official docs অনুযায়ী সংশোধিত নির্দেশনা ও বর্তমান blocker
+
+### সর্বশেষ প্রমাণিত GitHub অবস্থা
+- Staging validation workflow-এর সর্বশেষ run এখনো Run #4 (Run ID: `46061905490`), ফলাফল `failure`; Run #4-এর পর নতুন Staging validation run পাওয়া যায়নি।
+- Run #4-এর ত্রুটি: `Staging DB URL must use a Supabase Session Pooler URI`। এটি URI scheme/host validation-এ ব্যর্থ; username/password validation পর্যন্ত পৌঁছায়নি।
+- Workflow source-এর প্রথম preflight-এ scheme `postgres://` বা `postgresql://`, host suffix `.pooler.supabase.com`, port `5432`, path `/postgres`, query/fragment অনুপস্থিত এবং username `postgres.<STAGING_PROJECT_REF>` যাচাই করা হয়। Secret value কখনো log করা হয় না।
+- Project ref: `awatzrapqrteybgspqlq`; Staging Dashboard URL: https://supabase.com/dashboard/project/awatzrapqrteybgspqlq
+
+### Supabase official docs থেকে গুরুত্বপূর্ণ স্পষ্টীকরণ
+- Official docs: https://supabase.com/docs/guides/database/connecting-to-postgres
+- Shared Session Pooler URI-এর ধরন: `postgresql://postgres.<PROJECT-REF>:[PASSWORD]@[POOLER-HOST]:5432/postgres`।
+- Pooler host-এর cluster index ও region মিলিয়ে নিজে host বানানো যাবে না। Supabase বলছে একটি region-এ একাধিক pooler cluster থাকতে পারে; Connect dialog থেকে সম্পূর্ণ host/URI কপি করতে হবে।
+- Session mode হলো shared pooler-এর port `5432`; Transaction mode port `6543`—এই workflow-এর জন্য Transaction mode সঠিক নয়।
+- Password placeholder-টি Staging database password দিয়ে বদলাতে হবে; reserved character percent-encode করতে হবে। Password Dashboard-এ আর দেখা না গেলে তবেই reset বিবেচনা করতে হবে; reset করলে পুরোনো password-নির্ভর connection ভেঙে যাবে।
+- Official troubleshooting: https://supabase.com/kb/troubleshooting/tenant-or-user-not-found
+
+### কে কী করতে পারবে
+- Repository code ও handover documentation আপডেট করা সম্ভব; কিন্তু GitHub Actions Secret-এর মান GitHub API/এই সংযুক্ত GitHub tool দিয়ে পড়া বা বদলানো যায় না। Secret encrypted/hidden; Supabase Dashboard-এর Connect dialog-ও ব্যবহারকারীর authenticated browser session-এ। তাই assistant নিজে Secret-এর URI কপি/সেভ করতে বা user-এর হয়ে Dashboard button চাপতে পারবে না।
+- ব্যবহারকারীকে কেবল একবার নিজে Supabase Connect → Session pooler থেকে full URI কপি করে GitHub Secret `STAGING_SUPABASE_DB_URL`-এ সংরক্ষণ করতে হবে। URI/password chat-এ পাঠানো যাবে না।
+- Secret save হওয়ার পর GitHub Actions workflow manual dispatch ব্যবহারকারীকেই করতে হবে; বর্তমান connected GitHub actions-এ workflow_dispatch trigger action নেই। এরপর assistant run/job/log পরীক্ষা করতে পারবে।
+
+### নিরাপত্তা অবস্থা
+- Run #4-এ backup, Docker restore container, encrypted backup, isolated restore, artifact upload, migration preview/apply, Auth/RBAC ও Edge Function ধাপগুলো শুরু হয়নি; downstream job skipped।
+- Production database-এ কোনো পরিবর্তন হয়নি। Production migration approval gate অপরিবর্তিত: `APPLY-MASTER-WORLD-VIP-MIGRATIONS`।
+- পরবর্তী ধাপ: Secret-এ Dashboard থেকে কপি করা সঠিক সম্পূর্ণ Session Pooler URI সংরক্ষণ → Staging workflow চালানো → preflight, backup/restore ও পরবর্তী ধাপের logs যাচাই। কোনো validation শিথিল করা যাবে না।
