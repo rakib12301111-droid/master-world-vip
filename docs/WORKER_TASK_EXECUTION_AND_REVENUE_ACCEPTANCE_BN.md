@@ -105,3 +105,9 @@ Verification:
 - Combined Phase A run `45959311813` failed at the work-order claim because the preceding digest test correctly restored the global emergency stop; the following test fixture did not reopen it before claiming.
 - Corrected only the disposable test fixture: it now releases the stop for that isolated work-order test and sets it back to TRUE at the end. No Staging/Production control was changed.
 - Corrected runtime rerun `45959527467` was pending when this note was added. Work-order validation runtime pass is not claimed until that run completes successfully.
+
+### Corrected Phase A runtime acceptance — 27 November 2026
+- Corrected run `45959527467`: **SUCCESS**. It applied the complete ordered migration chain to fresh and legacy-shape disposable PostgreSQL databases and passed the full synthetic runtime step.
+- The same run passed both Phase A handlers: `project_usage_digest` and `work_order_validate`, including project-scope/data-minimization checks, task completion, budget reservation release and emergency-stop restoration.
+- The earlier run `45959311813` failed because the test fixture attempted to claim while the emergency stop was correctly TRUE; the fixture was corrected to reopen only inside the disposable test and close again afterward.
+- Worker Static CI `45959327873`: **SUCCESS**. No Staging or Production action occurred.
