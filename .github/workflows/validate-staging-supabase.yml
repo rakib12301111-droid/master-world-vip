@@ -86,18 +86,34 @@ jobs:
           docker logs mwvip-staging-restore-db || true
           echo "::error::Timed out waiting for isolated restore PostgreSQL health."
           exit 1
-      - name: Create encrypted logical backup of Staging
-        id: backup
+      - name: Prepare Staging database connection for the next step
+        shell: bash
         run: |
           set -euo pipefail
           python - "$DB_URL" <<'PY'
           import os,sys
           from urllib.parse import urlsplit,unquote
-          u=urlsplit(sys.argv[1])
-          values={"PGHOST":u.hostname,"PGPORT":str(u.port),"PGDATABASE":u.path.lstrip("/"),"PGUSER":unquote(u.username or ""),"PGPASSWORD":unquote(u.password or ""),"PGSSLMODE":"require"}
+          raw=sys.argv[1]
+          u=urlsplit(raw)
+          password=unquote(u.password or "")
+          values={"PGHOST":u.hostname,"PGPORT":str(u.port),"PGDATABASE":u.path.lstrip("/"),"PGUSER":unquote(u.username or ""),"PGPASSWORD":password,"PGSSLMODE":"require"}
+          if not all(values[k] for k in ("PGHOST","PGPORT","PGDATABASE","PGUSER","PGPASSWORD")):
+              raise SystemExit("::error::Staging database connection URI is incomplete")
+          print(f"::add-mask::{password}")
+          print(f"::add-mask::{raw}")
           with open(os.environ["GITHUB_ENV"],"a") as f:
-              for k,v in values.items(): f.write(f"{k}={v}\n")
+              for k,v in values.items():
+                  f.write(f"{k}={v}\n")
+          print("Staging database connection prepared securely for the following step; credentials masked.")
           PY
+      - name: Create encrypted logical backup of Staging
+        id: backup
+        shell: bash
+        run: |
+          set -euo pipefail
+          : "${PGHOST:?PGHOST was not passed from the preceding step}"
+          : "${PGUSER:?PGUSER was not passed from the preceding step}"
+          : "${PGPASSWORD:?PGPASSWORD was not passed from the preceding step}"
           mkdir -p backup
           pg_dump --host="$PGHOST" --port="$PGPORT" --username="$PGUSER" --dbname="$PGDATABASE" --format=custom --no-owner --no-acl --file=backup/staging.dump
           openssl enc -aes-256-cbc -pbkdf2 -salt -in backup/staging.dump -out backup/staging.dump.enc -pass env:BACKUP_PASSPHRASE
