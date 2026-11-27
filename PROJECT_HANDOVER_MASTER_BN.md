@@ -1310,3 +1310,48 @@ Owner নির্দেশ: নিচের কাজগুলোকে MASTER 
 - Next implementation should ask no repeat questions unless needed; use the safe default: in-platform balance is ledger-only, withdrawal request remains pending Admin approval, and no real transfer occurs until official provider integration/authorization is available. Avoid advertising "money stays in user's own account" unless the architecture actually supports it.
 
 **Status truth:** Commit checks are now verified 7/7 successful. PR is still Draft/Open by deliberate safety choice; Staging, Production migrations, production worker and real financial transfers remain uncompleted.
+
+
+
+---
+
+## ২৭ নভেম্বর ২০২৬ — CI ৭/৭ PASS এবং Member Ledger/Withdrawal নকশা নিশ্চিত
+
+### সর্বশেষ যাচাইকৃত CI — commit `4a797ead471a446aa1859735db350da103e8db9c`
+GitHub Commit Check Runs endpoint-এ মোট ৭টি check পাওয়া গেছে; সবগুলো `completed / success`:
+- `validate-all-migrations` — Run 45973238430: https://github.com/rakib12301111-droid/master-world-vip/actions/runs/45973238430
+- `validate` — Run 45973238485: https://github.com/rakib12301111-droid/master-world-vip/actions/runs/45973238485
+- `postgres-runtime` — Run 45973238363: https://github.com/rakib12301111-droid/master-world-vip/actions/runs/45973238363
+- `backup-restore` — Run 45973238517: https://github.com/rakib12301111-droid/master-world-vip/actions/runs/45973238517
+- `worker-static-check` — Run 45973238349: https://github.com/rakib12301111-droid/master-world-vip/actions/runs/45973238349
+- `static-migration-safety` — Run 45973238311: https://github.com/rakib12301111-droid/master-world-vip/actions/runs/45973238311
+- `auto-work-static-safety` — Run 45973238365: https://github.com/rakib12301111-droid/master-world-vip/actions/runs/45973238365
+
+এগুলো GitHub CI এবং disposable/test environment-এর ফল; Supabase Staging বা Production acceptance, Production migration, live deployment, Worker activation বা real money transfer-এর প্রমাণ নয়।
+
+### Member Finance-এর অনুমোদিত product flow
+ব্যবহারকারী নিচের architecture নিশ্চিত করেছেন:
+1. প্রতিটি সদস্যের পাওনা platform-এর পৃথক Member Ledger-এ হিসাব হবে।
+2. সদস্য Withdrawal Request জমা দেবে।
+3. Request Admin approval না পাওয়া পর্যন্ত `pending` থাকবে; reject/approve সিদ্ধান্ত ও কারণ audit log-এ থাকবে।
+4. অনুমোদনের পর কেবল অনুমোদিত Payment Provider-এর মাধ্যমে transfer initiate হবে।
+5. bKash/Nagad-এর official merchant/API integration ও provider authorization পরবর্তী ধাপে যুক্ত হবে; অনুমোদন না পাওয়া পর্যন্ত live transfer disabled থাকবে।
+6. Member payable liability এবং platform revenue আলাদা ledger/accounting category-তে থাকবে; Admin approval নিজে provider permission বা আইনগত অনুমোদন নয়।
+7. Ledger balance-কে বাস্তবে পাঠানো টাকা বা নিশ্চিত withdrawable cash বলা যাবে না। Provider transfer সফল না হওয়া পর্যন্ত status আলাদা থাকবে; idempotency, reconciliation, fraud controls, audit trail ও emergency stop আবশ্যক।
+
+### Release/কাজ শুরু করার বাস্তব সীমা
+- GitHub PR #20: Draft/Open/Unmerged; head `4a797ead471a446aa1859735db350da103e8db9c`, base main `9c504237e8698ccacc891dc82a8aa23d98747585`.
+- PR #23: Draft/Open/Unmerged; head `635d5acdc3869cd2711012791c2524f29f0ba3d4`; PR #20-এর planning branch-এর ওপর নির্ভরশীল।
+- পৃথক Supabase Staging Project এখনো ব্যবহারকারীর Supabase account থেকে তৈরি ও configure করা বাকি। Production Ref `lztbbrzeuyjkuiyzrsxp` Staging-এ ব্যবহার করা যাবে না।
+- Staging Project তৈরি হলে শুধু Project Reference শেয়ার করতে হবে; password, service-role key, access token, database URL বা অন্য secret chat-এ নয়। Secrets কেবল GitHub Actions Secrets-এ user-side configure হবে।
+- Staging acceptance ছাড়া backend-dependent feature-কে Ready/Live বলা যাবে না। Safe public static release-এর জন্য main branch ও Pages workflow/deployment আলাদা করে যাচাই, narrow release scope, এবং public URL verification প্রয়োজন।
+- Production migration, Worker activation, schedule enablement, real collection/payout বা irreversible release—কোনোটিই এই CI pass বা handover update দ্বারা অনুমোদিত/সম্পন্ন হয়নি।
+
+### পরবর্তী কাজ — একই পরীক্ষা পুনরাবৃত্তি নয়
+1. Staging Project/credentials না পাওয়া পর্যন্ত Staging workflow চালানোর চেষ্টা নয়।
+2. GitHub main/Pages-এর বর্তমান deployment ও static content যাচাই করে safe public release-এ কেবল প্রয়োজনীয় narrow changes রাখা।
+3. Ledger → Withdrawal Request → Admin Approval → authorized provider adapter-এর implementation review ও disposable tests; provider integration disabled থাকবে।
+4. Staging প্রস্তুত হলে Staging workflow একবার চালিয়ে migration/Auth/RBAC/Edge Function acceptance record করা।
+5. সবশেষে Production migration ও Worker activation-এর জন্য আলাদা safety review/অনুমোদন; কোনো live data বা টাকা ঝুঁকিতে নয়।
+
+**সত্যতা-সীমা:** ৭/৭ CI PASS; PR এখনো Draft/Open। ব্যবহারকারী safe code/test preparation শুরু করতে পারেন, কিন্তু পূর্ণ automated earning system বা live website/backend/worker/payment system এখনো চালু হয়েছে—এমন দাবি করা যাবে না।
