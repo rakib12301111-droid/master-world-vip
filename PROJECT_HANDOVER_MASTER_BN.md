@@ -345,3 +345,49 @@ GitHub Actions-এ ব্যবহৃত secret নাম:
 4. Mobile/keyboard/accessibility/static checks; তারপর narrow PR review. PR merge/Pages deployment আলাদা release approval-এর অধীন।
 
 বর্তমান অবস্থা: Frontend catalogue + local quote draft committed; server submission NOT IMPLEMENTED; NOT DEPLOYED.
+
+
+---
+
+# Customer Quote Workflow — Backend + Admin Inbox implementation (২৭ নভেম্বর ২০২৬)
+
+## Existing architecture audit
+- Main/default branch-এর existing schema-তে `customer_service_orders`-এর মতো generic pre-order quote intake table পাওয়া যায়নি। Facebook Setup order schema আলাদা package-specific flow; সেটিকে generic service quote-এর জন্য reuse করা হয়নি।
+- PR #20 planning branch-এ `customer_service_orders` এবং `customer_order_fund_allocations`-এর funded-order safety foundation পাওয়া গেছে; এটি Draft/Open/Unmerged এবং main-এ অন্তর্ভুক্ত নয়। তাই quote request-এর জন্য আলাদা pre-order intake রাখা হয়েছে; paid order conversion-এর সময় ওই existing customer-service-order model ও funding guards reuse করতে হবে, duplicate order/ledger তৈরি নয়।
+- Existing Owner/Admin RBAC (`app_user_roles`, `get_my_admin_access()`, `admin_audit_logs`), notifications এবং helpdesk staff pattern পর্যালোচনা করা হয়েছে।
+
+## এই সেশনে কোডে সম্পন্ন
+- Migration `20261127140000_customer_quote_workflow.sql`: authenticated customer quote intake, service allowlist, country/scope validation, per-user 24-hour rate limit + transaction advisory lock, maximum 3 active requests, private RLS, server-side Owner/Super Admin/Admin authorization, quote send/review, accept/decline/cancel/expiry, notifications, Admin audit logs এবং append-only event history।
+- `www/services.html`: Supabase Auth session ব্যবহার করে customer request RPC-তে submit, নিজের request/quote দেখা, quote accept/decline এবং active request cancel। Database migration না থাকলে স্পষ্ট error দেখায়।
+- `www/admin-quotes.html`: Admin-only inbox; RBAC check, request review/reject, amount/currency/scope/delivery/expiry সহ quote পাঠানো এবং expired quote handling।
+- `www/index.html`: Admin role verify হওয়ার পর Customer Quote Inbox link দেখায়।
+- `scripts/verify-customer-quote-workflow.py`: static security checks।
+- `supabase/tests/customer-quote-workflow-runtime.sql`: disposable database-এ Customer A/B privacy, Admin review, quote send, customer acceptance ও append-only event test।
+- `.github/workflows/validate-migrations-disposable.yml`: pull-request validation, 31-migration fresh + legacy disposable apply এবং quote runtime test।
+- `.github/workflows/apply-supabase-migrations.yml` ও `supabase/README.md`: নতুন migration inventory/order-এ যুক্ত।
+- `docs/CUSTOMER_QUOTE_WORKFLOW_ACCEPTANCE_TEST_BN.md`: Staging acceptance runbook।
+- Customer quote acceptance কেবল quote consent record করে; এটি `customer_service_orders` তৈরি করে না, payment/ledger/member assignment/payout করে না।
+
+## Branch / PR অবস্থান
+- Branch: `feature/customer-quote-workflow` (PR #21-এর customer-services branch-এর উপর stacked)।
+- PR #21: `feature/customer-services-mvp` → `main`, Draft/Open/Unmerged।
+- এই backend batch-এর PR #22 তৈরি হবে `feature/customer-quote-workflow` → `feature/customer-services-mvp` হিসেবে; PR #21-এ পরে অন্তর্ভুক্ত হবে।
+- Latest commit at handover update: see GitHub PR #22 head after creation.
+- No Production migration, no live Pages deployment, no real customer data or payment was performed.
+
+## Verification status — এখনো pending
+- Source files commit/fetch verification হয়েছে।
+- GitHub Actions run এখনো এই latest commit-এ পাওয়া যায়নি; disposable PostgreSQL migration/runtime workflow result না আসা পর্যন্ত SQL test PASS দাবি করা যাবে না।
+- Static verifier run result pending।
+- Staging Supabase migration apply, two-customer/Admin manual acceptance, Android Chrome/accessibility test pending।
+- Production migration ও Live deployment আলাদা অনুমোদন ছাড়া করা হবে না।
+
+## পরবর্তী কাজ — duplicate implementation নয়
+1. PR #22-এর disposable SQL + runtime workflow ফল পরীক্ষা; failure হলে নির্দিষ্ট SQL/test সংশোধন।
+2. Staging project-এ migration apply ও Customer A/B/Admin acceptance।
+3. Existing `customer_service_orders` / `customer_order_fund_allocations` (PR #20 migration merge হওয়া সাপেক্ষে) এর সঙ্গে accepted quote → funded order conversion bridge design; verified payment, currency, project eligibility, three locked allocations, custody/reserve/operating checks ছাড়া কোনো order funded হবে না।
+4. Quote inbox-এ customer identity/contact display policy ও notification delivery পরীক্ষা; only necessary data expose।
+5. Android mobile, accessibility ও browser preview verification; তারপর PR #21/#22 stack review।
+6. Production apply/deploy remains separate explicit release approval.
+
+**Current status: Quote Request backend + customer submission UI + Admin inbox code committed; NOT YET CI-VERIFIED, NOT STAGING-APPLIED, NOT PRODUCTION-LIVE.**
