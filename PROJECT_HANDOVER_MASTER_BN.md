@@ -411,3 +411,15 @@ GitHub Actions-এ ব্যবহৃত secret নাম:
 - Run #4-এ backup, Docker restore container, encrypted backup, isolated restore, artifact upload, migration preview/apply, Auth/RBAC ও Edge Function ধাপগুলো শুরু হয়নি; downstream job skipped।
 - Production database-এ কোনো পরিবর্তন হয়নি। Production migration approval gate অপরিবর্তিত: `APPLY-MASTER-WORLD-VIP-MIGRATIONS`।
 - পরবর্তী ধাপ: Secret-এ Dashboard থেকে কপি করা সঠিক সম্পূর্ণ Session Pooler URI সংরক্ষণ → Staging workflow চালানো → preflight, backup/restore ও পরবর্তী ধাপের logs যাচাই। কোনো validation শিথিল করা যাবে না।
+
+## 19. ২৮ নভেম্বর ২০২৬ — Staging Auth preflight-এর নিরাপদ error diagnostics
+
+- Workflow: `.github/workflows/validate-staging-supabase.yml`
+- পরিবর্তনের commit: `c98f67d536d39637036d110b2385eea822f109c9`
+- পরিবর্তন: OWNER-এ প্রথম ব্যর্থ হলেই থেমে না গিয়ে OWNER, ADMIN ও MEMBER—তিনটি Staging Auth account-ই পরীক্ষা করবে; প্রতিটির HTTP status ও নিরাপদ error category আলাদা করে দেখাবে।
+- Diagnostic category: API key rejected, email unconfirmed, credentials/account mismatch, rate limit, network/TLS/timeout অথবা অচেনা Auth error। Response body, email, password, API key বা JWT log করা হয় না।
+- কোনো account ব্যর্থ হলে স্পষ্টভাবে জানাবে যে Migration Preview/Apply চালানো হয়নি; সব তিনটি account পরীক্ষা শেষ করেই preflight failure exit করবে।
+- Workflow source GitHub থেকে পুনরায় fetch করে পরিবর্তিত Auth preflight block যাচাই করা হয়েছে; আগের generic error message আর নেই।
+- **এখনো চালানো/প্রমাণিত নয়:** নতুন commit-এর পর GitHub Actions workflow run, Auth diagnostic ফলাফল, backup/restore, migration preview/apply, Owner RPC role assignment, Admin RPC access ও queue-worker ধাপ। GitHub connector দিয়ে encrypted Actions Secrets পড়া/পরিবর্তন করা যায় না; Auth credential/API key-এর প্রকৃত মানও chat-এ প্রকাশ করা যাবে না।
+- **বর্তমান blocker:** Auth preflight এখন প্রকৃত নিরাপদ error category প্রকাশ করবে। পরবর্তী Staging run-এ কোন account এবং কোন category ব্যর্থ তা দেখে সংশ্লিষ্ট Secret বা Supabase Auth configuration ঠিক করতে হবে। Secret ঠিক না হওয়া পর্যন্ত পরবর্তী ধাপগুলো নিরাপত্তার কারণে চলবে না।
+- Production database-এ কোনো পরিবর্তন হয়নি; Production migration gate অপরিবর্তিত।
