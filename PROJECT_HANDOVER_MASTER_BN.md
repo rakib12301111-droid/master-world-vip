@@ -703,3 +703,18 @@ GitHub Actions-এ ব্যবহৃত secret নাম:
 3. Staging acceptance pass না হওয়া পর্যন্ত Worker disabled/idle থাকবে; কোনো customer task বা revenue execution নয়।
 4. PR #19 schedule branch এখনো আলাদা Draft PR; default branch-এ merge বা public deployment আলাদা অনুমোদন ছাড়া নয়।
 5. Production migration gate `APPLY-MASTER-WORLD-VIP-MIGRATIONS` অপরিবর্তিত থাকবে।
+
+
+## 27 নভেম্বর ২০২৬ — Automation Engine SQL preflight correction
+
+- PR #20 branch: `planning/4000-automated-project-economy`।
+- Latest reviewed automation migration: `supabase/migrations/20261126110000_project_automation_engine.sql`।
+- Source review-এ `scheduler_reap_expired_project_task_leases()` function-এর opening dollar-quote delimiter malformed (`as $`) পাওয়া যায়; এটি PostgreSQL parser error ঘটাতে পারত।
+- সংশোধন করে valid `as $$ ... $$` করা হয়েছে।
+- Fix commit: `9443290b521eb8f14b299c0a3a1691cdc79098f3`।
+- Fix commit-এর জন্য বর্তমানে কোনো GitHub Actions workflow run বা commit status পাওয়া যায়নি; তাই correction committed, কিন্তু CI/runtime validation এখনো **PENDING**।
+- PR #20 Draft/Open/Unmerged; PR #19 Draft/Open/Unmerged। Main branch-এ সর্বশেষ পর্যবেক্ষিত commit `9c504237e8698ccacc891dc82a8aa23d98747585`; PR #20-এর automation/staging additions main-এ merged নয়।
+- Staging workflow `.github/workflows/validate-staging-supabase.yml` কেবল manual dispatch-এ চলে এবং পৃথক Staging secrets ও তিনটি isolated Owner/Admin/Member test account চায়। Staging run-এর প্রমাণ নেই; secrets উপস্থিত কি না GitHub Actions-এর secret values না পড়ে নিশ্চিত করা যায়নি।
+- Worker source বর্তমানে fail-closed: `MWVIP_WORKER_ENABLED=true` না হলে disabled; enabled হলেও approved business task handler count zero থাকায় task claim করে না। এটি live task execution নয়।
+- Production schema/migrations অপরিবর্তিত; কোনো Production migration apply, live deployment, payment/payout বা revenue activation করা হয়নি।
+- পরবর্তী কাজ: fix commit-এ Migration Safety + disposable PostgreSQL full-chain runtime tests-এর বাস্তব run/log যাচাই; staging secrets/test accounts প্রস্তুত হলে staging-only validation; Admin RBAC/Owner bootstrap ও provider/custody/payout prerequisites আলাদা করে যাচাই। Production migration apply-এর আগে exact approval `APPLY-MASTER-WORLD-VIP-MIGRATIONS` এবং recoverable backup/restore evidence বাধ্যতামূলক।
