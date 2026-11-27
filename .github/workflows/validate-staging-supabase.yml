@@ -40,9 +40,14 @@ jobs:
               raise SystemExit("::error::Staging DB URL must use a Supabase Session Pooler URI")
           if u.port != 5432 or u.path != "/postgres" or u.query or u.fragment:
               raise SystemExit("::error::Staging DB URL must use port 5432, database /postgres, and no query/fragment")
-          if unquote(u.username or "") != "postgres."+ref or not unquote(u.password or ""):
-              raise SystemExit("::error::Staging DB URL credentials are not bound to the confirmed Staging project ref")
-          print("Staging DB URL binding validated; no credentials printed.")
+          username=unquote(u.username or "")
+          password=unquote(u.password or "")
+          expected_username="postgres."+ref
+          if username != expected_username:
+              raise SystemExit("::error::Staging DB URL username mismatch. In Supabase Connect > Session pooler, use the exact username postgres.<Staging project ref>; do not use the direct-connection username.")
+          if not password:
+              raise SystemExit("::error::Staging DB URL password is empty. Recreate the URI using the Staging database password; URL-encode special characters. Do not paste the URI into chat or logs.")
+          print("Staging DB URL username and non-empty password checks passed; no credentials printed.")
           PY
       - name: Install PostgreSQL client
         run: |
