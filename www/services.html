@@ -111,6 +111,11 @@ async function loadMyRequests(){
   const card=node('article','');card.className='card section';
   const names={typing:'বাংলা ও ইংরেজি টাইপিং',document_formatting:'PDF ও ডকুমেন্ট ফরম্যাটিং',general_design:'সাধারণ ডিজাইন সহায়তা',social_content:'সোশ্যাল মিডিয়া কনটেন্ট',other:'অন্যান্য'};
   card.append(node('h3',names[item.service_key]||item.service_key),node('p',statusLabel(item.status)),node('p','জমার তারিখ: '+new Date(item.created_at).toLocaleString('bn-BD')),node('p',item.scope_description));
+  if(['submitted','under_review','quote_sent'].includes(item.status)){
+   const cancel=node('button','অনুরোধ বাতিল করুন','btn alt');cancel.type='button';
+   cancel.addEventListener('click',async()=>{cancel.disabled=true;const {error}=await client.rpc('cancel_my_customer_quote_request',{p_request_id:item.id});if(error){output.style.display='block';output.textContent='বাতিল করা যায়নি: '+error.message;cancel.disabled=false;}else{output.style.display='block';output.textContent='Quote Request বাতিল হয়েছে।';await loadMyRequests();}});
+   card.append(cancel);
+  }
   if(item.status==='quote_sent'){
    card.append(node('p','Quote: '+item.quote_amount+' '+item.quote_currency+' · ডেলিভারি: '+item.delivery_days+' দিন'));
    card.append(node('p','কাজের পরিধি: '+item.quote_scope));
