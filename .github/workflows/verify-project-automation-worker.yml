@@ -1,0 +1,34 @@
+name: Verify MASTER WORLD VIP project worker
+
+on:
+  pull_request:
+    paths:
+      - "supabase/functions/project-automation-worker/**"
+      - "scripts/verify-staging-worker-safety.py"
+      - ".github/workflows/verify-project-automation-worker.yml"
+  push:
+    branches: [main]
+    paths:
+      - "supabase/functions/project-automation-worker/**"
+      - "scripts/verify-staging-worker-safety.py"
+      - ".github/workflows/verify-project-automation-worker.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  worker-static-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Deno
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - name: Type-check Edge Function
+        run: deno check supabase/functions/project-automation-worker/index.ts
+      - name: Verify Staging isolation and fail-closed worker rules
+        run: python scripts/verify-staging-worker-safety.py
