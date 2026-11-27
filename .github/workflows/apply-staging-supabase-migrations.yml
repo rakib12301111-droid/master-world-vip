@@ -66,6 +66,7 @@ jobs:
           test "$SUPABASE_PROJECT_REF" != "lztbbrzeuyjkuiyzrsxp" || { echo "::error::Refusing to target the known Production Supabase project."; exit 1; }
           python3 - <<'PY'
           import os
+          import re
           from urllib.parse import urlsplit
           value = os.environ["SUPABASE_DB_URL"].strip()
           parsed = urlsplit(value)
@@ -74,8 +75,10 @@ jobs:
           if not parsed.hostname.endswith(".pooler.supabase.com"):
               raise SystemExit("::error::Use the Staging project's IPv4-compatible Supabase Session Pooler URI.")
           ref = os.environ["SUPABASE_PROJECT_REF"].strip()
-          if len(ref) < 10 or len(ref) > 40 or not ref.replace("-", "").isalnum():
-              raise SystemExit("::error::Staging project ref format is invalid.")
+          if not re.fullmatch(r"[a-z0-9]{20}", ref):
+              raise SystemExit("::error::Staging project ref must be 20 lowercase alphanumeric characters.")
+          if not parsed.username or ref not in parsed.username:
+              raise SystemExit("::error::Staging DB URI username does not match the configured Staging project ref.")
           print("Staging credentials are present and structurally valid; values were not printed.")
           PY
 
@@ -121,11 +124,6 @@ jobs:
         uses: supabase/setup-cli@v1
         with:
           version: latest
-
-      - name: Link only the configured Staging project
-        run: |
-          set -euo pipefail
-          supabase link --project-ref "$SUPABASE_PROJECT_REF"
 
       - name: Preview pending Staging migrations
         run: |
