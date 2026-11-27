@@ -2,20 +2,36 @@
 
 Updated: 2026-11-27
 
-## Added to the planning branch
+## Staging workflow
+- `.github/workflows/validate-staging-supabase.yml` is manual-dispatch-only. It rejects the known Production project ref, validates that the Session Pooler URL is bound to the configured Staging project ref, previews then applies ordered migrations to Staging, signs in as three distinct Owner/Admin/Member test users, assigns test roles through the protected Owner RPC, checks Admin overview allow/deny behavior, and deploys the worker Edge Function to Staging.
+- Required repository Actions secrets (Staging only): `STAGING_SUPABASE_ACCESS_TOKEN`, `STAGING_SUPABASE_DB_URL`, `STAGING_SUPABASE_PROJECT_REF`, `STAGING_SUPABASE_URL`, `STAGING_SUPABASE_ANON_KEY`, `STAGING_OWNER_EMAIL`, `STAGING_OWNER_PASSWORD`, `STAGING_ADMIN_EMAIL`, `STAGING_ADMIN_PASSWORD`, `STAGING_MEMBER_EMAIL`, `STAGING_MEMBER_PASSWORD`.
+- The DB URL must use the Supabase Session Pooler, port 5432, database `postgres`, and username `postgres.<STAGING_SUPABASE_PROJECT_REF>`. The API URL must match `https://<STAGING_SUPABASE_PROJECT_REF>.supabase.co`. Values must never be pasted into chat or committed.
+- The three Auth accounts must be distinct. The Owner account must be bootstrapped by the RBAC migration. The workflow signs in freshly each run; do not store JWTs as long-lived secrets.
+- The workflow applies migrations and deploys a function, so it must only be manually dispatched after checking every target and secret. It must never be triggered automatically by PR events.
 
-- `.github/workflows/validate-staging-supabase.yml`: manual-dispatch-only Staging workflow (no `pull_request` trigger, because it applies migrations and deploys a function). It rejects the known Production project ref, previews and applies the full ordered local migration set to the configured Staging DB URL, logs into three separate test accounts, uses the Staging Owner RPC to set the Admin and Member test roles, verifies all three returned roles, verifies Admin overview is allowed for Owner/Admin and denied for Member, then deploys the worker Edge Function to Staging.
-- Required GitHub Actions secrets (configure only in repository Actions secrets; never paste into chat): `STAGING_SUPABASE_ACCESS_TOKEN`, `STAGING_SUPABASE_DB_URL` (PostgreSQL pooler URL; its username must end in `.<STAGING_SUPABASE_PROJECT_REF>`), `STAGING_SUPABASE_PROJECT_REF` (must differ from Production), `STAGING_SUPABASE_URL`, `STAGING_SUPABASE_ANON_KEY`, `STAGING_OWNER_EMAIL`, `STAGING_OWNER_PASSWORD`, `STAGING_ADMIN_EMAIL`, `STAGING_ADMIN_PASSWORD`, `STAGING_MEMBER_EMAIL`, `STAGING_MEMBER_PASSWORD`.
-- The workflow checks that the DB URL username is bound to the configured Staging project ref (without printing credentials), rejects the known Production ref, and requires three distinct Auth user IDs. Use the Supabase pooler connection URL with username `postgres.<project-ref>`; an unbound direct URL is deliberately rejected.
-- The Staging Owner account must already be bootstrapped by the RBAC migration. The workflow signs in afresh for each run (no expiring JWT secrets), then assigns Admin and Member roles to the two separate Staging test accounts through the protected Owner RPC.
-- `supabase/functions/project-automation-worker/index.ts`: Supabase Edge Function queue-worker foundation. It uses service-role RPCs for worker registration and heartbeat. It deliberately does **not** claim tasks because no approved business-task handler is implemented; it returns an idle status rather than consuming work it cannot execute.
-- `.github/workflows/verify-project-automation-worker.yml`: Deno type-check on PR/push.
-- The Staging workflow deploys the Edge Function only after migrations and access-control acceptance checks pass. The function remains disabled unless `MWVIP_WORKER_ENABLED=true` is configured in Supabase function secrets.
+## Worker implementation scope
+- `supabase/functions/project-automation-worker/index.ts` registers and heartbeats, then claims tasks only when the server-side enable switch and database controls permit it.
+- Currently implemented allowlisted handlers are limited to read-only `system_health_check`, `project_usage_digest`, and `work_order_validate`. They do not perform customer work, external side effects, or financial effects.
+- The worker requires Staging Function Secrets `SUPABASE_SERVICE_ROLE_KEY` and `MWVIP_WORKER_KEY`. Keep `MWVIP_WORKER_ENABLED` unset/false during initial deployment and acceptance.
+- Before enabling execution, add and review each business handler with strict input validation, authorization, tenant isolation, idempotency, bounded cost/time, audit events, retries/dead-letter handling, kill switch, and end-to-end tests. No unknown task type may be executed.
+- Add and test a scheduler/cron trigger, queue cadence, timezone, retry policy, heartbeat alert, quota/cost monitoring, emergency stop and recovery runbook before claiming 24/7 operation.
 
-## Critical limitations
+## Full launch gates
+1. User confirms the Staging Project Reference; it must differ from Production ref `lztbbrzeuyjkuiyzrsxp`.
+2. User configures the Staging-only GitHub Actions secrets and three separate test accounts directly in GitHub/Supabase dashboards. Never ask for secret values in chat.
+3. Manually run the Staging workflow once; review migration preview, applied migration list, Auth/RBAC positive and negative checks, worker deployment and protected logs.
+4. Run RLS isolation tests, RPC privilege tests, schema audit, migration rerun/recovery checks and legacy-data compatibility tests.
+5. Test worker disabled-by-default, auth, registration/heartbeat, leases, concurrency, duplicate prevention, idempotency, retry/dead-letter, budget ceilings, kill switch, failures and recovery.
+6. Implement and test real customer order intake, service catalog, task-specific business handlers, QA/acceptance and customer-funded settlement. Current read-only handlers are not a real earning engine.
+7. Verify separate member-payable and company-revenue ledgers, USD/BDT settlement, commission rules, refund reserves, reconciliation, anti-fraud and entitlement checks. Real payouts remain disabled until authorized provider integration.
+8. Review security/privacy/legal obligations, backups, restore drills, observability, alerts, incident response and rollback.
+9. Review PR #20/#23 dependencies and exact diffs; merge only an approved narrow release after Staging acceptance and green CI on the exact commit.
+10. Production migration requires fresh encrypted backup, successful isolated restore, exact migration/rollback plan and separate approval phrase `APPLY-MASTER-WORLD-VIP-MIGRATIONS`.
+11. Production worker deployment/activation and schedule require separate explicit approval; start disabled and canary only safe read-only work under strict monitoring.
+12. Monitor a 24-hour canary and 7-day reliability period before scaling. Never claim guaranteed income; only actual accepted work and settled customer funds can support earnings.
 
-- These workflows have been committed to the Draft PR branch but have not been dispatched. The Staging workflow is deliberately manual-only; PR events must never automatically apply migrations or deploy the worker. No Staging secrets or staging project credentials are available to this workflow execution, so no real Staging migration or Auth test has yet been run.
-- The worker code is not a completed business-task executor. No project-specific task handlers, external connectors, revenue generation, customer payment collection, or payout execution are implemented. It only registers and heartbeats while idle.
-- Do not set `MWVIP_WORKER_ENABLED=true` until reviewed handlers, budgets, task idempotency and end-to-end tests are approved.
-- No Production worker deploy is included.
-- Production migrations and public deployment are not performed by this Staging workflow. Production remains separately gated and requires a fresh explicit approval and verified backup/restore evidence.
+## Current verified status (2026-11-27)
+- User confirms Supabase project `MASTER-WORLD-VIP-STAGING` was created; Project Reference has not yet been supplied/verified.
+- No Staging secrets are confirmed configured; no Staging migration/Auth/RBAC/Worker acceptance run is recorded.
+- No Production migration, Worker activation, live customer-task execution, payment collection or payout is authorized or proven.
+- GitHub Pages static site deployment was previously workflow-verified; that does not mean backend automation is live.
