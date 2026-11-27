@@ -1,11 +1,9 @@
 name: MASTER WORLD VIP — Staging migrations and access-control acceptance
 
 on:
+  # Deliberately manual only: this workflow applies migrations and deploys to Staging.
+  # A pull_request event must never trigger database writes or function deployment.
   workflow_dispatch:
-  pull_request:
-    paths:
-      - '.github/workflows/validate-staging-supabase.yml'
-      - 'supabase/migrations/**'
 
 permissions:
   contents: read
