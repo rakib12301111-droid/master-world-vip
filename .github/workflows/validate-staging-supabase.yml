@@ -342,7 +342,7 @@ jobs:
           for pair in "OWNER_JWT:yes" "ADMIN_JWT:yes" "MEMBER_JWT:no"; do
             var="${pair%%:*}"; expected="${pair##*:}"; token="${!var}"
             code=$(curl --silent --show-error -o /tmp/admin-overview.json -w '%{http_code}' \
-              "$BASE_URL/rest/v1/rpc/admin_project_automation_overview" \
+              "$BASE_URL/rest/v1/rpc/admin_auto_work_overview" \
               -H "apikey: $ANON_KEY" -H "Authorization: Bearer $token" \
               -H "Content-Type: application/json" -d '{}')
             if [ "$expected" = "yes" ]; then
