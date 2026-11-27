@@ -292,7 +292,7 @@ returns boolean
 language plpgsql
 security definer
 set search_path = ''
-as $
+as $$
 declare
   v_user uuid := auth.uid();
   v_status text;
@@ -314,7 +314,7 @@ begin
   from public.app_user_roles r where r.role in ('owner','super_admin','admin');
   return true;
 end;
-$;
+$$;
 
 create or replace function public.admin_expire_customer_quotes()
 returns integer
