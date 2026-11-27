@@ -1203,3 +1203,57 @@ Owner নির্দেশ: নিচের কাজগুলোকে MASTER 
 7. Release record পূর্ণ না হওয়া পর্যন্ত deployment state NOT VERIFIED / NOT DEPLOYED হিসেবে রাখুন।
 
 **এই plan/commit কোনো Pages deployment trigger করেনি, PR merge করেনি, Production migration চালায়নি, Worker activate করেনি, payment/payout করেনি।**
+
+
+---
+
+## 27 নভেম্বর ২০২৬ — জরুরি লাইভ প্রস্তুতি ও Staging/Worker অগ্রগতি
+
+এই অংশটি বর্তমান planning branch-এর সর্বশেষ যাচাইয়ের রেকর্ড। আগের নথি অক্ষত রাখা হয়েছে।
+
+### Project পরিচয় ও release boundary
+- Supabase Project Reference: `lztbbrzeuyjkuiyzrsxp`।
+- Repository-এর Production migration workflow-তে একই Project Ref hard-coded target হিসেবে রয়েছে; তাই এই Project-কে Production target হিসেবেই বিবেচনা করতে হবে।
+- এই Reference দেখে Project-এর dashboard label বা environment metadata স্বাধীনভাবে যাচাই করা হয়নি; তবে workflow target match নিশ্চিত।
+- এই Project-এ Staging migration/test চালানো যাবে না। Staging-এর জন্য পৃথক Supabase Project ও আলাদা credentials বাধ্যতামূলক।
+
+### ২৭ নভেম্বরের যাচাইকৃত engineering অগ্রগতি
+- PR #20 planning branch-এ read-only Admin Dashboard, Staging-only validation workflow, Worker registration/heartbeat foundation এবং Phase A read-only business handlers যুক্ত হয়েছে।
+- Worker-এর অনুমোদিত Phase A handler: `system_health_check`, `project_usage_digest`, `work_order_validate`; unknown task type fail-closed।
+- Phase A handler-গুলো কেবল read-only; এগুলো customer payment, payout, commission posting বা revenue-generating task চালায় না।
+- Worker claim/handler execution-এর জন্য active heartbeat, project/schedule enablement, budget gate, lease/reservation/retry/audit control এবং global emergency stop-এর শর্ত রয়েছে।
+- Worker source-এ registration/heartbeat ও সীমিত read-only handler থাকলেও Production deployment/activation হয়নি।
+
+### ২৭ নভেম্বরের বাস্তব CI evidence
+- Worker Static CI Run `45959327873`: SUCCESS — https://github.com/rakib12301111-droid/master-world-vip/actions/runs/45959327873
+- Full ordered migration + runtime disposable test Run `45959527467`: SUCCESS — https://github.com/rakib12301111-droid/master-world-vip/actions/runs/45959527467
+- Run #45959527467-এ fresh ও legacy-shape disposable PostgreSQL database-এ migration chain এবং Phase A read-only handler assertions সফল। এটি Staging বা Production database নয়।
+- Disposable backup/restore verification Run `45969112483`: SUCCESS — https://github.com/rakib12301111-droid/master-world-vip/actions/runs/45969112483
+- Migration/static safety Run `45969335395`, `45969335522`, `45969335549`: SUCCESS; এগুলো PR #20-এর planning branch-এ validation, Production deployment নয়।
+- আগের encrypted Supabase logical backup/restore evidence Run `45810029561`: SUCCESS; Artifact `15111217500`, নির্ধারিত expiry ৩ ডিসেম্বর ২০২৬। Artifact link: https://github.com/rakib12301111-droid/master-world-vip/actions/runs/45810029561/artifacts/15111217500
+
+### PR ও main branch অবস্থা
+- Main branch HEAD: `9c504237e8698ccacc891dc82a8aa23d98747585`।
+- PR #20: Draft/Open/Unmerged; head `8b91824c69bac5fe654689c895740ffbde6632f2` — https://github.com/rakib12301111-droid/master-world-vip/pull/20
+- PR #23: Draft/Open/Unmerged; head `635d5acdc3869cd2711012791c2524f29f0ba3d4` — https://github.com/rakib12301111-droid/master-world-vip/pull/23
+- PR #20-এর Staging workflow committed হলেও Staging project/credentials অনুপস্থিত থাকায় workflow dispatch হয়নি; বাস্তব Staging migration/Auth/RBAC/Edge Function verification হয়নি।
+- Draft planning branch commit বা CI success public Pages deployment নয়। PR #20-কে অন্ধভাবে merge করা যাবে না; এতে backend, migration ও worker scope রয়েছে।
+
+### এখনো Live নয় — স্পষ্টভাবে বাকি
+1. আলাদা Free Staging Supabase Project তৈরি এবং পৃথক secrets/accounts সংযোগ।
+2. Staging-only workflow চালিয়ে migration, Owner/Admin/Member Auth/RBAC, permission-denial ও Edge Function deployment যাচাই।
+3. Worker-এর approved business-task handler ও revenue/business logic সম্পূর্ণ design, test ও acceptance; Phase A read-only handler-কে revenue execution হিসেবে গণ্য করা যাবে না।
+4. Production migration-এর আগে current recoverable backup/restore evidence পুনরায় যাচাই, schema compatibility review এবং আলাদা exact approval `APPLY-MASTER-WORLD-VIP-MIGRATIONS`।
+5. Production Worker deployment/activation-এর জন্য পৃথক স্পষ্ট approval ও operational safety review।
+6. bKash/Nagad payout: official provider/API/merchant authorization, compliance/KYC, webhook verification, reconciliation ও payout security ছাড়া বাস্তব টাকা পাঠানো যাবে না। Admin approval একা provider permission-এর বিকল্প নয়।
+7. Real payment, refund, commission posting, member withdrawal ও revenue collection এখনো live নয়।
+8. Public release-এর জন্য safe narrow release scope, Pages deployment এবং live URL verification প্রয়োজন; Draft PR #20 সরাসরি merge করে সব feature প্রকাশ করা যাবে না।
+
+### পরবর্তী কাজের নির্দেশ — একই কাজ পুনরাবৃত্তি নয়
+- প্রথমে Staging project/credentials না পাওয়া পর্যন্ত Staging workflow dispatch করার চেষ্টা নয়; Production ref fail-closed check বজায় থাকবে।
+- Staging প্রস্তুত হলে `.github/workflows/validate-staging-supabase.yml` একবার চালিয়ে বাস্তব result/log সংরক্ষণ করতে হবে।
+- Public website release-কে backend/finance/worker activation থেকে আলাদা রাখতে হবে; safe static MVP release-এর জন্য narrow PR তৈরি ও Pages live verification করতে হবে।
+- Production migration, Worker activation, money movement বা irreversible public release gate এড়িয়ে যাওয়া যাবে না।
+- কোনো secret/password/token/OTP/encryption passphrase handover-এ লেখা যাবে না।
+
+**২৭ নভেম্বরের সারাংশ:** বড় engineering ও disposable validation অগ্রগতি হয়েছে; কিন্তু পৃথক Staging Project/credentials, Production migration approval, production worker activation এবং provider-authorized payment/payout ছাড়া সম্পূর্ণ automated earning system Live বলা যাবে না। কোনো বাস্তব Production database পরিবর্তন, live worker execution, payment/payout বা public deployment এই update দ্বারা সম্পন্ন হয়নি।
