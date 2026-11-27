@@ -33,6 +33,7 @@ async function init(){
 }
 async function load(){
  items.textContent='অনুরোধ লোড হচ্ছে…';
+ const {error:expiryError}=await db.rpc('admin_expire_customer_quotes');if(expiryError)access.textContent='Quote expiry check: '+expiryError.message;
  let q=db.from('customer_quote_requests').select('id,customer_user_id,service_key,country,scope_description,requested_deadline,budget_hint,status,quote_amount,quote_currency,quote_scope,delivery_days,quote_expires_at,admin_note,created_at').order('created_at',{ascending:false}).limit(100);
  const filter=document.getElementById('filter').value;
  if(filter==='active')q=q.in('status',['submitted','under_review','quote_sent']);
