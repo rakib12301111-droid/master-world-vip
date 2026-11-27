@@ -1,11 +1,11 @@
 # MASTER WORLD VIP — Business Worker Task Catalog
 
 Updated: 2026-11-27
-Status: **Specification baseline — handlers NOT enabled**
+Status: **Phase A implemented — 2 business read-only handlers runtime-tested; remaining handlers are specification-only**
 
 ## Safety boundary
 
-The database allowlist and runtime currently permit only `system_health_check` (read-only). This catalog defines candidate business tasks; it does not enable them. Every task below must be implemented, threat-modelled, independently tested and explicitly allowlisted before a Worker can claim it. No task may bypass customer consent, role permissions, budget reservation, idempotency, audit or the global emergency stop.
+The database allowlist and runtime currently permit exactly three source-implemented read-only types: `system_health_check`, `project_usage_digest`, and `work_order_validate`. No other business handler is claimable. This catalog defines candidate business tasks; it does not enable them. Every task below must be implemented, threat-modelled, independently tested and explicitly allowlisted before a Worker can claim it. No task may bypass customer consent, role permissions, budget reservation, idempotency, audit or the global emergency stop.
 
 ## Common task envelope
 
@@ -67,7 +67,7 @@ No payment collection, refund, payout submission, bank transfer, bKash/Nagad tra
 
 ## Current decision
 
-Only `system_health_check` is enabled. All candidate tasks above remain **SPECIFIED / NOT IMPLEMENTED / NOT ALLOWLISTED**. Do not flip Worker execution or project schedules on because this catalog exists.
+`system_health_check`, `project_usage_digest`, and `work_order_validate` are source-implemented and allowlisted as read-only. The two business handlers passed disposable runtime acceptance in run `45959527467`. All other candidate tasks remain **SPECIFIED / NOT IMPLEMENTED / NOT ALLOWLISTED**. Do not enable Worker execution or project schedules because this catalog exists.
 
 
 ## Phase A implementation status — 27 Nov 2026
