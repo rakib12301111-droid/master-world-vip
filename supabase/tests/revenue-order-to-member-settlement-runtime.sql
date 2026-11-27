@@ -53,7 +53,7 @@ begin
 
   update public.customer_service_orders
   set status='funded',
-      provider='bank',
+      provider='other_approved',
       provider_transaction_id='SYNTHETIC-PAYMENT-TXN-001',
       provider_event_id='SYNTHETIC-PAYMENT-EVENT-001',
       provider_settled_at=now(),
