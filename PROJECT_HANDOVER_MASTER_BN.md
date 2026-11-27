@@ -1779,3 +1779,41 @@ Run links:
 
 **পরবর্তী নিরাপদ ধাপ:** Owner GitHub repository Settings → Secrets and variables → Actions-এ Staging-only secret names/value নিজে configure করবেন। সব প্রয়োজনীয় secrets তৈরি ও test account প্রস্তুত না হওয়া পর্যন্ত manual Staging workflow চালাবেন না। প্রথমে backup/restore job-এর সফল run ও artifact যাচাই করতে হবে।
 
+
+
+## ২৮ নভেম্বর ২০২৬ — Staging Secrets উপস্থিতি ও Validation Workflow preflight
+
+### GitHub Repository Secrets — Owner-এর স্ক্রিনশট থেকে নাম যাচাই
+নিচের ১১টি Staging Secret-এর নাম Repository Settings → Secrets and variables → Actions-এ দৃশ্যমান ছিল:
+- `STAGING_SUPABASE_ACCESS_TOKEN`
+- `STAGING_SUPABASE_URL`
+- `STAGING_SUPABASE_ANON_KEY`
+- `STAGING_SUPABASE_DB_URL`
+- `STAGING_SUPABASE_PROJECT_REF`
+- `STAGING_BACKUP_ENCRYPTION_PASSPHRASE`
+- `STAGING_OWNER_EMAIL`
+- `STAGING_OWNER_PASSWORD`
+- `STAGING_ADMIN_EMAIL`
+- `STAGING_ADMIN_PASSWORD`
+- `STAGING_MEMBER_EMAIL`
+- `STAGING_MEMBER_PASSWORD`
+
+দ্রষ্টব্য: উপরের তালিকায় ১২টি নাম আছে; Owner-এর স্ক্রিনশটে Staging-সম্পর্কিত মোট ১১টি Secret দেখা গিয়েছিল বলে প্রাথমিক গণনা ভুল ছিল। এই নথিতে সঠিক গণনা হবে **১২টি Staging Secret**। Secret values GitHub UI থেকে দেখা যায় না; তাই value সঠিক, বর্তমান বা কার্যকর—এটি এই স্ক্রিনশট দিয়ে প্রমাণিত নয়। কোনো secret value এই নথিতে সংরক্ষণ করা হয়নি।
+
+### Workflow source preflight
+- Workflow: `.github/workflows/validate-staging-supabase.yml`
+- Feature branch: `planning/4000-automated-project-economy`
+- PR #20: Open/Draft, base `main`; workflow file ওই feature branch-এ পাওয়া গেছে।
+- Repository default branch: `main`; একই workflow path `main` branch-এ পাওয়া যায়নি (GitHub Contents API 404)।
+- Workflow trigger: `workflow_dispatch` only। GitHub-এর manual dispatch ব্যবহারের জন্য workflow file default branch-এ উপস্থিত থাকতে হয়। তাই বর্তমান branch-only অবস্থায় এটি এখনো নির্ভরযোগ্যভাবে Actions UI থেকে চালানো যাবে না। PR #20 merge করা হয়নি; অন্য feature scope-সহ PR #20 অনুমতি ছাড়া merge করা হবে না।
+
+### Workflow-এর execution dependency ও ঝুঁকি
+- Workflow প্রথমে Staging encrypted backup এবং disposable PostgreSQL restore test চালায়; এগুলো pass না করলে পরের job শুরু হয় না।
+- এরপর workflow Staging-এ migration dry-run-এর পর migration apply করে এবং Owner/Admin/Member Auth/RBAC পরীক্ষা করে; শেষে Staging-এ `project-automation-worker` Edge Function deploy করে। Worker execution আলাদা করে enable না করা পর্যন্ত চালু হওয়ার কথা নয়। Production ref `lztbbrzeuyjkuiyzrsxp` স্পষ্টভাবে নিষিদ্ধ; প্রত্যাশিত Staging ref `awatzrapqrteybgspqlq`।
+- Workflow-টি Owner/Admin/Member Auth user-দের **আগে থেকেই Staging Auth-এ বিদ্যমান এবং password দিয়ে login-যোগ্য/confirmed** ধরে নেয়। GitHub Secrets-এ email/password যোগ করলেই Supabase Auth account তৈরি হয় না। Owner-এর secret password অবশ্যই Staging Auth-এ ওই user-এর প্রকৃত password-এর সঙ্গে মিলতে হবে। Admin ও Member-এর account আগে তৈরি/confirm করতে হবে; Gmail plus-alias Member address ব্যবহার করলে সেই ঠিকানায় confirmation mail পাওয়া যায় কি না নিশ্চিত করতে হবে।
+- Owner-এর দেওয়া Staging access token-এর পূর্ণ value কথোপকথনে প্রকাশিত হয়েছিল। Workflow চালানোর আগে ওই token Supabase-এ revoke করে নতুন Staging-only token তৈরি, এবং GitHub Secret `STAGING_SUPABASE_ACCESS_TOKEN`-এ নতুন value সংরক্ষণ করা বাধ্যতামূলক। পুরোনো token আর ব্যবহার করা যাবে না।
+
+### বর্তমান ফলাফল ও পরবর্তী নিরাপদ ধাপ
+- GitHub UI screenshot থেকে Secret **নাম** উপস্থিতি যাচাই হয়েছে; Secret values, Auth users/password match, encrypted backup, restore, migrations বা role tests যাচাই হয়নি।
+- এই পর্যালোচনায় Staging Validation Workflow dispatch করা হয়নি; কোনো Staging migration apply বা Edge Function deploy করা হয়নি। Production অপরিবর্তিত।
+- পরবর্তী ধাপ: (১) প্রকাশিত Staging token revoke/rotate; (২) Staging Auth-এ তিনটি পৃথক, confirmed test account ও matching passwords নিশ্চিত; (৩) manual-only workflow file default branch-এ পৌঁছানোর জন্য PR #20-কে অপ্রাসঙ্গিক feature-সহ merge না করে আলাদা নিরাপদ PR/merge path তৈরি; (৪) তারপর Staging-only workflow run করে প্রতিটি job/log/artifact যাচাই।
