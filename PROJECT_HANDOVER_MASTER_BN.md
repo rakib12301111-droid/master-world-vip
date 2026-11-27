@@ -1462,3 +1462,44 @@ GitHub Commit Check Runs endpoint-এ মোট ৭টি check পাওয়া 
 - কোনো Staging project/secrets এখনো উপলব্ধ নয়; তাই Staging migration/Auth/RBAC/Worker acceptance হয়নি। Production migration, Worker activation, real payment/payout চালু করা হয়নি। Referral processor-এর missing protected secrets-ও এখনো user-side configuration চায়।
 - পরবর্তী একমাত্র নিরাপদ user input: আলাদা Supabase Staging Project তৈরি করে তার **Project Reference** জানানো। Secret/password/token/DB URL chat-এ পাঠাবেন না; GitHub Actions secrets সরাসরি GitHub Settings-এ এবং Function secrets Supabase dashboard-এ configure করতে হবে।
 - **সত্যতা-সীমা:** বর্তমান planning commit-এর CI ৭/৭ PASS; পূর্ণ business automation/earning engine Production Live নয় এবং আয় নিশ্চিত নয়।
+
+
+## ২৭ নভেম্বর ২০২৬ — Supabase Staging Project তৈরি: পরবর্তী কাজের আপডেট
+
+### ব্যবহারকারীর নিশ্চিত করা অগ্রগতি
+- ব্যবহারকারী নিশ্চিত করেছেন যে আলাদা Supabase project `MASTER-WORLD-VIP-STAGING` তৈরি সম্পন্ন হয়েছে।
+- Staging project-এর Project Reference এখনো handover-এ যোগ করা হয়নি; ব্যবহারকারীকে Supabase → Project Settings → General থেকে শুধু Project Reference দিতে বলা হয়েছে।
+- Project Reference না পাওয়া পর্যন্ত Staging project-কে সঠিকভাবে শনাক্ত/Production থেকে পৃথক বলে machine-verified করা হয়নি।
+- কোনো database password, API key, access token, connection string বা service-role secret চ্যাটে চাওয়া/লেখা হবে না।
+
+### Staging readiness — বর্তমান অবস্থা
+- [x] ব্যবহারকারীর রিপোর্ট অনুযায়ী আলাদা `MASTER-WORLD-VIP-STAGING` project তৈরি।
+- [ ] Project Reference সংগ্রহ ও Production ref `lztbbrzeuyjkuiyzrsxp` থেকে আলাদা—এটি যাচাই।
+- [ ] GitHub Actions-এ কেবল Staging-এর জন্য প্রয়োজনীয় `STAGING_*` secrets user-side configure ও presence check।
+- [ ] Staging Owner/Admin/Member test account এবং সংশ্লিষ্ট credentials user-side configure।
+- [ ] `.github/workflows/validate-staging-supabase.yml` manual dispatch; migration preview/apply policy ও Staging-only target যাচাই।
+- [ ] Staging Database Migration ফলাফল যাচাই।
+- [ ] Owner / Admin / Member authentication, protected Owner RPC, RBAC এবং access-boundary পরীক্ষা।
+- [ ] Worker Edge Function Staging-এ deploy/পরীক্ষা; worker disabled থাকবে যতক্ষণ না আলাদা safety review পাস।
+- [ ] Worker lease/idempotency/budget/audit/emergency-stop এবং approved business-task handler readiness যাচাই।
+- [ ] Staging acceptance evidence, run/job/log link handover-এ যোগ।
+- [ ] Narrow production release review; PR #20/#23 dependency ও scope review।
+- [ ] Production migration ও Worker activation-এর আগে recoverable backup/restore, security, rollback, business-task/customer-order এবং revenue/collection readiness review; পৃথক explicit approval আবশ্যক।
+
+### Secret ও target safety
+- GitHub Actions-এ প্রয়োজনীয় Staging secret names: `STAGING_SUPABASE_ACCESS_TOKEN`, `STAGING_SUPABASE_DB_URL`, `STAGING_SUPABASE_PROJECT_REF`, `STAGING_SUPABASE_URL`, `STAGING_SUPABASE_ANON_KEY`, `STAGING_OWNER_EMAIL`, `STAGING_OWNER_PASSWORD`, `STAGING_ADMIN_EMAIL`, `STAGING_ADMIN_PASSWORD`, `STAGING_MEMBER_EMAIL`, `STAGING_MEMBER_PASSWORD`।
+- Secret values কেবল GitHub Settings → Secrets and variables → Actions-এ user-side যোগ হবে; chat, commit, issue, artifact বা handover-এ নয়।
+- Supabase Edge Function-এর প্রয়োজনীয় runtime secret-ও কেবল সংশ্লিষ্ট Staging project-এর Function Secrets-এ যোগ হবে; Production secrets পুনর্ব্যবহার নয়।
+- Production project ref `lztbbrzeuyjkuiyzrsxp`-কে Staging workflow-এ ব্যবহার করা নিষিদ্ধ। Staging project reference যাচাই না হওয়া পর্যন্ত migration বা deployment workflow চালানো যাবে না।
+- Staging migration/Auth/RBAC/Worker acceptance না হওয়া পর্যন্ত Production migration, Worker activation, schedule enablement, real payment/payout বা live business-task execution বন্ধ থাকবে।
+
+### Automation ও earning engine-এর বাস্তব সীমা
+- GitHub Pages-এর static public website deployed আছে; এটি backend automation live হওয়ার সমান নয়।
+- Worker-এর বর্তমান verified scope registration/heartbeat/idle path; সম্পূর্ণ বাস্তব গ্রাহক-অর্ডার execution, অনুমোদিত business-task handlers, settled customer revenue এবং member earning/payout pipeline live—এমন প্রমাণ নেই।
+- তাই 24/7 automated work/earning engine এখনো Production Live নয়। শুধু Staging project তৈরি হওয়া থেকে live status বা আয় দাবি করা যাবে না।
+- bKash/Nagad integration পরে official provider authorization অনুযায়ী; Member Ledger → Withdrawal Request → Admin Approval architecture বজায় থাকবে এবং provider authorization না পাওয়া পর্যন্ত real transfer disabled।
+
+### পরবর্তী একটিমাত্র user action
+Supabase `MASTER-WORLD-VIP-STAGING` → Project Settings → General → **Project Reference** থেকে শুধু reference-টি দিন। কোনো password/key/token/DB URL দেবেন না। এরপর Staging-only secrets checklist ও manual validation workflow-এর পরবর্তী ধাপ এগোবে।
+
+**এই আপডেটের সীমা:** Project creation ব্যবহারকারীর নিশ্চিতকরণ; Project Reference, secrets, migration, RBAC, Worker Staging test বা Production activation এখনো independently verified নয়।
