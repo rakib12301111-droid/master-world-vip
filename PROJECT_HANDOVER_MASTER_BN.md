@@ -1503,3 +1503,143 @@ GitHub Commit Check Runs endpoint-এ মোট ৭টি check পাওয়া 
 Supabase `MASTER-WORLD-VIP-STAGING` → Project Settings → General → **Project Reference** থেকে শুধু reference-টি দিন। কোনো password/key/token/DB URL দেবেন না। এরপর Staging-only secrets checklist ও manual validation workflow-এর পরবর্তী ধাপ এগোবে।
 
 **এই আপডেটের সীমা:** Project creation ব্যবহারকারীর নিশ্চিতকরণ; Project Reference, secrets, migration, RBAC, Worker Staging test বা Production activation এখনো independently verified নয়।
+
+
+## ২৭ নভেম্বর ২০২৬ — একীভূত Automation Launch Master Checklist (ছোট-বড় সব কাজ)
+
+এই section-টি পরবর্তী Launch tracking-এর একক checklist। আগের historical evidence মুছে দেওয়া হয়নি। একই পরীক্ষা পুনরায় চালানোর আগে সংশ্লিষ্ট code/config পরিবর্তন হয়েছে কি না যাচাই করতে হবে।
+
+### A. Repository, release ও CI
+- [x] Planning branch-এ automation, migration, ledger ও worker source-এর development baseline আছে।
+- [x] পূর্ববর্তী planning commit `613d28ad17c9af6df3b960f46d255e83d07c7ca1`-এ ৭টি disposable/static CI workflow PASS-এর নথি আছে।
+- [ ] নতুন handover commit `d72ef5ced11f1c4a0f9166a1a9c93d9bc4ab2ff2`-এর CI run/result যাচাই; update-এর সময় combined status-এ কোনো status পাওয়া যায়নি।
+- [ ] PR #20-এর সম্পূর্ণ diff review: migration order, authorization, task claim/lease, finance ledger, API/RPC grants, rollback, secrets, worker controls।
+- [ ] PR #23-এর entitlement diff review এবং PR #20-এর dependency একসঙ্গে যাচাই; stacked PR আলাদাভাবে merge নয়।
+- [ ] Draft PR-কে Ready করার আগে Staging evidence, review findings ও unresolved risk attach।
+- [ ] Main branch-এ narrow, reviewed release merge; merge-এর পর main CI ও deployed artifact যাচাই।
+- [ ] GitHub Pages static site-এর বাইরে backend/API/Edge Function live status আলাদা করে যাচাই।
+
+### B. Staging project identity ও configuration
+- [x] ব্যবহারকারীর নিশ্চিতকরণ: Supabase project `MASTER-WORLD-VIP-STAGING` তৈরি।
+- [ ] Staging Project Reference সংগ্রহ; Production ref `lztbbrzeuyjkuiyzrsxp` থেকে ভিন্ন নিশ্চিত।
+- [ ] Staging URL এবং project reference একই project-এর—workflow-এর binding check দিয়ে নিশ্চিত।
+- [ ] Staging region, Data API, RLS defaults, database type এবং Auth configuration নথিভুক্ত।
+- [ ] Staging-এ আলাদা Owner, Admin, Member test Auth account তৈরি/confirm; তিনটি user ID distinct।
+- [ ] Staging-এ কেবল dummy/test data; Production member/customer data কপি নয়।
+
+### C. GitHub Actions / Supabase secrets
+GitHub repository → Settings → Secrets and variables → Actions-এ শুধু Staging-এর secret names configure করতে হবে:
+- [ ] `STAGING_SUPABASE_ACCESS_TOKEN`
+- [ ] `STAGING_SUPABASE_DB_URL` — Session Pooler URI; username অবশ্যই `postgres.<STAGING_PROJECT_REF>`, host Supabase pooler, port 5432, database postgres।
+- [ ] `STAGING_SUPABASE_PROJECT_REF`
+- [ ] `STAGING_SUPABASE_URL`
+- [ ] `STAGING_SUPABASE_ANON_KEY`
+- [ ] `STAGING_OWNER_EMAIL`, `STAGING_OWNER_PASSWORD`
+- [ ] `STAGING_ADMIN_EMAIL`, `STAGING_ADMIN_PASSWORD`
+- [ ] `STAGING_MEMBER_EMAIL`, `STAGING_MEMBER_PASSWORD`
+- [ ] প্রয়োজনীয় Staging-only Edge Function secrets: `SUPABASE_SERVICE_ROLE_KEY`, `MWVIP_WORKER_KEY`; `MWVIP_WORKER_ENABLED` প্রথমে unset/false থাকবে।
+- [ ] Referral processor test দরকার হলে Staging-only `REFERRAL_CRON_SECRET` এবং সংশ্লিষ্ট Staging endpoint configuration; Production credentials ব্যবহার নয়।
+- [ ] Secret presence/format validation log-এ কেবল secret name ও pass/fail; কোনো value নয়।
+- [ ] GitHub Environment protection/required reviewers এবং concurrency/least-privilege permissions review।
+
+**সুরক্ষা:** কোনো secret/password/token/DB URL/OTP/passphrase চ্যাট, commit, issue, artifact বা handover-এ দেওয়া যাবে না। এগুলো ব্যবহারকারী নিজে GitHub/Supabase dashboard-এ বসাবেন।
+
+### D. Staging database migration ও schema acceptance
+- [ ] Manual workflow `.github/workflows/validate-staging-supabase.yml`-এর preflight pass।
+- [ ] Workflow নিশ্চিত করবে target ref Production নয় এবং pooler URI ওই Staging ref-এর সঙ্গে bound।
+- [ ] Full ordered migration set-এর dry-run/preview review।
+- [ ] Staging-only migration apply সম্পন্ন; run/job/commit evidence সংরক্ষণ।
+- [ ] Tables, columns, constraints, indexes, RLS policies, grants, functions/RPCs, triggers, extensions ও migration history audit।
+- [ ] Existing/legacy schema compatibility ও data-preservation tests।
+- [ ] Migration rerun/idempotency এবং rollback/recovery plan পরীক্ষা; Production migration history repair নয়।
+- [ ] দুই-সদস্যের RLS isolation test: Member A অন্য Member B-এর private profile, wallet, withdrawal, referral বা task data দেখতে/পরিবর্তন করতে পারবে না।
+- [ ] Unauthorized anon/member access, direct table access, RPC parameter tampering ও privilege escalation negative tests।
+- [ ] Staging schema snapshot ও test evidence সংরক্ষণ।
+
+### E. Authentication, Owner/Admin/Member RBAC
+- [ ] Owner sign-in/session refresh ও Owner-only protected RPC pass।
+- [ ] Owner ছাড়া Admin role assign/remove করতে পারবে না।
+- [ ] Admin sign-in; অনুমোদিত Admin dashboard/RPC access pass।
+- [ ] Member sign-in; Admin/Owner overview ও protected control access denied।
+- [ ] Member নিজের profile, task/order, ledger ও withdrawal request-এ কেবল অনুমোদিত scope access পাবে।
+- [ ] Suspended/unverified user, expired session, deleted user, role downgrade এবং concurrent role change negative tests।
+- [ ] Email confirmation/password reset/account recovery, rate limit ও abuse protection।
+- [ ] Audit log-এ actor, action, target, timestamp, outcome; secret/token/PII leak নয়।
+- [ ] `profiles.username` ও `get_my_admin_access`-এর আগের error pathসহ UI↔RPC/schema integration test।
+
+### F. Worker / Queue / 24×7 execution readiness
+- [ ] Staging-এ Edge Function deploy; deployment success এবং function logs যাচাই।
+- [ ] Worker default disabled; false/unset অবস্থায় task claim/execute না হওয়ার test।
+- [ ] Valid worker auth, invalid/missing key, expired/rotated key এবং service-role protection test।
+- [ ] Register/heartbeat, lease claim/expiry, retry/backoff, dead-letter, concurrency/duplicate claim, idempotency tests।
+- [ ] Database kill switch, per-project enablement, budget/quota ceiling ও emergency stop end-to-end test।
+- [ ] Worker failure, timeout, network interruption, partial completion ও restart recovery tests।
+- [ ] Worker logs/metrics/alerts, health check, heartbeat staleness এবং operator runbook।
+- [ ] Current worker handlers are limited to read-only `system_health_check`, `project_usage_digest`, and `work_order_validate`; they do not perform real customer work, external side effects, or financial effects.
+- [ ] Each additional business task type needs reviewed handler, input validation, authorization, tenant isolation, idempotency, bounded resource use, tests and audit before allowlisting.
+- [ ] 24/7 scheduler/cron trigger, queue polling cadence, timezone, retry windows, pause/resume and alert routing configure/test in Staging.
+- [ ] Free-tier quota exhaustion, Supabase pause, GitHub Actions limits, worker outage and recovery simulation।
+- [ ] Worker enablement approval only after all above gates; no enabling merely because function deployed।
+
+### G. Real customer orders, catalog ও task delivery
+- [ ] Customer Order Portal: customer onboarding, verified contact, terms/consent, order creation and status tracking।
+- [ ] Real customer demand/order source, service catalog, scope, SLA, acceptance criteria and pricing।
+- [ ] 20/2000/4000+ project/task catalog-এ প্রতিটি task type-এর বাস্তব deliverable, owner, cost, capacity, QA ও cancellation/refund rule।
+- [ ] Smart Member Assignment: skill/availability/capacity matching, fairness, conflict-of-interest and reassignment audit।
+- [ ] Customer submission → validation → queue → assignment → work → QA → customer acceptance → settlement lifecycle।
+- [ ] Fake order, self-dealing, duplicate order, bot traffic, fabricated completion ও collusion prevention।
+- [ ] No customer order/no settled customer funds হলে earning/reward accrual বন্ধ থাকবে; fabricated workload নয়।
+
+### H. Finance, currency, plans, refund ও payout safety
+- [ ] Member payable ledger ও Admin/company revenue ledger আলাদা; immutable double-entry/reconciliation rules।
+- [ ] USD ও BDT পৃথক source amount, exchange rate, rate timestamp, fees, tax, rounding ও settlement records।
+- [ ] 35% commission only for qualifying high-volume USD-settled work; ordinary BDT-settled work 20%—actual policy implementation/test against handover rules; never flatten into one universal rate।
+- [ ] Free Admin / Paid Admin / Member Paid entitlement checks at every order, task, API and worker entry point।
+- [ ] Checkout → verified provider webhook → idempotent payment record → entitlement activation; client-side success alone never credits balance।
+- [ ] Member payable amount accrues only after accepted work and actual settled customer funds; pending/estimated earnings clearly distinct।
+- [ ] Refund reserve/liability, chargeback, duplicate payment, refund, reversal, negative balance and reconciliation tests।
+- [ ] Withdrawal Request → Admin Approval → authorized provider transfer; provider approval/integration না হওয়া পর্যন্ত real payout disabled।
+- [ ] bKash/Nagad later only through official authorized merchant/API arrangements; no bypass of provider/company authorization।
+- [ ] No member deposit or guaranteed return; no earnings promise absent real funded work।
+- [ ] Financial audit, fraud monitoring, daily reconciliation, limits, maker-checker controls and emergency freeze।
+
+### I. Security, privacy, legal & operations
+- [ ] Threat model and security review: RLS, RPC SECURITY DEFINER/search_path, CORS, auth, secrets, SSRF, injection, rate limiting, abuse and tenant boundaries।
+- [ ] Data minimization, consent, privacy notice, retention/deletion and account export processes।
+- [ ] Dependency/Supply-chain scanning, secret scanning, static analysis, Deno/type checks and vulnerability remediation।
+- [ ] Backup encryption, off-platform retention, restore drill, RPO/RTO and disaster recovery runbook।
+- [ ] Monitoring: API errors, queue depth, worker heartbeat, failed jobs, spend/quota, payments, fraud and alerts।
+- [ ] Incident response, emergency stop, rollback, owner escalation and support workflow।
+- [ ] Business, tax, consumer-protection, employment/contractor, privacy and payment-provider obligations reviewed for target markets before real money operations।
+
+### J. Production release gates — all must pass
+- [ ] Staging acceptance report signed off with run links and no critical/high unresolved findings।
+- [ ] PR #20/#23 scope/dependency review complete; required CI green on exact merge commit।
+- [ ] Production schema diff and compatibility review; no blind application of all pending migrations।
+- [ ] Fresh encrypted Production backup, successful isolated restore, verified retention and secure passphrase custody।
+- [ ] Exact migration list, expected impact, maintenance window, rollback/forward-fix plan and post-migration smoke tests prepared।
+- [ ] Separate explicit approval for Production migration: `APPLY-MASTER-WORLD-VIP-MIGRATIONS`।
+- [ ] Separate explicit approval for Production worker deployment/activation and schedule; migration approval does not imply worker approval।
+- [ ] Production worker initially disabled; canary with one safe read-only task, strict budget and monitored rollback before broader activation।
+- [ ] Real payment/payout stays disabled until official provider authorization and end-to-end reconciliation acceptance।
+- [ ] Public release note, status/maintenance communication and post-release monitoring owner identified।
+
+### K. Post-launch verification and steady-state
+- [ ] Production smoke test for public pages, Auth, Owner/Admin/Member boundaries, safe RPCs and read-only worker health।
+- [ ] Confirm no unintended task claims, no unauthorized data access, no duplicate execution and no financial side effects।
+- [ ] 24-hour monitored canary, then 7-day reliability review before scale-up।
+- [ ] Daily backup/restore evidence, quota/cost review, security alerts and queue health checks।
+- [ ] Capacity/load tests before expanding project count or enabling paid workloads।
+- [ ] Every release/run/result/failure/fix and next action appended to this handover; completed checks are not repeated without a code/config reason.
+
+### বর্তমান সামগ্রিক সিদ্ধান্ত
+- Static GitHub Pages website: previously deployed and workflow-verified.
+- Staging project: user-confirmed created; Project Reference and secrets not yet independently verified.
+- Planning branch CI: previous commit 7/7 PASS; newest handover commit status was not available at update time.
+- Staging migration/Auth/RBAC/Worker acceptance: not run.
+- Worker: limited read-only handlers only; not a full business-task executor.
+- Customer-funded task delivery, real revenue settlement, 24/7 business execution, member cash-out and Production automation: not Live.
+- Therefore **full automated work/earning system is not Production Live**. Do not describe it as live or promise income until all applicable gates pass with evidence.
+
+### User interaction rule — reduce repeated requests
+সহকারীকে এই master checklist ও বর্তমান repository state পড়ে নিজে যতটা নিরাপদে সম্ভব code audit, fixes, tests, docs, CI ও handover updates একসঙ্গে করতে হবে। ব্যবহারকারীকে বারবার পুরো অবস্থা বলতে বা একই কাজ করতে বলা যাবে না। কেবল যেসব action-এর জন্য account owner-কে Supabase/GitHub dashboard-এ secret বসাতে, Project Reference দিতে, test account তৈরি করতে বা Production-impacting action অনুমোদন করতে হয়—সেসবের জন্য একবারে একটিমাত্র নির্দিষ্ট user action চাইতে হবে। Secret value কখনো চাওয়া যাবে না।
