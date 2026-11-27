@@ -759,3 +759,13 @@ Owner নির্দেশ: নিচের কাজগুলোকে MASTER 
 3. Staging project/secrets প্রস্তুত হলে isolated staging migration + role/RLS + worker + finance acceptance tests।
 4. Provider/legal/custody/settlement evidence ও final ২০% policy approval সংগ্রহ।
 5. Restore-tested backup এবং exact Production migration approval পাওয়ার পরেই controlled Production apply; তারপর আলাদা live deployment approval ও smoke tests।
+
+
+## ২৭ নভেম্বর ২০২৬ — সর্বশেষ অগ্রগতি ও অনুমোদন-গেট
+
+- **নতুন সংশোধনের CI পরীক্ষা: PENDING** — সর্বশেষ documentation/source commit-এর পর প্রযোজ্য CI ও disposable PostgreSQL full-chain runtime run-এর সফল Run ID/logs এখনো যাচাই করা হয়নি। Pending-কে pass বা fail বলা যাবে না।
+- **Staging Database পরীক্ষা: PENDING** — আলাদা Staging project, secrets ও isolated Owner/Admin/Member test identity প্রস্তুত এবং যাচাইকৃত নয়; কোনো সফল Staging acceptance evidence নেই।
+- **Production Migration: NOT RUN / BLOCKED** — Production schema-তে কোনো migration apply করা হয়নি। Backup/restore evidence, Staging acceptance এবং migration review ছাড়া apply করা যাবে না।
+- APPLY-MASTER-WORLD-VIP-MIGRATIONS হলো কেবল Production Database Migration Apply-এর exact approval gate। এই বার্তায় token-এর কাজ জানতে চাওয়া হয়েছে; তাই এটিকে Production apply-এর অনুমোদন হিসেবে গণ্য করা হয়নি। Token দিলেও provider payout, real-money transfer, commission activation বা public Live Deployment স্বয়ংক্রিয়ভাবে অনুমোদিত হবে না।
+- **Live Deployment: PENDING / NOT LIVE** — Production migration-এর পরেও আলাদা deployment approval, provider/legal readiness ও post-deploy smoke test প্রয়োজন।
+- নিরাপদ পরবর্তী ক্রম: (১) source সংশোধন শেষ ও CI/runtime pass, (২) Staging project/secrets ও acceptance pass, (৩) provider-approved sandbox এবং order-to-payout test pass, (৪) backup/restore ও security review, (৫) আলাদা Production migration approval, (৬) পৃথক Live deployment approval।
