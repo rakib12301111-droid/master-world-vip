@@ -131,9 +131,26 @@ jobs:
           docker run --rm --network host --env PGPASSWORD=restore_test_only --env PGSSLMODE=disable \
             supabase/postgres:17.6.1.136 \
             createdb -h 127.0.0.1 -p 5432 -U supabase_admin --template=template0 mwvip_staging_restore_empty
+          # Render the archive as SQL, then remove Supabase-only pg_attver storage
+          # annotations that the isolated stock restore image does not recognize.
           docker run --rm --network host --env PGPASSWORD=restore_test_only --env PGSSLMODE=disable \
             --volume "$PWD/backup:/backup" supabase/postgres:17.6.1.136 \
-            pg_restore -h 127.0.0.1 -p 5432 -U supabase_admin -d mwvip_staging_restore_empty --no-owner --no-acl --exit-on-error /backup/restore.dump
+            pg_restore --no-owner --no-acl --file=/backup/restore.sql /backup/restore.dump
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          sql=Path("backup/restore.sql")
+          content=sql.read_text()
+          pattern=r"^ALTER TABLE ONLY .* ALTER COLUMN .* SET \(pg_attver=\d+\);\s*$"
+          content, removed=re.subn(pattern, "", content, flags=re.MULTILINE)
+          if removed == 0:
+              raise SystemExit("::error::Expected Supabase pg_attver annotations were not found; refusing to silently alter the restore SQL.")
+          sql.write_text(content)
+          print(f"Removed {removed} Supabase-only pg_attver storage annotations for compatibility with the isolated restore target.")
+          PY
+          docker run --rm --network host --env PGPASSWORD=restore_test_only --env PGSSLMODE=disable \
+            --volume "$PWD/backup:/backup" supabase/postgres:17.6.1.136 \
+            psql -h 127.0.0.1 -p 5432 -U supabase_admin -d mwvip_staging_restore_empty -v ON_ERROR_STOP=1 -f /backup/restore.sql
           docker run --rm --network host --env PGPASSWORD=restore_test_only --env PGSSLMODE=disable \
             supabase/postgres:17.6.1.136 \
             psql -h 127.0.0.1 -p 5432 -U supabase_admin -d mwvip_staging_restore_empty -v ON_ERROR_STOP=1 -Atc "select count(*) from information_schema.tables where table_schema not in ('pg_catalog','information_schema')" > backup/restored_table_count.txt
