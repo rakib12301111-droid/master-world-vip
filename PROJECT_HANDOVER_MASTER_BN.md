@@ -916,3 +916,45 @@ Owner নির্দেশ: নিচের কাজগুলোকে MASTER 
 - Run `45957124627` — **SUCCESS**। Job `worker-static-check`: Deno Edge Function type-check SUCCESS এবং `scripts/verify-staging-worker-safety.py` SUCCESS। Run: https://github.com/rakib12301111-droid/master-world-vip/actions/runs/45957124627
 - এটি Worker source-এর type/static safety প্রমাণ; বাস্তব Staging Auth/RBAC, task execution, external connector, revenue বা payout পরীক্ষা নয়।
 - Worker এখনো Registration + Heartbeat idle foundation; approved task handler না থাকায় queue claim বন্ধ থাকবে।
+
+
+## ২৭ নভেম্বর ২০২৬ — Task Execution Framework ও Synthetic Revenue Acceptance বাস্তবায়ন
+
+### নতুন নিরাপত্তা Migration
+- নতুন migration: `supabase/migrations/20261127100000_worker_execution_kill_switch_and_handler_allowlist.sql`। Commit `ca27552a50fd42a7f67deb1216d8c3640faf2578`-এ budget reservation hardening-সহ বর্তমান সংস্করণ রয়েছে।
+- Global `project_automation_runtime_control.emergency_stop` default `true`; Owner/Admin-only audited RPC `admin_set_project_automation_kill_switch(boolean,text)` reason বাধ্যতামূলক করে। Stop চালু থাকলে নতুন claim শূন্য। In-flight lease finish/audit করতে পারে।
+- Database handler allowlist-এ শুধু `system_health_check` enabled, `read_only`; অন্য task type claim হবে না।
+- Task claim-এর সময় remaining per-task budget `budget_reserved` এবং project-level `daily_reserved` হিসেবে atomically reserve হয়। Constraint `daily_spent + daily_reserved <= daily_budget`; finish বা expired lease recovery reservation release করে, actual cost daily spend-এ যোগ করে।
+- Claim event audit, success/retry/dead-letter audit, expired lease recovery audit এবং kill-switch change audit হয়। Existing unique idempotency key, lease token, max attempts, exponential backoff, dead-letter ও one-running-task-per-project constraint বজায় আছে।
+
+### Worker Code ও Static CI
+- `supabase/functions/project-automation-worker/index.ts` এখন claim ও execute path implement করে; তবে একমাত্র handler `system_health_check` — read-only, customer/member data access নয়, external side effects নয়, financial effects নয়। Unknown task type fail-closed।
+- Worker এখনও `MWVIP_WORKER_ENABLED=true` ছাড়া disabled; database emergency stop default true; project registry/schedule-ও default disabled। তাই এই code change নিজে থেকে কোনো business execution চালু করে না।
+- `scripts/verify-staging-worker-safety.py` এবং `scripts/verify-project-automation-engine.py` update করা হয়েছে; worker CI-তে Deno type-check, Staging isolation, task engine, budget reservation, retry/dead-letter, audit ও kill-switch static assertions চলে।
+- Worker CI Run `45958179014` — **SUCCESS**, commit `b560c4354f7b4a1abeaf62a1e089634228eec8bc`। Link: https://github.com/rakib12301111-droid/master-world-vip/actions/runs/45958179014
+
+### Synthetic Task Runtime ও Revenue Acceptance
+- `supabase/tests/project-automation-kill-switch-runtime.sql`: default emergency stop, stop অবস্থায় zero claim, client role execute denial ও read-only handler allowlist যাচাই।
+- `supabase/tests/revenue-order-to-member-settlement-runtime.sql`: synthetic customer order pending_payment → funded → in_progress → delivered → accepted → completed; fake provider settlement references; তিনটি locked fund allocation; balanced double-entry journal; duplicate journal idempotency; Member payable; synthetic payout request/journal; final Member balance ও ledger integrity যাচাই।
+- একই test-এ task claim/lease completion, duplicate idempotency key, claim-time budget reservation, retry, max attempts-এ dead-letter, daily spend/reservation release এবং audit events যাচাই করা হয়।
+- Disposable full-chain Run `45958078575` — **SUCCESS**, commit `ca27552a50fd42a7f67deb1216d8c3640faf2578`। Fresh ও audited legacy-shape disposable PostgreSQL-এ migration apply, kill-switch test এবং synthetic order-to-member settlement/task runtime acceptance সফল। Link: https://github.com/rakib12301111-droid/master-world-vip/actions/runs/45958078575
+- আরও কঠোর explicit budget-reservation assertion-সহ Run `45958106239` (commit `48133a9ac5e4133bde35b33a676e147e2605cb67`) সর্বশেষ handover লেখার সময় **IN_PROGRESS**। এটি শেষ না হওয়া পর্যন্ত সেই assertion-এর ফল pending। Link: https://github.com/rakib12301111-droid/master-world-vip/actions/runs/45958106239
+- Run `45957942265`-এ আগের সংস্করণের synthetic order-to-member settlement এবং task claim/idempotency/retry/dead-letter/audit tests-ও SUCCESS হয়েছিল; budget reservation column/assertion যোগ হওয়ার আগের সংস্করণ। Link: https://github.com/rakib12301111-droid/master-world-vip/actions/runs/45957942265
+
+### Revenue/Payment Test-এর সীমা
+- সব payment/payout transaction reference synthetic fixture; কোনো external provider API, bKash, Nagad, bank, Production DB বা real funds ব্যবহার হয়নি।
+- এটি internal order lifecycle, accounting, idempotency, payout request gating ও ledger arithmetic-এর disposable acceptance test; বাস্তব payment collection, fund custody, provider settlement বা real payout-এর প্রমাণ নয়।
+- Admin commission ২০% proposal only; activated/collected নয়।
+
+### Staging ও Production gate অপরিবর্তিত
+- আলাদা Staging Supabase project, ১১টি Staging secrets এবং পৃথক Owner/Admin/Member Auth test users না থাকায় Staging migration/Auth/RBAC acceptance **NOT RUN**। Secrets-এর configured state এই integration থেকে পড়া যায় না।
+- বাস্তব business task handler এখনো **NOT IMPLEMENTED**; শুধু safe read-only health handler আছে। Customer/member data mutation, content generation, external API connector, financial task handler চালু নয়।
+- Official provider sandbox/API, merchant/legal/KYC/AML/tax approval, signed webhook, beneficiary verification ও reconciliation এখনও pending।
+- Production Migration, migration-history repair, Worker Production deployment, Live Deployment, real collection/refund/payout **NOT RUN**।
+- নতুন migration শুধু planning branch-এ; Production database পরিবর্তিত হয়নি।
+
+### নতুন documentation
+- `docs/WORKER_TASK_EXECUTION_AND_REVENUE_ACCEPTANCE_BN.md` — architecture, execution gates, synthetic tests, live-readiness blockers ও security decision।
+
+### PR / Branch
+- PR #20 Open / Draft / Unmerged। Branch: `planning/4000-automated-project-economy`। সর্বশেষ head handover commit-এর পরে পুনরায় যাচাই করতে হবে।
