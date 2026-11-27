@@ -194,18 +194,18 @@ jobs:
           print("Staging API URL project-ref binding verified.")
           PY
           auth_token() {
-            local email="$1" password="$2" response token
+            local email="$1" password="$2" output_name="$3" response token
             response=$(curl --silent --show-error "$BASE_URL/auth/v1/token?grant_type=password" \
               -H "apikey: $ANON_KEY" -H "Content-Type: application/json" \
               -d "$(jq -n --arg email "$email" --arg password "$password" '{email:$email,password:$password}')")
             token=$(printf '%s' "$response" | jq -r '.access_token // empty')
             test -n "$token" || { echo "::error::Staging Auth login failed for a test account"; exit 1; }
             echo "::add-mask::$token"
-            printf '%s' "$token"
+            printf -v "$output_name" '%s' "$token"
           }
-          OWNER_JWT=$(auth_token "$OWNER_EMAIL" "$OWNER_PASSWORD")
-          ADMIN_JWT=$(auth_token "$ADMIN_EMAIL" "$ADMIN_PASSWORD")
-          MEMBER_JWT=$(auth_token "$MEMBER_EMAIL" "$MEMBER_PASSWORD")
+          auth_token "$OWNER_EMAIL" "$OWNER_PASSWORD" OWNER_JWT
+          auth_token "$ADMIN_EMAIL" "$ADMIN_PASSWORD" ADMIN_JWT
+          auth_token "$MEMBER_EMAIL" "$MEMBER_PASSWORD" MEMBER_JWT
           user_id() {
             python - "$1" <<'PY'
           import base64,json,sys
