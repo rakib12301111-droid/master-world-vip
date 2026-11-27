@@ -6,8 +6,8 @@ import re
 sql = Path("supabase/migrations/20261126110000_project_automation_engine.sql").read_text(encoding="utf-8")
 controls = Path("supabase/migrations/20261127100000_worker_execution_kill_switch_and_handler_allowlist.sql").read_text(encoding="utf-8")
 worker = Path("supabase/functions/project-automation-worker/index.ts").read_text(encoding="utf-8")
-flat = re.sub(r"\\s+", " ", sql.lower())
-gate = re.sub(r"\\s+", " ", controls.lower())
+flat = re.sub(r"\s+", " ", sql.lower())
+gate = re.sub(r"\s+", " ", controls.lower())
 checks = {
     "project scheduler, worker, queue and audit tables exist": all(x in flat for x in (
         "create table if not exists public.project_automation_settings",
