@@ -42,6 +42,7 @@ This repository contains the database foundation, community, privacy, admin/broa
 28. `20261125120000_anti_theft_device_recovery.sql` — anti-theft and device recovery foundation.
 29. `20261125130000_admin_auto_work_claim_concurrency_fix.sql` — ensures at most one running job per module when multiple workers poll concurrently.
 30. `20261125160000_work_earn_wallet_owner_profit.sql` — separate member Work & Earn wallet and Owner profit ledgers, audited 20% default commission setting, provider-settlement intake and atomic idempotent posting RPC (backend foundation only; no payment gateway or payout is live).
+31. `20261127140000_customer_quote_workflow.sql` — authenticated customer Quote Request intake, private Admin inbox/RBAC, quote issue/accept/decline/cancel/expiry, notifications and append-only audit events. Accepted quotes are not paid orders; payment/funding and conversion to the existing customer service order workflow remain separate.
 
 **Important:** Repository files and this checklist do not prove that any migration has been applied to your Supabase project. SQL is not run by the website automatically. Keep a record of each successfully applied migration. Do not rerun a migration blindly if the project already has part or all of its schema; inspect the database first.
 
