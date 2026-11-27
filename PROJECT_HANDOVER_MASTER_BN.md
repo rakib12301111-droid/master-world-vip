@@ -520,3 +520,9 @@ The Owner has directed that the following four gates be treated as critical and 
 - This update is repository workflow/documentation work only. It does not prove that Staging secrets exist, a Staging backup has run, any Staging migration was applied, test users exist, Android tests passed, or a public deployment occurred.
 - Production remains untouched. No Production migration, live payment, customer intake, payout, or deployment was performed.
 - Continue from this section and do not repeat successful disposable/static CI checks unless the relevant source/configuration changes.
+
+
+### Execution limitation discovered after adding the workflow
+- The new backup workflow is currently committed only on the feature branch. GitHub's `workflow_dispatch` workflow must exist on the repository's default branch before it can be manually dispatched from Actions.
+- PR #21/#22 are still Draft/Open and merging the stack to `main` can trigger the existing GitHub Pages deployment. Therefore do not merge merely to make this workflow runnable; first review the release/deployment impact and obtain the separate release decision.
+- The new workflow has **not** run and has no backup artifact yet. Its YAML/source has been reviewed in the repository, but a successful Actions run is still required before counting Staging backup/restore complete.
