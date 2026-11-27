@@ -26,22 +26,25 @@ GitHub repository → Settings → Secrets and variables → Actions → New rep
 
 Create these exact repository secrets from the matching values in the Staging Supabase project:
 
-1. `SUPABASE_STAGING_ACCESS_TOKEN` — Supabase access token with only the access needed for the Staging project.
+1. `SUPABASE_STAGING_ACCESS_TOKEN` — Supabase access token with only the access needed for the Staging project; used by the migration preview/apply workflow.
 2. `SUPABASE_STAGING_PROJECT_REF` — Staging Project Reference ID.
 3. `SUPABASE_STAGING_DB_URL` — Staging Session Pooler PostgreSQL URI; never Production.
+4. `STAGING_BACKUP_ENCRYPTION_PASSPHRASE` — a strong, unique passphrase used only to encrypt/decrypt Stagering backup artifacts. Store it separately in the Owner's password manager; never reuse or paste the Production passphrase.
 
-Do not create placeholder values. Do not use Production secrets. Do not add JWT, anon key or project URL secrets to this particular workflow; its current YAML uses only the three names above. Secret values remain visible only to GitHub's encrypted secret store.
+Do not create placeholder values. Do not use Production secrets. Do not add JWT, anon key or project URL secrets to these workflows. The migration workflow uses the first three secrets; the Staging backup workflow uses secrets 2–4. Secret values remain visible only to GitHub's encrypted secret store.
 
 ## 4. Staging backup and migration sequence
 
-1. Before any Staging migration apply, create a recoverable backup of the Staging database and test that backup can be restored to a disposable PostgreSQL database. Record only a non-secret backup reference and the PASS result.
-2. Open Actions → “MASTER WORLD VIP - Safe Staging Supabase Migration” → Run workflow.
-3. First run with `apply_staging = no`. This is preview-only and must not change the database.
-4. Review the workflow log for the expected Staging project, successful URI validation, complete migration inventory and successful dry-run. Never accept a Production ref.
-5. Apply to Staging only after the separate Staging backup and restore proof exist. The workflow additionally requires the Staging-specific confirmation phrase `APPLY-MASTER-WORLD-VIP-STAGING-MIGRATIONS` and a non-secret backup reference.
-6. Save the run ID and non-secret backup reference in the handover. A successful preview is not an applied migration; a successful migration is not customer acceptance.
+1. Add the fourth secret `STAGING_BACKUP_ENCRYPTION_PASSPHRASE` as described above.
+2. Open Actions → “MASTER WORLD VIP - Staging Backup/Restore” → Run workflow. This manual-only workflow validates the Staging ref/Session Pooler URI, creates an encrypted logical backup, decrypts it inside the isolated runner, restores it into a disposable PostgreSQL database, and uploads the encrypted artifact for seven days. It does not run migrations or modify Staging.
+3. Require the backup/restore workflow to finish `success`. Record its non-secret `STAGING_BACKUP_REFERENCE`, run ID and artifact ID. Keep the encryption passphrase separately and verify it is recoverable before proceeding.
+4. Open Actions → “MASTER WORLD VIP - Safe Staging Supabase Migration” → Run workflow.
+5. First run with `apply_staging = no`. This is preview-only and must not change the database.
+6. Review the workflow log for the expected Staging project, successful URI validation, complete migration inventory and successful dry-run. Never accept a Production ref.
+7. Apply to Staging only after the separate Staging backup and restore proof exist. The workflow additionally requires the Staging-specific confirmation phrase `APPLY-MASTER-WORLD-VIP-STAGING-MIGRATIONS` and a non-secret backup reference.
+8. Save the run ID and non-secret backup reference in the handover. A successful preview is not an applied migration; a successful migration is not customer acceptance.
 
-The current migration workflow does not itself create or restore the Staging backup. Do not claim that backup/restore is complete merely because its confirmation inputs were selected.
+The migration workflow does not itself create or restore the Staging backup. The separate Staging Backup/Restore workflow provides that evidence. Do not claim that backup/restore is complete merely because migration confirmation inputs were selected.
 
 ## 5. Create isolated Customer and Admin test accounts
 
@@ -80,7 +83,7 @@ Production migration still requires the separate exact Owner authorization `APPL
 ## 8. Evidence checklist — do not mark complete without proof
 
 - [ ] Staging Project URL/ref confirmed (ref masked in shared screenshots).
-- [ ] Three exact Staging GitHub Actions secrets added.
+- [ ] Four exact Staging GitHub Actions secrets added.
 - [ ] Staging backup encrypted and disposable restore test passed.
 - [ ] Staging migration preview passed.
 - [ ] Staging migration applied and run verified.
@@ -90,4 +93,6 @@ Production migration still requires the separate exact Owner authorization `APPL
 - [ ] Android Chrome/accessibility acceptance passed.
 - [ ] Non-secret run IDs, dates and results recorded in `PROJECT_HANDOVER_MASTER_BN.md`.
 
-**Current status at creation:** This is an execution guide, not evidence that any of the pending Owner actions or Staging/Android tests have already happened.
+**Workflow added:** `.github/workflows/backup-staging-restore-preview.yml` (commits `06bff3e` and `7a39d2f` on `feature/customer-quote-workflow`). It has not yet been executed; its required Staging secrets must first be added by the Owner.
+
+**Current status:** This is an execution guide, not evidence that any pending Owner action, Staging migration, account test or Android test has already happened.
