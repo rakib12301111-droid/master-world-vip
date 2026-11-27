@@ -46,6 +46,8 @@ This repository contains the database foundation, community, privacy, admin/broa
 
 Customer Quote Workflow Staging acceptance checklist: [docs/CUSTOMER_QUOTE_WORKFLOW_ACCEPTANCE_TEST_BN.md](../docs/CUSTOMER_QUOTE_WORKFLOW_ACCEPTANCE_TEST_BN.md). Apply and test the quote migration in a separate Staging project first; accepted quotes are not paid orders.
 
+Staging migration workflow: `.github/workflows/apply-staging-supabase-migrations.yml`. It is manual-only, defaults to dry-run, refuses the known Production project ref, and requires a recoverable Staging backup, successful restore-test confirmation and an exact approval phrase before applying. Configure these GitHub Actions secrets only in repository Settings → Secrets and variables → Actions: `SUPABASE_STAGING_ACCESS_TOKEN`, `SUPABASE_STAGING_PROJECT_REF`, `SUPABASE_STAGING_DB_URL`. Never paste their values into chat or source files. This workflow does not use Production secrets.
+
 **Important:** Repository files and this checklist do not prove that any migration has been applied to your Supabase project. SQL is not run by the website automatically. Keep a record of each successfully applied migration. Do not rerun a migration blindly if the project already has part or all of its schema; inspect the database first.
 
 ### Browser connection and Auth test
