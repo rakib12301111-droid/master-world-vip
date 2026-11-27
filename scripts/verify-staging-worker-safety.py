@@ -21,6 +21,8 @@ checks = {
     "worker claims only through the database RPC": "worker_claim_project_automation_task" in worker,
     "worker implements only read-only system health handler": "system_health_check" in worker and "external_side_effects: false" in worker and "financial_effects: false" in worker,
     "worker completes task with lease token and zero-cost handler": "p_lease_token: task.lease_token" in worker and "p_actual_cost: 0" in worker,
+    "handler exceptions are converted into database-managed retry/dead-letter outcomes": "Allowlisted task handler failed; retry under database policy." in worker,
+    "handler failures still flow through the lease-aware finish RPC": worker.index("Allowlisted task handler failed; retry under database policy.") < worker.index('rpc("worker_finish_project_automation_task"'),
     "worker fails closed for unimplemented task types": "Task type is not implemented by this worker." in worker,
     "database emergency stop defaults to true": "emergency_stop boolean not null default true" in migration,
     "database claim checks emergency stop and read-only allowlist": "emergency_stop=false" in migration and "h.side_effect_class='read_only'" in migration,
