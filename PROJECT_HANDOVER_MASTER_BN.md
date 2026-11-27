@@ -1708,3 +1708,14 @@ Run links:
 - [ ] Commit `3721d3da3c305350c1c95219d15914c483de7210`-এর CI checks completed/success যাচাই।
 - [ ] Mobile viewport-এ Global Business Vision page ও calculator display পরীক্ষা।
 - [ ] Calculator-এর BDT 100,000 × ৳2,000 = ৳20 কোটি gross scenario এবং ২০% illustrative commission-এর arithmetic যাচাই; USD mode ও ৩৫% eligible scenario আলাদা যাচাই।
+
+
+## ২৭ নভেম্বর ২০২৬ — Owner-এর ৩৫%/২০% কমিশন নীতি payout specification-এ সমন্বয়
+
+- Owner-এর স্থায়ী ব্যবসায়িক নিয়ম অনুযায়ী যোগ্য high-volume USD-settled automated work-এ ৩৫% এবং সাধারণ BDT-settled কাজের Admin commission ২০%—এই পৃথক হার payout specification-এ স্পষ্টভাবে যোগ করা হয়েছে।
+- আগের payout specification-এর একক ২০% প্রস্তাবকে superseded হিসেবে চিহ্নিত করা হয়েছে; commission positive distributable platform margin-এর ওপর হিসাব হবে, Member payable, refund/chargeback reserve, tax বা provider fees থেকে নয়।
+- USD ও BDT আলাদা ledger-এ থাকবে; FX হলে exchange rate, timestamp ও journal আলাদা সংরক্ষণ করতে হবে।
+- Order acceptance-এর আগে eligibility, rate, calculation basis ও Member net payable disclose/snapshot করতে হবে; accepted work এবং settled/reconciled funds-এর পরেই commission post করা যাবে।
+- Specification update commit: `d6c32e598e3614de33690a5842e0a6f8abd34189`।
+- এটি documentation/policy alignment; commission code/configuration, provider integration, Staging finance acceptance বা live collection/payout চালু হয়নি। Production migration/deployment হয়নি।
+- পরবর্তী যাচাই: এই commit-এর CI ফলাফল সংগ্রহ; তারপর commission calculation/runtime tests-এ USD 35% বনাম BDT 20%, zero/negative margin, reserve isolation, currency separation এবং immutable order snapshot assert করা।
