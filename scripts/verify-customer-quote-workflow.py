@@ -34,6 +34,7 @@ checks = {
     "runtime test covers Admin quote and customer acceptance": "admin_send_customer_quote" in runtime and "customer_respond_to_quote" in runtime,
     "runtime test covers customer cancellation": "cancel_my_customer_quote_request" in runtime and "Customer quote cancellation was not recorded" in runtime,
     "runtime test covers append-only event guard": "Append-only quote event mutation unexpectedly succeeded" in runtime,
+    "runtime SQL dollar delimiters are balanced": runtime.count("$") % 2 == 0 and "do $\\n" not in runtime and "end $;\\n" not in runtime,
 }
 
 failed = [name for name, passed in checks.items() if not passed]
