@@ -869,3 +869,21 @@ Owner নির্দেশ: নিচের কাজগুলোকে MASTER 
 3. Worker-এর জন্য অনুমোদিত business task definitions, idempotency, budget/limits, retry/dead-letter, audit trail ও kill switch বাস্তবায়ন এবং disposable/staging test; তার আগে worker idle থাকবে।
 4. Revenue/payment provider-এর official sandbox/contract/legal/KYC readiness এবং mock-to-sandbox end-to-end test।
 5. Production migration ও Live Deployment পৃথক explicit approval gate-এ থাকবে।
+
+
+## ২৭ নভেম্বর ২০২৬ — Staging write/deploy trigger নিরাপত্তা শক্ত করা
+
+- Code review-এ দেখা গেছে Staging workflow-তে `workflow_dispatch`-এর পাশাপাশি `pull_request` trigger ছিল, অথচ workflow migrations apply করে এবং Staging Edge Function deploy করে। PR event থেকে এই write/deploy স্বয়ংক্রিয়ভাবে হওয়া অনাকাঙ্ক্ষিত ঝুঁকি তৈরি করত।
+- `.github/workflows/validate-staging-supabase.yml` থেকে `pull_request` trigger সরিয়ে **manual `workflow_dispatch` only** করা হয়েছে। এখন Staging DB apply বা worker deploy কেবল ইচ্ছাকৃত manual dispatch-এ হবে।
+- `docs/STAGING_AUTH_AND_WORKER_READINESS_BN.md`-এ manual-only gate নথিভুক্ত হয়েছে।
+- সংশ্লিষ্ট commits: workflow `f8930d78b0eef49a173d5c815bf3eed4fc6d1fad`; documentation `ab5fa9d98d87b4cadc64d92fe37d3a3f964dbe62`।
+- এটি source-level safety correction; Staging workflow dispatch করা হয়নি, কারণ আলাদা Staging project/credentials উপস্থিতির প্রমাণ নেই।
+
+## ২৭ নভেম্বর ২০২৬ — বর্তমান যাচাইয়ের সীমা
+
+- Disposable migration workflow fix commit `56f198fdff7add5c649e0dc96247d3b66170ee4a`-এ Run `45956925398` সর্বশেষ চেকের সময় **IN_PROGRESS**; এটি শেষ না হওয়া পর্যন্ত full migration validation PASS নয়।
+- ওই run পরবর্তী documentation-only এবং Staging-trigger-hardening commits-কে অন্তর্ভুক্ত করে না; এটি নির্দিষ্ট fix commit-টির validation।
+- বর্তমান PR head আলাদা হতে পারে; handover update নিজে migration workflow trigger করে না।
+- Worker handler তৈরি এখনো BLOCKED: business task catalog, accepted input/output contract, budget, external API authorization, idempotency keys, retry/dead-letter policy এবং per-task security boundary অনুমোদিত/নির্দিষ্ট নয়। কোনো arbitrary business action handler অনুমান করে তৈরি করা নিরাপদ নয়। Worker registration/heartbeat idle-ই থাকবে।
+- GitHub Actions Secrets-এর actual configured state এই read-only repository integration থেকে দেখা যায় না। তাই ১১টি Staging secret উপস্থিত/সঠিক—এমন দাবি করা যাবে না; repository owner GitHub Settings → Secrets and variables → Actions-এ configure করবেন। Values কখনো chat-এ পাঠাবেন না।
+- Production migration, migration-history repair, Live Deployment, payment/payout execution সবই NOT RUN।
