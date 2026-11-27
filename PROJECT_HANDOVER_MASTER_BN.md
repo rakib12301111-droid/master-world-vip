@@ -1285,3 +1285,28 @@ Owner নির্দেশ: নিচের কাজগুলোকে MASTER 
 - এই নথিতে কোনো credential, password, API key, service-role key, OTP বা full connection string সংরক্ষণ করা যাবে না।
 
 **সত্যতা-সীমা:** এই নথি update করা মানে GitHub planning branch-এ পরিকল্পনা সংরক্ষণ; এটি নিজে থেকে PR merge, Supabase migration, live payment collection, public deployment বা Production worker activation করে না।
+
+
+---
+
+## ২৭ নভেম্বর ২০২৬ — নতুন Commit CI ফল ও Wallet/Payout flow স্পষ্টীকরণ
+
+### Commit `7431e29f465f052ba6abfad34a75a4afa98797c3`-এর CI
+- এই Commit-এর জন্য GitHub Actions স্বয়ংক্রিয়ভাবে PR-triggered ৭টি workflow চালিয়েছে; সবগুলো `completed / success`।
+- Worker verification: Run `45972637964` — https://github.com/rakib12301111-droid/master-world-vip/actions/runs/45972637964
+- Update-system validation: Run `45972638168` — https://github.com/rakib12301111-droid/master-world-vip/actions/runs/45972638168
+- Supabase migration safety: Run `45972638160` — https://github.com/rakib12301111-droid/master-world-vip/actions/runs/45972638160
+- Auto Work static safety: Run `45972637926` — https://github.com/rakib12301111-droid/master-world-vip/actions/runs/45972637926
+- Disposable backup/restore: Run `45972637947` — https://github.com/rakib12301111-droid/master-world-vip/actions/runs/45972637947
+- Member finance ledger disposable PostgreSQL: Run `45972637929` — https://github.com/rakib12301111-droid/master-world-vip/actions/runs/45972637929
+- Disposable migration validation: Run `45972638030` — https://github.com/rakib12301111-droid/master-world-vip/actions/runs/45972638030
+- Combined commit status endpoint returned no legacy status entries; authoritative GitHub Actions workflow/check-run API showed 7/7 success. CI success is not Staging/Production deployment.
+- PR #20 remains Draft/Open/Unmerged intentionally; do not mark Ready or merge merely because CI passed. It contains broad backend/migration/worker changes and Staging is not yet validated.
+
+### User's clarification on personal wallet funds
+- User clarified they mean each individual user's own money should remain in that individual user's own account/wallet; the Admin only grants permission for the user to withdraw their own funds.
+- Product design must distinguish: (A) funds already held in a user's own external wallet/account, which are not held by this platform and normally cannot be technically frozen/unfrozen by this platform; versus (B) an in-platform ledger balance, where a withdrawal request can be approved/rejected before a platform/provider-authorized transfer is initiated.
+- Do not imply Admin can control a user's personal bKash/Nagad wallet or authorize withdrawal of funds already in it. If the intended flow is B, funds are held/owed by the platform/provider arrangement and require lawful collection, custody, provider permissions, clear terms, reconciliation, and payout compliance.
+- Next implementation should ask no repeat questions unless needed; use the safe default: in-platform balance is ledger-only, withdrawal request remains pending Admin approval, and no real transfer occurs until official provider integration/authorization is available. Avoid advertising "money stays in user's own account" unless the architecture actually supports it.
+
+**Status truth:** Commit checks are now verified 7/7 successful. PR is still Draft/Open by deliberate safety choice; Staging, Production migrations, production worker and real financial transfers remain uncompleted.
