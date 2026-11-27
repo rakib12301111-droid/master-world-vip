@@ -52,16 +52,30 @@ jobs:
       - name: Create encrypted logical backup
         run: |
           set -euo pipefail
-          pg_dump "postgresql://postgres@127.0.0.1:5432/mwvip_backup_source" --format=custom --no-owner --no-acl --file=/tmp/mwvip-test.dump
-          openssl enc -aes-256-cbc -pbkdf2 -salt -in /tmp/mwvip-test.dump -out /tmp/mwvip-test.dump.enc -pass pass:disposable-test-only
-          test -s /tmp/mwvip-test.dump.enc
-          rm -f /tmp/mwvip-test.dump
+          mkdir -p "$RUNNER_TEMP/mwvip-backup-test"
+          docker run --rm --network host -e PGPASSWORD="$PGPASSWORD" \
+            -v "$RUNNER_TEMP/mwvip-backup-test:/backup" postgres:16 \
+            pg_dump "postgresql://postgres@127.0.0.1:5432/mwvip_backup_source" \
+              --format=custom --no-owner --no-acl --file=/backup/mwvip-test.dump
+          openssl enc -aes-256-cbc -pbkdf2 -salt \
+            -in "$RUNNER_TEMP/mwvip-backup-test/mwvip-test.dump" \
+            -out "$RUNNER_TEMP/mwvip-backup-test/mwvip-test.dump.enc" \
+            -pass pass:disposable-test-only
+          test -s "$RUNNER_TEMP/mwvip-backup-test/mwvip-test.dump.enc"
+          rm -f "$RUNNER_TEMP/mwvip-backup-test/mwvip-test.dump"
       - name: Decrypt and restore to a separate empty database
         run: |
           set -euo pipefail
-          openssl enc -d -aes-256-cbc -pbkdf2 -in /tmp/mwvip-test.dump.enc -out /tmp/mwvip-restore.dump -pass pass:disposable-test-only
+          openssl enc -d -aes-256-cbc -pbkdf2 \
+            -in "$RUNNER_TEMP/mwvip-backup-test/mwvip-test.dump.enc" \
+            -out "$RUNNER_TEMP/mwvip-backup-test/mwvip-restore.dump" \
+            -pass pass:disposable-test-only
           createdb --host=127.0.0.1 --port=5432 --username=postgres --template=template0 mwvip_backup_restore_test
-          pg_restore --host=127.0.0.1 --port=5432 --username=postgres --dbname=mwvip_backup_restore_test --no-owner --no-acl --exit-on-error /tmp/mwvip-restore.dump
+          docker run --rm --network host -e PGPASSWORD="$PGPASSWORD" \
+            -v "$RUNNER_TEMP/mwvip-backup-test:/backup" postgres:16 \
+            pg_restore --host=127.0.0.1 --port=5432 --username=postgres \
+              --dbname=mwvip_backup_restore_test --no-owner --no-acl --exit-on-error \
+              /backup/mwvip-restore.dump
           count="$(psql "postgresql://postgres@127.0.0.1:5432/mwvip_backup_restore_test" -Atc "select count(*) from backup_fixture.orders")"
           test "$count" = "2"
           bdt="$(psql "postgresql://postgres@127.0.0.1:5432/mwvip_backup_restore_test" -Atc "select amount from backup_fixture.orders where reference='TEST-ORDER-001'")"
@@ -69,4 +83,4 @@ jobs:
           echo "DISPOSABLE_BACKUP_RESTORE=PASS"
           echo "RESTORED_FIXTURE_ROWS=$count"
           echo "PRODUCTION_DATABASE_ACCESSED=false"
-          rm -f /tmp/mwvip-restore.dump /tmp/mwvip-test.dump.enc
+          rm -rf "$RUNNER_TEMP/mwvip-backup-test"
