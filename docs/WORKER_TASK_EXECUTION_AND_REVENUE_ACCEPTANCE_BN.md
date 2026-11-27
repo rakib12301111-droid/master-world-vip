@@ -85,3 +85,18 @@ Synthetic acceptance path:
 - Emergency stop default true; Worker execution secret default enabled নয়।
 - কোনো real funds, wallet PIN/OTP, bank password বা provider secret ব্যবহার করা হয়নি।
 - Production migration ও Live Deployment-এর জন্য পৃথক explicit approval বাধ্যতামূলক।
+
+
+## Phase A Read-only Business Handlers — 27 November 2026
+
+Added on the planning branch:
+- Migration `20261127120000_project_usage_digest_read_only_handler.sql`: `project_usage_digest` allowlist registration, service-role-only `worker_read_project_usage_digest(uuid)`, and claim routine allowing only source-implemented read-only handler types.
+- Migration `20261127130000_work_order_validate_read_only_handler.sql`: `work_order_validate` registration, service-role-only `worker_validate_work_order(uuid,uuid)`, strict task-project/order-project match, and updated exact handler allowlist.
+- Worker TypeScript explicitly dispatches `project_usage_digest` and `work_order_validate`; malformed order IDs fail closed. Both results declare no external or financial effects.
+- Disposable runtime SQL now exercises both handlers against synthetic fixtures, verifies budget reservation release and re-engages global emergency stop.
+
+The new business handlers expose no customer identity, make no order or ledger mutation, and call no payment provider. Their database functions are service-role-only. Project execution, schedule and budget still must be separately enabled; the global kill switch remains default STOPPED. No Production or Staging deployment occurred.
+
+Verification:
+- Worker Static CI run `45959327873`: success, commit `52bfc611d2f7669a6f0534f87bbdadcb4a3b4469`.
+- Disposable full-chain migration/runtime run `45959311813`: pending at the time recorded; its result must be checked before claiming runtime acceptance.
