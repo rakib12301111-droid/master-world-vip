@@ -433,3 +433,20 @@ GitHub Actions-এ ব্যবহৃত secret নাম:
 - ব্যবহারকারী জানিয়েছেন OWNER Email/Password এবং Staging Auth account-এর সঙ্গে মিল ঠিক আছে। এটি ব্যবহারকারীর নিশ্চিতকরণ; GitHub encrypted Secret-এর প্রকৃত মান assistant পড়তে পারে না।
 - Workflow ও handover code update সম্পন্ন; কিন্তু নতুন commit-এর পর Actions run চালানো/ফলাফল যাচাই করা হয়নি। তাই Auth diagnostic pass, backup/restore, migration, role/RPC এবং queue-worker ধাপগুলো এখনো সম্পন্ন বলে গণ্য নয়।
 - পরবর্তী ধাপ: GitHub Actions থেকে `validate-staging-supabase.yml`-এর `main` branch-এ নতুন run চালিয়ে নতুন Auth Diagnostic ফলাফল দেখা। কোনো Production secret/database/migration স্পর্শ করা হয়নি; Staging-only সীমা বহাল।
+
+
+## 21. ২৮ নভেম্বর ২০২৬ — Staging Run #5: Backup/Restore সফল, Auth preflight-এ blocker
+
+- Run ID: `46077272231`; Run URL: https://github.com/rakib12301111-droid/master-world-vip/actions/runs/46077272231
+- Run checked-out commit: `24917e39ee778233ada41a3102fdd6ad30a7f514`
+- Backup/Restore job ID: `140767830277`; conclusion: `success`
+- Migration job ID: `140768283420`; conclusion: `failure`
+- Backup job-এর সব ধাপ PASS: Staging Session Pooler input validation, OpenSSL install, isolated PostgreSQL container health, Staging connection preparation, encrypted logical backup creation, decrypt + isolated restore, non-empty restored schema check, encrypted backup/evidence artifact upload এবং disposable container cleanup।
+- Migration job-এর Staging secret/project-ref validation PASS; ৩০টি ordered migration file পাওয়া গেছে এবং duplicate version নেই।
+- Auth preflight OWNER, ADMIN ও MEMBER—তিন account-এই ব্যর্থ: নিরাপদ log category `Credentials rejected or account not found in this Staging project`। কোনো email/password/response body/JWT log করা হয়নি।
+- নিরাপত্তা অনুযায়ী Auth preflight ব্যর্থ হওয়ায় Migration Preview, Migration Apply, Owner RPC role assignment, role/RPC verification এবং queue-worker deploy/report steps skipped হয়েছে।
+- এই run-এ Production project/database স্পর্শ করা হয়নি; কোনো Production migration হয়নি।
+- **পরবর্তী একমাত্র blocker:** GitHub Repository Secrets-এর `STAGING_OWNER_EMAIL`, `STAGING_OWNER_PASSWORD`, `STAGING_ADMIN_EMAIL`, `STAGING_ADMIN_PASSWORD`, `STAGING_MEMBER_EMAIL`, `STAGING_MEMBER_PASSWORD`—প্রতিটি অবশ্যই Staging project `awatzrapqrteybgspqlq`-এর Auth Users-এ থাকা সংশ্লিষ্ট account-এর exact email ও বর্তমান password হতে হবে। তিনটি account একসঙ্গে invalid হওয়ায় আগে নিশ্চিত করতে হবে যে এগুলো Production/অন্য project-এর নয় এবং password reset/পরিবর্তনের পর পুরোনো Secret পড়ে নেই। Supabase Dashboard → Staging project → Authentication → Users-এ তিন account উপস্থিত ও email confirmed কি না যাচাই করুন; password জানা না থাকলে ঐ Staging account-এর password reset করে একই নতুন password GitHub Secret-এ সংরক্ষণ করুন। Secret value chat-এ দেবেন না।
+- Code validation দুর্বল করা, Auth preflight বাদ দেওয়া, migration bypass করা বা Production-এ কাজ চালানো যাবে না। Secret ঠিক হওয়ার পর নতুন Staging workflow run-এ Auth PASS না হওয়া পর্যন্ত Migration/Role কাজ শুরু হবে না।
+- **প্রমাণিত সম্পন্ন:** encrypted Staging backup + isolated restore test।
+- **এখনো অসম্পন্ন:** Staging migration dry-run/apply, Owner/Admin/Member role assignment and verification, Admin RPC access acceptance, queue-worker source/deploy assessment।
