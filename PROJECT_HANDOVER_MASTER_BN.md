@@ -526,3 +526,13 @@ The Owner has directed that the following four gates be treated as critical and 
 - The new backup workflow is currently committed only on the feature branch. GitHub's `workflow_dispatch` workflow must exist on the repository's default branch before it can be manually dispatched from Actions.
 - PR #21/#22 are still Draft/Open and merging the stack to `main` can trigger the existing GitHub Pages deployment. Therefore do not merge merely to make this workflow runnable; first review the release/deployment impact and obtain the separate release decision.
 - The new workflow has **not** run and has no backup artifact yet. Its YAML/source has been reviewed in the repository, but a successful Actions run is still required before counting Staging backup/restore complete.
+
+
+### Latest CI recheck — 27 November 2026
+- PR #21 current head `e8c6be117809dd8f94578d8d87f5a3b031ec9eb1`: no PR-triggered workflow runs were returned for this exact head at recheck. Treat its current-head CI as **not verified**, even if earlier historical checks passed.
+- PR #22 current head `2993d8e5dd828dc85df42e90c01a4a42e1d85a1d`:
+  - Auto Work Static Safety — run `45984835744`: SUCCESS.
+  - Update System — run `45984835716`: SUCCESS.
+  - Verify Supabase migration safety — run `45984835838`: SUCCESS.
+  - Disposable migration validation — run `45984835810`: IN_PROGRESS at recheck; do not mark passed until completed successfully.
+- Combined commit-status endpoint returned no status rows for either head, so the individual workflow-run records above are the available evidence.
