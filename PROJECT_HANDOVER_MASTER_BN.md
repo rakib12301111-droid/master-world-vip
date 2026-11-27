@@ -1719,3 +1719,23 @@ Run links:
 - Specification update commit: `d6c32e598e3614de33690a5842e0a6f8abd34189`।
 - এটি documentation/policy alignment; commission code/configuration, provider integration, Staging finance acceptance বা live collection/payout চালু হয়নি। Production migration/deployment হয়নি।
 - পরবর্তী যাচাই: এই commit-এর CI ফলাফল সংগ্রহ; তারপর commission calculation/runtime tests-এ USD 35% বনাম BDT 20%, zero/negative margin, reserve isolation, currency separation এবং immutable order snapshot assert করা।
+
+
+## ২৭ নভেম্বর ২০২৬ — Staging Backup/Restore-কে Migration-এর বাধ্যতামূলক পূর্বশর্ত করা হয়েছে
+
+- Workflow: `.github/workflows/validate-staging-supabase.yml`
+- Update commit: `f1da846a8834fdad4ab025652494cce327c884bb`
+- Manual Staging workflow-তে নতুন `staging-backup-restore` job যোগ হয়েছে। এটি কেবল `STAGING_SUPABASE_DB_URL` এবং `STAGING_SUPABASE_PROJECT_REF` ব্যবহার করে; Production project ref `lztbbrzeuyjkuiyzrsxp` প্রত্যাখ্যান করে।
+- নতুন বাধ্যতামূলক secret: `STAGING_BACKUP_ENCRYPTION_PASSPHRASE`। এটি ছাড়া Staging backup job fail-closed হবে।
+- Staging Session Pooler থেকে encrypted logical backup তৈরি, runner-এ plaintext dump মুছে ফেলা, backup decrypt করে isolated disposable PostgreSQL-এ restore, এবং encrypted backup + restore evidence ৭ দিনের GitHub Actions artifact হিসেবে সংরক্ষণ—এই ধাপ যোগ হয়েছে।
+- `staging-migrations` এখন `needs: staging-backup-restore`; backup/restore সফল না হলে Staging migration, role acceptance ও worker function deploy job শুরু হবে না।
+- এটি কেবল workflow/code update। এখনো workflow চালানো হয়নি; Staging secrets-এর উপস্থিতি/সঠিকতা, backup/restore runtime success, Staging migration/Auth/RBAC বা Worker acceptance সফল হয়েছে—এমন দাবি করা হচ্ছে না। Production অপরিবর্তিত।
+- পরবর্তী একমাত্র Owner action: GitHub repository Settings → Secrets and variables → Actions-এ `STAGING_BACKUP_ENCRYPTION_PASSPHRASE` নামে একটি শক্তিশালী আলাদা passphrase যোগ করা। Secret value কাউকে পাঠাবেন না। এরপর প্রয়োজনীয় আগের Staging secrets-সহ workflow চালানো যাবে।
+
+## ২৭ নভেম্বর ২০২৬ — USD/BDT কমিশন নীতির পূর্বের margin-base ব্যাখ্যা বাতিল
+
+- পূর্বের handover entry-তে `Distributable Platform Margin`-এর ওপর ৩৫%/২০% কমিশন হিসাবের যে ব্যাখ্যা লেখা হয়েছিল, সেটি Owner-এর নির্দেশের ভুল ব্যাখ্যা; সেটি অনুসরণ করা যাবে না।
+- সঠিক নিয়ম: বাস্তবে নিষ্পত্তি/settled হওয়া USD income-এর একই USD পরিমাণের ৩৫% Admin commission; বাস্তবে নিষ্পত্তি/settled হওয়া BDT income-এর একই BDT পরিমাণের ২০% Admin commission। উদাহরণ: $100 settled USD income → $35; ৳10,000 settled BDT income → ৳2,000।
+- USD ও BDT ledger আলাদা থাকবে; USD-কে আগে BDT-তে convert করে ২০% প্রয়োগ করা যাবে না। FX conversion হলে সেটি আলাদা exchange journal।
+- Provider fee, tax, refund/chargeback, Member payable ও reserve আলাদা accounting line হিসেবে রেকর্ড হবে; এগুলোকে কমিশন base থেকে বাদ দিয়ে margin formula বানানো Owner-এর নির্দেশ নয়। Refund/chargeback হলে সংশ্লিষ্ট commission reversal আলাদাভাবে audit করতে হবে।
+- Payout specification-এর ভুল Section 12 এবং আগের margin-base wording পরবর্তী documentation/code correction-এ সংশোধন করতে হবে। এই handover correction policy-কে স্পষ্ট করে; finance runtime implementation বা live payment/payout চালু করে না।
