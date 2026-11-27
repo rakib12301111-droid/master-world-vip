@@ -19,7 +19,7 @@ jobs:
     timeout-minutes: 45
     env:
       DB_URL: ${{ secrets.STAGING_SUPABASE_DB_URL }}
-      PROJECT_REF: ${{ secrets.STAGING_SUPABASE_PROJECT_REF }}
+      PROJECT_REF: awatzrapqrteybgspqlq
       BACKUP_PASSPHRASE: ${{ secrets.STAGING_BACKUP_ENCRYPTION_PASSPHRASE }}
     steps:
       - uses: actions/checkout@v4
@@ -157,7 +157,7 @@ jobs:
         env:
           TOKEN: ${{ secrets.STAGING_SUPABASE_ACCESS_TOKEN }}
           DB_URL: ${{ secrets.STAGING_SUPABASE_DB_URL }}
-          PROJECT_REF: ${{ secrets.STAGING_SUPABASE_PROJECT_REF }}
+          PROJECT_REF: awatzrapqrteybgspqlq
         run: |
           set -euo pipefail
           test -n "$TOKEN" || { echo "::error::Missing STAGING_SUPABASE_ACCESS_TOKEN"; exit 1; }
@@ -199,7 +199,7 @@ jobs:
       - name: Preflight existing confirmed Owner, Admin and Member Auth accounts before any migration
         env:
           BASE_URL: ${{ secrets.STAGING_SUPABASE_URL }}
-          PROJECT_REF: ${{ secrets.STAGING_SUPABASE_PROJECT_REF }}
+          PROJECT_REF: awatzrapqrteybgspqlq
           ANON_KEY: ${{ secrets.STAGING_SUPABASE_ANON_KEY }}
           OWNER_EMAIL: ${{ secrets.STAGING_OWNER_EMAIL }}
           OWNER_PASSWORD: ${{ secrets.STAGING_OWNER_PASSWORD }}
@@ -250,7 +250,7 @@ jobs:
       - name: Assign isolated Admin and Member test roles through Owner RPC
         env:
           BASE_URL: ${{ secrets.STAGING_SUPABASE_URL }}
-          PROJECT_REF: ${{ secrets.STAGING_SUPABASE_PROJECT_REF }}
+          PROJECT_REF: awatzrapqrteybgspqlq
           ANON_KEY: ${{ secrets.STAGING_SUPABASE_ANON_KEY }}
           OWNER_EMAIL: ${{ secrets.STAGING_OWNER_EMAIL }}
           OWNER_PASSWORD: ${{ secrets.STAGING_OWNER_PASSWORD }}
@@ -356,7 +356,7 @@ jobs:
         if: ${{ hashFiles('supabase/functions/project-automation-worker/**') != '' }}
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.STAGING_SUPABASE_ACCESS_TOKEN }}
-          PROJECT_REF: ${{ secrets.STAGING_SUPABASE_PROJECT_REF }}
+          PROJECT_REF: awatzrapqrteybgspqlq
         run: |
           set -euo pipefail
           supabase functions deploy project-automation-worker --project-ref "$PROJECT_REF"
