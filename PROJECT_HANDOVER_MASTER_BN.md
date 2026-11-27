@@ -1022,3 +1022,58 @@ Owner নির্দেশ: নিচের কাজগুলোকে MASTER 
 - Static verifier-ও স্পষ্টভাবে কেবল `system_health_check` implementation প্রত্যাশা করে। তাই এই সেশনে নতুন business handler code/allowlist enable করা হয়নি; catalog-কে বাস্তবায়নের আগে reviewable specification হিসেবে রাখা হয়েছে।
 - নতুন commit-গুলো documentation-only হওয়ায় Worker code validation workflow-এর path filter trigger হয়নি। এই নতুন docs commit-গুলোর জন্য CI pass দাবি করা হচ্ছে না। আগের সফল runtime/worker test কেবল আগের tested source commit-গুলোর জন্য প্রযোজ্য।
 - এই final handover note-এ আগের docs commits ও বর্তমান নিরাপত্তা সীমা রেকর্ড করা হলো; পরবর্তী session-এ catalog Phase A implementation শুরু করার আগে existing SQL allowlist/RPC contracts পুনরায় পরীক্ষা করতে হবে।
+
+
+---
+
+## ২৭ নভেম্বর ২০২৬ — Phase A Read-only Business Handler বাস্তবায়ন
+
+### এই সেশনে source code ও migration-এ সম্পন্ন
+1. **Project Usage Digest**
+   - Migration: `20261127120000_project_usage_digest_read_only_handler.sql`
+   - Service-role-only RPC: `worker_read_project_usage_digest(uuid)`
+   - Project code/number, currency, lifecycle, scheduler state, daily budget/spent/reserved এবং গত ৩০ দিনের task status counts ফেরত দেয়।
+   - Customer/member profile বা order data পড়ে না; কোনো row mutate করে না; কোনো external/financial side effect নেই।
+
+2. **Work Order Validation**
+   - Migration: `20261127130000_work_order_validate_read_only_handler.sql`
+   - Service-role-only RPC: `worker_validate_work_order(uuid,uuid)`
+   - Task-এর project ID এবং order-এর project ID মিলিয়ে validation করে; currency, scope terms, settlement evidence ও locked allocation count-এর flags ফেরত দেয়।
+   - Customer identity বা financial amount ফেরত দেয় না; order, ledger বা payout state পরিবর্তন করে না।
+
+3. **Worker dispatch ও claim allowlist**
+   - `supabase/functions/project-automation-worker/index.ts`-এ দুই handler-এর explicit dispatch যোগ।
+   - Database claim allowlist এখন কেবল `system_health_check`, `project_usage_digest`, `work_order_validate`—এই তিনটি exact source-implemented read-only type গ্রহণ করে।
+   - Unknown task type fail-closed; malformed `order_id` reject হয়।
+   - Global emergency stop, service-role auth, heartbeat, project/schedule/budget gate, lease, budget reservation/release এবং audit অপরিবর্তিতভাবে বাধ্যতামূলক।
+
+4. **Disposable runtime acceptance tests**
+   - `supabase/tests/revenue-order-to-member-settlement-runtime.sql`-এ synthetic Phase A usage digest ও work-order validation acceptance যোগ।
+   - Assertions: project scope, no customer identity, validation flags, successful task completion, budget reservation release এবং test শেষে global emergency stop আবার TRUE।
+   - সব test synthetic disposable PostgreSQL-এ; Production/Staging DB, real customer বা real money নয়।
+
+### Commit trail
+- Usage digest migration: `40f3b2db727fed36ca39c55486d1eb7f231813e9`
+- Worker usage digest dispatch: `609234beea62df8c35b13becd4578e52fe5fcc4e`
+- Usage digest runtime test: `f4f3dc33e1b950d146f713be0bc2fb06234fa3e2`
+- Usage digest static verifier: `3a8c097383bbe600708586a67263706947a3a3d4`
+- Work-order validation migration: `0d97e9d9f40770b34755cd2f54dd2a06babed476`
+- Worker work-order validation dispatch: `d00f418cfc08cc414a8fe6995ccfcd82ae2b3d9b`
+- Work-order validation runtime test: `89c485235bee2b84e65d8e3667ad42a65beb37bc`
+- Static verifier for both handlers: `52bfc611d2f7669a6f0534f87bbdadcb4a3b4469`
+- Task Catalog update: `43bbf1f4038463a2b743e7e99df3d8ccb24b62bd`
+- Worker acceptance doc update: `41a09ca1b0172a9c0c8a0b581e0abe7a85a5032e`
+
+### Verified CI / runtime
+- Worker Static CI run `45959327873`: **SUCCESS**, commit `52bfc611d2f7669a6f0534f87bbdadcb4a3b4469`. Deno type-check, staging safety verifier and updated task-engine static verifier passed.
+- Disposable full migration/runtime run `45959276433`: **SUCCESS**, commit `0d97e9d9f40770b34755cd2f54dd2a06babed476`. Both fresh and legacy-shape disposable PostgreSQL databases accepted all migrations; kill-switch tests and the runtime suite (including the usage-digest handler) passed.
+- Disposable full migration/runtime run `45959311813`: includes the later work-order runtime test commit `89c485235bee2b84e65d8e3667ad42a65beb37bc`; status was **IN PROGRESS** when this note was written. Check its final status before claiming work-order runtime test pass.
+- CI results are for the exact listed commits. Later documentation-only commits do not change tested code.
+
+### Still pending / not claimed
+- Phase A now has two read-only business handlers; remaining catalog handlers are specification-only and not implemented.
+- Actual Staging project migration/Auth/RBAC acceptance remains blocked by missing Staging project and 11 secrets.
+- Official payment provider sandbox, merchant approval, signed webhook and production credentials remain unavailable.
+- 20% commission remains proposal-only; no commission config or posting enabled.
+- No Production migration, Production Worker deployment/execution, live payment/payout or public deployment occurred.
+- PR #20 remains Draft/Open/Unmerged. Do not merge or deploy without the separately required approval.
