@@ -31,7 +31,8 @@ Updated: 2026-11-27
 12. Monitor a 24-hour canary and 7-day reliability period before scaling. Never claim guaranteed income; only actual accepted work and settled customer funds can support earnings.
 
 ## Current verified status (2026-11-27)
-- User confirms Supabase project `MASTER-WORLD-VIP-STAGING` was created; Project Reference has not yet been supplied/verified.
-- No Staging secrets are confirmed configured; no Staging migration/Auth/RBAC/Worker acceptance run is recorded.
+- Owner-confirmed Supabase Staging project: `MASTER-WORLD-VIP-STAGING`, ref `awatzrapqrteybgspqlq`, region `ap-northeast-1`, Dashboard status Healthy. Project Overview showed `No repository connected`, `No migrations`, and `No backups`.
+- Project Settings showed the current account as Project Owner. The Project has not been transferred; the target Organization was selected in the transfer form, but the transfer was not submitted.
+- No Staging secrets are confirmed configured; no Staging backup/restore, migration/Auth/RBAC/Worker acceptance run is recorded. The manual workflow now gates migration on a successful encrypted Staging backup and isolated restore.
 - No Production migration, Worker activation, live customer-task execution, payment collection or payout is authorized or proven.
 - GitHub Pages static site deployment was previously workflow-verified; that does not mean backend automation is live.
