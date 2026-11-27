@@ -536,3 +536,40 @@ The Owner has directed that the following four gates be treated as critical and 
   - Verify Supabase migration safety — run `45984835838`: SUCCESS.
   - Disposable migration validation — run `45984835810`: IN_PROGRESS at recheck; do not mark passed until completed successfully.
 - Combined commit-status endpoint returned no status rows for either head, so the individual workflow-run records above are the available evidence.
+
+
+---
+
+## Latest execution update — 27 November 2026 (verified after commit ef7e64f)
+
+### PR #22 current-head CI — all four checks SUCCESS
+- Current head: `ef7e64f51cf7527c1e6dcdf7ac63d8e310d13c6a`.
+- Auto Work Static Safety — run `45985434992`: SUCCESS.
+- Update System — run `45985435216`: SUCCESS.
+- Verify Supabase migration safety — run `45985434987`: SUCCESS.
+- Disposable migration validation — run `45985435070`: SUCCESS.
+- These checks verify repository/static/disposable validation only. They do not connect to or modify the Staging or Production Supabase project.
+
+### PR state rechecked
+- PR #21: OPEN / DRAFT / NOT MERGED; current head `e8c6be117809dd8f94578d8d87f5a3b031ec9eb1`; no PR-triggered workflow run was returned for this exact head.
+- PR #22: OPEN / DRAFT / NOT MERGED; current head `ef7e64f51cf7527c1e6dcdf7ac63d8e310d13c6a`; base is `feature/customer-services-mvp`.
+- Both PRs report mergeable at this read-only check. Do not merge as part of this update: PR #22 depends on PR #21 and merging the stack to `main` can affect GitHub Pages/public deployment.
+
+### Staging project identity correction
+- The Owner explicitly confirmed in chat on 27 November 2026 that the separate `MASTER-WORLD-VIP-STAGING` Supabase project has already been created.
+- Do not ask the Owner to create it again. Its exact Project Ref and URL still need secure dashboard confirmation before connecting workflows; never request its secret values in chat.
+- The four Staging repository Actions secret names remain: `SUPABASE_STAGING_ACCESS_TOKEN`, `SUPABASE_STAGING_PROJECT_REF`, `SUPABASE_STAGING_DB_URL`, and `STAGING_BACKUP_ENCRYPTION_PASSPHRASE`.
+- GitHub secret APIs are not available through this read-only repository connection. Presence of these four secrets is therefore UNKNOWN, not absent and not confirmed.
+
+### Current five release gates — precise status
+1. PR #21/#22 code validation: PR #22 current-head CI is 4/4 SUCCESS; PR #21 current-head CI is still NOT VERIFIED. PRs remain Draft/Open.
+2. Staging project setup: project creation CONFIRMED by Owner; exact ref/URL and connection still pending.
+3. Staging secrets: four secret names documented; secret presence UNKNOWN because secret values/metadata cannot be read through this connection.
+4. Staging backup, restore and migration preview: workflow source committed; workflow has not run. No Staging backup artifact/restore proof or migration preview result yet.
+5. Customer/Admin and Android acceptance + release: real Staging accounts, RBAC/customer privacy acceptance, Android Chrome checks and release/deployment remain pending.
+
+### Work completed by this update
+- Rechecked repository tree: exactly 31 SQL migration files exist on the current PR #22 head; the Staging migration workflow's expected-file list includes all 31.
+- Rechecked both PRs and the latest current-head CI evidence.
+- Updated this handover so the Staging project is no longer incorrectly described as uncreated and the latest PR #22 checks are recorded.
+- No secrets were read or changed. No Staging or Production database was connected to or modified. No migration, merge, payment, Android-device test or public deployment was performed.
