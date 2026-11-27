@@ -135,7 +135,7 @@ jobs:
           # annotations that the isolated stock restore image does not recognize.
           docker run --rm --network host --env PGPASSWORD=restore_test_only --env PGSSLMODE=disable \
             --volume "$PWD/backup:/backup" supabase/postgres:17.6.1.136 \
-            pg_restore --no-owner --no-acl --file=/backup/restore.sql /backup/restore.dump
+            pg_restore --no-owner --no-acl /backup/restore.dump > backup/restore.sql
           python - <<'PY'
           from pathlib import Path
           import re
