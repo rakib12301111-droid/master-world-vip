@@ -1213,7 +1213,7 @@ Owner নির্দেশ: নিচের কাজগুলোকে MASTER 
 - Active subscription কেবল Member Paid Plan-এর জন্য; Admin role-কে Member Paid subscription দিয়ে activate করা যাবে না।
 - `my_project_plan_access(project_id)` entitlement resolver: Admin-এর জন্য `admin_free`, যাচাইকৃত active Paid Plan-সহ Member-এর জন্য `member_paid`, অন্যথায় `no_access`।
 - Static verifier: `scripts/verify-admin-free-member-paid-plan-gates.py`; policy note: `docs/ADMIN_FREE_MEMBER_PAID_PLAN_GATES_BN.md`।
-- **Status: CODE COMMITTED TO FEATURE BRANCH ONLY; static/runtime CI NOT YET RUN; PR NOT YET REVIEWED/MERGED; Staging/Production NOT APPLIED.**
+- **Status: CODE COMMITTED TO FEATURE BRANCH ONLY; static/runtime CI NOT YET RUN; PR #23 OPEN/DRAFT; NOT REVIEWED/MERGED; Staging/Production NOT APPLIED.**
 - গুরুত্বপূর্ণ: resolver helper যোগ হয়েছে; প্রতিটি worker/task/order execution entry point-এ server-side entitlement enforcement এখনো সম্পূর্ণ প্রমাণিত নয়। তাই সাধারণ সদস্যদের কাজ Paid Plan ছাড়া বাস্তবে বন্ধ হয়েছে—এমন দাবি করা যাবে না।
 - Plan price/feature/period seed হয়নি; checkout, bKash/Nagad/Bank/SSLCommerz, signed webhook, merchant approval, refund/payout integration নেই। আজ কোনো প্রকৃত আয়/পেমেন্ট নিশ্চিত নয়।
 - পরবর্তী ধাপ: PR review + static verifier + disposable PostgreSQL tests; এরপর সব execution entry point-এ entitlement enforcement; তারপর Staging acceptance. Production migration/deployment আলাদা অনুমোদন ছাড়া নয়।
