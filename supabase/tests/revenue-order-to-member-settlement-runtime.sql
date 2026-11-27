@@ -328,3 +328,68 @@ $phase_a$;
 select 'PHASE_A_PROJECT_USAGE_DIGEST_READ_ONLY_HANDLER=PASS' as result;
 select 'PHASE_A_NO_CUSTOMER_MEMBER_DATA_OR_EXTERNAL_FINANCIAL_EFFECTS=true' as result;
 select 'PHASE_A_GLOBAL_EMERGENCY_STOP_REENABLED=true' as result;
+
+
+-- Phase A second read-only handler: validate a synthetic work order without exposing customer identity.
+do $work_order_validate$
+declare
+  v_project uuid;
+  v_order uuid;
+  v_worker uuid;
+  v_task uuid;
+  v_lease uuid;
+  v_validation jsonb;
+begin
+  select id into v_project from public.earning_project_registry
+  where project_code='MW-BDT-2000';
+  select id into v_order from public.customer_service_orders
+  where idempotency_key='mwvip-e2e-order-0001' and project_id=v_project;
+  if v_order is null then raise exception 'Synthetic work order fixture missing'; end if;
+
+  v_worker:=public.worker_register_project_automation(
+    'worker-phase-a-order-validation','Phase A Order Validation Worker',array['BDT']::text[]
+  );
+  perform public.worker_heartbeat_project_automation('worker-phase-a-order-validation');
+
+  insert into public.project_automation_tasks(
+    project_id,task_type,payload,idempotency_key,max_attempts,budget_cap,available_at
+  ) values(
+    v_project,'work_order_validate',
+    jsonb_build_object('order_id',v_order::text),
+    'phase-a-work-order-validation-001',2,1,now()
+  );
+
+  select id,lease_token into v_task,v_lease
+  from public.worker_claim_project_automation_task('worker-phase-a-order-validation')
+  limit 1;
+  if v_task is null or v_lease is null then
+    raise exception 'Phase A work order validation task was not claimed';
+  end if;
+
+  v_validation:=public.worker_validate_work_order(v_project,v_order);
+  if v_validation->>'status'<>'completed'
+    or v_validation->>'validation_passed'<>'true'
+    or v_validation->>'currency_match'<>'true'
+    or v_validation->>'scope_terms_present'<>'true'
+    or v_validation->>'settlement_evidence_present'<>'true'
+    or v_validation->>'locked_allocation_count'<>'3'
+    or v_validation ? 'customer_user_id'
+  then
+    raise exception 'Phase A work order validation failed or leaked customer identity: %',v_validation;
+  end if;
+
+  perform public.worker_finish_project_automation_task(v_task,v_lease,true,0,null);
+  if exists(select 1 from public.project_automation_tasks
+    where id=v_task and (status<>'succeeded' or budget_reserved<>0)) then
+    raise exception 'Work order validation task did not finish/release budget';
+  end if;
+
+  update public.project_automation_runtime_control
+  set emergency_stop=true,stop_reason='Disposable Phase A handler tests completed',updated_at=now()
+  where singleton=true;
+end;
+$work_order_validate$;
+
+select 'PHASE_A_WORK_ORDER_VALIDATE_READ_ONLY_HANDLER=PASS' as result;
+select 'PHASE_A_WORK_ORDER_NO_CUSTOMER_IDENTITY_EXPOSED=true' as result;
+select 'PHASE_A_GLOBAL_EMERGENCY_STOP_REENABLED=true' as result;
