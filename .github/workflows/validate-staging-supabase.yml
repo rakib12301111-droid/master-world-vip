@@ -32,14 +32,22 @@ jobs:
           python - "$DB_URL" "$PROJECT_REF" <<'PY'
           import sys
           from urllib.parse import urlparse, unquote
+          import re
           u=urlparse(sys.argv[1])
           expected=sys.argv[2]
           username=unquote(u.username or "")
+          password=unquote(u.password or "")
+          if not re.fullmatch(r"[a-z0-9]{20}", expected):
+              raise SystemExit("::error::Staging project ref format is invalid")
           if u.scheme not in ("postgres","postgresql") or not u.hostname:
               raise SystemExit("::error::Staging DB URL is not a PostgreSQL URL")
-          if not username.endswith("." + expected):
-              raise SystemExit("::error::DB URL username must end with the configured Staging project ref; refusing an unverified target")
-          print("Staging DB URL project-ref binding verified without printing credentials.")
+          if not u.hostname.endswith(".pooler.supabase.com"):
+              raise SystemExit("::error::Staging DB URL must use a Supabase Session Pooler host")
+          if u.port != 5432 or u.path != "/postgres" or u.query or u.fragment:
+              raise SystemExit("::error::Staging DB URL must use pooler port 5432 and database /postgres without query or fragment")
+          if username != "postgres." + expected or not password:
+              raise SystemExit("::error::Staging DB URL credentials are not bound to the configured Staging project ref")
+          print("Staging Session Pooler host, port, database and project-ref binding verified without printing credentials.")
           PY
           echo "Staging credentials present; values are masked."
       - name: Validate the complete ordered migration set
@@ -66,6 +74,7 @@ jobs:
       - name: Assign isolated Admin and Member test roles through Owner RPC
         env:
           BASE_URL: ${{ secrets.STAGING_SUPABASE_URL }}
+          PROJECT_REF: ${{ secrets.STAGING_SUPABASE_PROJECT_REF }}
           ANON_KEY: ${{ secrets.STAGING_SUPABASE_ANON_KEY }}
           OWNER_EMAIL: ${{ secrets.STAGING_OWNER_EMAIL }}
           OWNER_PASSWORD: ${{ secrets.STAGING_OWNER_PASSWORD }}
@@ -75,9 +84,20 @@ jobs:
           MEMBER_PASSWORD: ${{ secrets.STAGING_MEMBER_PASSWORD }}
         run: |
           set -euo pipefail
-          for name in BASE_URL ANON_KEY OWNER_EMAIL OWNER_PASSWORD ADMIN_EMAIL ADMIN_PASSWORD MEMBER_EMAIL MEMBER_PASSWORD; do
+          for name in BASE_URL PROJECT_REF ANON_KEY OWNER_EMAIL OWNER_PASSWORD ADMIN_EMAIL ADMIN_PASSWORD MEMBER_EMAIL MEMBER_PASSWORD; do
             test -n "${!name:-}" || { echo "::error::Missing staging test secret: $name"; exit 1; }
           done
+          python - "$BASE_URL" "$PROJECT_REF" <<'PY'
+          import sys
+          from urllib.parse import urlparse
+          u=urlparse(sys.argv[1])
+          expected=sys.argv[2]
+          if u.scheme != "https" or u.hostname != expected + ".supabase.co":
+              raise SystemExit("::error::Staging API URL must match the configured Staging project ref")
+          if u.port not in (None,443) or u.path not in ("","/") or u.username or u.password or u.query or u.fragment:
+              raise SystemExit("::error::Staging API URL contains an unexpected port, path, credential, query or fragment")
+          print("Staging API URL project-ref binding verified.")
+          PY
           auth_token() {
             local email="$1" password="$2" response token
             response=$(curl --silent --show-error "$BASE_URL/auth/v1/token?grant_type=password" \
