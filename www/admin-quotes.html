@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="bn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#0b1220"><title>Admin Customer Quote Inbox — MASTER WORLD VIP</title>
+<style>
+:root{color-scheme:dark;--bg:#0b1220;--panel:#142238;--line:#35465d;--gold:#f1c86b;--text:#f5f7fb;--muted:#c3cede}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,"Noto Sans Bengali",sans-serif}.wrap{max-width:1050px;margin:auto;padding:20px 15px 60px}.top{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:center}.brand,h1,h2{color:var(--gold)}a{color:#ffdf91}.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px;margin:14px 0}.muted{color:var(--muted)}label{display:block;margin:10px 0 4px;font-size:14px}input,select,textarea{width:100%;padding:11px;border:1px solid #53657e;border-radius:9px;background:#0c1728;color:var(--text);font:inherit}textarea{min-height:90px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px}.btn{border:0;border-radius:9px;background:linear-gradient(135deg,#f7dc98,#d39a35);color:#1a1408;padding:10px 15px;font:inherit;font-weight:800;cursor:pointer;margin:8px 7px 0 0}.btn.alt{background:#17253a;color:#f8e8c3;border:1px solid #806735}.btn:disabled{opacity:.5;cursor:not-allowed}.notice{border-left:4px solid var(--gold);background:#211d14;padding:12px;border-radius:8px}.status{font-weight:700;color:#f8dfaa}.foot{border-top:1px solid var(--line);margin-top:30px;padding-top:15px;color:var(--muted);font-size:13px}
+</style></head><body><main class="wrap">
+<header class="top"><div class="brand">MASTER WORLD VIP · ADMIN</div><a href="./index.html">← Member Dashboard</a></header>
+<h1>Customer Quote Inbox</h1>
+<p class="muted">শুধু Owner / Super Admin / Admin-এর জন্য। এখানে আসা অনুরোধ পর্যালোচনা করে স্বচ্ছ Quote পাঠাতে পারবেন। Quote গ্রহণ করলেই অর্ডার বা টাকা তৈরি হয় না।</p>
+<div id="access" class="notice" role="status">Supabase session ও Admin role যাচাই হচ্ছে…</div>
+<div id="inbox" hidden><div class="grid"><div><label for="filter">অনুরোধের অবস্থা</label><select id="filter"><option value="active">সক্রিয়</option><option value="all">সব</option><option value="submitted">নতুন</option><option value="under_review">পর্যালোচনায়</option><option value="quote_sent">Quote পাঠানো</option><option value="accepted">গৃহীত</option><option value="declined">প্রত্যাখ্যাত</option><option value="rejected">Admin প্রত্যাখ্যান</option><option value="expired">মেয়াদোত্তীর্ণ</option></select></div><div><label>&nbsp;</label><button class="btn alt" id="refresh" type="button">Inbox Refresh</button></div></div><div id="items"></div></div>
+<footer class="foot">Customer quote request is pre-order only. No payment collection, fund custody or order creation happens in this inbox.</footer>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const PROJECT_URL='https://lztbbrzeuyjkuiyzrsxp.supabase.co';
+const PUBLIC_KEY='sb_publishable_r6Qq3bM6nSgbqvKTYQZdU_ux2kUc8r';
+const access=document.getElementById('access'),inbox=document.getElementById('inbox'),items=document.getElementById('items');
+let db=null;
+function cfg(){try{const v=JSON.parse(localStorage.getItem('mwvip_supabase_config')||'{}');return{url:v.url||PROJECT_URL,key:v.key||PUBLIC_KEY};}catch(_e){return{url:PROJECT_URL,key:PUBLIC_KEY};}}
+function el(tag,text,cls){const n=document.createElement(tag);n.textContent=text;if(cls)n.className=cls;return n;}
+const serviceNames={typing:'বাংলা ও ইংরেজি টাইপিং',document_formatting:'PDF ও ডকুমেন্ট ফরম্যাটিং',general_design:'সাধারণ ডিজাইন সহায়তা',social_content:'সোশ্যাল মিডিয়া কনটেন্ট',other:'অন্যান্য'};
+const states={submitted:'নতুন',under_review:'পর্যালোচনায়',quote_sent:'Quote পাঠানো',accepted:'গ্রাহক গ্রহণ করেছেন',declined:'গ্রাহক প্রত্যাখ্যান করেছেন',rejected:'Admin প্রত্যাখ্যান',expired:'মেয়াদোত্তীর্ণ',cancelled:'বাতিল'};
+async function init(){
+ try{
+  if(!window.supabase)throw new Error('Supabase SDK লোড হয়নি');
+  const c=cfg();db=window.supabase.createClient(c.url,c.key,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+  const {data:{session},error}=await db.auth.getSession();if(error)throw error;
+  if(!session){access.textContent='Admin Inbox দেখতে আগে Member Dashboard-এ লগইন করুন।';return;}
+  const {data:role,error:roleError}=await db.rpc('get_my_admin_access');if(roleError)throw roleError;
+  if(!['owner','super_admin','admin'].includes(role)){access.textContent='Access denied — এই Inbox শুধু Owner / Super Admin / Admin দেখতে পারবেন।';return;}
+  access.textContent='Admin access verified: '+role;inbox.hidden=false;await load();
+ }catch(e){access.textContent='Inbox প্রস্তুত নয়: '+(e.message||String(e))+' · Migration apply ও RLS setup যাচাই করুন।';}
+}
+async function load(){
+ items.textContent='অনুরোধ লোড হচ্ছে…';
+ const {error:expiryError}=await db.rpc('admin_expire_customer_quotes');if(expiryError)access.textContent='Quote expiry check: '+expiryError.message;
+ let q=db.from('customer_quote_requests').select('id,customer_user_id,service_key,country,scope_description,requested_deadline,budget_hint,status,quote_amount,quote_currency,quote_scope,delivery_days,quote_expires_at,admin_note,created_at').order('created_at',{ascending:false}).limit(100);
+ const filter=document.getElementById('filter').value;
+ if(filter==='active')q=q.in('status',['submitted','under_review','quote_sent']);
+ else if(filter!=='all')q=q.eq('status',filter);
+ const {data,error}=await q;
+ if(error){items.textContent='অনুরোধ লোড হয়নি: '+error.message;return;}
+ items.replaceChildren();
+ if(!data?.length){items.append(el('p','এই filter-এ কোনো অনুরোধ নেই।','muted'));return;}
+ for(const r of data){
+  const card=el('article','');card.className='card';
+  card.append(el('h2',(serviceNames[r.service_key]||r.service_key)+' · '+(states[r.status]||r.status)));
+  card.append(el('p','Request ID: '+r.id,'muted'),el('p','Customer ID: '+r.customer_user_id,'muted'),el('p','দেশ: '+r.country),el('p','কাজের বিবরণ: '+r.scope_description));
+  if(r.requested_deadline)card.append(el('p','সময়সীমা: '+r.requested_deadline));
+  if(r.budget_hint)card.append(el('p','গ্রাহকের বাজেট ইঙ্গিত: '+r.budget_hint));
+  card.append(el('p','জমা: '+new Date(r.created_at).toLocaleString('bn-BD')));
+  if(r.status==='submitted'||r.status==='under_review'){
+   const review=document.createElement('button');review.className='btn alt';review.textContent='পর্যালোচনায় নিন';review.type='button';review.addEventListener('click',async()=>{review.disabled=true;const {error}=await db.rpc('admin_review_customer_quote_request',{p_request_id:r.id,p_status:'under_review',p_admin_note:null});if(error){access.textContent='Review update failed: '+error.message;review.disabled=false;}else await load();});card.append(review);
+   const reject=document.createElement('button');reject.className='btn alt';reject.textContent='অনুরোধ প্রত্যাখ্যান';reject.type='button';reject.addEventListener('click',async()=>{reject.disabled=true;const {error}=await db.rpc('admin_review_customer_quote_request',{p_request_id:r.id,p_status:'rejected',p_admin_note:'বর্তমানে এই অনুরোধটি গ্রহণ করা যাচ্ছে না।'});if(error){access.textContent='Reject failed: '+error.message;reject.disabled=false;}else await load();});card.append(reject);
+   const form=document.createElement('form');form.className='section';
+   const row=el('div','');row.className='grid';
+   const amountWrap=el('div',''),currencyWrap=el('div',''),daysWrap=el('div',''),expiryWrap=el('div','');
+   function field(wrap,label,type,value){const l=el('label',label);const inp=document.createElement('input');inp.type=type;inp.value=value;inp.required=true;wrap.append(l,inp);return inp;}
+   const amount=field(amountWrap,'Quote amount','number','');amount.min='0.01';amount.step='0.01';
+   const currency=el('select','');for(const v of ['BDT','USD']){const o=el('option',v);o.value=v;currency.append(o);}currencyWrap.append(el('label','Currency'),currency);
+   const days=field(daysWrap,'Delivery days','number','3');days.min='1';days.max='365';
+   const expiry=field(expiryWrap,'Quote expiry','datetime-local','');const d=new Date(Date.now()+7*86400000);expiry.value=new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,16);
+   row.append(amountWrap,currencyWrap,daysWrap,expiryWrap);
+   const scopeLabel=el('label','Quote-এ নিশ্চিত কাজের পরিধি');const scope=document.createElement('textarea');scope.required=true;scope.minLength=10;scope.maxLength=2000;scope.placeholder='Deliverable, revision ও সীমাবদ্ধতা স্পষ্টভাবে লিখুন।';scope.value=r.scope_description;
+   const noteLabel=el('label','Internal Admin note (ঐচ্ছিক)');const note=document.createElement('input');note.maxLength=2000;
+   const send=el('button','Quote পাঠান');send.className='btn';send.type='submit';
+   form.append(row,scopeLabel,scope,noteLabel,note,send);
+   form.addEventListener('submit',async ev=>{ev.preventDefault();send.disabled=true;const iso=new Date(expiry.value).toISOString();const {error}=await db.rpc('admin_send_customer_quote',{p_request_id:r.id,p_quote_amount:Number(amount.value),p_quote_currency:currency.value,p_quote_scope:scope.value,p_delivery_days:Number(days.value),p_quote_expires_at:iso,p_admin_note:note.value||null});if(error){access.textContent='Quote পাঠানো যায়নি: '+error.message;send.disabled=false;}else{access.textContent='Quote পাঠানো হয়েছে। গ্রাহক নিজের অ্যাকাউন্টে উত্তর দিতে পারবেন।';await load();}});
+   card.append(form);
+  }
+  if(r.status==='quote_sent'||r.status==='accepted'||r.status==='declined')card.append(el('p','Quote: '+r.quote_amount+' '+r.quote_currency+' · '+r.delivery_days+' দিন · মেয়াদ: '+new Date(r.quote_expires_at).toLocaleString('bn-BD')));
+  items.append(card);
+ }
+}
+document.getElementById('refresh').addEventListener('click',load);
+document.getElementById('filter').addEventListener('change',load);
+init();
+</script></body></html>

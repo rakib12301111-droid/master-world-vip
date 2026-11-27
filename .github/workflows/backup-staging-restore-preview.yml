@@ -1,0 +1,132 @@
+name: MASTER WORLD VIP - Staging Encrypted Backup & Restore Test
+run-name: MASTER WORLD VIP Staging Backup/Restore
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: master-world-vip-staging-backup
+  cancel-in-progress: false
+
+jobs:
+  staging-backup-restore:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    services:
+      restore-db:
+        image: supabase/postgres:17.6.1.136
+        env:
+          POSTGRES_USER: supabase_admin
+          POSTGRES_PASSWORD: staging_restore_test_only
+          POSTGRES_DB: mwvip_staging_restore_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U supabase_admin -d mwvip_staging_restore_test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 12
+    env:
+      STAGING_DB_URL: ${{ secrets.SUPABASE_STAGING_DB_URL }}
+      STAGING_PROJECT_REF: ${{ secrets.SUPABASE_STAGING_PROJECT_REF }}
+      BACKUP_ENCRYPTION_PASSPHRASE: ${{ secrets.STAGING_BACKUP_ENCRYPTION_PASSPHRASE }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Validate Staging identity and secrets without exposing credentials
+        run: |
+          set -euo pipefail
+          test -n "${STAGING_DB_URL:-}" || { echo "::error::Missing SUPABASE_STAGING_DB_URL."; exit 1; }
+          test -n "${STAGING_PROJECT_REF:-}" || { echo "::error::Missing SUPABASE_STAGING_PROJECT_REF."; exit 1; }
+          test -n "${BACKUP_ENCRYPTION_PASSPHRASE:-}" || { echo "::error::Missing STAGING_BACKUP_ENCRYPTION_PASSPHRASE."; exit 1; }
+          test "$STAGING_PROJECT_REF" != "lztbbrzeuyjkuiyzrsxp" || { echo "::error::Refusing the known Production project ref."; exit 1; }
+          python3 - <<'PY'
+          import os, re
+          from urllib.parse import urlsplit, unquote
+          ref = os.environ["STAGING_PROJECT_REF"].strip()
+          if not re.fullmatch(r"[a-z0-9]{20}", ref):
+              raise SystemExit("::error::Staging project ref must be 20 lowercase alphanumeric characters.")
+          parsed = urlsplit(os.environ["STAGING_DB_URL"].strip())
+          if parsed.scheme not in ("postgres", "postgresql") or not parsed.hostname or not parsed.hostname.endswith(".pooler.supabase.com"):
+              raise SystemExit("::error::Staging DB URL must be a Supabase Session Pooler PostgreSQL URI.")
+          if parsed.port != 5432 or parsed.path.lstrip("/") != "postgres":
+              raise SystemExit("::error::Staging Session Pooler URI must use port 5432 and database /postgres.")
+          username = unquote(parsed.username or "")
+          password = unquote(parsed.password or "")
+          if ref not in username or not password or any(c in username + password for c in "\r\n"):
+              raise SystemExit("::error::Staging URI credentials do not match the configured Staging project ref.")
+          print(f"Validated Staging project ref and Session Pooler structure; credentials hidden.")
+          print(f"::add-mask::{username}")
+          print(f"::add-mask::{password}")
+          with open(os.environ["GITHUB_ENV"], "a", encoding="utf-8") as f:
+              f.write(f"PGHOST={parsed.hostname}\n")
+              f.write(f"PGPORT={parsed.port}\n")
+              f.write("PGDATABASE=postgres\n")
+              f.write(f"PGUSER={username}\n")
+              f.write(f"PGPASSWORD={password}\n")
+              f.write("PGSSLMODE=require\n")
+          PY
+
+      - name: Install PostgreSQL client
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install --yes postgresql-client
+          pg_dump --version
+          pg_restore --version
+
+      - name: Create encrypted Staging logical backup
+        id: backup
+        run: |
+          set -euo pipefail
+          mkdir -p staging-backup
+          SERVER_VERSION="$(psql --no-psqlrc -h "$PGHOST" -p "$PGPORT" -U "$PGUSER" -d "$PGDATABASE" -v ON_ERROR_STOP=1 -Atc 'show server_version_num')"
+          CLIENT_VERSION="$(pg_dump --version | awk '{print $3}' | cut -d. -f1)"
+          SERVER_MAJOR="$((SERVER_VERSION / 10000))"
+          test "$CLIENT_VERSION" -ge "$SERVER_MAJOR" || { echo "::error::pg_dump client is older than the Staging server major version."; exit 1; }
+          pg_dump -h "$PGHOST" -p "$PGPORT" -U "$PGUSER" -d "$PGDATABASE" --format=custom --no-owner --no-acl --file=staging-backup/master-world-vip-staging.dump
+          openssl enc -aes-256-cbc -pbkdf2 -salt -in staging-backup/master-world-vip-staging.dump -out staging-backup/master-world-vip-staging.dump.enc -pass env:BACKUP_ENCRYPTION_PASSPHRASE
+          rm -f staging-backup/master-world-vip-staging.dump
+          test -s staging-backup/master-world-vip-staging.dump.enc
+          echo "backup_reference=mwvip-staging-logical-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" >> "$GITHUB_OUTPUT"
+          echo "Encrypted Staging backup created; plaintext dump removed."
+
+      - name: Decrypt and restore into isolated disposable PostgreSQL
+        id: restore
+        run: |
+          set -euo pipefail
+          openssl enc -d -aes-256-cbc -pbkdf2 -in staging-backup/master-world-vip-staging.dump.enc -out staging-backup/restore-test.dump -pass env:BACKUP_ENCRYPTION_PASSPHRASE
+          test -s staging-backup/restore-test.dump
+          PGPASSWORD=staging_restore_test_only PGSSLMODE=disable createdb -h 127.0.0.1 -p 5432 -U supabase_admin --template=template0 mwvip_staging_restore_empty
+          PGPASSWORD=staging_restore_test_only PGSSLMODE=disable pg_restore -h 127.0.0.1 -p 5432 -U supabase_admin -d mwvip_staging_restore_empty --no-owner --no-acl --exit-on-error staging-backup/restore-test.dump
+          PGPASSWORD=staging_restore_test_only PGSSLMODE=disable psql -h 127.0.0.1 -p 5432 -U supabase_admin -d mwvip_staging_restore_empty -v ON_ERROR_STOP=1 -Atc "select count(*) from information_schema.tables where table_schema not in ('pg_catalog','information_schema')" > staging-backup/restored_table_count.txt
+          test "$(cat staging-backup/restored_table_count.txt)" -gt 0
+          rm -f staging-backup/restore-test.dump
+          echo "Staging backup decrypted and restored successfully into disposable PostgreSQL; Staging source was not modified."
+
+      - name: Upload encrypted backup and restore evidence
+        if: always() && steps.backup.outcome == 'success'
+        uses: actions/upload-artifact@v4
+        with:
+          name: master-world-vip-staging-encrypted-backup-${{ github.run_id }}
+          path: |
+            staging-backup/master-world-vip-staging.dump.enc
+            staging-backup/restored_table_count.txt
+          retention-days: 7
+          if-no-files-found: error
+
+      - name: Print non-secret backup and restore references
+        if: always() && steps.backup.outcome == 'success'
+        env:
+          BACKUP_REFERENCE: ${{ steps.backup.outputs.backup_reference }}
+          RESTORE_OUTCOME: ${{ steps.restore.outcome }}
+        run: |
+          set -euo pipefail
+          echo "STAGING_BACKUP_REFERENCE=$BACKUP_REFERENCE"
+          echo "STAGING_RESTORE_TEST_REFERENCE=github-actions-run-${GITHUB_RUN_ID}"
+          echo "STAGING_RESTORE_TEST=${RESTORE_OUTCOME:-not-run}"
+          echo "This workflow never applies migrations and never targets Production."

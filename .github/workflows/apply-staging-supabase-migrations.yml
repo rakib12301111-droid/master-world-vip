@@ -1,0 +1,155 @@
+name: MASTER WORLD VIP - Safe Staging Supabase Migration
+
+on:
+  workflow_dispatch:
+    inputs:
+      apply_staging:
+        description: "Apply pending migrations to the separate Staging Supabase project"
+        required: true
+        type: choice
+        options:
+          - "no"
+          - "yes"
+        default: "no"
+      confirm_staging_backup:
+        description: "Confirm a current recoverable backup exists for Staging"
+        required: true
+        type: choice
+        options:
+          - "no"
+          - "yes"
+        default: "no"
+      confirm_staging_restore_tested:
+        description: "Confirm the Staging backup restore was tested successfully"
+        required: true
+        type: choice
+        options:
+          - "no"
+          - "yes"
+        default: "no"
+      staging_backup_reference:
+        description: "Non-secret Staging backup reference"
+        required: false
+        type: string
+        default: ""
+      apply_confirmation:
+        description: "Type exactly APPLY-MASTER-WORLD-VIP-STAGING-MIGRATIONS to authorize Staging apply"
+        required: false
+        type: string
+        default: ""
+
+permissions:
+  contents: read
+
+concurrency:
+  group: master-world-vip-staging-migrations
+  cancel-in-progress: false
+
+jobs:
+  staging-migration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_STAGING_ACCESS_TOKEN }}
+      SUPABASE_DB_URL: ${{ secrets.SUPABASE_STAGING_DB_URL }}
+      SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_STAGING_PROJECT_REF }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Validate separate Staging credentials without printing them
+        run: |
+          set -euo pipefail
+          test -n "${SUPABASE_ACCESS_TOKEN:-}" || { echo "::error::Missing SUPABASE_STAGING_ACCESS_TOKEN."; exit 1; }
+          test -n "${SUPABASE_DB_URL:-}" || { echo "::error::Missing SUPABASE_STAGING_DB_URL."; exit 1; }
+          test -n "${SUPABASE_PROJECT_REF:-}" || { echo "::error::Missing SUPABASE_STAGING_PROJECT_REF."; exit 1; }
+          test "$SUPABASE_PROJECT_REF" != "lztbbrzeuyjkuiyzrsxp" || { echo "::error::Refusing to target the known Production Supabase project."; exit 1; }
+          python3 - <<'PY'
+          import os
+          import re
+          from urllib.parse import urlsplit
+          value = os.environ["SUPABASE_DB_URL"].strip()
+          parsed = urlsplit(value)
+          if parsed.scheme not in ("postgres", "postgresql") or not parsed.hostname:
+              raise SystemExit("::error::Staging DB URL is not a valid PostgreSQL URI.")
+          if not parsed.hostname.endswith(".pooler.supabase.com"):
+              raise SystemExit("::error::Use the Staging project's IPv4-compatible Supabase Session Pooler URI.")
+          ref = os.environ["SUPABASE_PROJECT_REF"].strip()
+          if not re.fullmatch(r"[a-z0-9]{20}", ref):
+              raise SystemExit("::error::Staging project ref must be 20 lowercase alphanumeric characters.")
+          if not parsed.username or ref not in parsed.username:
+              raise SystemExit("::error::Staging DB URI username does not match the configured Staging project ref.")
+          print("Staging credentials are present and structurally valid; values were not printed.")
+          PY
+
+      - name: Verify all expected migration files
+        run: |
+          set -euo pipefail
+          for migration in \
+            202611180001_master_world_vip.sql \
+            202611190001_global_community.sql \
+            202611190002_privacy_rights.sql \
+            20261119180000_admin_rbac_owner_control.sql \
+            20261119190000_member_broadcast.sql \
+            20261119200000_update_releases.sql \
+            20261120100000_inbox_push_foundation.sql \
+            20261120150000_membership_helper_hardening.sql \
+            20261121100000_profiles_discovery_privacy_hardening.sql \
+            20261121120000_facebook_setup_orders.sql \
+            20261121130000_facebook_setup_feedback.sql \
+            20261121140000_verified_payment_state.sql \
+            20261121150000_sslcommerz_checkout_enable.sql \
+            20261121160000_trusted_devices_login_history.sql \
+            20261121170000_group_rls_recursion_fix.sql \
+            20261121180000_member_verification_helpdesk.sql \
+            20261121190000_member_live_location.sql \
+            20261122100000_messaging_realtime.sql \
+            20261123100000_work_earn_job_board.sql \
+            202611240001_member_referrals.sql \
+            202611240002_public_member_referral_profile.sql \
+            202611240003_referral_wallet_rewards.sql \
+            202611240004_owner_monthly_compensation.sql \
+            202611240005_international_referral_usd_equivalent.sql \
+            202611240006_network_admin_referral_rewards.sql \
+            202611240007_referral_payout_reference_hardening.sql \
+            20261125100000_admin_auto_work_control_plane.sql \
+            20261125120000_anti_theft_device_recovery.sql \
+            20261125130000_admin_auto_work_claim_concurrency_fix.sql \
+            20261125160000_work_earn_wallet_owner_profit.sql \
+            20261127140000_customer_quote_workflow.sql; do
+            test -f "supabase/migrations/$migration" || { echo "::error::Missing expected migration: $migration"; exit 1; }
+          done
+
+      - name: Set up Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Preview pending Staging migrations
+        run: |
+          set -euo pipefail
+          supabase db push --dry-run --db-url "$SUPABASE_DB_URL"
+
+      - name: Require separate Staging backup and explicit apply authorization
+        if: inputs.apply_staging == 'yes'
+        env:
+          BACKUP_REFERENCE: ${{ inputs.staging_backup_reference }}
+          APPLY_CONFIRMATION: ${{ inputs.apply_confirmation }}
+        run: |
+          set -euo pipefail
+          test "${{ inputs.confirm_staging_backup }}" = "yes" || { echo "::error::Staging apply blocked: confirm a recoverable Staging backup."; exit 1; }
+          test "${{ inputs.confirm_staging_restore_tested }}" = "yes" || { echo "::error::Staging apply blocked: confirm a successful Staging restore test."; exit 1; }
+          test -n "$BACKUP_REFERENCE" || { echo "::error::Staging apply blocked: a non-secret backup reference is required."; exit 1; }
+          test "$APPLY_CONFIRMATION" = "APPLY-MASTER-WORLD-VIP-STAGING-MIGRATIONS" || { echo "::error::Staging apply blocked: exact authorization phrase is required."; exit 1; }
+          echo "Staging backup, restore and exact authorization gates passed; reference not echoed."
+
+      - name: Apply pending migrations to Staging only
+        if: inputs.apply_staging == 'yes' && inputs.confirm_staging_backup == 'yes' && inputs.confirm_staging_restore_tested == 'yes' && inputs.staging_backup_reference != '' && inputs.apply_confirmation == 'APPLY-MASTER-WORLD-VIP-STAGING-MIGRATIONS'
+        run: |
+          set -euo pipefail
+          supabase db push --db-url "$SUPABASE_DB_URL" --yes
+          echo "Staging migration apply completed. Production was not targeted."
+
+      - name: Report preview-only run
+        if: inputs.apply_staging != 'yes'
+        run: echo "Staging preview only. No database changes were applied."

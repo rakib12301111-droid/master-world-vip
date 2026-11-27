@@ -102,7 +102,8 @@ jobs:
             20261125100000_admin_auto_work_control_plane.sql \
             20261125120000_anti_theft_device_recovery.sql \
             20261125130000_admin_auto_work_claim_concurrency_fix.sql \
-            20261125160000_work_earn_wallet_owner_profit.sql; do
+            20261125160000_work_earn_wallet_owner_profit.sql \
+            20261127140000_customer_quote_workflow.sql; do
             test -f "supabase/migrations/$migration" || { echo "::error::Missing expected migration: $migration"; exit 1; }
           done
 

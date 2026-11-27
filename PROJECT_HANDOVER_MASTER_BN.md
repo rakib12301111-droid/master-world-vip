@@ -345,3 +345,263 @@ GitHub Actions-এ ব্যবহৃত secret নাম:
 4. Mobile/keyboard/accessibility/static checks; তারপর narrow PR review. PR merge/Pages deployment আলাদা release approval-এর অধীন।
 
 বর্তমান অবস্থা: Frontend catalogue + local quote draft committed; server submission NOT IMPLEMENTED; NOT DEPLOYED.
+
+
+---
+
+# Customer Quote Workflow — Backend + Admin Inbox implementation (২৭ নভেম্বর ২০২৬)
+
+## Existing architecture audit
+- Main/default branch-এর existing schema-তে `customer_service_orders`-এর মতো generic pre-order quote intake table পাওয়া যায়নি। Facebook Setup order schema আলাদা package-specific flow; সেটিকে generic service quote-এর জন্য reuse করা হয়নি।
+- PR #20 planning branch-এ `customer_service_orders` এবং `customer_order_fund_allocations`-এর funded-order safety foundation পাওয়া গেছে; এটি Draft/Open/Unmerged এবং main-এ অন্তর্ভুক্ত নয়। তাই quote request-এর জন্য আলাদা pre-order intake রাখা হয়েছে; paid order conversion-এর সময় ওই existing customer-service-order model ও funding guards reuse করতে হবে, duplicate order/ledger তৈরি নয়।
+- Existing Owner/Admin RBAC (`app_user_roles`, `get_my_admin_access()`, `admin_audit_logs`), notifications এবং helpdesk staff pattern পর্যালোচনা করা হয়েছে।
+
+## এই সেশনে কোডে সম্পন্ন
+- Migration `20261127140000_customer_quote_workflow.sql`: authenticated customer quote intake, service allowlist, country/scope validation, per-user 24-hour rate limit + transaction advisory lock, maximum 3 active requests, private RLS, server-side Owner/Super Admin/Admin authorization, quote send/review, accept/decline/cancel/expiry, notifications, Admin audit logs এবং append-only event history।
+- `www/services.html`: Supabase Auth session ব্যবহার করে customer request RPC-তে submit, নিজের request/quote দেখা, quote accept/decline এবং active request cancel। Database migration না থাকলে স্পষ্ট error দেখায়।
+- `www/admin-quotes.html`: Admin-only inbox; RBAC check, request review/reject, amount/currency/scope/delivery/expiry সহ quote পাঠানো এবং expired quote handling।
+- `www/index.html`: Admin role verify হওয়ার পর Customer Quote Inbox link দেখায়।
+- `scripts/verify-customer-quote-workflow.py`: static security checks।
+- `supabase/tests/customer-quote-workflow-runtime.sql`: disposable database-এ Customer A/B privacy, Admin review, quote send, customer acceptance ও append-only event test।
+- `.github/workflows/validate-migrations-disposable.yml`: pull-request validation, 31-migration fresh + legacy disposable apply এবং quote runtime test।
+- `.github/workflows/apply-supabase-migrations.yml` ও `supabase/README.md`: নতুন migration inventory/order-এ যুক্ত।
+- `docs/CUSTOMER_QUOTE_WORKFLOW_ACCEPTANCE_TEST_BN.md`: Staging acceptance runbook।
+- Customer quote acceptance কেবল quote consent record করে; এটি `customer_service_orders` তৈরি করে না, payment/ledger/member assignment/payout করে না।
+
+## Branch / PR অবস্থান
+- Branch: `feature/customer-quote-workflow` (PR #21-এর customer-services branch-এর উপর stacked)।
+- PR #21: `feature/customer-services-mvp` → `main`, Draft/Open/Unmerged।
+- এই backend batch-এর PR #22 তৈরি হবে `feature/customer-quote-workflow` → `feature/customer-services-mvp` হিসেবে; PR #21-এ পরে অন্তর্ভুক্ত হবে।
+- Latest commit at handover update: see GitHub PR #22 head after creation.
+- No Production migration, no live Pages deployment, no real customer data or payment was performed.
+
+## Verification status — এখনো pending
+- Source files commit/fetch verification হয়েছে।
+- GitHub Actions run এখনো এই latest commit-এ পাওয়া যায়নি; disposable PostgreSQL migration/runtime workflow result না আসা পর্যন্ত SQL test PASS দাবি করা যাবে না।
+- Static verifier run result pending।
+- Staging Supabase migration apply, two-customer/Admin manual acceptance, Android Chrome/accessibility test pending।
+- Production migration ও Live deployment আলাদা অনুমোদন ছাড়া করা হবে না।
+
+## পরবর্তী কাজ — duplicate implementation নয়
+1. PR #22-এর disposable SQL + runtime workflow ফল পরীক্ষা; failure হলে নির্দিষ্ট SQL/test সংশোধন।
+2. Staging project-এ migration apply ও Customer A/B/Admin acceptance।
+3. Existing `customer_service_orders` / `customer_order_fund_allocations` (PR #20 migration merge হওয়া সাপেক্ষে) এর সঙ্গে accepted quote → funded order conversion bridge design; verified payment, currency, project eligibility, three locked allocations, custody/reserve/operating checks ছাড়া কোনো order funded হবে না।
+4. Quote inbox-এ customer identity/contact display policy ও notification delivery পরীক্ষা; only necessary data expose।
+5. Android mobile, accessibility ও browser preview verification; তারপর PR #21/#22 stack review।
+6. Production apply/deploy remains separate explicit release approval.
+
+**Current status: Quote Request backend + customer submission UI + Admin inbox code committed; NOT YET CI-VERIFIED, NOT STAGING-APPLIED, NOT PRODUCTION-LIVE.**
+
+
+---
+
+## Handover correction — PR #22 and latest verification state (27 Nov 2026)
+
+- Backend stack PR #22 is now created: https://github.com/rakib12301111-droid/master-world-vip/pull/22
+- PR #22 head code commit tested by latest static migration safety workflow: `bbe94dc33262673b7dd52fd13208ffb728900ca4`.
+- Static Migration Safety run `45963158918`: **SUCCESS**, including Customer Quote workflow security verifier and Node syntax checks for `www/services.html` and `www/admin-quotes.html`.
+- Update System check run `45963158906`: **SUCCESS**.
+- Full disposable migration + quote runtime run `45963158978`: queued/pending at the time of this handover update. An earlier run exposed SQL dollar-quote delimiters in the new lifecycle guards; those delimiters were corrected and the latest static checks pass. Do not mark SQL runtime PASS until the fresh+legacy disposable migration and quote runtime steps complete successfully.
+- Earlier disposable run `45962723921` failed on the first SQL delimiter defect; that failure is resolved in source but must be superseded by a successful later run.
+- PR #22 remains Draft/Open/Unmerged and is stacked on PR #21. No Production migration, Supabase Staging apply, Pages deployment, real customer request or payment was performed.
+
+
+---
+
+## Customer Quote Workflow — Disposable CI verified (27 Nov 2026)
+
+**Code-equivalent tested commit:** `f032f214130e7616e09da02aaae9b73dbca1a689`
+
+- Disposable full migration validation run `45963538524`: **SUCCESS**. All 31 repository migrations applied in order to both fresh and audited legacy-shape disposable PostgreSQL databases. Customer Quote workflow runtime SQL passed in both databases, including Customer A/B row isolation, Admin inbox visibility, review, quote send, customer accept, customer cancel, append-only event guard, immutable submitted scope and no-delete guard. Expected application object checks passed. No Production database was touched.
+- Static Migration Safety run `45963538501`: **SUCCESS**, including Customer Quote workflow static security checks and Node syntax checks for the customer and Admin pages.
+- Update System run `45963538516`: **SUCCESS**.
+- Auto Work Static Safety run `45963538476`: **SUCCESS**.
+- The earlier legacy-fixture auth schema permission failure was fixed by granting the test roles usage/execute on the disposable `auth` schema/functions only. This is test-fixture configuration, not a Production permission change.
+- The initial dollar-quote defects in migration/runtime test were corrected; the final disposable run above passed.
+
+## Current release boundary
+- PR #22 is Draft/Open/Unmerged and stacked on PR #21. Both remain unmerged.
+- Staging Supabase migration has NOT been applied. Real browser/customer/Admin manual acceptance, Android Chrome/accessibility review and actual notification delivery remain pending.
+- No Pages deployment, Production migration, real order, payment collection, fund custody, Member assignment or payout was performed.
+- The accepted-quote → existing `customer_service_orders` conversion is still a separate next implementation. PR #20's protected customer-order/fund-allocation foundation is not yet in `main`; do not create a duplicate order/ledger or mark a quote as funded.
+- Next: perform the Staging A/B/Admin acceptance test after an authorized Staging project is available; then design the conversion bridge against the merged existing customer-order migration and its funding gates.
+
+**Current status: Customer Quote workflow CODE + STATIC CI + FULL DISPOSABLE MIGRATION/RUNTIME CI VERIFIED; NOT STAGING-APPLIED; NOT PRODUCTION-LIVE.**
+
+
+---
+
+## Staging-only deployment preparation + final CI refresh (27 Nov 2026)
+
+- Added `.github/workflows/apply-staging-supabase-migrations.yml`: manual-only workflow; default action is dry-run; it uses only `SUPABASE_STAGING_ACCESS_TOKEN`, `SUPABASE_STAGING_PROJECT_REF`, `SUPABASE_STAGING_DB_URL`; refuses the known Production project ref and requires a recoverable Staging backup, successful restore-test confirmation, non-secret backup reference and exact phrase `APPLY-MASTER-WORLD-VIP-STAGING-MIGRATIONS` before applying.
+- The workflow validates the DB URI is a Supabase Session Pooler URI and its username matches the configured Staging project ref. It does not use Production secrets and was not run because no Staging credentials/project have been confirmed.
+- Staging workflow and secret names are documented in `supabase/README.md` and `docs/CUSTOMER_QUOTE_WORKFLOW_ACCEPTANCE_TEST_BN.md`.
+- Latest code/workflow commit `aae55d97d763599ff6a136e81d5c73b497dbbb29` verification:
+  - Disposable migration + runtime run `45964010157`: **SUCCESS** — all 31 migrations applied to fresh and legacy-shape disposable PostgreSQL databases; customer quote runtime suite and expected object checks passed.
+  - Static Migration Safety `45964010127`: **SUCCESS** — quote workflow security, JavaScript syntax and Staging workflow static gates passed.
+  - Update System `45964010036`: **SUCCESS**.
+  - Auto Work Static Safety `45964010032`: **SUCCESS**.
+- These are disposable/static CI results only. No Supabase Staging or Production project was changed; no public deployment or real payment/order occurred.
+
+**Current status: Customer quote code + 31-migration fresh/legacy runtime CI + static CI VERIFIED; guarded Staging workflow PREPARED BUT NOT RUN; manual Staging acceptance and Production release remain pending.**
+
+
+---
+
+## Owner-priority execution update — Staging, Android, accounts and backup gates (27 Nov 2026)
+
+The Owner has directed that the following four gates be treated as critical and completed through safe repository updates plus the required Owner-side dashboard actions:
+
+1. Android phone acceptance using Chrome and a Staging-only site configuration.
+2. Encrypted Staging secrets added to GitHub Actions; never request or record secret values in chat.
+3. Separate Customer A, Customer B and Admin test accounts created in the Staging Supabase Auth project, with Admin role assigned only through the protected Owner role-management path.
+4. Recoverable encrypted backup plus a successful disposable restore test before any database migration apply; verify existing Production backup evidence remains available before any Production migration.
+
+### Repository preparation completed in this update
+- Added `docs/STAGING_ANDROID_ACCOUNT_BACKUP_RUNBOOK_BN.md` with exact current secret names, Staging-only workflow steps, account setup, Android acceptance and evidence rules.
+- Current Staging migration workflow uses exactly these three repository Actions secrets: `SUPABASE_STAGING_ACCESS_TOKEN`, `SUPABASE_STAGING_PROJECT_REF`, `SUPABASE_STAGING_DB_URL`.
+- The workflow defaults to preview-only and refuses the known Production project ref. It does not create/restore the Staging backup itself; therefore a separate backup/restore proof is mandatory before Staging apply.
+- Existing Customer Quote acceptance instructions remain in `docs/CUSTOMER_QUOTE_WORKFLOW_ACCEPTANCE_TEST_BN.md`; do not repeat disposable CI tests already recorded above.
+
+### Existing backup evidence — verify retention before relying on it
+- The prior handover records encrypted Production logical backup, disposable restore test and migration dry-run in run `45810029561`; backup reference `mwvip-logical-45810029561-1`; encrypted artifact ID `15111217500`, originally retained for seven days.
+- This is historical evidence for that run only. Before Production migration, confirm artifact availability and safe passphrase recovery; if expired/unavailable, produce a fresh encrypted backup and restore test.
+- This record does not authorize Production migration. Exact Production approval remains `APPLY-MASTER-WORLD-VIP-MIGRATIONS`.
+
+### Current execution status — NOT YET COMPLETE
+- Staging Project URL/ref confirmation: Owner confirmation required.
+- Three Staging secrets: Owner must add them in GitHub Actions; values must never be shared in chat.
+- Staging backup/restore: no current Staging-specific PASS evidence.
+- Staging migration: not run / not applied.
+- Customer A/B/Admin accounts and RBAC acceptance: pending.
+- Android Chrome/accessibility acceptance: pending.
+- Production migration and public release: not authorized/performed.
+
+**Next action:** Owner completes only the Staging project identity and three secret setup using the runbook; then verify the preview-only workflow before any Staging apply.
+
+
+### Backup artifact retention recheck — 27 Nov 2026
+- GitHub Actions artifact lookup confirms artifact `15111217500` is currently present and `expired=false`; recorded expiry is **2026-12-03 11:24:58 UTC**.
+- The original run's `backup-restore-preview` job and every listed step completed SUCCESS, including encrypted logical backup creation, decrypt + disposable PostgreSQL restore, production migration dry-run and encrypted artifact upload.
+- Therefore the existing Production backup/restore proof is currently available for review; preserve the encrypted artifact and ensure the separately stored passphrase is recoverable before expiry. This does not replace a fresh backup if the artifact expires before Production apply.
+- No new backup run was started, and no database was changed by this recheck.
+
+
+---
+
+## 27 November 2026 — Owner follow-up: five remaining release gates
+
+### Current PR state (read-only GitHub verification)
+- PR #21: OPEN / DRAFT / NOT MERGED; head branch `feature/customer-services-mvp`, base `main`.
+- PR #22: OPEN / DRAFT / NOT MERGED; head branch `feature/customer-quote-workflow`, base `feature/customer-services-mvp`.
+- Do not mark either PR released or deployed. PR #22 depends on PR #21; preserve this order and review the combined diff before any merge.
+- Existing disposable/static CI passes recorded in earlier sections remain evidence only for those exact commits; they do not establish current Staging, account, Android or live deployment acceptance.
+
+### Safe repository work completed in this update
+- Added manual-only workflow `.github/workflows/backup-staging-restore-preview.yml`.
+- It validates the configured Staging project ref and Session Pooler URI, refuses the known Production ref, creates an encrypted logical backup, decrypts it inside the isolated GitHub runner, restores it into a disposable PostgreSQL database, and uploads the encrypted artifact for seven days.
+- The workflow does not apply migrations, alter the Staging database, or target Production.
+- Commits:
+  - `06bff3ed18e708e10e035ac4c955bbf88f1748aa` — initial workflow.
+  - `7a39d2fe9568a4bb4742749de9bf2dab16fb0a7b` — restore outcome tracking.
+  - `f44efb2a7e7cfe05f3b7caedee2113d787602692` — runbook update.
+  - `87c49e117f20f67b63cfa28a004516e207c99c8f` — wording correction.
+- Updated runbook: `docs/STAGING_ANDROID_ACCOUNT_BACKUP_RUNBOOK_BN.md`.
+- Required repository Actions secrets now include `STAGING_BACKUP_ENCRYPTION_PASSPHRASE` in addition to `SUPABASE_STAGING_ACCESS_TOKEN`, `SUPABASE_STAGING_PROJECT_REF`, and `SUPABASE_STAGING_DB_URL`. Use a unique Staging-only passphrase; do not reuse Production's.
+
+### Remaining gates — NOT YET VERIFIED
+1. **Staging secrets:** Owner must add the four exact Staging secrets in GitHub Actions. No secret values may be sent in chat.
+2. **Staging backup/restore:** Run the new manual workflow and verify its job, encrypted artifact, non-secret backup reference and successful disposable restore. The workflow has been committed but not executed; no backup success is claimed.
+3. **Staging migration and runtime acceptance:** First run migration workflow in preview-only mode; review the migration inventory and dry-run. Staging apply remains gated by current Staging backup/restore proof and the exact phrase `APPLY-MASTER-WORLD-VIP-STAGING-MIGRATIONS`. After apply, perform Customer A/B/Admin quote workflow and RBAC/privacy tests.
+4. **Customer/Admin accounts:** Create dedicated test-only accounts in Staging Auth and assign Admin only through the protected Owner role-management path. No account has been created by this repository update.
+5. **Android and release:** Perform real Android Chrome acceptance against a Staging-connected preview, including privacy, quote lifecycle, notifications, responsive/accessibility and refresh/back tests. Public Pages deployment/Production release remains separately gated and was not performed.
+
+### Important distinction
+- This update is repository workflow/documentation work only. It does not prove that Staging secrets exist, a Staging backup has run, any Staging migration was applied, test users exist, Android tests passed, or a public deployment occurred.
+- Production remains untouched. No Production migration, live payment, customer intake, payout, or deployment was performed.
+- Continue from this section and do not repeat successful disposable/static CI checks unless the relevant source/configuration changes.
+
+
+### Execution limitation discovered after adding the workflow
+- The new backup workflow is currently committed only on the feature branch. GitHub's `workflow_dispatch` workflow must exist on the repository's default branch before it can be manually dispatched from Actions.
+- PR #21/#22 are still Draft/Open and merging the stack to `main` can trigger the existing GitHub Pages deployment. Therefore do not merge merely to make this workflow runnable; first review the release/deployment impact and obtain the separate release decision.
+- The new workflow has **not** run and has no backup artifact yet. Its YAML/source has been reviewed in the repository, but a successful Actions run is still required before counting Staging backup/restore complete.
+
+
+### Latest CI recheck — 27 November 2026
+- PR #21 current head `e8c6be117809dd8f94578d8d87f5a3b031ec9eb1`: no PR-triggered workflow runs were returned for this exact head at recheck. Treat its current-head CI as **not verified**, even if earlier historical checks passed.
+- PR #22 current head `2993d8e5dd828dc85df42e90c01a4a42e1d85a1d`:
+  - Auto Work Static Safety — run `45984835744`: SUCCESS.
+  - Update System — run `45984835716`: SUCCESS.
+  - Verify Supabase migration safety — run `45984835838`: SUCCESS.
+  - Disposable migration validation — run `45984835810`: IN_PROGRESS at recheck; do not mark passed until completed successfully.
+- Combined commit-status endpoint returned no status rows for either head, so the individual workflow-run records above are the available evidence.
+
+
+---
+
+## Latest execution update — 27 November 2026 (verified after commit ef7e64f)
+
+### PR #22 current-head CI — all four checks SUCCESS
+- Current head: `ef7e64f51cf7527c1e6dcdf7ac63d8e310d13c6a`.
+- Auto Work Static Safety — run `45985434992`: SUCCESS.
+- Update System — run `45985435216`: SUCCESS.
+- Verify Supabase migration safety — run `45985434987`: SUCCESS.
+- Disposable migration validation — run `45985435070`: SUCCESS.
+- These checks verify repository/static/disposable validation only. They do not connect to or modify the Staging or Production Supabase project.
+
+### PR state rechecked
+- PR #21: OPEN / DRAFT / NOT MERGED; current head `e8c6be117809dd8f94578d8d87f5a3b031ec9eb1`; no PR-triggered workflow run was returned for this exact head.
+- PR #22: OPEN / DRAFT / NOT MERGED; current head `ef7e64f51cf7527c1e6dcdf7ac63d8e310d13c6a`; base is `feature/customer-services-mvp`.
+- Both PRs report mergeable at this read-only check. Do not merge as part of this update: PR #22 depends on PR #21 and merging the stack to `main` can affect GitHub Pages/public deployment.
+
+### Staging project identity correction
+- The Owner explicitly confirmed in chat on 27 November 2026 that the separate `MASTER-WORLD-VIP-STAGING` Supabase project has already been created.
+- Do not ask the Owner to create it again. Its exact Project Ref and URL still need secure dashboard confirmation before connecting workflows; never request its secret values in chat.
+- The four Staging repository Actions secret names remain: `SUPABASE_STAGING_ACCESS_TOKEN`, `SUPABASE_STAGING_PROJECT_REF`, `SUPABASE_STAGING_DB_URL`, and `STAGING_BACKUP_ENCRYPTION_PASSPHRASE`.
+- GitHub secret APIs are not available through this read-only repository connection. Presence of these four secrets is therefore UNKNOWN, not absent and not confirmed.
+
+### Current five release gates — precise status
+1. PR #21/#22 code validation: PR #22 current-head CI is 4/4 SUCCESS; PR #21 current-head CI is still NOT VERIFIED. PRs remain Draft/Open.
+2. Staging project setup: project creation CONFIRMED by Owner; exact ref/URL and connection still pending.
+3. Staging secrets: four secret names documented; secret presence UNKNOWN because secret values/metadata cannot be read through this connection.
+4. Staging backup, restore and migration preview: workflow source committed; workflow has not run. No Staging backup artifact/restore proof or migration preview result yet.
+5. Customer/Admin and Android acceptance + release: real Staging accounts, RBAC/customer privacy acceptance, Android Chrome checks and release/deployment remain pending.
+
+### Work completed by this update
+- Rechecked repository tree: exactly 31 SQL migration files exist on the current PR #22 head; the Staging migration workflow's expected-file list includes all 31.
+- Rechecked both PRs and the latest current-head CI evidence.
+- Updated this handover so the Staging project is no longer incorrectly described as uncreated and the latest PR #22 checks are recorded.
+- No secrets were read or changed. No Staging or Production database was connected to or modified. No migration, merge, payment, Android-device test or public deployment was performed.
+
+
+## 2026-11-27 — সর্বশেষ CI যাচাই
+
+- Handover commit `24903d388704782593e3ae393ebbd923db4597e8`-এর জন্য চারটি GitHub Actions workflow পুনরায় যাচাই করা হয়েছে; চারটিই `completed / success`:
+  - Update System — run `45986063475` (#231)
+  - Supabase Migration Safety — run `45986063439` (#437)
+  - Auto Work Static Safety — run `45986063458` (#140)
+  - Disposable Migration Validation — run `45986063577` (#101)
+- PR #21 ও PR #22 উভয়ই এখনও `OPEN / DRAFT`; merge হয়নি। PR metadata-তে mergeable=true দেখা গেছে, কিন্তু এটি review/approval বা release approval নয়।
+- এই CI ফলাফলগুলো Staging secrets, Staging backup/restore, Staging migration apply, Customer/Admin acceptance, Android acceptance বা Live deployment-এর প্রমাণ নয়। এই গেটগুলো আলাদাভাবে pending থাকবে।
+- কোনো Supabase database পরিবর্তন, secret access/change, PR merge বা deployment করা হয়নি।
+
+
+## 2026-11-27 — বর্তমান PR head পুনরায় যাচাই ও সংশোধিত হিসাব
+
+আগের handover update-এ commit `24903d388704782593e3ae393ebbd923db4597e8`-এর চারটি CI run-কে সর্বশেষ PR CI হিসেবে উল্লেখ করা হয়েছিল। সেটি Handover branch commit-এর CI; PR #22-এর বর্তমান head নয়। নিচে PR-এর প্রকৃত বর্তমান head ধরে যাচাইকৃত ফল দেওয়া হলো।
+
+- PR #21 current head: `e8c6be117809dd8f94578d8d87f5a3b031ec9eb1`
+  - GitHub check-runs API: 0টি check run; current-head CI **NOT VERIFIED**।
+  - PR #21 OPEN / DRAFT / NOT MERGED।
+- PR #22 current head: `90cb05f5be7ba3c916b59d8f8485757b54461392`
+  - Update System run `45986272791` (#232): **SUCCESS**।
+  - Auto Work Static Safety run `45986272752` (#141): **SUCCESS**।
+  - Supabase Migration Safety run `45986272781` (#438): **SUCCESS**।
+  - Disposable Migration Validation run `45986272774` (#102): **SUCCESS**।
+  - PR #22 OPEN / DRAFT / NOT MERGED; base branch `feature/customer-services-mvp`।
+- PR #22-এর 4/4 CI pass কেবল এই exact head-এর static/disposable validation প্রমাণ করে। Staging secrets, Staging database backup/restore, Staging migration, live Customer/Admin, Android বা public deployment-এর প্রমাণ নয়।
+- PR #21 current-head CI শূন্য থাকায় PR #21/#22 combined stack validation এখনো সম্পূর্ণ নয়।
+- কোনো merge, deployment, secret access/change বা Supabase database write করা হয়নি।
+
+**সংশোধিত পরবর্তী কাজ:** PR #21 current head-এর CI trigger/validation নিরাপদে নিশ্চিত করা; PR #22 current-head 4/4 pass ধরে রাখা; তারপর Staging secret/configuration availability Owner dashboard-এ যাচাই না হওয়া পর্যন্ত Staging workflow চালানোর দাবি না করা।

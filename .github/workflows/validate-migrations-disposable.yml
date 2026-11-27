@@ -4,10 +4,18 @@ run-name: MASTER WORLD VIP disposable migration validation (SQL delimiter and de
 on:
   workflow_dispatch:
   push:
-    branches: [main]
+    branches: [main, feature/customer-quote-workflow]
     paths:
       - '.github/workflows/validate-migrations-disposable.yml'
       - 'supabase/migrations/**'
+  pull_request:
+    paths:
+      - '.github/workflows/validate-migrations-disposable.yml'
+      - 'supabase/migrations/**'
+      - 'supabase/tests/customer-quote-workflow-runtime.sql'
+      - 'scripts/verify-customer-quote-workflow.py'
+      - 'www/services.html'
+      - 'www/admin-quotes.html'
 
 permissions:
   contents: read
@@ -118,6 +126,9 @@ jobs:
           create or replace function auth.role()
           returns text language sql stable
           as $fn$ select nullif(current_setting('request.jwt.claim.role',true),'') $fn$;
+          grant usage on schema auth to anon,authenticated,service_role;
+          grant execute on function auth.uid() to anon,authenticated,service_role;
+          grant execute on function auth.role() to anon,authenticated,service_role;
           create table public.profiles (
             id uuid primary key references auth.users(id) on delete cascade,
             display_name text,
@@ -166,11 +177,26 @@ jobs:
               echo "::endgroup::"
               count=$((count+1))
             done
-            test "$count" -eq 30 || { echo "::error::Expected 30 migration files in $label database; found $count."; exit 1; }
+            test "$count" -eq 31 || { echo "::error::Expected 31 migration files in $label database; found $count."; exit 1; }
           done
           echo "DISPOSABLE_MIGRATION_VALIDATION=success"
-          echo "MIGRATIONS_APPLIED_TO_FRESH_TEST_DATABASE=30"
-          echo "MIGRATIONS_APPLIED_TO_LEGACY_SCHEMA_TEST_DATABASE=30"
+          echo "MIGRATIONS_APPLIED_TO_FRESH_TEST_DATABASE=31"
+          echo "MIGRATIONS_APPLIED_TO_LEGACY_SCHEMA_TEST_DATABASE=31"
+          echo "PRODUCTION_DATABASE_CHANGED=false"
+
+      - name: Verify customer quote workflow static safety
+        run: |
+          set -euo pipefail
+          python3 scripts/verify-customer-quote-workflow.py
+
+      - name: Test customer quote workflow in both disposable databases
+        run: |
+          set -euo pipefail
+          export PGSSLMODE=disable
+          for database_url in "$TEST_DB_URL" "$LEGACY_DB_URL"; do
+            psql "$database_url" -X -v ON_ERROR_STOP=1 -f supabase/tests/customer-quote-workflow-runtime.sql
+          done
+          echo "CUSTOMER_QUOTE_WORKFLOW_RUNTIME=success"
           echo "PRODUCTION_DATABASE_CHANGED=false"
 
       - name: Verify expected application objects exist in disposable database

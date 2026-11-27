@@ -592,3 +592,14 @@ Owner-এর স্পষ্ট দীর্ঘমেয়াদি লক্ষ�
 - The failure occurred before PostgreSQL client installation, database connection, backup, decrypt/restore, migration dry-run or artifact upload. Production DB was not modified.
 - Next step: Owner should inspect/update only the GitHub Actions secret `SUPABASE_DB_URL` so the Session Pooler hostname immediately follows the single `@` delimiter and no literal `#` occurs before the hostname. If the actual database password contains `#`, encode that character as `%23` in the password portion before the `@`. Keep the rest of the known host/port/database details unchanged. Do not share the secret value and do not reset/rotate the password again.
 - Do not rerun the DB workflow until the Owner confirms this URI-structure correction. After confirmation, run one targeted backup/restore preview. All backup, disposable restore, migration dry-run and artifact gates remain NOT VERIFIED; production migration remains prohibited.
+
+
+---
+
+## 27 Nov 2026 — Handover routing update
+
+The active detailed project handover is the repository-root `PROJECT_HANDOVER_MASTER_BN.md`, which contains the latest PR #22, Staging workflow and Owner-priority execution state. This older `docs/PROJECT_HANDOVER_MASTER_BN.md` snapshot must not override the root handover where their status differs.
+
+New execution runbook: `docs/STAGING_ANDROID_ACCOUNT_BACKUP_RUNBOOK_BN.md`.
+
+Current critical pending gates: Staging Project URL/ref confirmation; three encrypted Staging Actions secrets; separate Staging backup + disposable restore proof; Customer A/B/Admin test accounts and RBAC/privacy acceptance; Android Chrome/accessibility acceptance. No Production migration or public deployment is authorized by this documentation update.
