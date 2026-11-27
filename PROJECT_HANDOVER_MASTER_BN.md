@@ -1739,3 +1739,14 @@ Run links:
 - USD ও BDT ledger আলাদা থাকবে; USD-কে আগে BDT-তে convert করে ২০% প্রয়োগ করা যাবে না। FX conversion হলে সেটি আলাদা exchange journal।
 - Provider fee, tax, refund/chargeback, Member payable ও reserve আলাদা accounting line হিসেবে রেকর্ড হবে; এগুলোকে কমিশন base থেকে বাদ দিয়ে margin formula বানানো Owner-এর নির্দেশ নয়। Refund/chargeback হলে সংশ্লিষ্ট commission reversal আলাদাভাবে audit করতে হবে।
 - Payout specification-এর ভুল Section 12 এবং আগের margin-base wording পরবর্তী documentation/code correction-এ সংশোধন করতে হবে। এই handover correction policy-কে স্পষ্ট করে; finance runtime implementation বা live payment/payout চালু করে না।
+
+
+## ২৭ নভেম্বর ২০২৬ — কমিশন স্পেসিফিকেশনের ভুল calculation base সংশোধন
+
+- File: `docs/PAYOUT_METHODS_ADMIN_APPROVAL_AND_PLATFORM_COMMISSION_BN.md`
+- Corrective commit: `8a15df81a1cdb5ddbfad8648b7ee06ec56922bc2`
+- নতুন Section 13-এ স্পষ্ট করা হয়েছে: verified settled/credited USD income-এর ৩৫% USD-তে; verified settled/credited BDT income-এর ২০% BDT-তে। উদাহরণ $100 → $35 এবং ৳10,000 → ৳2,000।
+- আগের Section 8, 10, 11 ও 12-এর একক ২০% এবং Distributable Platform Margin-ভিত্তিক ব্যাখ্যা এই নতুন authoritative section দ্বারা বাতিল। Provider fee, tax, Member payable, refund/chargeback reserve ও operating cost পৃথক ledger item; এগুলো কমিশন base-কে margin-এ পরিবর্তন করে না।
+- USD/BDT cross-currency conversion করে অন্য হার প্রয়োগ করা নিষিদ্ধ; FX হলে আলাদা exchange journal।
+- এই commit documentation correction only; commission runtime code, live settlement, collection বা payout সক্রিয় হয়নি।
+- Commit-এর PR-triggered workflow lookup-এ কোনো run ফেরত আসেনি; তাই CI success দাবি করা হচ্ছে না। পরবর্তী finance runtime test-এ USD 35%, BDT 20%, zero income, currency isolation, refund/chargeback reversal ও settlement-only posting যাচাই করতে হবে।
