@@ -269,23 +269,25 @@ jobs:
               echo "::add-mask::$token"
               echo "PASS: Staging $role account can authenticate (HTTP $http_code)."
             else
-              error_code=$(jq -r '[.error_code, .code, .error] | map(select(type == "string")) | join(" ")' "$response_file" 2>/dev/null || true)
+              # Supabase Auth versions differ in which safe error fields they return.
+              # Inspect only generic error identifiers/messages; never print the response body.
+              error_code=$(jq -r '[.error_code, .code, .error, .msg, .message, .error_description] | map(select(type == "string")) | join(" ")' "$response_file" 2>/dev/null || true)
               error_code=$(printf '%s' "$error_code" | tr '[:upper:]' '[:lower:]' | tr -cd 'a-z0-9_ -')
               case "$error_code" in
-                *invalid_api_key*|*apikey*|*api_key*)
+                *invalid_api_key*|*apikey*|*api_key*|*"invalid api key"*)
                   reason="API key rejected; verify STAGING_SUPABASE_ANON_KEY belongs to this Staging project and is the anon/publishable key."
                   ;;
-                *email_not_confirmed*|*email_not_verified*)
+                *email_not_confirmed*|*email_not_verified*|*"email not confirmed"*|*"email not verified"*)
                   reason="Email is not confirmed in this Staging project."
                   ;;
-                *invalid_credentials*|*invalid_grant*|*user_not_found*|*invalid_login_credentials*)
+                *invalid_credentials*|*invalid_grant*|*user_not_found*|*invalid_login_credentials*|*"invalid login credentials"*|*"invalid email or password"*)
                   reason="Credentials rejected or account not found in this Staging project; verify the exact email and current password Secret."
                   ;;
-                *too_many_requests*|*rate_limit*)
+                *too_many_requests*|*rate_limit*|*"too many requests"*)
                   reason="Auth rate limit reached; wait before retrying."
                   ;;
                 *)
-                  reason="Auth rejected the request (HTTP $http_code; safe error code: ${error_code:-not_returned}). Check the Staging Auth logs for the detailed server-side cause."
+                  reason="Auth rejected the request (HTTP $http_code; safe error category: unclassified). Check the Staging Auth logs for the detailed server-side cause."
                   ;;
               esac
               echo "::error::Staging $role Auth preflight failed: $reason"
