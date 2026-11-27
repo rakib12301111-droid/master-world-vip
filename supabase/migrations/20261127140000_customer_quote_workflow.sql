@@ -129,7 +129,7 @@ returns trigger
 language plpgsql
 security definer
 set search_path = ''
-as $
+as $$
 begin
   if new.id is distinct from old.id
     or new.customer_user_id is distinct from old.customer_user_id
@@ -161,7 +161,7 @@ begin
   end if;
   return new;
 end;
-$;
+$$;
 
 revoke all on function public.guard_customer_quote_request_update() from public, anon, authenticated;
 drop trigger if exists customer_quote_request_guard_update on public.customer_quote_requests;
@@ -174,11 +174,11 @@ returns trigger
 language plpgsql
 security definer
 set search_path = ''
-as $
+as $$
 begin
   raise exception 'Customer quote requests cannot be deleted; cancel or close the request';
 end;
-$;
+$$;
 revoke all on function public.reject_customer_quote_request_delete() from public, anon, authenticated;
 drop trigger if exists customer_quote_request_no_delete on public.customer_quote_requests;
 create trigger customer_quote_request_no_delete
