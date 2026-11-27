@@ -319,3 +319,29 @@ GitHub Actions-এ ব্যবহৃত secret নাম:
 - অবশিষ্ট ঝুঁকি ও পরবর্তী প্রয়োজনীয় পদক্ষেপ।
 
 **কার্যকর নির্দেশ:** ব্যবহারকারী ইতিমধ্যে routine maintenance, পরীক্ষা ও যাচাইয়ের অনুমতি দিয়েছেন। তাই একই scope-এর কাজের জন্য বারবার অনুমতি চাইবেন না; নিরাপদে এগিয়ে কাজ করুন, ফলাফল যাচাই করুন এবং handover file আপডেট রাখুন। Production-impacting কাজের জন্য আলাদা gate বজায় রাখুন।
+
+
+---
+
+# Customer Services MVP — প্রথম বাস্তব কাজ শুরু (২৭ নভেম্বর ২০২৬)
+
+## এই সেশনে সম্পন্ন
+- www/services.html তৈরি: প্রাথমিক চারটি ডিজিটাল সার্ভিসের ক্যাটালগ (বাংলা/ইংরেজি টাইপিং, PDF/ডকুমেন্ট ফরম্যাটিং, সাধারণ ডিজাইন, সোশ্যাল মিডিয়া কনটেন্ট)।
+- প্রতিটি সার্ভিসে মূল্য/সময়/সরবরাহকারী নিশ্চিত নয়—Quote required হিসেবে দেখানো হয়েছে; কোনো ভুয়া মূল্য বা availability দেখানো হয়নি।
+- Quote Request form যোগ: প্রয়োজনীয় scope, দেশ, optional deadline/budget দিয়ে locally formatted draft তৈরি ও copy করা যায়।
+- Draft-এ স্পষ্ট NOT SUBMITTED; কোনো server submission, database write, order creation বা payment নেই। Backend endpoint/RLS/notification/owner inbox যাচাই ছাড়া গ্রাহকের অনুরোধ জমা হয়েছে এমন ভান করা হবে না।
+- Root homepage-এ Customer Services page-এর CTA যুক্ত।
+- পরিবর্তনগুলো feature/customer-services-mvp branch-এ; main বা public deployment-এ প্রকাশিত হয়নি।
+
+## যাচাই
+- GitHub source fetch করে www/services.html-এ form handler, NOT SUBMITTED notice এবং homepage CTA উপস্থিতি যাচাই করা হয়েছে।
+- Browser/mobile end-to-end, live HTTP, backend submission ও GitHub Actions result এখনো যাচাই করা হয়নি।
+- No payment, account/auth, Production DB migration, worker বা payout চালু করা হয়নি।
+
+## পরবর্তী কাজ — একই feature পুনরায় না বানিয়ে
+1. Customer quote submission-এর জন্য বিদ্যমান Supabase schema/RLS/Edge Function audit; existing customer-order tables/guards reuse করতে হবে, duplicate table নয়।
+2. Owner/Admin inbox + notification + status tracking backend design ও tests।
+3. Staging-only integration test; no Production migration until separate approval.
+4. Mobile/keyboard/accessibility/static checks; তারপর narrow PR review. PR merge/Pages deployment আলাদা release approval-এর অধীন।
+
+বর্তমান অবস্থা: Frontend catalogue + local quote draft committed; server submission NOT IMPLEMENTED; NOT DEPLOYED.
