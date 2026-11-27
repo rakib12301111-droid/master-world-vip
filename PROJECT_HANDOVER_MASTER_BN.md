@@ -585,3 +585,23 @@ The Owner has directed that the following four gates be treated as critical and 
 - PR #21 ও PR #22 উভয়ই এখনও `OPEN / DRAFT`; merge হয়নি। PR metadata-তে mergeable=true দেখা গেছে, কিন্তু এটি review/approval বা release approval নয়।
 - এই CI ফলাফলগুলো Staging secrets, Staging backup/restore, Staging migration apply, Customer/Admin acceptance, Android acceptance বা Live deployment-এর প্রমাণ নয়। এই গেটগুলো আলাদাভাবে pending থাকবে।
 - কোনো Supabase database পরিবর্তন, secret access/change, PR merge বা deployment করা হয়নি।
+
+
+## 2026-11-27 — বর্তমান PR head পুনরায় যাচাই ও সংশোধিত হিসাব
+
+আগের handover update-এ commit `24903d388704782593e3ae393ebbd923db4597e8`-এর চারটি CI run-কে সর্বশেষ PR CI হিসেবে উল্লেখ করা হয়েছিল। সেটি Handover branch commit-এর CI; PR #22-এর বর্তমান head নয়। নিচে PR-এর প্রকৃত বর্তমান head ধরে যাচাইকৃত ফল দেওয়া হলো।
+
+- PR #21 current head: `e8c6be117809dd8f94578d8d87f5a3b031ec9eb1`
+  - GitHub check-runs API: 0টি check run; current-head CI **NOT VERIFIED**।
+  - PR #21 OPEN / DRAFT / NOT MERGED।
+- PR #22 current head: `90cb05f5be7ba3c916b59d8f8485757b54461392`
+  - Update System run `45986272791` (#232): **SUCCESS**।
+  - Auto Work Static Safety run `45986272752` (#141): **SUCCESS**।
+  - Supabase Migration Safety run `45986272781` (#438): **SUCCESS**।
+  - Disposable Migration Validation run `45986272774` (#102): **SUCCESS**।
+  - PR #22 OPEN / DRAFT / NOT MERGED; base branch `feature/customer-services-mvp`।
+- PR #22-এর 4/4 CI pass কেবল এই exact head-এর static/disposable validation প্রমাণ করে। Staging secrets, Staging database backup/restore, Staging migration, live Customer/Admin, Android বা public deployment-এর প্রমাণ নয়।
+- PR #21 current-head CI শূন্য থাকায় PR #21/#22 combined stack validation এখনো সম্পূর্ণ নয়।
+- কোনো merge, deployment, secret access/change বা Supabase database write করা হয়নি।
+
+**সংশোধিত পরবর্তী কাজ:** PR #21 current head-এর CI trigger/validation নিরাপদে নিশ্চিত করা; PR #22 current-head 4/4 pass ধরে রাখা; তারপর Staging secret/configuration availability Owner dashboard-এ যাচাই না হওয়া পর্যন্ত Staging workflow চালানোর দাবি না করা।
