@@ -1683,3 +1683,10 @@ Run links:
 - Worker এখনও কেবল তিনটি read-only handler চালায়: `system_health_check`, `project_usage_digest`, `work_order_validate`। এটি এখনও customer কাজ সম্পাদন, file processing, external provider action, revenue generation বা payment/payout করে না।
 - Project scheduler/reaper RPC ও queue schema source-এ আছে; কিন্তু Staging DB-তে Migration/Auth acceptance এবং বাস্তব recurring scheduler/worker চালনার প্রমাণ এখনো নেই।
 - কোনো Staging/Production Migration, Worker enable, Payment/Payout বা Production deployment করা হয়নি।
+
+### Worker recovery change — CI result (২৭ নভেম্বর ২০২৬)
+- Code commit: `55d2af619f90eea7e92fd191ee7d44fd09835c0b`
+- Regression-test commit: `57f068ff1017692ce33b7dc886f2fe572a3c22a6`
+- সাতটি GitHub check-ই `completed/success`: `auto-work-static-safety`, `static-migration-safety`, `worker-static-check` (দুটি run), `backup-restore`, `validate`, `postgres-runtime`।
+- Checks: https://github.com/rakib12301111-droid/master-world-vip/commit/57f068ff1017692ce33b7dc886f2fe572a3c22a6/checks
+- এই CI ফলাফল code/static/disposable runtime validation; Staging Supabase-এ বাস্তব migration/auth acceptance বা Production execution নয়।
