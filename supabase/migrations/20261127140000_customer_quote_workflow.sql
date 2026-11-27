@@ -426,6 +426,7 @@ declare
   v_expiry timestamptz;
 begin
   if v_user is null then raise exception 'Authentication required'; end if;
+  if p_accept is null then raise exception 'A clear accept or decline response is required'; end if;
   select q.status,q.quote_expires_at into v_status,v_expiry
   from public.customer_quote_requests q
   where q.id=p_request_id and q.customer_user_id=v_user
