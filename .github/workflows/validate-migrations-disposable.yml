@@ -3,6 +3,10 @@ run-name: MASTER WORLD VIP disposable migration validation (SQL delimiter and de
 
 on:
   workflow_dispatch:
+  pull_request:
+    paths:
+      - 'supabase/migrations/**'
+      - '.github/workflows/validate-migrations-disposable.yml'
   push:
     branches: [main]
     paths:
