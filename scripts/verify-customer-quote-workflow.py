@@ -19,6 +19,8 @@ checks = {
     "quote amount and expiry are validated": "finite positive value" in migration and "Quote expiry must be between 1 hour and 30 days" in migration,
     "customer acceptance is separate from order/payment": "Accepted quote is not a paid order" in migration and "customer_respond_to_quote" in migration,
     "quote event history is append-only": "Customer quote events are append-only" in migration,
+    "submitted scope and quote terms are immutable": "Customer quote request identity and submitted scope are immutable" in migration and "Issued quote terms are immutable" in migration,
+    "quote requests cannot be deleted": "Customer quote requests cannot be deleted" in migration,
     "customer UI calls secure submit RPC": "submit_my_customer_quote_request" in customer,
     "customer UI has no service-role key": "service_role" not in customer.lower(),
     "Admin UI verifies server role": "get_my_admin_access" in admin,
