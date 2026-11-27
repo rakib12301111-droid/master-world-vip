@@ -368,3 +368,19 @@ GitHub Actions-এ ব্যবহৃত secret নাম:
 - **Next required correction (GitHub Secret, not code):** update `STAGING_SUPABASE_DB_URL` from Supabase Dashboard → Staging project → Connect → Session pooler → URI. Ensure the username portion is exactly `postgres.awatzrapqrteybgspqlq` (not `postgres` alone and not a direct-connection username); retain the Staging database password in the URI and URL-encode special characters. Save only in GitHub Actions Repository Secret. Never send the URI or password in chat.
 - Do not weaken or remove the exact username-to-project-ref validation; it is a Staging isolation safety control.
 - After the secret is corrected, rerun the Staging workflow and inspect logs. Only then can the Docker/backup/restore/preview stages be evaluated.
+
+
+## 17. ২৮ নভেম্বর ২০২৬ — Staging Run #4: Session Pooler URI format validation failure
+
+- Run ID: `46061905490`; Run number: 4; conclusion: `failure`.
+- Run URL: https://github.com/rakib12301111-droid/master-world-vip/actions/runs/46061905490
+- Checked-out commit: `2ca752a797d6398ddbf465ec2410357bb118e443`.
+- Job: `Encrypted Staging backup and isolated restore proof`; Job ID: `140717923983`.
+- Failure step: `Validate Staging-only backup inputs without printing secrets`.
+- Exact safe error: `Staging DB URL must use a Supabase Session Pooler URI`.
+- This error occurs before username/password comparison. The supplied value did not pass the URI scheme/host check: it must parse as `postgres://` or `postgresql://` and its hostname must end with `.pooler.supabase.com`. Do not infer that the username or password is now correct; those checks were not reached.
+- Likely correction: recreate/copy the complete URI specifically from Supabase Dashboard → Staging project `awatzrapqrteybgspqlq` → Connect → Session pooler → URI (not Direct connection, not Transaction pooler, not a host-only snippet). Paste only the URI value into GitHub Repository Secret `STAGING_SUPABASE_DB_URL`, without surrounding quotes, labels, spaces, or line breaks. Confirm the URI uses the Session Pooler host and port 5432; username must be `postgres.awatzrapqrteybgspqlq`; password is the Staging database password with special characters URL-encoded. Never disclose the URI/password in chat.
+- No credentials were printed or recorded.
+- PostgreSQL client installation, Docker container startup, encrypted backup, isolated restore, artifact upload, migration preview/apply, Auth/RBAC and Edge Function stages were not reached; downstream `staging-migrations` job was skipped.
+- Production database unchanged; no Production migration applied.
+- Do not weaken the Session Pooler/port/project-ref checks. After updating the Secret from the exact Session Pooler URI, run the workflow again and inspect the next safe preflight result.
