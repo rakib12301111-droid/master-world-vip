@@ -168,3 +168,240 @@ comment on table public.project_automation_runtime_control is
   'Global fail-closed worker kill switch. Emergency stop defaults true; releasing it requires Owner/Admin RPC and an audit record.';
 comment on table public.project_automation_task_handlers is
   'Database allowlist of worker handlers. Only system_health_check is registered; it is read-only and cannot move funds or mutate customer data.';
+
+
+-- Reserve the remaining per-task budget at claim time. This prevents parallel or
+-- retrying tasks from oversubscribing the daily project budget before completion.
+alter table public.project_automation_settings
+  add column if not exists daily_reserved numeric(14,2) not null default 0
+  check (daily_reserved>=0);
+alter table public.project_automation_tasks
+  add column if not exists budget_reserved numeric(14,2) not null default 0
+  check (budget_reserved>=0 and budget_reserved<=budget_cap);
+
+do $constraints$
+begin
+  if not exists(
+    select 1 from pg_constraint
+    where conrelid='public.project_automation_settings'::regclass
+      and conname='project_automation_daily_budget_reserved_check'
+  ) then
+    alter table public.project_automation_settings
+      add constraint project_automation_daily_budget_reserved_check
+      check (daily_spent+daily_reserved<=daily_budget);
+  end if;
+end;
+$constraints$;
+
+create or replace function public.worker_claim_project_automation_task(p_worker_key text)
+returns setof public.project_automation_tasks
+language plpgsql security definer set search_path=''
+as $function$
+declare
+  v_worker public.project_automation_workers%rowtype;
+  v_task uuid;
+  v_lease uuid;
+  v_budget_reservation numeric(14,2);
+begin
+  if auth.role()<>'service_role' then
+    raise exception 'Worker service role required';
+  end if;
+
+  if not exists(
+    select 1 from public.project_automation_runtime_control
+    where singleton=true and emergency_stop=false
+  ) then
+    return;
+  end if;
+
+  select * into v_worker
+  from public.project_automation_workers
+  where worker_key=p_worker_key
+    and status='active'
+    and last_heartbeat_at>now()-interval '2 minutes'
+  for update;
+  if not found then
+    raise exception 'Active worker heartbeat required';
+  end if;
+
+  select t.id,(t.budget_cap-t.actual_cost)
+  into v_task,v_budget_reservation
+  from public.project_automation_tasks t
+  join public.earning_project_registry r on r.id=t.project_id
+  join public.project_automation_settings s on s.project_id=r.id and s.enabled
+  join public.project_automation_task_handlers h on h.task_type=t.task_type
+    and h.enabled and h.side_effect_class='read_only'
+  where t.task_type='system_health_check'
+    and t.status in ('queued','retry_wait')
+    and t.available_at<=now()
+    and t.attempts<t.max_attempts
+    and t.actual_cost<t.budget_cap
+    and r.execution_enabled
+    and r.budget_cap>0
+    and r.revenue_currency=any(v_worker.supported_currencies)
+    and s.daily_budget>0
+    and s.daily_budget<=r.budget_cap
+    and (case when s.budget_date<current_date then 0
+      else s.daily_spent+s.daily_reserved end)+(t.budget_cap-t.actual_cost)<=s.daily_budget
+    and not exists(
+      select 1 from public.project_automation_tasks running
+      where running.project_id=t.project_id and running.status='running'
+    )
+  order by t.available_at,t.created_at
+  for update of t,s skip locked
+  limit 1;
+
+  if v_task is null then
+    return;
+  end if;
+
+  update public.project_automation_settings
+  set daily_spent=case when budget_date<current_date then 0 else daily_spent end,
+      daily_reserved=(case when budget_date<current_date then 0 else daily_reserved end)+v_budget_reservation,
+      budget_date=current_date,
+      updated_at=now()
+  where project_id=(select project_id from public.project_automation_tasks where id=v_task);
+
+  v_lease:=gen_random_uuid();
+  update public.project_automation_tasks
+  set status='running',
+      worker_id=v_worker.id,
+      attempts=attempts+1,
+      lease_token=v_lease,
+      budget_reserved=v_budget_reservation,
+      locked_at=now(),
+      lease_expires_at=now()+interval '5 minutes',
+      started_at=coalesce(started_at,now()),
+      updated_at=now()
+  where id=v_task;
+
+  update public.project_automation_workers
+  set tasks_claimed=tasks_claimed+1,updated_at=now()
+  where id=v_worker.id;
+
+  insert into public.project_automation_audit(project_id,task_id,worker_id,action,details)
+  select project_id,id,v_worker.id,'task_claimed',
+    jsonb_build_object('task_type',task_type,'attempt',attempts,'budget_reserved',budget_reserved,'lease_seconds',300)
+  from public.project_automation_tasks
+  where id=v_task;
+
+  return query select * from public.project_automation_tasks where id=v_task;
+end;
+$function$;
+
+create or replace function public.worker_finish_project_automation_task(
+ p_task_id uuid,p_lease_token uuid,p_success boolean,p_actual_cost numeric default 0,
+ p_error text default null
+) returns boolean language plpgsql security definer set search_path=''
+as $function$
+declare
+  v_task public.project_automation_tasks%rowtype;
+  v_settings public.project_automation_settings%rowtype;
+begin
+ if auth.role()<>'service_role' then raise exception 'Worker service role required'; end if;
+ if p_actual_cost is null or p_actual_cost<0 or round(p_actual_cost,2)<>p_actual_cost then
+   raise exception 'Invalid task cost';
+ end if;
+
+ select * into v_task from public.project_automation_tasks
+ where id=p_task_id and status='running' and lease_token=p_lease_token for update;
+ if not found then raise exception 'Task lease is invalid, expired or already completed'; end if;
+ if now()>v_task.lease_expires_at then raise exception 'Task lease expired'; end if;
+ if p_actual_cost>v_task.budget_reserved
+   or v_task.actual_cost+p_actual_cost>v_task.budget_cap then
+   raise exception 'Task budget reservation or cap exceeded';
+ end if;
+
+ select * into v_settings from public.project_automation_settings
+ where project_id=v_task.project_id for update;
+ if not found then raise exception 'Project scheduler settings missing'; end if;
+ if (case when v_settings.budget_date<current_date then 0 else v_settings.daily_spent end)+p_actual_cost
+   >v_settings.daily_budget then raise exception 'Project daily budget cap exceeded'; end if;
+
+ update public.project_automation_settings set
+   daily_spent=(case when budget_date<current_date then 0 else daily_spent end)+p_actual_cost,
+   daily_reserved=greatest(0,(case when budget_date<current_date then 0 else daily_reserved end)-v_task.budget_reserved),
+   budget_date=current_date,
+   updated_at=now()
+ where project_id=v_task.project_id;
+
+ update public.project_automation_tasks set
+   status=case when p_success then 'succeeded'
+     when attempts>=max_attempts then 'dead_letter' else 'retry_wait' end,
+   actual_cost=actual_cost+p_actual_cost,
+   budget_reserved=0,
+   lease_token=null,locked_at=null,lease_expires_at=null,
+   available_at=case when not p_success and attempts<max_attempts
+     then now()+make_interval(secs=>least(3600,(30*power(2,attempts))::integer))
+     else available_at end,
+   last_error=case when p_success then null else left(coalesce(p_error,'Worker task failed'),1000) end,
+   finished_at=case when p_success or attempts>=max_attempts then now() else null end,
+   updated_at=now()
+ where id=p_task_id;
+
+ update public.project_automation_workers set
+   tasks_succeeded=tasks_succeeded+case when p_success then 1 else 0 end,
+   tasks_failed=tasks_failed+case when p_success then 0 else 1 end,
+   updated_at=now()
+ where id=v_task.worker_id;
+
+ insert into public.project_automation_audit(project_id,task_id,worker_id,action,details)
+ values(v_task.project_id,p_task_id,v_task.worker_id,
+   case when p_success then 'task_succeeded'
+     when v_task.attempts>=v_task.max_attempts then 'task_dead_lettered'
+     else 'task_retry_scheduled' end,
+   jsonb_build_object('actual_cost',p_actual_cost,'budget_reservation_released',v_task.budget_reserved,
+     'error',left(coalesce(p_error,''),300)));
+ return true;
+end;
+$function$;
+
+create or replace function public.scheduler_reap_expired_project_task_leases()
+returns integer language plpgsql security definer set search_path=''
+as $function$
+declare v_count integer;
+begin
+ if auth.role()<>'service_role' then raise exception 'Scheduler service role required'; end if;
+ with expired as (
+   select t.id,t.project_id,t.worker_id,t.budget_reserved
+   from public.project_automation_tasks t
+   where t.status='running' and t.lease_expires_at<now()
+   for update skip locked
+ ), updated as (
+   update public.project_automation_tasks t
+   set status=case when t.attempts>=t.max_attempts then 'dead_letter' else 'retry_wait' end,
+     worker_id=null,lease_token=null,locked_at=null,lease_expires_at=null,
+     budget_reserved=0,
+     available_at=case when t.attempts<t.max_attempts
+       then now()+make_interval(secs=>least(3600,(30*power(2,t.attempts))::integer))
+       else t.available_at end,
+     last_error='Worker lease expired before task completion',
+     finished_at=case when t.attempts>=t.max_attempts then now() else null end,
+     updated_at=now()
+   from expired e where t.id=e.id
+   returning t.id,t.project_id,t.worker_id,t.status
+ ), released as (
+   update public.project_automation_settings s
+   set daily_spent=case when s.budget_date<current_date then 0 else s.daily_spent end,
+     daily_reserved=greatest(0,
+       (case when s.budget_date<current_date then 0 else s.daily_reserved end)
+       -coalesce((select sum(e.budget_reserved) from expired e where e.project_id=s.project_id),0)),
+     budget_date=current_date,updated_at=now()
+   where exists(select 1 from expired e where e.project_id=s.project_id)
+   returning s.project_id
+ ), logged as (
+   insert into public.project_automation_audit(project_id,task_id,worker_id,action,details)
+   select project_id,id,worker_id,
+     case when status='dead_letter' then 'expired_task_dead_lettered' else 'expired_task_requeued' end,
+     jsonb_build_object('reason','worker_lease_expired')
+   from updated returning id
+ )
+ select count(*)::integer into v_count from logged;
+ return coalesce(v_count,0);
+end;
+$function$;
+
+revoke all on function public.worker_finish_project_automation_task(uuid,uuid,boolean,numeric,text) from public,anon,authenticated;
+grant execute on function public.worker_finish_project_automation_task(uuid,uuid,boolean,numeric,text) to service_role;
+revoke all on function public.scheduler_reap_expired_project_task_leases() from public,anon,authenticated;
+grant execute on function public.scheduler_reap_expired_project_task_leases() to service_role;
