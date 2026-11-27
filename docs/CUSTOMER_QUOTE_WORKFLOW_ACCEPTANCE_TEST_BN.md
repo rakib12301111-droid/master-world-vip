@@ -13,6 +13,8 @@
 ## Preconditions
 1. Use a separate Staging Supabase project with Auth, base schema, RBAC and helpdesk dependencies configured.
 2. Apply migrations in order through `20261127140000_customer_quote_workflow.sql` in Staging only.
+   Use the manual-only `.github/workflows/apply-staging-supabase-migrations.yml` workflow. Its default is preview-only; apply requires a Staging backup, successful restore test and exact authorization phrase.
+   Configure only these GitHub Actions secrets: `SUPABASE_STAGING_ACCESS_TOKEN`, `SUPABASE_STAGING_PROJECT_REF`, `SUPABASE_STAGING_DB_URL`. Never paste secret values into chat.
 3. Verify the Owner/Admin role with `get_my_admin_access()`; ordinary members must remain `member`.
 4. Deploy the matching GitHub Pages branch only to a controlled preview or use a local/static preview; confirm the site uses the Staging project's public URL/key, not Production.
 5. Create Customer A, Customer B and an authorized Admin test account. Confirm email verification as configured.
