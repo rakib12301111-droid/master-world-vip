@@ -4,7 +4,7 @@ Updated: 2026-11-27
 
 ## Added to the planning branch
 
-- `.github/workflows/validate-staging-supabase.yml`: manual Staging-only workflow. It rejects the known Production project ref, previews and applies the full ordered local migration set to the configured Staging DB URL, logs into three separate test accounts, uses the Staging Owner RPC to set the Admin and Member test roles, verifies all three returned roles, verifies Admin overview is allowed for Owner/Admin and denied for Member, then deploys the worker Edge Function to Staging.
+- `.github/workflows/validate-staging-supabase.yml`: manual-dispatch-only Staging workflow (no `pull_request` trigger, because it applies migrations and deploys a function). It rejects the known Production project ref, previews and applies the full ordered local migration set to the configured Staging DB URL, logs into three separate test accounts, uses the Staging Owner RPC to set the Admin and Member test roles, verifies all three returned roles, verifies Admin overview is allowed for Owner/Admin and denied for Member, then deploys the worker Edge Function to Staging.
 - Required GitHub Actions secrets (configure only in repository Actions secrets; never paste into chat): `STAGING_SUPABASE_ACCESS_TOKEN`, `STAGING_SUPABASE_DB_URL` (PostgreSQL pooler URL; its username must end in `.<STAGING_SUPABASE_PROJECT_REF>`), `STAGING_SUPABASE_PROJECT_REF` (must differ from Production), `STAGING_SUPABASE_URL`, `STAGING_SUPABASE_ANON_KEY`, `STAGING_OWNER_EMAIL`, `STAGING_OWNER_PASSWORD`, `STAGING_ADMIN_EMAIL`, `STAGING_ADMIN_PASSWORD`, `STAGING_MEMBER_EMAIL`, `STAGING_MEMBER_PASSWORD`.
 - The workflow checks that the DB URL username is bound to the configured Staging project ref (without printing credentials), rejects the known Production ref, and requires three distinct Auth user IDs. Use the Supabase pooler connection URL with username `postgres.<project-ref>`; an unbound direct URL is deliberately rejected.
 - The Staging Owner account must already be bootstrapped by the RBAC migration. The workflow signs in afresh for each run (no expiring JWT secrets), then assigns Admin and Member roles to the two separate Staging test accounts through the protected Owner RPC.
@@ -14,7 +14,7 @@ Updated: 2026-11-27
 
 ## Critical limitations
 
-- These workflows have been committed to the Draft PR branch but have not been dispatched. No Staging secrets or staging project credentials are available to this workflow execution, so no real Staging migration or Auth test has yet been run.
+- These workflows have been committed to the Draft PR branch but have not been dispatched. The Staging workflow is deliberately manual-only; PR events must never automatically apply migrations or deploy the worker. No Staging secrets or staging project credentials are available to this workflow execution, so no real Staging migration or Auth test has yet been run.
 - The worker code is not a completed business-task executor. No project-specific task handlers, external connectors, revenue generation, customer payment collection, or payout execution are implemented. It only registers and heartbeats while idle.
 - Do not set `MWVIP_WORKER_ENABLED=true` until reviewed handlers, budgets, task idempotency and end-to-end tests are approved.
 - No Production worker deploy is included.
