@@ -1397,3 +1397,30 @@ GitHub Commit Check Runs endpoint-এ মোট ৭টি check পাওয়া 
 6. Production migration/worker activation-এর জন্য পৃথক safety approval ও recoverable backup; কোনো gate bypass নয়।
 
 **সত্যতা-সীমা:** Public static website GitHub Pages-এ deployed ও workflow verification PASS। Full automated business/earning engine এখনো Live নয়; উপরের দুইটি main-branch failure ও Staging/Production gate unresolved।
+
+
+## ২৭ নভেম্বর ২০২৬ — Automation blocker-এর exact log diagnosis
+
+### Worker Type-check — Run 45879345354
+- Failed job: `worker-static-check`, step: `deno check supabase/functions/project-automation-worker/index.ts`.
+- Exact compiler diagnostic: `TS2307 Cannot find module .../supabase/functions/project-automation-worker/index.ts`.
+- Run checkout commit: `88fadcb5e13acf768495f7bc031683f8b44b0f70` (main)।
+- ঐ main commit-এর recursive repository tree-তে `supabase/functions/project-automation-worker/` directory বা `index.ts` নেই। তাই এটি TypeScript syntax/type error নয়; workflow একটি অনুপস্থিত worker source file পরীক্ষা করছে।
+- **নিরাপদ সিদ্ধান্ত:** শুধু CI সবুজ দেখানোর জন্য stub/placeholder worker যোগ করা, check মুছে ফেলা বা skip করা যাবে না। আসল worker implementation ও তার read-only/authorization/lease/budget/emergency-stop আচরণ যাচাই করে তারপর path ও type-check ঠিক করতে হবে। বর্তমানে main-এ worker implementation উপস্থিতির প্রমাণ নেই।
+- Run: https://github.com/rakib12301111-droid/master-world-vip/actions/runs/45879345354
+
+### Referral Protected Secrets — Run 45926250050
+- Failed job: `process`, step: `Validate protected secrets`.
+- Exact diagnostic: `Missing SUPABASE_URL Actions secret.` Run log-এ `SUPABASE_URL` এবং `REFERRAL_CRON_SECRET` দুটিই empty দেখা গেছে; প্রথম missing secret-এ validation থেমেছে।
+- Workflow-এর required GitHub Actions secret names: `SUPABASE_URL`, `REFERRAL_CRON_SECRET`। URL অবশ্যই HTTPS Supabase project URL format-এ হতে হবে।
+- Edge Function source runtime-এ অতিরিক্ত `SUPABASE_SERVICE_ROLE_KEY` environment variable চায়। এটি Supabase Edge Function-এর server-side secret হিসেবে configure করতে হবে; GitHub Actions-এ অপ্রয়োজনে কপি নয়। কোনো secret value chat/log-এ দেওয়া যাবে না।
+- **নিরাপদ সিদ্ধান্ত:** ব্যবহারকারী সঠিক Supabase Staging project তৈরি ও নির্ধারণ না করা পর্যন্ত Production URL/secret বসিয়ে scheduled reward processing চালু করা যাবে না। Secret names/values GitHub Settings → Secrets and variables → Actions-এ user-side configure করতে হবে।
+- Run: https://github.com/rakib12301111-droid/master-world-vip/actions/runs/45926250050
+- Workflow file: `.github/workflows/process-referral-rewards.yml`; Edge Function: `supabase/functions/process-referral-rewards/index.ts`.
+
+### বর্তমান সিদ্ধান্ত ও কাজের অবস্থা
+- দুটি blocker-এর root cause log থেকে শনাক্ত হয়েছে; **এখনো কোনো blocker fix বা নতুন successful rerun প্রমাণিত হয়নি**।
+- Worker source অনুপস্থিত থাকায় implementation না দেখে production-ready worker বানানো/চালু করা নিরাপদ নয়। Referral processor-এর জন্য Staging URL ও protected secrets user-side setup প্রয়োজন।
+- পরবর্তী কাজ: planning branch-এর worker source ও main-এর সঙ্গে পার্থক্য যাচাই; source সত্যিই সম্পূর্ণ হলে narrow PR-এ worker path/type-check fix এবং disposable tests। এরপর পৃথক Staging project, Staging secrets ও function secrets configure করে একবার controlled test।
+- Payment design অপরিবর্তিত: Member Ledger → Withdrawal Request → Admin Approval → authorized Provider; provider approval/integration না হওয়া পর্যন্ত বাস্তব transfer বন্ধ।
+- **সত্যতা-সীমা:** blocker diagnosis সম্পন্ন; blocker resolution, Staging acceptance, Production migration/worker activation এবং automated income engine Live—কোনোটিই এখনো সম্পন্ন নয়।
