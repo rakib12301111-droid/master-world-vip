@@ -12,6 +12,7 @@ customer = (root / "www/services.html").read_text()
 admin = (root / "www/admin-quotes.html").read_text()
 dashboard = (root / "www/index.html").read_text()
 runtime = (root / "supabase/tests/customer-quote-workflow-runtime.sql").read_text()
+staging_workflow = (root / ".github/workflows/apply-staging-supabase-migrations.yml").read_text()
 
 checks = {
     "quote requests are private and RLS enabled": "alter table public.customer_quote_requests enable row level security" in migration,
@@ -34,6 +35,10 @@ checks = {
     "runtime test covers Admin quote and customer acceptance": "admin_send_customer_quote" in runtime and "customer_respond_to_quote" in runtime,
     "runtime test covers customer cancellation": "cancel_my_customer_quote_request" in runtime and "Customer quote cancellation was not recorded" in runtime,
     "runtime test covers append-only event guard": "Append-only quote event mutation unexpectedly succeeded" in runtime,
+    "Staging migration workflow is manual-only and preview-default": "workflow_dispatch:" in staging_workflow and "default: \"no\"" in staging_workflow and "\n  push:" not in staging_workflow,
+    "Staging workflow refuses known Production project": 'SUPABASE_PROJECT_REF" != "lztbbrzeuyjkuiyzrsxp' in staging_workflow,
+    "Staging apply requires backup, restore and exact confirmation": "confirm_staging_backup" in staging_workflow and "confirm_staging_restore_tested" in staging_workflow and "APPLY-MASTER-WORLD-VIP-STAGING-MIGRATIONS" in staging_workflow,
+    "Staging workflow uses separate Staging-only secrets": "SUPABASE_STAGING_ACCESS_TOKEN" in staging_workflow and "SUPABASE_STAGING_PROJECT_REF" in staging_workflow and "SUPABASE_STAGING_DB_URL" in staging_workflow,
     "runtime SQL dollar delimiters are balanced": runtime.count(chr(36) * 2) % 2 == 0 and "do $" + chr(10) not in runtime and "end $;" + chr(10) not in runtime,
 }
 
