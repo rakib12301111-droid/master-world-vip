@@ -3,6 +3,8 @@ run-name: MASTER WORLD VIP DB Safety Pipeline
 
 on:
   workflow_dispatch:
+  schedule:
+    - cron: '30 2 * * *' # Daily encrypted backup + isolated restore test (UTC)
   push:
     branches: [main]
     paths:

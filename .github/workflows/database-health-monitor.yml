@@ -1,0 +1,110 @@
+name: MASTER WORLD VIP - Scheduled Read-only Database Health Monitor
+run-name: MASTER WORLD VIP Database Health Monitor
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 */6 * * *' # Every six hours (UTC)
+
+permissions:
+  contents: read
+
+concurrency:
+  group: master-world-vip-read-only-health-monitor
+  cancel-in-progress: false
+
+jobs:
+  database-health:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install PostgreSQL client
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install --yes postgresql-client
+          psql --version
+
+      - name: Validate and parse Session Pooler URI without exposing credentials
+        run: |
+          set -euo pipefail
+          test -n "${SUPABASE_DB_URL:-}" || { echo "::error::Missing SUPABASE_DB_URL Actions secret."; exit 1; }
+          python3 - <<'PY'
+          import os
+          from urllib.parse import urlsplit, unquote
+
+          raw = os.environ["SUPABASE_DB_URL"].lstrip("\ufeff").strip()
+          if len(raw) >= 2 and raw[0] == raw[-1] and raw[0] in ("'", '"'):
+              raw = raw[1:-1].strip()
+          parsed = urlsplit(raw)
+          if parsed.scheme not in ("postgres", "postgresql"):
+              raise SystemExit("::error::Database secret is not a PostgreSQL URI.")
+          if not parsed.hostname or not parsed.hostname.endswith(".pooler.supabase.com"):
+              raise SystemExit("::error::Expected Supabase Session Pooler host.")
+          if parsed.port != 5432 or parsed.path.lstrip("/") != "postgres":
+              raise SystemExit("::error::Expected Session Pooler port 5432 and database /postgres.")
+          username = unquote(parsed.username or "")
+          password = unquote(parsed.password or "")
+          if not username or not password or any(c in username + password for c in "\r\n"):
+              raise SystemExit("::error::Database URI credentials are missing or malformed.")
+          print(f"::add-mask::{username}", flush=True)
+          print(f"::add-mask::{password}", flush=True)
+          values = {
+              "PGHOST": parsed.hostname,
+              "PGPORT": str(parsed.port),
+              "PGDATABASE": parsed.path.lstrip("/"),
+              "PGUSER": username,
+              "PGPASSWORD": password,
+              "PGSSLMODE": "require",
+          }
+          with open(os.environ["GITHUB_ENV"], "a", encoding="utf-8") as output:
+              for key, value in values.items():
+                  output.write(f"{key}={value}\n")
+          print("Session Pooler connection structure validated; credentials were masked.")
+          PY
+
+      - name: Run read-only database health checks
+        run: |
+          set -euo pipefail
+          mkdir -p health
+          {
+            echo "MASTER WORLD VIP DATABASE HEALTH REPORT"
+            echo "Checked at (UTC): $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+            echo
+            psql --no-psqlrc --host="$PGHOST" --port="$PGPORT" --username="$PGUSER" --dbname="$PGDATABASE" \
+              --set=ON_ERROR_STOP=1 --no-align --field-separator=' | ' --tuples-only <<'SQL'
+          BEGIN READ ONLY;
+          SELECT 'database' AS check_name, current_database() AS result;
+          SELECT 'server_version' AS check_name, current_setting('server_version') AS result;
+          SELECT 'public_base_tables' AS check_name, count(*)::text AS result
+            FROM pg_catalog.pg_tables WHERE schemaname = 'public';
+          SELECT 'invalid_indexes' AS check_name, count(*)::text AS result
+            FROM pg_catalog.pg_index i
+            JOIN pg_catalog.pg_class c ON c.oid = i.indexrelid
+            JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace
+            WHERE n.nspname = 'public' AND NOT i.indisvalid;
+          SELECT 'unvalidated_constraints' AS check_name, count(*)::text AS result
+            FROM pg_catalog.pg_constraint con
+            JOIN pg_catalog.pg_class c ON c.oid = con.conrelid
+            JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace
+            WHERE n.nspname = 'public' AND NOT con.convalidated;
+          SELECT 'migration_history_table_present' AS check_name,
+                 (to_regclass('supabase_migrations.schema_migrations') IS NOT NULL)::text AS result;
+          SELECT 'database_clock_utc' AS check_name, now()::text AS result;
+          COMMIT;
+          SQL
+          } | tee health/database-health-report.txt
+
+      - name: Upload non-secret health report
+        if: always() && hashFiles('health/database-health-report.txt') != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: master-world-vip-database-health-${{ github.run_id }}
+          path: health/database-health-report.txt
+          retention-days: 14
+          if-no-files-found: warn
