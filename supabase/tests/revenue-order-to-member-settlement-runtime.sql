@@ -161,6 +161,7 @@ declare
   v_lease uuid;
   v_duplicate_count integer;
   v_daily_spent numeric(14,2);
+  v_daily_reserved numeric(14,2);
   v_dead_count integer;
 begin
   select id into v_project from public.earning_project_registry where project_code='MW-BDT-2000';
@@ -200,6 +201,8 @@ begin
   select id,lease_token into v_task,v_lease
   from public.worker_claim_project_automation_task('worker-runtime-test-key') limit 1;
   if v_task is null or v_lease is null then raise exception 'Worker did not claim eligible allowlisted task'; end if;
+  select daily_reserved into v_daily_reserved from public.project_automation_settings where project_id=v_project;
+  if v_daily_reserved<>2 then raise exception 'Task budget was not reserved at claim time'; end if;
   perform public.worker_finish_project_automation_task(v_task,v_lease,true,0.25,null);
 
   insert into public.project_automation_tasks(
@@ -225,8 +228,11 @@ begin
   where idempotency_key='runtime-health-retry-001' and status='dead_letter' and attempts=2;
   if v_dead_count<>1 then raise exception 'Retry limit did not dead-letter task'; end if;
 
-  select daily_spent into v_daily_spent from public.project_automation_settings where project_id=v_project;
-  if v_daily_spent<>0.75 then raise exception 'Daily budget accounting mismatch: %',v_daily_spent; end if;
+  select daily_spent,daily_reserved into v_daily_spent,v_daily_reserved
+  from public.project_automation_settings where project_id=v_project;
+  if v_daily_spent<>0.75 or v_daily_reserved<>0 then
+    raise exception 'Daily budget accounting mismatch: spent %, reserved %',v_daily_spent,v_daily_reserved;
+  end if;
 
   if (select count(*) from public.project_automation_audit
       where action in ('task_claimed','task_succeeded','task_retry_scheduled','task_dead_lettered'))<5 then
