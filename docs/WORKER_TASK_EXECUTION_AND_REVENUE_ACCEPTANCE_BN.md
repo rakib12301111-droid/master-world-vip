@@ -20,9 +20,11 @@
 - Worker function secret MWVIP_WORKER_ENABLED=true না হলে execution disabled থাকে।
 
 ### বর্তমানে allow-listed handler
-system_health_check — read-only, no external side effects, no financial effects. এটি task payload থেকে customer/member data পড়ে না, কোনো business record পরিবর্তন করে না এবং কোনো payment/payout API call করে না।
+- `system_health_check` — read-only health check.
+- `project_usage_digest` — read-only project usage/budget/task-state digest.
+- `work_order_validate` — read-only order validation within the claimed task's project scope.
 
-অন্য কোনো task type claim হবে না। ভবিষ্যৎ handler যোগ করতে হলে source implementation, database allowlist, authorization, input/output schema, idempotency, budget, timeout, audit এবং test আলাদাভাবে review করতে হবে।
+এই তিনটি ছাড়া অন্য কোনো task type claim হবে না। দুইটি business handler-এর disposable runtime acceptance run `45959527467`-এ সফল। ভবিষ্যৎ handler যোগ করতে হলে source implementation, database allowlist, authorization, input/output schema, idempotency, budget, timeout, audit এবং test আলাদাভাবে review করতে হবে।
 
 ## ২. Execution Gate
 
