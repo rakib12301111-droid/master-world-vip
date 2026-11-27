@@ -1675,7 +1675,7 @@ Run links:
 ## ১১. ২৭ নভেম্বর ২০২৬ — Worker failure recovery hardening (নতুন কোড পরিবর্তন)
 
 - Worker file: `supabase/functions/project-automation-worker/index.ts`
-- Commit: `55d2af619f90eea7eea7eea7eea7eea7eea7eea7` (দ্রষ্টব্য: commit SHA নিচের canonical GitHub link থেকে যাচাই করুন)
+- Commit: `55d2af619f90eea7e92fd191ee7d44fd09835c0b` (দ্রষ্টব্য: commit SHA নিচের canonical GitHub link থেকে যাচাই করুন)
 - Change: allowlisted handler-এর RPC/database exception হলে Worker আর সরাসরি outer HTTP 500 দিয়ে task-টিকে পাঁচ মিনিটের lease timeout পর্যন্ত `running` অবস্থায় ফেলে রাখে না। এখন sanitized failure reason-সহ lease-aware `worker_finish_project_automation_task` RPC-তে পাঠায়; database-এর existing retry/backoff/max-attempt/dead-letter policy কাজটি নিয়ন্ত্রণ করে।
 - Error response-এ provider/database error detail প্রকাশ করা হয় না; actual cost এখনও 0 এবং কোনো external/financial side effect যোগ করা হয়নি।
 - Static regression script `scripts/verify-staging-worker-safety.py`-এ দুইটি assertion যোগ করা হয়েছে: handler failure sanitized outcome-এ রূপান্তরিত হয় এবং finish RPC-এর আগে failure outcome তৈরি হয়।
