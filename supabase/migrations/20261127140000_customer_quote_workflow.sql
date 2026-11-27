@@ -124,6 +124,67 @@ create trigger customer_quote_events_no_mutation
   before update or delete on public.customer_quote_request_events
   for each row execute function public.reject_customer_quote_event_mutation();
 
+create or replace function public.guard_customer_quote_request_update()
+returns trigger
+language plpgsql
+security definer
+set search_path = ''
+as $
+begin
+  if new.id is distinct from old.id
+    or new.customer_user_id is distinct from old.customer_user_id
+    or new.service_key is distinct from old.service_key
+    or new.country is distinct from old.country
+    or new.scope_description is distinct from old.scope_description
+    or new.requested_deadline is distinct from old.requested_deadline
+    or new.budget_hint is distinct from old.budget_hint
+    or new.created_at is distinct from old.created_at then
+    raise exception 'Customer quote request identity and submitted scope are immutable';
+  end if;
+
+  if new.quote_amount is distinct from old.quote_amount
+    or new.quote_currency is distinct from old.quote_currency
+    or new.quote_scope is distinct from old.quote_scope
+    or new.delivery_days is distinct from old.delivery_days
+    or new.quote_expires_at is distinct from old.quote_expires_at then
+    if not (old.status in ('submitted','under_review') and new.status='quote_sent') then
+      raise exception 'Issued quote terms are immutable; create a new request for changed terms';
+    end if;
+  end if;
+
+  if new.status is distinct from old.status and not (
+    (old.status='submitted' and new.status in ('under_review','rejected','cancelled'))
+    or (old.status='under_review' and new.status in ('under_review','quote_sent','rejected','cancelled'))
+    or (old.status='quote_sent' and new.status in ('accepted','declined','expired','cancelled'))
+  ) then
+    raise exception 'Invalid customer quote request lifecycle transition';
+  end if;
+  return new;
+end;
+$;
+
+revoke all on function public.guard_customer_quote_request_update() from public, anon, authenticated;
+drop trigger if exists customer_quote_request_guard_update on public.customer_quote_requests;
+create trigger customer_quote_request_guard_update
+  before update on public.customer_quote_requests
+  for each row execute function public.guard_customer_quote_request_update();
+
+create or replace function public.reject_customer_quote_request_delete()
+returns trigger
+language plpgsql
+security definer
+set search_path = ''
+as $
+begin
+  raise exception 'Customer quote requests cannot be deleted; cancel or close the request';
+end;
+$;
+revoke all on function public.reject_customer_quote_request_delete() from public, anon, authenticated;
+drop trigger if exists customer_quote_request_no_delete on public.customer_quote_requests;
+create trigger customer_quote_request_no_delete
+  before delete on public.customer_quote_requests
+  for each row execute function public.reject_customer_quote_request_delete();
+
 create or replace function public.submit_my_customer_quote_request(
   p_service_key text,
   p_country text,
