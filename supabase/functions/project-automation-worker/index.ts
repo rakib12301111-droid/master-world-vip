@@ -72,46 +72,53 @@ Deno.serve(async (req) => {
     }
 
     let outcome: { success: boolean; result: Record<string, unknown>; error?: string };
-    if (task.task_type === "system_health_check") {
-      outcome = executeAllowlistedTask(task);
-    } else if (task.task_type === "project_usage_digest") {
-      const digest = await rpc("worker_read_project_usage_digest", {
-        p_project_id: task.project_id,
-      });
-      outcome = {
-        success: true,
-        result: {
-          handler: "project_usage_digest",
-          handler_version: "1.0.0",
-          read_only: true,
-          external_side_effects: false,
-          financial_effects: false,
-          digest,
-        },
-      };
-    } else if (task.task_type === "work_order_validate") {
-      const orderId = task.payload?.order_id;
-      if (typeof orderId !== "string" || !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(orderId)) {
-        outcome = { success: false, result: {}, error: "Invalid or missing order_id in task payload." };
-      } else {
-        const validation = await rpc("worker_validate_work_order", {
+    try {
+      if (task.task_type === "system_health_check") {
+        outcome = executeAllowlistedTask(task);
+      } else if (task.task_type === "project_usage_digest") {
+        const digest = await rpc("worker_read_project_usage_digest", {
           p_project_id: task.project_id,
-          p_order_id: orderId,
         });
         outcome = {
           success: true,
           result: {
-            handler: "work_order_validate",
+            handler: "project_usage_digest",
             handler_version: "1.0.0",
             read_only: true,
             external_side_effects: false,
             financial_effects: false,
-            validation,
+            digest,
           },
         };
+      } else if (task.task_type === "work_order_validate") {
+        const orderId = task.payload?.order_id;
+        if (typeof orderId !== "string" || !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(orderId)) {
+          outcome = { success: false, result: {}, error: "Invalid or missing order_id in task payload." };
+        } else {
+          const validation = await rpc("worker_validate_work_order", {
+            p_project_id: task.project_id,
+            p_order_id: orderId,
+          });
+          outcome = {
+            success: true,
+            result: {
+              handler: "work_order_validate",
+              handler_version: "1.0.0",
+              read_only: true,
+              external_side_effects: false,
+              financial_effects: false,
+              validation,
+            },
+          };
+        }
+      } else {
+        outcome = { success: false, result: {}, error: "Task type is not implemented by this worker." };
       }
-    } else {
-      outcome = { success: false, result: {}, error: "Task type is not implemented by this worker." };
+    } catch {
+      // Release the lease through the database retry/dead-letter policy instead of
+      // leaving a failed handler running until the five-minute lease expires.
+      // Keep provider/database error details out of the HTTP response and task row.
+      outcome = { success: false, result: {}, error: "Allowlisted task handler failed; retry under database policy." };
     }
     await rpc("worker_finish_project_automation_task", {
       p_task_id: task.id,
