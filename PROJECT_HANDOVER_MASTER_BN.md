@@ -319,3 +319,16 @@ GitHub Actions-এ ব্যবহৃত secret নাম:
 - অবশিষ্ট ঝুঁকি ও পরবর্তী প্রয়োজনীয় পদক্ষেপ।
 
 **কার্যকর নির্দেশ:** ব্যবহারকারী ইতিমধ্যে routine maintenance, পরীক্ষা ও যাচাইয়ের অনুমতি দিয়েছেন। তাই একই scope-এর কাজের জন্য বারবার অনুমতি চাইবেন না; নিরাপদে এগিয়ে কাজ করুন, ফলাফল যাচাই করুন এবং handover file আপডেট রাখুন। Production-impacting কাজের জন্য আলাদা gate বজায় রাখুন।
+
+
+## 14. ২৮ নভেম্বর ২০২৬ — Staging restore container diagnostics
+
+- PR #25: https://github.com/rakib12301111-droid/master-world-vip/pull/25
+- শিরোনাম: Diagnose Staging restore container startup failure
+- অবস্থা: **Merged**
+- Merge commit: `e949aa1f90c8f6a1aa1c8296345e09aaa60a5e45`
+- পরিবর্তন: GitHub Actions service-container startup-এর বদলে workflow step-এ pinned `supabase/postgres:17.6.1.136` image স্পষ্টভাবে pull/run, health wait এবং failure হলে Docker logs দেখানোর ব্যবস্থা।
+- উদ্দেশ্য: আগের Run-এ `One or more containers failed to start` / `Failed to initialize container supabase/postgres:17.6.1.136` সমস্যার সুনির্দিষ্ট কারণ বের করা।
+- **এখনো যাচাই হয়নি:** Merge-এর পর Staging workflow নতুন করে চালানো হয়নি; তাই container startup, encrypted backup, isolated restore, migration dry-run, Auth/RBAC এবং পুরো workflow-এর সবুজ ফলাফল এখনো প্রমাণিত নয়।
+- Production database-এ কোনো migration/apply করা হয়নি।
+- পরবর্তী পদক্ষেপ: GitHub Actions-এ `MASTER WORLD VIP — Staging migrations and access-control acceptance` workflow-এর `Run workflow` দিয়ে `main` branch-এ manual run শুরু করতে হবে; এরপর প্রতিটি job/step ও log যাচাই করে ফলাফল এখানে যোগ করতে হবে।
