@@ -427,3 +427,20 @@ GitHub Actions-এ ব্যবহৃত secret নাম:
 - Next: perform the Staging A/B/Admin acceptance test after an authorized Staging project is available; then design the conversion bridge against the merged existing customer-order migration and its funding gates.
 
 **Current status: Customer Quote workflow CODE + STATIC CI + FULL DISPOSABLE MIGRATION/RUNTIME CI VERIFIED; NOT STAGING-APPLIED; NOT PRODUCTION-LIVE.**
+
+
+---
+
+## Staging-only deployment preparation + final CI refresh (27 Nov 2026)
+
+- Added `.github/workflows/apply-staging-supabase-migrations.yml`: manual-only workflow; default action is dry-run; it uses only `SUPABASE_STAGING_ACCESS_TOKEN`, `SUPABASE_STAGING_PROJECT_REF`, `SUPABASE_STAGING_DB_URL`; refuses the known Production project ref and requires a recoverable Staging backup, successful restore-test confirmation, non-secret backup reference and exact phrase `APPLY-MASTER-WORLD-VIP-STAGING-MIGRATIONS` before applying.
+- The workflow validates the DB URI is a Supabase Session Pooler URI and its username matches the configured Staging project ref. It does not use Production secrets and was not run because no Staging credentials/project have been confirmed.
+- Staging workflow and secret names are documented in `supabase/README.md` and `docs/CUSTOMER_QUOTE_WORKFLOW_ACCEPTANCE_TEST_BN.md`.
+- Latest code/workflow commit `aae55d97d763599ff6a136e81d5c73b497dbbb29` verification:
+  - Disposable migration + runtime run `45964010157`: **SUCCESS** — all 31 migrations applied to fresh and legacy-shape disposable PostgreSQL databases; customer quote runtime suite and expected object checks passed.
+  - Static Migration Safety `45964010127`: **SUCCESS** — quote workflow security, JavaScript syntax and Staging workflow static gates passed.
+  - Update System `45964010036`: **SUCCESS**.
+  - Auto Work Static Safety `45964010032`: **SUCCESS**.
+- These are disposable/static CI results only. No Supabase Staging or Production project was changed; no public deployment or real payment/order occurred.
+
+**Current status: Customer quote code + 31-migration fresh/legacy runtime CI + static CI VERIFIED; guarded Staging workflow PREPARED BUT NOT RUN; manual Staging acceptance and Production release remain pending.**
