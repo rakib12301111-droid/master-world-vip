@@ -1,6 +1,10 @@
 name: MASTER WORLD VIP - Disposable Backup and Restore Verification
 
 on:
+  push:
+    branches: [planning/4000-automated-project-economy]
+    paths:
+      - ".github/workflows/verify-disposable-backup-restore.yml"
   pull_request:
     paths:
       - ".github/workflows/verify-disposable-backup-restore.yml"
