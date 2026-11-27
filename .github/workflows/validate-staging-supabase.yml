@@ -49,13 +49,12 @@ jobs:
               raise SystemExit("::error::Staging DB URL password is empty. Recreate the URI using the Staging database password; URL-encode special characters. Do not paste the URI into chat or logs.")
           print("Staging DB URL username and non-empty password checks passed; no credentials printed.")
           PY
-      - name: Install PostgreSQL client
+      - name: Install OpenSSL for encrypted backup
         run: |
           set -euo pipefail
           sudo apt-get update
-          sudo apt-get install --yes postgresql-client openssl
-          pg_dump --version
-          pg_restore --version
+          sudo apt-get install --yes openssl
+          openssl version
       - name: Start isolated restore PostgreSQL container
         run: |
           set -euo pipefail
@@ -115,7 +114,11 @@ jobs:
           : "${PGUSER:?PGUSER was not passed from the preceding step}"
           : "${PGPASSWORD:?PGPASSWORD was not passed from the preceding step}"
           mkdir -p backup
-          pg_dump --host="$PGHOST" --port="$PGPORT" --username="$PGUSER" --dbname="$PGDATABASE" --format=custom --no-owner --no-acl --file=backup/staging.dump
+          docker run --rm --network host \
+            --env PGHOST --env PGPORT --env PGDATABASE --env PGUSER --env PGPASSWORD --env PGSSLMODE \
+            --volume "$PWD/backup:/backup" \
+            supabase/postgres:17.6.1.136 \
+            pg_dump --host="$PGHOST" --port="$PGPORT" --username="$PGUSER" --dbname="$PGDATABASE" --format=custom --no-owner --no-acl --file=/backup/staging.dump
           openssl enc -aes-256-cbc -pbkdf2 -salt -in backup/staging.dump -out backup/staging.dump.enc -pass env:BACKUP_PASSPHRASE
           rm -f backup/staging.dump
           test -s backup/staging.dump.enc
@@ -125,9 +128,15 @@ jobs:
           set -euo pipefail
           openssl enc -d -aes-256-cbc -pbkdf2 -in backup/staging.dump.enc -out backup/restore.dump -pass env:BACKUP_PASSPHRASE
           test -s backup/restore.dump
-          PGPASSWORD=restore_test_only PGSSLMODE=disable createdb -h 127.0.0.1 -p 5432 -U supabase_admin --template=template0 mwvip_staging_restore_empty
-          PGPASSWORD=restore_test_only PGSSLMODE=disable pg_restore -h 127.0.0.1 -p 5432 -U supabase_admin -d mwvip_staging_restore_empty --no-owner --no-acl --exit-on-error backup/restore.dump
-          PGPASSWORD=restore_test_only PGSSLMODE=disable psql -h 127.0.0.1 -p 5432 -U supabase_admin -d mwvip_staging_restore_empty -v ON_ERROR_STOP=1 -Atc "select count(*) from information_schema.tables where table_schema not in ('pg_catalog','information_schema')" > backup/restored_table_count.txt
+          docker run --rm --network host --env PGPASSWORD=restore_test_only --env PGSSLMODE=disable \
+            supabase/postgres:17.6.1.136 \
+            createdb -h 127.0.0.1 -p 5432 -U supabase_admin --template=template0 mwvip_staging_restore_empty
+          docker run --rm --network host --env PGPASSWORD=restore_test_only --env PGSSLMODE=disable \
+            --volume "$PWD/backup:/backup" supabase/postgres:17.6.1.136 \
+            pg_restore -h 127.0.0.1 -p 5432 -U supabase_admin -d mwvip_staging_restore_empty --no-owner --no-acl --exit-on-error /backup/restore.dump
+          docker run --rm --network host --env PGPASSWORD=restore_test_only --env PGSSLMODE=disable \
+            supabase/postgres:17.6.1.136 \
+            psql -h 127.0.0.1 -p 5432 -U supabase_admin -d mwvip_staging_restore_empty -v ON_ERROR_STOP=1 -Atc "select count(*) from information_schema.tables where table_schema not in ('pg_catalog','information_schema')" > backup/restored_table_count.txt
           test "$(cat backup/restored_table_count.txt)" -gt 0
           rm -f backup/restore.dump
           echo "Isolated Staging restore passed with a non-empty schema."
