@@ -908,3 +908,11 @@ Owner নির্দেশ: নিচের কাজগুলোকে MASTER 
 - Worker business task handlers: **NOT IMPLEMENTED / BLOCKED**; registration/heartbeat idle foundation only।
 - Revenue/payment provider sandbox, real collection, commission activation, payout execution: **NOT LIVE**।
 - Production Migration / migration-history repair / Live Deployment: **NOT RUN**।
+
+
+## ২৭ নভেম্বর ২০২৬ — Planning branch Worker Static Safety CI SUCCESS
+
+- Worker static CI trigger-এ planning branch push যুক্ত করা হয়েছে, যাতে worker source/safety workflow পরিবর্তন এই branch-এও স্বয়ংক্রিয়ভাবে যাচাই হয়। Commit `b3122886f35069fcd232a9fddd378306ddbaeb99`।
+- Run `45957124627` — **SUCCESS**। Job `worker-static-check`: Deno Edge Function type-check SUCCESS এবং `scripts/verify-staging-worker-safety.py` SUCCESS। Run: https://github.com/rakib12301111-droid/master-world-vip/actions/runs/45957124627
+- এটি Worker source-এর type/static safety প্রমাণ; বাস্তব Staging Auth/RBAC, task execution, external connector, revenue বা payout পরীক্ষা নয়।
+- Worker এখনো Registration + Heartbeat idle foundation; approved task handler না থাকায় queue claim বন্ধ থাকবে।
