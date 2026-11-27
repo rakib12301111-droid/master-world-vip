@@ -18,6 +18,7 @@ select public.submit_my_customer_quote_request(
  'typing','Bangladesh','Please type and format a 5-page Bengali document.',
  'Within 5 days','BDT 1,000'
 ) as quote_id \gset
+select set_config('mwvip.test_quote_id', :'quote_id', true);
 
 do $$
 begin
@@ -68,7 +69,7 @@ begin
   end if;
 end $$;
 
--- Even a privileged service role cannot rewrite the append-only event history.
+-- Even the database owner cannot rewrite the append-only event history.
 reset role;
 do $$
 begin
