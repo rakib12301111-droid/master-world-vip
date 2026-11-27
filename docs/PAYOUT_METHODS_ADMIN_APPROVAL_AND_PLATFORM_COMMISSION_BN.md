@@ -86,3 +86,30 @@ Member ও Admin-এর জন্য সহজ payout interface রাখা: �
 - Distributable Platform Margin শূন্য বা ঋণাত্মক হলে Admin commission শূন্য; Member payable বা refund reserve থেকে commission নেওয়া যাবে না। Positive margin হলে Admin commission = margin × 20%; অবশিষ্ট margin platform-এর retained net margin।
 - উদাহরণ (শুধু ব্যাখ্যা, বাস্তব মূল্য নয়): customer settled 1,000; provider fee 20; tax 30; Member payable 600; refund reserve allocation 100; direct operating cost 50; distributable margin 200; Admin commission 40 (20% of 200)।
 - এই base Owner-এর চূড়ান্ত ব্যবসায়িক/আইনি অনুমোদন, tax review ও Member/customer disclosure ছাড়া কার্যকর হবে না। Order acceptance-এ basis ও rate snapshot হবে; settled/reconciled accepted work-এর পরেই commission post হবে; refund/chargeback হলে পূর্বপ্রকাশিত reversal policy লাগবে।
+
+
+## ১১. Owner নির্দেশ অনুযায়ী Live-readiness implementation gates (২৭ নভেম্বর ২০২৬)
+
+এই section implementation scope নির্ধারণ করে; কোনো provider account/permission বা Production approval তৈরি করে না।
+
+### bKash / Nagad / Bank adapters
+- তিনটি rail আলাদা adapter interface-এ রাখতে হবে; common payment intent/order/ledger layer-এর সঙ্গে provider-specific authentication, request signing, webhook signature/timestamp verification, idempotency key, duplicate/replay rejection, status inquiry, refund/payout এবং reconciliation mapping থাকবে।
+- bKash/Nagad: withdrawal request → Admin approval → provider-approved payout API → provider settlement confirmation → daily reconciliation; Admin approval-এর আগে কোনো transfer request নয়।
+- Bank: official bank/partner API/mandate + beneficiary ownership verification + KYC/AML/fraud checks + limits; risk alert বা mismatch-এ manual review/fail-closed।
+- Sandbox access না থাকলে synthetic mock provider ব্যবহার; clearly TEST-ONLY label, fake transaction IDs এবং deterministic success/failure/replay simulation। কোনো simulated success Member wallet-এ real withdrawable funds তৈরি করবে না।
+- Secrets শুধু GitHub Actions/Supabase secret store-এ; কখনো browser, repository, logs বা chat-এ নয়।
+
+### Order-to-payout finance acceptance matrix
+- Customer checkout/webhook: valid signature, correct amount/currency/order, unique provider reference, idempotent retry; bad signature, wrong amount/currency, duplicate/replay reject।
+- Order funding: provider settlement ও reconciliation ছাড়া funded নয়; USD/BDT cross-posting বা currency netting reject।
+- Work acceptance: client acceptance evidence ছাড়া Member payable release নয়; cancelled/disputed/refunded order-এ payout hold/reversal policy।
+- Commission: ২০% proposed only; final basis, fee/tax/reserve/rounding/reversal এবং disclosures অনুমোদিত না হওয়া পর্যন্ত actual commission 0/disabled। Proposed distributable-margin formula ব্যবহার করতে হলে Owner final approval লাগবে; Member payable/refund reserve থেকে কখনো commission নয়।
+- Payout: verified beneficiary, available payable, Admin approval where required, provider settlement reference, reconciliation; timeout/retry duplicate transfer তৈরি করবে না। Pending/failed payout payable হারাবে না।
+- Reconciliation: provider settlement report/bank statement বনাম payment intent, ledger journal, refund, payout; mismatch হলে affected rail/currency freeze + alert + audited resolution।
+- Required runtime cases: balanced double-entry, exact idempotency, collision rejection, overdraw/negative balance prevention, immutability, reserve isolation, refund/chargeback, provider outage, duplicate webhook, forged signature, payout timeout/retry, Admin RBAC এবং Owner/Admin/Member separation।
+
+### Go-live decision
+- Provider legal/merchant approval, KYC/AML/tax review, official sandbox and production credentials, safeguarded funds/custody, signed webhook, settlement/reconciliation, Staging acceptance, recoverable backup/restore এবং security sign-off—সব বাধ্যতামূলক।
+- ২০% Admin commission এখনো proposal only; customer/Member-কে order acceptance-এর আগে disclosed approved calculation না দেখানো পর্যন্ত deduct/post করা যাবে না।
+- APPLY-MASTER-WORLD-VIP-MIGRATIONS কেবল Production database migration apply-এর আলাদা exact approval। এটি provider money transfer, payout activation বা public deployment অনুমোদন করে না।
+- Current status: architecture/policy documented; existing ledger/runtime foundations only. Official provider integration, staging acceptance, live collection/payout, commission activation এবং Production migration NOT LIVE / PENDING।
