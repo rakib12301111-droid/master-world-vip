@@ -718,3 +718,44 @@ GitHub Actions-এ ব্যবহৃত secret নাম:
 - Worker source বর্তমানে fail-closed: `MWVIP_WORKER_ENABLED=true` না হলে disabled; enabled হলেও approved business task handler count zero থাকায় task claim করে না। এটি live task execution নয়।
 - Production schema/migrations অপরিবর্তিত; কোনো Production migration apply, live deployment, payment/payout বা revenue activation করা হয়নি।
 - পরবর্তী কাজ: fix commit-এ Migration Safety + disposable PostgreSQL full-chain runtime tests-এর বাস্তব run/log যাচাই; staging secrets/test accounts প্রস্তুত হলে staging-only validation; Admin RBAC/Owner bootstrap ও provider/custody/payout prerequisites আলাদা করে যাচাই। Production migration apply-এর আগে exact approval `APPLY-MASTER-WORLD-VIP-MIGRATIONS` এবং recoverable backup/restore evidence বাধ্যতামূলক।
+
+
+## ২৭ নভেম্বর ২০২৬ — Payment/Payout, Order Finance ও Production Live-এর Owner নির্দেশ
+
+Owner নির্দেশ: নিচের কাজগুলোকে MASTER WORLD VIP-এর বাধ্যতামূলক Live-readiness scope হিসেবে এগিয়ে নিতে হবে। এই নির্দেশে implementation planning, source updates, sandbox/test work অনুমোদিত; এটি Production migration, real-money transfer, provider onboarding/contract acceptance বা public release-এর exact approval নয়।
+
+### A. bKash / Nagad / Bank Payment-Payout
+- bKash, Nagad ও Bank-এর জন্য আলাদা server-side provider adapter architecture, beneficiary ownership verification, masked destination, encrypted/tokenized sensitive data, signed webhook verification, idempotency, retry/replay protection, rate/amount limits, audit trail এবং daily settlement reconciliation তৈরি ও পরীক্ষা করতে হবে।
+- bKash/Nagad withdrawal: Admin approval ছাড়া provider transfer call নয়। Admin approval হলেও official merchant/disbursement API, provider permission, KYC ও settlement terms বাধ্যতামূলক।
+- Bank auto-payout কেবল bank/payment partner-এর অনুমোদিত corporate/API/mandate rail, verified beneficiary, KYC/AML/fraud checks, limits ও reconciliation সক্রিয় থাকলে; risk alert হলে fail-closed/manual review।
+- Provider credentials/merchant account/contract/sandbox access Owner-কে provider-এর official process-এ সংগ্রহ করে GitHub Actions/Supabase secret store-এ configure করতে হবে। Secret chat, source code, logs বা handover-এ রাখা যাবে না। Credential না থাকলে synthetic mock sandbox-ই চলবে; mock result কখনো real transfer নয়।
+- Provider approval, KYC/legal/tax review, custody/safeguarded funds ও signed settlement evidence না পাওয়া পর্যন্ত real payment/payout NOT LIVE থাকবে।
+
+### B. Customer Order, Revenue, Member Payment ও ২০% Admin commission
+- Existing append-only double-entry ledger ও guarded payout/refund source-এর ওপর end-to-end test যোগ/সম্পন্ন করতে হবে: order funding, currency isolation (USD/BDT), idempotent payment/webhook, provider fee, tax, refund/chargeback reserve, Member payable, Admin approval, payout settlement, reversal, reconciliation এবং duplicate/replay/overdraft/negative-balance rejection।
+- Customer-এর টাকা সত্যিই settled না হওয়া পর্যন্ত order funded নয়; কাজ accepted না হওয়া পর্যন্ত Member payout payable নয়; provider/bank settlement ও reconciliation evidence ছাড়া payout paid নয়। Ledger entry cash custody বা টাকা পাঠানোর প্রমাণ নয়।
+- Admin commission ২০% এখনো প্রস্তাব, সক্রিয় deduction নয়। বর্তমান design অনুযায়ী প্রস্তাবিত base হলো distributable platform margin: settled gross − provider fees − applicable tax − full Member payable − refund/chargeback reserve funding − approved direct operating cost। Margin শূন্য/ঋণাত্মক হলে commission শূন্য। Owner final approval, legal/tax review, rounding/reversal policy এবং order-এর আগে Member/customer disclosure না হওয়া পর্যন্ত ২০% কাটা/post করা যাবে না।
+- প্রতিটি order-এ gross, currency, fee, tax, reserve, operating cost, Member net payable, proposed/approved commission basis ও amount আগে দেখাতে হবে; accepted order-এর terms immutable snapshot হবে। USD/BDT আলাদা ledger-এ থাকবে; FX conversion/netting নয়।
+- Member Auto Work/paid package এখনো disabled; Member deposit, package fee বা অন্য সদস্যের টাকা দিয়ে payout/refund করা যাবে না।
+
+### C. Staging → Production → Live release gates
+1. PR #20 branch-এ SQL fix-সহ সব CI/static checks এবং disposable PostgreSQL full migration-chain/runtime finance tests বাস্তবে pass; Run ID ও logs handover-এ নথিভুক্ত।
+2. আলাদা non-Production Staging Supabase project/secrets এবং পৃথক Owner/Admin/Member test identity প্রস্তুত; Staging migration, RLS/RBAC, Admin-only approval, worker, webhook simulation, reconciliation ও rollback/restore acceptance pass।
+3. bKash/Nagad/Bank official sandbox integration, signed webhook tests, beneficiary verification, duplicate/replay/failure/refund/chargeback scenarios pass; provider contract/KYC/legal/tax approval evidence যাচাই।
+4. Independent accounting reconciliation, funded reserve/custody evidence, incident response, alerting, limits ও emergency kill switch pass।
+5. Production migration-এর আগে latest recoverable backup এবং আলাদা restore test evidence; exact Owner approval APPLY-MASTER-WORLD-VIP-MIGRATIONS না পাওয়া পর্যন্ত apply নয়।
+6. Production apply ও live deployment পৃথক controlled steps; migration approval-কে payment transfer, payout activation বা public release approval হিসেবে ধরা যাবে না। প্রতিটি ধাপে আলাদা scope/approval ও post-deploy smoke test লাগবে।
+
+### বর্তমান বাস্তব অবস্থা / অনুমোদনের ব্যাখ্যা
+- Existing ledger/payout database source এবং disposable PostgreSQL runtime test-এর আগের successful evidence আছে; কিন্তু latest SQL fix commit-এর নতুন CI/runtime run এখনো pending।
+- Official bKash/Nagad/Bank provider credentials, merchant/API agreement, sandbox access, verified bank custody/settlement rail এই execution-এ সরবরাহ/যাচাই হয়নি; তাই real integration ও money movement live নয়।
+- Staging secrets/project এবং role test identities প্রস্তুত/যাচাই হয়নি; Staging acceptance test pending।
+- PR #20 Draft/Open/Unmerged; Production schema/migrations apply হয়নি।
+- Owner-এর এই instruction-কে requirements ও safe implementation work-এর অনুমতি হিসেবে নথিভুক্ত করা হলো; exact Production migration approval token এখানে দেওয়া হয়নি। Production apply, payout transfer বা public live release করা হয়নি।
+
+### পরবর্তী execution order
+1. Latest commit CI + full-chain disposable PostgreSQL runtime finance tests চালিয়ে evidence নথিভুক্ত।
+2. Mock provider adapters/webhook simulator ও end-to-end order/commission/payout tests বাস্তবায়ন; official sandbox credentials পেলে provider-specific adapter যোগ।
+3. Staging project/secrets প্রস্তুত হলে isolated staging migration + role/RLS + worker + finance acceptance tests।
+4. Provider/legal/custody/settlement evidence ও final ২০% policy approval সংগ্রহ।
+5. Restore-tested backup এবং exact Production migration approval পাওয়ার পরেই controlled Production apply; তারপর আলাদা live deployment approval ও smoke tests।
