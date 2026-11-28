@@ -478,3 +478,15 @@ GitHub Actions-এ ব্যবহৃত secret নাম:
 - Production project `lztbbrzeuyjkuiyzrsxp` স্পর্শ করা হয়নি; Production migration হয়নি।
 - **প্রমাণিত সম্পন্ন:** Staging encrypted backup + isolated restore।
 - **এখনো অসম্পন্ন:** Auth preflight, Staging migration dry-run/apply, Owner/Admin/Member role acceptance, Admin RPC acceptance এবং queue-worker assessment।
+
+
+## 24. ২৮ নভেম্বর ২০২৬ — Staging role ইমেইল mapping (Auth এখনো যাচাই হয়নি)
+
+- Owner: `rakib12301111@gmail.com`
+- Admin: `r94043908@gmail.com`
+- Member: `rakib12301111+member@gmail.com` (Gmail plus-address/alias; আলাদা Gmail mailbox নয়, একই inbox-এ মেইল পৌঁছাতে পারে)।
+- এগুলো ব্যবহারকারীর নির্ধারিত role mapping; Staging Auth Users-এ user তৈরি/confirmed, password login, invitation গ্রহণ বা GitHub Secrets update হওয়ার প্রমাণ নয়।
+- আলাদা email string হিসেবে Member alias দিয়ে পৃথক Supabase Auth user তৈরি করা সম্ভব হতে পারে, তবে তা Staging-এ যাচাই হয়নি। তিনটি পৃথক Auth user ও password-grant login সফল না হওয়া পর্যন্ত Auth preflight blocker বহাল।
+- পরবর্তী ধাপ: Staging project `awatzrapqrteybgspqlq` → Authentication → Users-এ তিনটি user যাচাই/তৈরি ও email confirm; প্রত্যেকের password নির্ধারণ; GitHub Repository Secrets-এ সংশ্লিষ্ট ছয়টি email/password secret আপডেট। কোনো password/secret chat-এ দেবেন না।
+- Assistant repository documentation/code update করতে পারে; encrypted GitHub Secrets পড়া/লেখা, Supabase Auth dashboard-এ user তৈরি/invite করা বা Gmail invitation গ্রহণ করা সম্ভব নয়। এই আপডেটে কোনো secret বা Auth account state পরিবর্তন হয়নি।
+- Run #15 (ID `46077272231`) এখনো সর্বশেষ প্রমাণিত অবস্থা: encrypted Staging backup/isolated restore PASS; তিন Auth login FAIL; migration ও role/RPC ধাপ skipped। Production অপরিবর্তিত।
