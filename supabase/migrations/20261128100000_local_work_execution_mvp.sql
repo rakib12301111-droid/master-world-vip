@@ -73,6 +73,7 @@ as $$
 declare v_id uuid; v_lease uuid;
 begin
   if auth.role()<>'service_role' then raise exception 'Worker service role required'; end if;
+  if not exists(select 1 from public.project_automation_runtime_control where singleton=true and emergency_stop=false) then return; end if;
   update public.mwvip_local_work_tasks
   set status='failed',lease_token=null,lease_expires_at=null,
       last_error='Worker lease expired after maximum attempts',updated_at=now()
