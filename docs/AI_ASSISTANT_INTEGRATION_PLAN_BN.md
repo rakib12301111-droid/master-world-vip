@@ -53,3 +53,16 @@ References:
 - Responses API migration: **PLANNED; NOT IMPLEMENTED**.
 - Production deployment: **NOT DONE**.
 - User request to integrate an AI assistant: **RECORDED**.
+
+## Owner's clarified launch scope — Admin only
+
+The Owner has explicitly requested an assistant integrated into the existing MASTER WORLD VIP Admin Center only. Member Hub and Moderator accounts must not have access. The new UI is role-gated for Owner, Super Admin and Admin; the Edge Function repeats role verification server-side, so hiding a browser panel is not the security boundary.
+
+### Code now prepared on PR branch
+- Admin-only chat UI in www/index.html, invoking the existing authenticated ai-assistant Edge Function.
+- Edge Function now targets OpenAI Responses API, checks JWT and get_my_admin_access() role, rejects non-admins, applies exact-origin CORS allowlist, and reads the API key only from Supabase Edge Function secrets.
+- New migration 20261128120000_admin_ai_assistant_quota.sql provides atomic quotas of 5 requests/minute and 30 requests/day per Admin.
+- UI and model instructions explicitly prohibit autonomous account, role, wallet, payment, payout or Production changes.
+
+### Not yet activated
+No migration has been applied, no Edge Function deployed, no API key configured, no OpenAI billing limit set, and no live request tested. This is prepared code in a Draft PR, not a live feature. First test in Staging only. Configure a dedicated OpenAI API project and server-side secret; never paste the key into chat, HTML, GitHub files or browser storage.
