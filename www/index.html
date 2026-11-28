@@ -2111,6 +2111,7 @@ async function refreshAdminAccess(){
   if(canViewAutoWork)await loadAdminAutoWorkOverview();
   if(data==='owner'){await loadOwnerCompensation();await loadOwnerWorkProfit();}
 }
+let adminAIHistory=[]; // in-memory only; never persisted to localStorage or the database
 function loadAdminAIStatus(){
  const status=$('adminAIStatus');
  if(!status)return;
@@ -2130,11 +2131,13 @@ $('adminAISend')?.addEventListener('click',async()=>{
  if(prompt.length>8000){if(status)status.textContent='প্রশ্ন ৮,০০০ অক্ষরের মধ্যে রাখুন।';return;}
  button.disabled=true;if(status)status.textContent='AI উত্তর তৈরি করছে…';
  appendAdminAIMessage('user',prompt);
+ const nextHistory=adminAIHistory.concat([{role:'user',content:prompt}]).slice(-10);
  try{
-  const {data,error}=await client.functions.invoke('ai-assistant',{body:{prompt,language:$('adminAILanguage')?.value||'bn'}});
+  const {data,error}=await client.functions.invoke('ai-assistant',{body:{prompt,messages:nextHistory,language:$('adminAILanguage')?.value||'bn'}});
   if(error)throw error;
   if(data?.error)throw new Error(data.error);
   if(typeof data?.reply!=='string'||!data.reply.trim())throw new Error('AI থেকে উত্তর পাওয়া যায়নি।');
+  adminAIHistory=nextHistory.concat([{role:'assistant',content:data.reply}]).slice(-10);
   appendAdminAIMessage('assistant',data.reply);
   if(status)status.textContent='উত্তর পাওয়া গেছে। কোনো Admin/Production পরিবর্তন স্বয়ংক্রিয়ভাবে করা হয়নি।';
   $('adminAIPrompt').value='';
@@ -2142,7 +2145,7 @@ $('adminAISend')?.addEventListener('click',async()=>{
  finally{button.disabled=false;}
 });
 $('adminAIClear')?.addEventListener('click',()=>{
- const host=$('adminAIConversation');if(host)host.replaceChildren(safeNode('div','muted small','কথোপকথন পরিষ্কার হয়েছে।'));
+ adminAIHistory=[];const host=$('adminAIConversation');if(host)host.replaceChildren(safeNode('div','muted small','কথোপকথন পরিষ্কার হয়েছে।'));
 });
 async function loadAdminAutoWorkOverview(){
  const status=$('adminAutoWorkStatus'),modules=$('adminAutoWorkModules'),jobs=$('adminAutoWorkJobs');
