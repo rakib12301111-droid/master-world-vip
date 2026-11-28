@@ -825,3 +825,15 @@ Latest observed head: `8903c42a732f690ce7f0235409af3a03828f4b6d`.
 - An earlier scheduler-verifier attempt failed only because its static assertion did not include the shell variable's quote placement. The assertion was corrected and the fresh run passed.
 - Scheduler code remains opt-in; no repository variable or service-role secret was set from this session, and no Edge Function enable secret was changed.
 - The scheduler has not invoked a real Staging worker cycle. Staging Auth/migration workflow remains unrun; no live task completion is claimed.
+
+
+## Section 39 — Current Staging acceptance blocker and safe next action (2026-11-28)
+
+- Main integration remains present at commit `94bbf5f35a3ff63480966a6be9a24a7c11d4077f`; Local Work MVP and opt-in Staging scheduler code are in the repository.
+- Latest documented Worker CI run `46131879321` is PASS. This is static/type/safety verification only; it does not prove Staging migration, Auth acceptance, Edge Function deployment or a live worker cycle.
+- No successful Staging Migration/Auth workflow run is evidenced in this handover. The workflow must be manually dispatched by the repository owner from GitHub Actions on branch `main`; it checks Backup/Restore and all three password-grant logins with distinct Supabase Auth user IDs before it proceeds with migrations and Worker deployment.
+- Required Staging-only repository secrets are the workflow's 11 named values: `STAGING_SUPABASE_ACCESS_TOKEN`, `STAGING_SUPABASE_DB_URL`, `STAGING_BACKUP_ENCRYPTION_PASSPHRASE`, `STAGING_SUPABASE_ANON_KEY`, `STAGING_SUPABASE_URL`, `STAGING_OWNER_EMAIL`, `STAGING_OWNER_PASSWORD`, `STAGING_ADMIN_EMAIL`, `STAGING_ADMIN_PASSWORD`, `STAGING_MEMBER_EMAIL`, `STAGING_MEMBER_PASSWORD`. Never disclose secret values in chat or logs.
+- Workflow link: https://github.com/rakib12301111-droid/master-world-vip/actions/workflows/validate-staging-supabase.yml . Run manually with branch `main`; inspect each job for Backup/Restore, three distinct Auth IDs/login, Migration, RBAC/RPC and Edge Function deployment success.
+- The assistant's current GitHub connection has no workflow-dispatch action and cannot inspect encrypted secret values or create/verify Supabase Auth users. Therefore it cannot truthfully claim to have run or passed Staging acceptance; repository owner must perform the manual dispatch after verifying the 11 values and three distinct Auth user IDs.
+- Keep `STAGING_WORKER_SCHEDULER_ENABLED` unset/false and do not set `STAGING_SUPABASE_SERVICE_ROLE_KEY` or enable Edge Function worker secrets until Staging acceptance passes. Afterward, configure the Staging-only worker secrets and deliberately enable the scheduler for a canary.
+- Production migrations, Production worker, payments, deposits, withdrawals and payouts remain untouched/disabled. No Production migration without the exact separate approval phrase `APPLY-MASTER-WORLD-VIP-MIGRATIONS`.
