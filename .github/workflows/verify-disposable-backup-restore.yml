@@ -1,0 +1,86 @@
+name: MASTER WORLD VIP - Disposable Backup and Restore Verification
+
+on:
+  push:
+    branches: [planning/4000-automated-project-economy]
+    paths:
+      - ".github/workflows/verify-disposable-backup-restore.yml"
+  pull_request:
+    paths:
+      - ".github/workflows/verify-disposable-backup-restore.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  backup-restore:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: disposable_only_password
+          POSTGRES_DB: mwvip_backup_source
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d mwvip_backup_source"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+    env:
+      PGPASSWORD: disposable_only_password
+      PGSSLMODE: disable
+    steps:
+      - uses: actions/checkout@v4
+      - name: Seed isolated test database
+        run: |
+          set -euo pipefail
+          psql "postgresql://postgres@127.0.0.1:5432/mwvip_backup_source" -v ON_ERROR_STOP=1 <<'SQL'
+          create schema backup_fixture;
+          create table backup_fixture.orders (
+            id bigint generated always as identity primary key,
+            reference text not null unique,
+            amount numeric(12,2) not null check (amount >= 0),
+            currency text not null check (currency in ('BDT','USD'))
+          );
+          insert into backup_fixture.orders(reference,amount,currency)
+          values ('TEST-ORDER-001',1250.00,'BDT'),('TEST-ORDER-002',12.50,'USD');
+          SQL
+      - name: Create encrypted logical backup
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/mwvip-backup-test"
+          docker run --rm --network host -e PGPASSWORD="$PGPASSWORD" \
+            -v "$RUNNER_TEMP/mwvip-backup-test:/backup" postgres:16 \
+            pg_dump "postgresql://postgres@127.0.0.1:5432/mwvip_backup_source" \
+              --format=custom --no-owner --no-acl --file=/backup/mwvip-test.dump
+          openssl enc -aes-256-cbc -pbkdf2 -salt \
+            -in "$RUNNER_TEMP/mwvip-backup-test/mwvip-test.dump" \
+            -out "$RUNNER_TEMP/mwvip-backup-test/mwvip-test.dump.enc" \
+            -pass pass:disposable-test-only
+          test -s "$RUNNER_TEMP/mwvip-backup-test/mwvip-test.dump.enc"
+          rm -f "$RUNNER_TEMP/mwvip-backup-test/mwvip-test.dump"
+      - name: Decrypt and restore to a separate empty database
+        run: |
+          set -euo pipefail
+          openssl enc -d -aes-256-cbc -pbkdf2 \
+            -in "$RUNNER_TEMP/mwvip-backup-test/mwvip-test.dump.enc" \
+            -out "$RUNNER_TEMP/mwvip-backup-test/mwvip-restore.dump" \
+            -pass pass:disposable-test-only
+          createdb --host=127.0.0.1 --port=5432 --username=postgres --template=template0 mwvip_backup_restore_test
+          docker run --rm --network host -e PGPASSWORD="$PGPASSWORD" \
+            -v "$RUNNER_TEMP/mwvip-backup-test:/backup" postgres:16 \
+            pg_restore --host=127.0.0.1 --port=5432 --username=postgres \
+              --dbname=mwvip_backup_restore_test --no-owner --no-acl --exit-on-error \
+              /backup/mwvip-restore.dump
+          count="$(psql "postgresql://postgres@127.0.0.1:5432/mwvip_backup_restore_test" -Atc "select count(*) from backup_fixture.orders")"
+          test "$count" = "2"
+          bdt="$(psql "postgresql://postgres@127.0.0.1:5432/mwvip_backup_restore_test" -Atc "select amount from backup_fixture.orders where reference='TEST-ORDER-001'")"
+          test "$bdt" = "1250.00"
+          echo "DISPOSABLE_BACKUP_RESTORE=PASS"
+          echo "RESTORED_FIXTURE_ROWS=$count"
+          echo "PRODUCTION_DATABASE_ACCESSED=false"
+          rm -rf "$RUNNER_TEMP/mwvip-backup-test"

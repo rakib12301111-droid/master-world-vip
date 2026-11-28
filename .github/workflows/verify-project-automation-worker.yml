@@ -4,12 +4,26 @@ on:
   pull_request:
     paths:
       - "supabase/functions/project-automation-worker/**"
+      - "scripts/verify-staging-worker-safety.py"
+      - "scripts/verify-project-automation-engine.py"
+      - "supabase/migrations/20261127100000_worker_execution_kill_switch_and_handler_allowlist.sql"
+      - "supabase/migrations/20261128100000_local_work_execution_mvp.sql"
+      - "scripts/verify-local-work-execution.py"
+      - "www/local-work-ui.js"
+      - "www/member-dashboard.js"
+      - "www/index.html"
+      - "supabase/tests/project-automation-kill-switch-runtime.sql"
       - ".github/workflows/verify-project-automation-worker.yml"
   push:
-    branches: [main]
+    branches: [main, planning/4000-automated-project-economy]
     paths:
       - "supabase/functions/project-automation-worker/**"
+      - "scripts/verify-staging-worker-safety.py"
+      - "scripts/verify-project-automation-engine.py"
+      - "supabase/migrations/20261127100000_worker_execution_kill_switch_and_handler_allowlist.sql"
+      - "supabase/tests/project-automation-kill-switch-runtime.sql"
       - ".github/workflows/verify-project-automation-worker.yml"
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -17,10 +31,23 @@ permissions:
 jobs:
   worker-static-check:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
-      - uses: actions/checkout@v4
-      - uses: denoland/setup-deno@v2
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Deno
+        uses: denoland/setup-deno@v2
         with:
           deno-version: v2.x
-      - name: Type-check Supabase Edge Worker
+      - name: Type-check Edge Function
         run: deno check supabase/functions/project-automation-worker/index.ts
+      - name: Verify Staging isolation and fail-closed worker rules
+        run: python scripts/verify-staging-worker-safety.py
+      - name: Verify task engine, budgets, retries, audit and emergency stop
+        run: python scripts/verify-project-automation-engine.py
+      - name: Verify no-money local work queue and member review flow
+        run: python scripts/verify-local-work-execution.py
+      - name: Check Admin and Member work UI JavaScript syntax
+        run: |
+          node --check www/local-work-ui.js
+          node --check www/member-dashboard.js
