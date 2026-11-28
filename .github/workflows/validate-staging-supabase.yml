@@ -428,3 +428,15 @@ jobs:
         if: ${{ hashFiles('supabase/functions/project-automation-worker/**') == '' }}
         run: |
           echo "::warning::project-automation-worker source folder is not present in this repository commit; deployment was safely skipped. Add and review the function source before enabling worker deployment."
+      - name: Deploy authenticated AI assistant to Staging
+        if: ${{ hashFiles('supabase/functions/ai-assistant/**') != '' }}
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.STAGING_SUPABASE_ACCESS_TOKEN }}
+          PROJECT_REF: awatzrapqrteybgspqlq
+        run: |
+          set -euo pipefail
+          test -n "$SUPABASE_ACCESS_TOKEN" || { echo "::error::Missing Staging Supabase access token"; exit 1; }
+          test "$PROJECT_REF" = "awatzrapqrteybgspqlq"
+          test "$PROJECT_REF" != "lztbbrzeuyjkuiyzrsxp"
+          supabase functions deploy ai-assistant --project-ref "$PROJECT_REF"
+          echo "Authenticated AI assistant deployed to Staging. AI_PROVIDER_API_KEY must be configured as a Staging Edge Function secret before live AI requests can succeed."
