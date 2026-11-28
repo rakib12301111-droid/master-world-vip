@@ -604,3 +604,30 @@ GitHub Actions-এ ব্যবহৃত secret নাম:
 - Production migration এখনো নিষিদ্ধ থাকবে যতক্ষণ না সব gate PASS এবং exact approval `APPLY-MASTER-WORLD-VIP-MIGRATIONS` আলাদাভাবে দেওয়া হয়।
 - বাস্তব Worker, signed payment settlement, segregated funded custody ও payout rail ছাড়া ২৪/৭ আয় বা বাস্তব টাকা লেনদেন Live বলা যাবে না।
 - **Status: runbook committed; code reconciliation and release remain pending.**
+
+
+## 29. ২৮ নভেম্বর ২০২৬ — PR #20–#23 branch graph পুনঃতুলনা ও release blocker
+
+### GitHub compare API-তে বর্তমান ফল
+- `main...planning/4000-automated-project-economy`: **diverged**, PR branch ahead 255 / behind 34; merge base `9c504237e8698ccacc891dc82a8aa23d98747585`। পরিবর্তিত 49টি ফাইলে migration/workflow, handover, worker, SQL migration, ledger ও runtime test রয়েছে। এটি শুধু documentation conflict নয়; shared workflow এবং handover-সহ code integration review প্রয়োজন।
+- `main...feature/customer-services-mvp`: **diverged**, ahead 3 / behind 34; একই merge base `9c504237e8698ccacc891dc82a8aa23d98747585`। PR #21-এর 3 changed files: handover, root `index.html`, `www/services.html`।
+- `feature/customer-services-mvp...feature/customer-quote-workflow`: **ahead**, #22-এর head parent #21-এর head-এর ওপর 67 commits; behind 0। PR #22-এর 18 changed files-এর মধ্যে Staging workflow, migration workflow, customer quote migration/runtime, customer/admin pages ও verifier রয়েছে। এটি parent-based stack; parent latest main-এ reconcile না করে #22 merge করা যাবে না।
+- `planning/4000-automated-project-economy...feature/admin-free-member-paid-plan-gates`: **diverged**, PR #23 ahead 17 / behind 35; merge base `8b91824c69bac5fe654689c895740ffbde6632f2`। PR #23-এর 10 changed files-এ migration allowlist/workflow, entitlement migration, verifier ও runtime test আছে। #20-এর updated base-এর সঙ্গে পুনরায় reconcile আবশ্যক।
+- Branch compare status GitHub compare endpoint-এর; এটি merge conflict-এর নির্দিষ্ট line-by-line resolution নয়। PR #20/#21/#23-এর আগের mergeability=false-র কারণ branch divergence-এর সঙ্গে সামঞ্জস্যপূর্ণ।
+
+### এই পুনঃতুলনার সিদ্ধান্ত
+- #20 এবং #21—দুটিই main থেকে 34 commits পিছিয়ে; latest main changes-এর ওপর rebase/merge reconciliation ছাড়া নিরাপদ merge নয়।
+- #22 ইতিমধ্যে #21-এর descendant; #21 latest main-এ reconcile হওয়ার পর #22-এর parent base-ও সেই updated integration branch-এ আনতে হবে এবং full combined diff/test চালাতে হবে।
+- #23 #20-এর পুরনো merge base-এ stacked এবং 35 commits behind; #20 integration সম্পন্ন না করে #23-এর base পরিবর্তন/merge করা যাবে না।
+- PR branch-এ 255/67/17 commits ahead থাকায় শুধু PR metadata retarget বা mergeability toggle করে সমস্যার সমাধান হবে না। Shared SQL/workflow changes line-by-line review ছাড়া automatic overwrite বিপজ্জনক।
+
+### Staging/Live gates পুনরায় নিশ্চিত
+- Staging Auth: তিনটি পৃথক confirmed identity ও password-grant preflight এখনও বাধা; Member invite rate limit/localhost redirect history unresolved until dashboard correction and successful login.
+- PR disposable CI PASS-গুলো বাস্তব Staging acceptance নয়। বর্তমান প্রমাণে Staging migration/role/RPC/worker/customer quote acceptance সম্পন্ন নয়।
+- Worker source-এ read-only handlers ছাড়া real task processors নেই; provider webhook, funded custody, payout adapters ও actual settlement নেই।
+- Production migration apply হয়নি। Exact approval `APPLY-MASTER-WORLD-VIP-MIGRATIONS` ছাড়া তা apply করা যাবে না।
+
+### এই update-এ কী করা হয়েছে / হয়নি
+- GitHub-এর চারটি branch pair সরাসরি compare করে বর্তমান ahead/behind, merge base ও changed-file inventory নথিভুক্ত করা হয়েছে।
+- এই update-এ কোনো PR branch rebase/force-push, source-file conflict overwrite, PR merge, Staging Auth/secret change, Staging/Production migration, Worker deploy, Payment/transfer action করা হয়নি। GitHub integration tool-এ conflict-aware rebase/automatic merge editor উপলব্ধ না থাকায় অসম্পূর্ণ source changes-কে resolved বলে commit করা হয়নি।
+- **Status: dependency graph audited; code conflict resolution, Staging acceptance, production migration, real Worker and Payment integration remain pending.**
