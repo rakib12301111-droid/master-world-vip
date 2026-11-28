@@ -806,3 +806,14 @@ Latest observed head: `8903c42a732f690ce7f0235409af3a03828f4b6d`.
 - Staging Worker deployment is included in the workflow, but the function remains disabled unless its Staging function secret `MWVIP_WORKER_ENABLED=true` is deliberately configured after acceptance. Function secrets `SUPABASE_SERVICE_ROLE_KEY` and `MWVIP_WORKER_KEY` must be set in Staging.
 - No verified 24/7 scheduler/cron is configured yet. Local worker task handlers support only bounded text cleanup, text quality report, JSON validation and CSV validation; they do not connect external paid customer projects or create revenue.
 - Production migration, Production Worker, payments, deposits, withdrawals and payouts remain untouched/disabled. Exact Production migration phrase and separate release gates remain required.
+
+
+## Section 37 — Opt-in Staging worker scheduler prepared (2026-11-28)
+
+- Added `.github/workflows/staging-worker-scheduler.yml`, an opt-in five-minute Staging canary that POSTs one cycle to the deployed `project-automation-worker` Edge Function.
+- Strictly pinned endpoint to Staging project ref `awatzrapqrteybgspqlq`; it refuses any other API host.
+- Disabled by default. Requires repository variable `STAGING_WORKER_SCHEDULER_ENABLED=true` and Actions secret `STAGING_SUPABASE_SERVICE_ROLE_KEY`. Edge Function separately requires Staging secrets `SUPABASE_SERVICE_ROLE_KEY`, `MWVIP_WORKER_KEY`, and `MWVIP_WORKER_ENABLED=true`.
+- Added `scripts/verify-staging-worker-scheduler.py` and wired it into the Worker CI workflow. The verifier initially caught a literal-match error in its own check; the check was corrected in commit `dc224e700db20f88a78c23adc87ced31dab2e554`. A fresh CI run is in progress; do not mark scheduler verifier PASS until that run finishes successfully.
+- Scheduler must remain disabled until Staging backup/restore, migration, three distinct Auth logins, RBAC/RPC checks and Worker deployment all pass.
+- This five-minute GitHub Actions scheduler is best-effort and not a guaranteed production 24/7 worker. Dedicated production-grade scheduling, heartbeat monitoring, alerting and recovery remain required.
+- No Staging workflow dispatch or migration was performed. No Production database, worker activation, payment, deposit, withdrawal or payout action was performed.
