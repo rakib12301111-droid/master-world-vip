@@ -386,3 +386,11 @@ Owner commission কেবল সব member payable, refund liability, provider 
 - Updated the manual Staging acceptance workflow to deploy the AI Edge Function only to the pinned Staging project after the existing backup/migration/Auth/RBAC gates pass; the workflow does not configure or expose the provider key.
 - **Status: UI-to-function code integration prepared in feature branch; provider secret, Staging deployment and live authenticated response test are NOT verified.** This change does not connect ChatGPT itself as an external operator, and does not enable payments or Worker execution.
 - PR CI passed on head `a1adaabeb03815801f321630ca1880f1ef074706`: Worker/static `46142055731` (including AI UI verifier), migration safety `46142055696`, Auto Work static safety `46142055704`, and Update System `46142055719`. This is not live provider or Staging acceptance.
+
+## Update — 2026-11-28: AI Center published; proxy hardening merged
+
+- PR #31 merged and GitHub Pages release run #801 completed successfully, including live release verification.
+- PR #32 merged: AI proxy now restricts CORS to the official site, verifies Supabase user session, caps output, times out upstream calls and avoids exposing provider diagnostics.
+- Worker CI run #88 passed, including Deno type-checking and AI proxy security assertions.
+- UI is published; live AI responses are **not yet active** pending Staging function deployment, provider secret configuration, and live authenticated test. Durable per-user rate limiting and budget controls are also required before broad public usage.
+- No database migration, worker/scheduler activation, payment or payout was performed.
