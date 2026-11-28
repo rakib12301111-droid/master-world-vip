@@ -864,3 +864,13 @@ Latest observed head: `8903c42a732f690ce7f0235409af3a03828f4b6d`.
 - Staging acceptance workflow remains manual. Supabase connector returned an empty project list; no Supabase secrets were read/changed and no function was deployed in this session.
 - No Staging/Production database migration, Production migration, worker/scheduler activation, payment, deposit, withdrawal or payout was performed. Production migration still requires the exact separate phrase `APPLY-MASTER-WORLD-VIP-MIGRATIONS`.
 - Next safe step: owner runs the Staging acceptance workflow on `main` after verifying all Staging-only secrets and three distinct Auth accounts; then configure AI provider secrets in Staging and verify a signed-in AI request. Keep scheduler disabled until all acceptance gates pass.
+
+## Section 42 — Production Edge Function deployment evidence (2026-11-28)
+
+- The existing repository workflow `.github/workflows/deploy-update-functions.yml` automatically ran after the AI proxy code merge because its push filter includes all `supabase/functions/**` changes.
+- Production deployment workflow run `46142433581` (run #33) completed **SUCCESS**. It validated the configured Supabase deployment token, then completed the workflow step that deploys all repository Edge Functions to the pinned Production project ref `lztbbrzeuyjkuiyzrsxp`.
+- This deployed Edge Function code only; no SQL migration or database schema change was executed by that workflow. The AI proxy is now deployed as code in Production, but provider-secret presence, real authenticated AI response, quota/billing controls and rate limiting remain unverified.
+- GitHub Pages deployment run `46142456739` completed **SUCCESS**, including live release verification after the documentation updates.
+- Worker CI run `46142433672` completed **SUCCESS** after the security hardening merge.
+- **Important:** CORS origin restriction is not a substitute for durable per-user rate limiting. Do not advertise unlimited/free public AI access until server-side rate limits, abuse controls and provider spending caps are implemented and tested.
+- No database migration, Production schema change, payment execution, deposit, withdrawal, payout, Worker scheduler activation or live task execution was performed. Staging acceptance remains manual and pending. Production migration still requires the exact separate phrase `APPLY-MASTER-WORLD-VIP-MIGRATIONS`.
