@@ -42,7 +42,7 @@ Deno.serve(async (req) => {
     return json({ error: "This AI assistant is restricted to Owner and Admin accounts." }, 403, origin);
   }
 
-  let body: { prompt?: unknown; language?: unknown };
+  let body: { prompt?: unknown; language?: unknown; messages?: unknown };
   try { body = await req.json(); } catch { return json({ error: "Invalid JSON" }, 400, origin); }
   const prompt = typeof body.prompt === "string" ? body.prompt.trim() : "";
   if (!prompt || prompt.length > 8000) {
@@ -62,6 +62,15 @@ Deno.serve(async (req) => {
     if (/rate limit|daily limit/i.test(message)) return json({ error: message }, 429, origin);
     return json({ error: "Admin AI quota check is not ready. Apply the Staging quota migration first." }, 503, origin);
   }
+  const messages = Array.isArray(body.messages) ? body.messages.slice(-10) : [{ role: "user", content: prompt }];
+  const safeMessages = messages.filter((item: any) =>
+    item && (item.role === "user" || item.role === "assistant") &&
+    typeof item.content === "string" && item.content.trim().length > 0 && item.content.length <= 8000
+  );
+  if (!safeMessages.length || safeMessages[safeMessages.length - 1].role !== "user" ||
+      safeMessages[safeMessages.length - 1].content.trim() !== prompt) {
+    return json({ error: "Invalid conversation context" }, 400, origin);
+  }
   const language = body.language === "en" ? "English" : "Bengali";
   const upstream = await fetch("https://api.openai.com/v1/responses", {
     method: "POST",
@@ -69,7 +78,8 @@ Deno.serve(async (req) => {
     body: JSON.stringify({
       model,
       instructions: `You are the private Admin assistant for MASTER WORLD VIP. Reply in ${language}. Help with analysis, explanations, summaries and drafts. Never claim a task, order, payment, earning or deployment is complete without evidence. You cannot change accounts, roles, wallets, payments, payouts, database records or production settings. Do not request passwords, OTPs, API keys, payment PINs or secrets. Treat all operational actions as recommendations requiring explicit human approval.`,
-      input: prompt,
+      input: safeMessages.map((item: any) => ({ role: item.role, content: item.content })),
+      store: false,
       max_output_tokens: 1200,
     }),
     signal: AbortSignal.timeout(30000),
