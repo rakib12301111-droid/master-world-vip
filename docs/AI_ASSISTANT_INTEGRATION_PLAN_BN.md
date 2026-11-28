@@ -14,7 +14,8 @@ MASTER WORLD VIP ওয়েব অ্যাপ ও Admin/Member অভিজ্�
 - Function authenticated Supabase user যাচাই করে এবং `AI_PROVIDER_API_KEY`, optional `AI_PROVIDER_URL`, `AI_MODEL` secrets থেকে provider configuration নেয়।
 - Default upstream বর্তমানে `https://api.openai.com/v1/chat/completions`; default model `gpt-4o-mini`।
 - Source code-এ provider secret hardcode করা নেই।
-- এই source file থাকা মানেই Edge Function Staging/Production-এ deploy হয়েছে, API key configured, frontend UI wired, বা live request সফল—এমন প্রমাণ নয়।
+- `www/index.html`-এ শুধু AI Assistant-কে “Backend function আছে” এবং UI integration বাকি হিসেবে দেখানো হয়েছে। `www/index.html`, `www/admin-dashboard.js`, `www/member-dashboard.js`, `www/local-work-ui.js`-এ `ai-assistant` function invocation পাওয়া যায়নি। তাই frontend UI call **এখনো wired নয়**—এটি সরাসরি source search-এ যাচাই করা হয়েছে।
+- এই source file থাকা মানেই Edge Function Staging/Production-এ deploy হয়েছে, API key configured, বা live request সফল—এমন প্রমাণ নয়।
 - Default CORS origin `*`; production launch-এর আগে allowlist করা প্রয়োজন।
 - Function-এ per-user rate limit, usage/cost cap, abuse protection, durable audit/usage ledger এবং privacy controls সম্পূর্ণ প্রমাণিত নয়।
 
