@@ -749,3 +749,12 @@ Latest observed head: `8903c42a732f690ce7f0235409af3a03828f4b6d`.
 - Implement deposit, withdrawal and payment only in a later approved phase; no live money movement now.
 
 **Updated status:** Disposable Migration validation is fully **PASS** in CI. Staging/live account work is **NOT YET ENABLED**; continue with safe PR integration and Staging acceptance, not Production.
+
+
+## Section 34 — Local Work MVP integrated into planning branch (2026-11-28)
+
+- PR #26 was squash-merged successfully into its intended base branch `planning/4000-automated-project-economy` after Disposable Migration validation and associated CI checks passed.
+- Merge commit: `1412fd22c8f3c8df129c6bc9670983f38cd6e8fb`.
+- PR: https://github.com/rakib12301111-droid/master-world-vip/pull/26
+- This is a feature-branch integration only. It was NOT merged to `main`, NOT deployed to GitHub Pages, and NOT applied to Staging or Production.
+- Next required steps before live account work: reconcile the planning branch with current `main` safely; then apply the migration to Staging, verify separate Owner/Admin/Member accounts and RLS, configure and deploy the Worker with a controlled scheduler, and complete end-to-end Staging acceptance. Keep Production untouched and payments/deposits/withdrawals disabled.
