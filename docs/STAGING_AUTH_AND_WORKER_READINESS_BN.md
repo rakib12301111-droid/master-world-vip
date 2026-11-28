@@ -36,3 +36,14 @@ Updated: 2026-11-27
 - No Staging secrets are confirmed configured; no Staging backup/restore, migration/Auth/RBAC/Worker acceptance run is recorded. The manual workflow now gates migration on a successful encrypted Staging backup and isolated restore.
 - No Production migration, Worker activation, live customer-task execution, payment collection or payout is authorized or proven.
 - GitHub Pages static site deployment was previously workflow-verified; that does not mean backend automation is live.
+
+
+## 2026-11-28 — Local Work and opt-in Staging scheduler
+
+- Local Work MVP is now integrated into `main` (PR #27, merge commit `94bbf5f35a3ff63480966a6be9a24a7c11d4077f`). Disposable migration, Worker, finance runtime and static safety checks passed on the exact PR head.
+- Added `.github/workflows/staging-worker-scheduler.yml`: a five-minute Staging canary trigger. It is opt-in only and targets only `https://awatzrapqrteybgspqlq.supabase.co`.
+- Scheduler remains OFF unless GitHub repository variable `STAGING_WORKER_SCHEDULER_ENABLED=true` is set. It also requires Actions secret `STAGING_SUPABASE_SERVICE_ROLE_KEY`.
+- The Edge Function independently remains disabled unless its Staging Function Secret `MWVIP_WORKER_ENABLED=true` is set. It also requires `SUPABASE_SERVICE_ROLE_KEY` and `MWVIP_WORKER_KEY` in the Staging Edge Function environment.
+- Do not enable the scheduler or worker until the manual Staging workflow has passed encrypted backup/restore, migration preview/apply, three distinct Owner/Admin/Member Auth logins, role/RPC checks and Worker deployment.
+- The scheduled workflow invokes at most one worker cycle every five minutes. GitHub scheduled Actions are best-effort and may be delayed; this is a Staging canary, **not a guaranteed production-grade 24/7 service**. A dedicated reliable scheduler/worker service and monitoring are still required before production claims.
+- The workflow never prints the service-role secret or worker task/result payload. Payment/deposit/withdrawal/payout remain disabled.
