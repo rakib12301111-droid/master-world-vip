@@ -784,3 +784,25 @@ Latest observed head: `8903c42a732f690ce7f0235409af3a03828f4b6d`.
 - Staging deployment and Owner/Admin/Member acceptance: NOT VERIFIED / NOT DONE.
 - Live automatic task execution and scheduler: NOT ENABLED / NOT VERIFIED.
 - Production database, payment, deposit, withdrawal and payout: untouched/disabled.
+
+
+## Section 36 — Local Work MVP safely integrated into main (2026-11-28)
+
+- Created integration branch `integration/local-work-mvp-main-20261128` from current main and selectively transplanted 50 changed paths from the planning branch.
+- Preserved the newer main Staging workflow `.github/workflows/validate-staging-supabase.yml`, current main handover, and main-only `docs/PR20_PR23_SAFE_RECONCILIATION_RUNBOOK_BN.md`; did not overwrite these with older planning-branch versions.
+- PR #27: https://github.com/rakib12301111-droid/master-world-vip/pull/27 — merged successfully by squash.
+- Main integration commit: `94bbf5f35a3ff63480966a6be9a24a7c11d4077f`.
+- Exact integration head `e2695483c49688f1d1fb5cf87e06f69c41d1233b` passed all seven PR CI workflows:
+  - Update System run `46131544578`: PASS.
+  - Member Finance Ledger disposable PostgreSQL runtime run `46131544570`: PASS.
+  - Supabase Migration Safety run `46131544538`: PASS.
+  - Disposable Backup/Restore run `46131544549`: PASS.
+  - Full ordered disposable migration chain run `46131544520`: PASS, including schema objects, worker kill-switch/allowlist and synthetic customer-order-to-Member settlement checks.
+  - Worker static check run `46131544568`: PASS.
+  - Auto Work Static Safety run `46131544529`: PASS.
+- These CI tests use isolated disposable databases and static checks; they do NOT apply migrations to Staging or Production, deploy the function, or prove live work execution.
+- Current main Staging workflow requires the following Staging-only Actions secrets: `STAGING_SUPABASE_ACCESS_TOKEN`, `STAGING_SUPABASE_DB_URL`, `STAGING_BACKUP_ENCRYPTION_PASSPHRASE`, `STAGING_SUPABASE_ANON_KEY`, `STAGING_SUPABASE_URL`, and Owner/Admin/Member email + password pairs (`STAGING_OWNER_EMAIL`, `STAGING_OWNER_PASSWORD`, `STAGING_ADMIN_EMAIL`, `STAGING_ADMIN_PASSWORD`, `STAGING_MEMBER_EMAIL`, `STAGING_MEMBER_PASSWORD`). It checks all three logins and distinct Auth user IDs before applying Staging migrations.
+- The workflow is manual-dispatch-only; no available GitHub action dispatch operation was performed from this session. No Staging run is claimed successful.
+- Staging Worker deployment is included in the workflow, but the function remains disabled unless its Staging function secret `MWVIP_WORKER_ENABLED=true` is deliberately configured after acceptance. Function secrets `SUPABASE_SERVICE_ROLE_KEY` and `MWVIP_WORKER_KEY` must be set in Staging.
+- No verified 24/7 scheduler/cron is configured yet. Local worker task handlers support only bounded text cleanup, text quality report, JSON validation and CSV validation; they do not connect external paid customer projects or create revenue.
+- Production migration, Production Worker, payments, deposits, withdrawals and payouts remain untouched/disabled. Exact Production migration phrase and separate release gates remain required.
