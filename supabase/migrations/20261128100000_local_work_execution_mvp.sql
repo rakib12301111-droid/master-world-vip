@@ -142,7 +142,7 @@ end $$;
 create or replace function public.admin_list_local_work_tasks()
 returns setof public.mwvip_local_work_tasks
 language plpgsql stable security definer set search_path=''
-as $
+as $$
 begin
   if not public.is_admin_auto_work_admin() then raise exception 'Admin access required'; end if;
   return query select * from public.mwvip_local_work_tasks order by created_at desc limit 250;
