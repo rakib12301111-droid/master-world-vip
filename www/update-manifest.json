@@ -159,9 +159,9 @@
     {
       "id": "ai",
       "title": "Stage 4 — AI Assistant ও Image Search",
-      "status": "blocked",
-      "summary": "AI Edge Function foundation exists; provider integration is not verified live.",
-      "requires": "AI_PROVIDER_API_KEY secret, provider/model configuration, function deployment and response/license tests.",
+      "status": "testing",
+      "summary": "Authenticated Bengali/English AI Text Assistant UI is connected in code to the existing Supabase ai-assistant Edge Function; provider secret, Staging deployment and live response test remain unverified.",
+      "requires": "Configure AI_PROVIDER_API_KEY and optional AI_PROVIDER_URL / AI_MODEL only in the approved Supabase Edge Function secret store; deploy ai-assistant to Staging, verify authenticated request, timeout/error behavior and provider usage limits, then complete a logged-in browser acceptance test. Voice and licensed image search remain not live.",
       "page": "ai"
     },
     {
