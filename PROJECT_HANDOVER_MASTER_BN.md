@@ -851,3 +851,16 @@ Latest observed head: `8903c42a732f690ce7f0235409af3a03828f4b6d`.
 - No Supabase secret was read or changed. No Edge Function was deployed. No Staging or Production migration, worker activation, scheduler activation, payment or payout was performed.
 - PR CI evidence on head `a1adaabeb03815801f321630ca1880f1ef074706`: Worker/static workflow run `46142055731` SUCCESS, including the new `Verify authenticated AI Center UI wiring` step; Supabase migration safety run `46142055696` SUCCESS; Auto Work Static Safety run `46142055704` SUCCESS; Update System run `46142055719` SUCCESS. These are code/static and migration-safety checks only; no Staging database/function was changed.
 - Next safe step: PR CI on this feature branch; then Staging-only provider configuration/deployment and authenticated response acceptance after the Owner completes the required Staging Auth/backup workflow. Production remains untouched.
+
+## Section 41 — AI Center published and proxy security hardened (2026-11-28)
+
+- PR #31 merged to `main`; merge commit `e3e731fe0d79906682da9f5c1a7fc459d6f36f93`.
+- GitHub Pages deployment run `46142293472` (run #801) completed **SUCCESS**, including its `Verify live GitHub Pages release` job. Published site: `https://rakib12301111-droid.github.io/master-world-vip/`.
+- PR #32 merged to `main`; merge commit `2e9fabce01e75de80546a9165d363d0341f5c352`.
+- AI proxy hardening: official GitHub Pages CORS origin only; authenticated Supabase session required; max output 1,200 tokens; 30-second upstream timeout; provider error diagnostics not exposed to browser.
+- Worker CI run `46142408548` (run #88) **SUCCESS**, including Deno type-check of both Edge Functions and AI proxy security assertions.
+- **Still not live-verified:** Staging `ai-assistant` deployment; `AI_PROVIDER_API_KEY` and provider/model configuration in Staging Edge Function Secrets; authenticated live AI response; durable per-user rate limiting/abuse controls. Do not enable broad public AI usage until rate limits and provider budget caps are in place.
+- The AI UI is published, but the AI backend will return a configuration error until Staging deployment and provider secrets are completed.
+- Staging acceptance workflow remains manual. Supabase connector returned an empty project list; no Supabase secrets were read/changed and no function was deployed in this session.
+- No Staging/Production database migration, Production migration, worker/scheduler activation, payment, deposit, withdrawal or payout was performed. Production migration still requires the exact separate phrase `APPLY-MASTER-WORLD-VIP-MIGRATIONS`.
+- Next safe step: owner runs the Staging acceptance workflow on `main` after verifying all Staging-only secrets and three distinct Auth accounts; then configure AI provider secrets in Staging and verify a signed-in AI request. Keep scheduler disabled until all acceptance gates pass.
