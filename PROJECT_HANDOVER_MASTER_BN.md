@@ -837,3 +837,25 @@ Latest observed head: `8903c42a732f690ce7f0235409af3a03828f4b6d`.
 - The assistant's current GitHub connection has no workflow-dispatch action and cannot inspect encrypted secret values or create/verify Supabase Auth users. Therefore it cannot truthfully claim to have run or passed Staging acceptance; repository owner must perform the manual dispatch after verifying the 11 values and three distinct Auth user IDs.
 - Keep `STAGING_WORKER_SCHEDULER_ENABLED` unset/false and do not set `STAGING_SUPABASE_SERVICE_ROLE_KEY` or enable Edge Function worker secrets until Staging acceptance passes. Afterward, configure the Staging-only worker secrets and deliberately enable the scheduler for a canary.
 - Production migrations, Production worker, payments, deposits, withdrawals and payouts remain untouched/disabled. No Production migration without the exact separate approval phrase `APPLY-MASTER-WORLD-VIP-MIGRATIONS`.
+
+
+## Section 42 — Staging Owner Email Rate Limit (2026-11-28)
+
+- Staging Owner account: `r94043908+owner@gmail.com`; Auth UUID: `3601abbe-d194-473a-be6c-e90644fdba4f`.
+- Supabase Overview showed `Confirmed` and `Last signed in` empty.
+- Staging Auth logs showed HTTP 429; dashboard resend returned `email rate limit exceeded`.
+- Gmail search found no Staging confirmation for the Owner address. A Staging invite delivered to `rakib12301111@gmail.com` is not Owner confirmation. A separate older confirmation link belongs to Production ref `lztbbrzeuyjkuiyzrsxp` and must not be used for Staging.
+- Updated `.github/workflows/validate-staging-supabase.yml`: Auth preflight now exits immediately on HTTP 429 instead of continuing password-grant attempts for remaining roles. This is retry containment, not a fix for Supabase hosted email quota.
+- Remediation guide: `docs/audits/STAGING_AUTH_EMAIL_RATE_LIMIT_REMEDIATION_BN.md`.
+- Staging Dashboard SMTP configuration and Email Rate Limits still require verification; no SMTP credentials or project limits were changed by this repository update.
+- Owner confirmation and all three Auth login tests remain PENDING. Do not delete/recreate accounts or bypass Auth preflight.
+- Production Auth, email configuration, database and migration were not touched.
+
+## Section 43 — MASTER WORLD VIP AI Assistant Integration (2026-11-28)
+
+- Existing Edge Function source found: `supabase/functions/ai-assistant/index.ts`; `supabase/config.toml` sets `verify_jwt = true`.
+- Existing source uses a server-side provider secret named `AI_PROVIDER_API_KEY`; source defaults to OpenAI Chat Completions and `gpt-4o-mini`.
+- Source existence does not prove deployment, configured API key, frontend integration, or live AI response. Frontend call sites and deployed function state remain to be audited.
+- Integration plan: `docs/AI_ASSISTANT_INTEGRATION_PLAN_BN.md`. It records secure API-key isolation, JWT/role access, CORS allowlist, per-user rate limits, budget/usage controls, privacy, Staging tests and phased rollout.
+- Responses API migration is planned, not implemented. No OpenAI API key was created or stored by this change.
+- Production deployment remains disabled pending Staging tests and separate approval.
