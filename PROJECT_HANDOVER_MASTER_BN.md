@@ -837,3 +837,29 @@ Latest observed head: `8903c42a732f690ce7f0235409af3a03828f4b6d`.
 - The assistant's current GitHub connection has no workflow-dispatch action and cannot inspect encrypted secret values or create/verify Supabase Auth users. Therefore it cannot truthfully claim to have run or passed Staging acceptance; repository owner must perform the manual dispatch after verifying the 11 values and three distinct Auth user IDs.
 - Keep `STAGING_WORKER_SCHEDULER_ENABLED` unset/false and do not set `STAGING_SUPABASE_SERVICE_ROLE_KEY` or enable Edge Function worker secrets until Staging acceptance passes. Afterward, configure the Staging-only worker secrets and deliberately enable the scheduler for a canary.
 - Production migrations, Production worker, payments, deposits, withdrawals and payouts remain untouched/disabled. No Production migration without the exact separate approval phrase `APPLY-MASTER-WORLD-VIP-MIGRATIONS`.
+
+
+## Section 40 — Staging Auth preflight Run #16 root-cause evidence (2026-11-28)
+
+- Inspected actual job logs for workflow run `46132939047` (job `140951576526`). The failing step is `Preflight existing confirmed Owner, Admin and Member Auth accounts before any migration`.
+- All six Owner/Admin/Member email/password Actions Secrets were present (the preflight's required-variable loop passed); the Staging API URL/project binding and Staging DB Session Pooler binding passed. This proves only that the values are non-empty and the URL targets Staging, not that account credentials are correct.
+- Password-grant login was rejected for OWNER, ADMIN and MEMBER. The workflow reports the safe generic category `Credentials rejected or account not found in this Staging project`. Supabase's password-grant response does not let this audit distinguish an incorrect password from a missing account; do not claim a more specific cause without Staging Auth evidence.
+- Encrypted backup and isolated restore job: PASS. Migration inventory validation: PASS. Migration preview, Staging migration apply, Owner RPC role assignment, RBAC/RPC acceptance and worker deploy: SKIPPED because the Auth preflight failed.
+- No source-code change can safely repair an unknown/missing Supabase account password. GitHub encrypted Actions Secrets cannot be read or changed by the available repository connection. Do not bypass Auth checks, create accounts with guessed passwords, or print secret values.
+- Required owner action: in Staging Supabase project `awatzrapqrteybgspqlq`, verify three separate Auth users and their exact emails. If necessary, reset each account's password in Staging Auth and update the corresponding GitHub Actions secrets `STAGING_OWNER_EMAIL/PASSWORD`, `STAGING_ADMIN_EMAIL/PASSWORD`, and `STAGING_MEMBER_EMAIL/PASSWORD`. Then manually rerun `.github/workflows/validate-staging-supabase.yml` on `main` and inspect all three PASS lines and distinct Auth user IDs before allowing Staging migration steps.
+- Production project `lztbbrzeuyjkuiyzrsxp` is not the target. Production migration remains disabled; Staging scheduler/worker remains disabled pending full acceptance.
+- No workflow bypass or secret mutation was performed. This section documents the verified failure boundary and the one required credential repair; it does not claim the three logins are fixed.
+
+
+## Section 41 — Staging Auth Delete-এর আগে তথ্য সংরক্ষণ (2026-11-28)
+
+- প্রকল্প-মালিক সম্মতি দিয়েছেন যে সমস্যা না হলে Staging-এর Owner/Admin/Member account পুনর্গঠন করা যেতে পারে; তবে Delete-এর আগে পুরোনো তথ্য সংরক্ষণ করতে হবে।
+- বিস্তারিত checklist: docs/audits/STAGING_AUTH_PREDELETE_PRESERVATION_BN.md।
+- সংরক্ষণের আওতা: Auth email/UUID/timestamps/provider metadata, profile ও role mapping, linked wallet/ledger/referral/task/audit references, encrypted Staging DB backup + isolated restore evidence, এবং আগের Auth preflight logs।
+- প্রথমে Delete নয়: password reset/update দিয়ে বিদ্যমান account login পুনরায় পরীক্ষা করা হবে। Delete/recreate কেবল প্রয়োজন হলে এবং linked-data impact যাচাইয়ের পরে।
+- Run #16 46132939047-এ encrypted backup ও isolated restore PASS ছিল; Owner/Admin/Member login preflight rejected হয়েছিল। Supabase response থেকে wrong password বনাম missing account আলাদা করা যায়নি।
+- **বাস্তব সংরক্ষণ এখনো সম্পন্ন নয়:** এই commit শুধু preservation plan/checklist নথিভুক্ত করছে। Staging Auth user list, UUID ও linked rows এই সেশনে সরাসরি সংগ্রহ করা হয়নি; নতুন pre-delete export/backup artifact-ও তৈরি হয়নি। তাই কোনো account Delete করা যাবে না যতক্ষণ না বাস্তব snapshot/backup evidence সংরক্ষিত ও যাচাই হয়।
+- Staging project ref: awatzrapqrteybgspqlq। Production ref lztbbrzeuyjkuiyzrsxp সম্পূর্ণ বাইরে; Production Auth, data ও migration অপরিবর্তিত থাকবে।
+- GitHub Actions encrypted secret values, password, token, OTP বা passphrase কোনো নথিতে রাখা যাবে না।
+
+**Status:** Preservation procedure documented; actual pre-delete data capture **PENDING**; account deletion **NOT DONE**; Production migration **DISABLED**.
