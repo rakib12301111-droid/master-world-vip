@@ -861,7 +861,7 @@ Latest observed head: `8903c42a732f690ce7f0235409af3a03828f4b6d`.
 - Worker CI run `46142408548` (run #88) **SUCCESS**, including Deno type-check of both Edge Functions and AI proxy security assertions.
 - **Still not live-verified:** Staging `ai-assistant` deployment; `AI_PROVIDER_API_KEY` and provider/model configuration in Staging Edge Function Secrets; authenticated live AI response; durable per-user rate limiting/abuse controls. Do not enable broad public AI usage until rate limits and provider budget caps are in place.
 - The AI UI is published, but the AI backend will return a configuration error until Staging deployment and provider secrets are completed.
-- Staging acceptance workflow remains manual. Supabase connector returned an empty project list; no Supabase secrets were read/changed and no function was deployed in this session.
+- Staging acceptance workflow remains manual. Supabase connector can list the `MASTER-WORLD-VIP-STAGING` organization, but `list_projects` returned an empty list and `get_project` for the known Staging ref was denied; direct project-level Supabase access is unavailable in this session. No Supabase secrets were read/changed through the connector.
 - No Staging/Production database migration, Production migration, worker/scheduler activation, payment, deposit, withdrawal or payout was performed. Production migration still requires the exact separate phrase `APPLY-MASTER-WORLD-VIP-MIGRATIONS`.
 - Next safe step: owner runs the Staging acceptance workflow on `main` after verifying all Staging-only secrets and three distinct Auth accounts; then configure AI provider secrets in Staging and verify a signed-in AI request. Keep scheduler disabled until all acceptance gates pass.
 
