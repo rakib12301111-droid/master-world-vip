@@ -66,3 +66,6 @@ The Owner has explicitly requested an assistant integrated into the existing MAS
 
 ### Not yet activated
 No migration has been applied, no Edge Function deployed, no API key configured, no OpenAI billing limit set, and no live request tested. This is prepared code in a Draft PR, not a live feature. First test in Staging only. Configure a dedicated OpenAI API project and server-side secret; never paste the key into chat, HTML, GitHub files or browser storage.
+
+### Conversation privacy and cost note
+The Admin chat retains only the last 10 user/assistant messages in browser memory for multi-turn context; it does not write chat history to localStorage or the project database. Responses API calls set store=false. Request quotas (5/minute, 30/day) are not a dollar-denominated spend cap; an OpenAI project spend limit must also be configured before enabling the API key.
