@@ -3,6 +3,7 @@
 from pathlib import Path
 
 html = Path("www/index.html").read_text(encoding="utf-8")
+proxy = Path("supabase/functions/ai-assistant/index.ts").read_text(encoding="utf-8")
 staging = Path(".github/workflows/validate-staging-supabase.yml").read_text(encoding="utf-8")
 checks = {
     "AI prompt is bounded to 12,000 characters": 'id="mwAiPrompt"' in html and 'maxlength="12000"' in html,
@@ -11,6 +12,10 @@ checks = {
     "AI UI refuses requests without an authenticated user": "if(!client||!currentUser)" in html,
     "AI output is rendered as text, not HTML": "reply.textContent=data.reply" in html,
     "AI UI does not contain provider or service-role credentials": not any(x in html for x in ("AI_PROVIDER_API_KEY", "SUPABASE_SERVICE_ROLE_KEY")),
+    "AI proxy restricts browser origins to the official Pages origin": 'const ALLOWED_ORIGIN = "https://rakib12301111-droid.github.io"' in proxy and '"Access-Control-Allow-Origin": ALLOWED_ORIGIN' in proxy and '"*"' not in proxy,
+    "AI proxy authenticates the Supabase bearer session": 'sb.auth.getUser()' in proxy and 'if (error || !user)' in proxy,
+    "AI proxy caps generated output and request duration": 'max_tokens: 1200' in proxy and 'AbortSignal.timeout(30000)' in proxy,
+    "AI proxy does not expose upstream provider error details": 'AI provider request failed' in proxy and 'details:result.error' not in proxy,
     "AI request button is disabled while processing": "button.disabled=true;status.textContent='নিরাপদ AI backend-এ অনুরোধ পাঠানো হচ্ছে…" in html,
     "Staging acceptance workflow deploys the AI assistant Edge Function": "supabase functions deploy ai-assistant --project-ref \"$PROJECT_REF\"" in staging,
     "AI function deployment is pinned to Staging and excludes Production": "PROJECT_REF: awatzrapqrteybgspqlq" in staging and "test \"$PROJECT_REF\" != \"lztbbrzeuyjkuiyzrsxp\"" in staging,
