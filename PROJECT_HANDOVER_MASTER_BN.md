@@ -855,7 +855,8 @@ Latest observed head: `8903c42a732f690ce7f0235409af3a03828f4b6d`.
 
 - Existing Edge Function source found: `supabase/functions/ai-assistant/index.ts`; `supabase/config.toml` sets `verify_jwt = true`.
 - Existing source uses a server-side provider secret named `AI_PROVIDER_API_KEY`; source defaults to OpenAI Chat Completions and `gpt-4o-mini`.
-- Source existence does not prove deployment, configured API key, frontend integration, or live AI response. Frontend call sites and deployed function state remain to be audited.
+- Verified frontend audit: `www/index.html` only labels the AI feature as backend-only; no `ai-assistant` invocation was found in `www/index.html`, `www/admin-dashboard.js`, `www/member-dashboard.js`, or `www/local-work-ui.js`. Frontend UI is **NOT WIRED**.
+- Source existence does not prove deployment, configured API key, or live AI response. Deployed function state remains to be audited.
 - Integration plan: `docs/AI_ASSISTANT_INTEGRATION_PLAN_BN.md`. It records secure API-key isolation, JWT/role access, CORS allowlist, per-user rate limits, budget/usage controls, privacy, Staging tests and phased rollout.
 - Responses API migration is planned, not implemented. No OpenAI API key was created or stored by this change.
 - Production deployment remains disabled pending Staging tests and separate approval.
