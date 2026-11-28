@@ -450,3 +450,14 @@ GitHub Actions-এ ব্যবহৃত secret নাম:
 - Code validation দুর্বল করা, Auth preflight বাদ দেওয়া, migration bypass করা বা Production-এ কাজ চালানো যাবে না। Secret ঠিক হওয়ার পর নতুন Staging workflow run-এ Auth PASS না হওয়া পর্যন্ত Migration/Role কাজ শুরু হবে না।
 - **প্রমাণিত সম্পন্ন:** encrypted Staging backup + isolated restore test।
 - **এখনো অসম্পন্ন:** Staging migration dry-run/apply, Owner/Admin/Member role assignment and verification, Admin RPC access acceptance, queue-worker source/deploy assessment।
+
+
+## 22. ২৮ নভেম্বর ২০২৬ — Supabase Invitation গ্রহণে Microsoft Edge account prompt (নতুন ব্যবহারকারী রিপোর্ট)
+
+- ব্যবহারকারী জানিয়েছেন, Supabase invitation email-এ Accept invitation চাপার পর Android-এ Microsoft Edge নির্বাচন/ইনস্টল করেছেন; এরপর Edge-এ Microsoft account তৈরির সময় “We can't create your account ... unusual activity” বার্তা দেখেছেন।
+- এই বার্তাটি Microsoft account তৈরির ব্যর্থতা; এটি Supabase Auth invitation acceptance বা Staging Auth-এর ফলাফল নয়। Supabase invitation গ্রহণের জন্য Microsoft account প্রয়োজন নেই।
+- নিরাপদ পরবর্তী পদক্ষেপ: Gmail থেকে invitation email পুনরায় খুলে Accept invitation লিংকটি সরাসরি Chrome-এ খুলুন; Android-এর Open with chooser-এ Chrome নির্বাচন করুন। Edge-এ Microsoft sign-in/account creation চাইলে Microsoft account তৈরি করবেন না; সেটি এড়িয়ে Chrome ব্যবহার করুন। Invitation link মেয়াদোত্তীর্ণ হলে Staging Supabase Auth Users থেকে নতুন invitation পাঠাতে হবে।
+- Invitation গ্রহণ সফল হয়েছে কি না যাচাইয়ের নির্ভরযোগ্য উপায়: Staging project awatzrapqrteybgspqlq → Authentication → Users-এ সংশ্লিষ্ট Auth user-এর অবস্থা/Email confirmed দেখা। Email/password বা invitation token chat-এ পাঠানো যাবে না।
+- Workflow-তে Owner, Admin ও Member—তিনটি পৃথক Staging Auth user-এর সঠিক email/password দিয়ে password-grant login বাধ্যতামূলক। ব্যবহারকারী এখন পর্যন্ত একটি Gmail-এ invitation পাঠিয়েছেন; একটি invitation দিয়ে তিনটি পৃথক test identity পূরণ হয় না। Owner/Admin/Member account তৈরি ও password নিশ্চিত না হওয়া পর্যন্ত Auth preflight ব্যর্থ থাকবে এবং migration preview/apply, role/RPC acceptance নিরাপত্তার কারণে চলবে না।
+- কোড পরিবর্তন করা হয়নি: Microsoft account prompt ব্রাউজার/ডিভাইসের sign-in flow; GitHub workflow বা application code দিয়ে তা ঠিক করা যায় না। Auth preflight bypass করা, একটি Gmail-কে তিনটি role হিসেবে ব্যবহার করা, অথবা invitation-কে confirmed/password-ready account ধরে নেওয়া নিরাপদ নয়।
+- সর্বশেষ প্রমাণিত workflow ফলাফল অপরিবর্তিত: Run #5 (46077272231) encrypted Staging backup + isolated restore PASS; Owner/Admin/Member password Auth preflight FAIL; migration ও role/RPC ধাপ skipped। Production database অপরিবর্তিত।
