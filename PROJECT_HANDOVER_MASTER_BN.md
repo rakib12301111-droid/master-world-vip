@@ -837,3 +837,40 @@ Latest observed head: `8903c42a732f690ce7f0235409af3a03828f4b6d`.
 - The assistant's current GitHub connection has no workflow-dispatch action and cannot inspect encrypted secret values or create/verify Supabase Auth users. Therefore it cannot truthfully claim to have run or passed Staging acceptance; repository owner must perform the manual dispatch after verifying the 11 values and three distinct Auth user IDs.
 - Keep `STAGING_WORKER_SCHEDULER_ENABLED` unset/false and do not set `STAGING_SUPABASE_SERVICE_ROLE_KEY` or enable Edge Function worker secrets until Staging acceptance passes. Afterward, configure the Staging-only worker secrets and deliberately enable the scheduler for a canary.
 - Production migrations, Production worker, payments, deposits, withdrawals and payouts remain untouched/disabled. No Production migration without the exact separate approval phrase `APPLY-MASTER-WORLD-VIP-MIGRATIONS`.
+
+
+## Section 42 — Staging Owner Email Rate Limit (2026-11-28)
+
+- Staging Owner account: `r94043908+owner@gmail.com`; Auth UUID: `3601abbe-d194-473a-be6c-e90644fdba4f`.
+- Supabase Overview showed `Confirmed` and `Last signed in` empty.
+- Staging Auth logs showed HTTP 429; dashboard resend returned `email rate limit exceeded`.
+- Gmail search found no Staging confirmation for the Owner address. A Staging invite delivered to `rakib12301111@gmail.com` is not Owner confirmation. A separate older confirmation link belongs to Production ref `lztbbrzeuyjkuiyzrsxp` and must not be used for Staging.
+- Updated `.github/workflows/validate-staging-supabase.yml`: Auth preflight now exits immediately on HTTP 429 instead of continuing password-grant attempts for remaining roles. This is retry containment, not a fix for Supabase hosted email quota.
+- Remediation guide: `docs/audits/STAGING_AUTH_EMAIL_RATE_LIMIT_REMEDIATION_BN.md`.
+- Staging Dashboard SMTP configuration and Email Rate Limits still require verification; no SMTP credentials or project limits were changed by this repository update.
+- Owner confirmation and all three Auth login tests remain PENDING. Do not delete/recreate accounts or bypass Auth preflight.
+- Production Auth, email configuration, database and migration were not touched.
+
+## Section 43 — MASTER WORLD VIP AI Assistant Integration (2026-11-28)
+
+- Existing Edge Function source found: `supabase/functions/ai-assistant/index.ts`; `supabase/config.toml` sets `verify_jwt = true`.
+- Existing source uses a server-side provider secret named `AI_PROVIDER_API_KEY`; source defaults to OpenAI Chat Completions and `gpt-4o-mini`.
+- Verified frontend audit: `www/index.html` only labels the AI feature as backend-only; no `ai-assistant` invocation was found in `www/index.html`, `www/admin-dashboard.js`, `www/member-dashboard.js`, or `www/local-work-ui.js`. Frontend UI is **NOT WIRED**.
+- Source existence does not prove deployment, configured API key, or live AI response. Deployed function state remains to be audited.
+- Integration plan: `docs/AI_ASSISTANT_INTEGRATION_PLAN_BN.md`. It records secure API-key isolation, JWT/role access, CORS allowlist, per-user rate limits, budget/usage controls, privacy, Staging tests and phased rollout.
+- Responses API migration is planned, not implemented. No OpenAI API key was created or stored by this change.
+- Production deployment remains disabled pending Staging tests and separate approval.
+
+## Section 44 — Owner-requested Admin-only ChatGPT Integration (2026-11-28)
+
+- Owner explicitly requested an OpenAI API assistant available only inside the existing MASTER WORLD VIP Admin Center; ordinary Members and Moderators must not see or invoke it.
+- Admin UI added to www/index.html; visibility is controlled by existing get_my_admin_access() result for owner, super_admin, or admin only. Frontend visibility is UX only; Edge Function independently enforces the same role on every request.
+- Edge Function changed to OpenAI Responses API. API key remains server-side in Supabase Edge Function secret AI_PROVIDER_API_KEY; no key was created or committed.
+- Added supabase/migrations/20261128120000_admin_ai_assistant_quota.sql: atomic quota RPC, 5 requests/minute and 30/day per Admin. Apply to Staging only after reviewing migration order and backup/restore gates.
+- Allowed web origin defaults to the existing GitHub Pages origin; AI_ALLOWED_ORIGINS can override via comma-separated exact origins. Verify deployed site's actual origin before Staging deployment.
+- AI is advisory only. It cannot autonomously mutate accounts, roles, wallets, payments, payouts, or Production settings. Admin approval remains required.
+- PR branch contains code only. No Staging migration applied, no Edge Function deployed, no OpenAI API key/billing configured, no live AI call tested. Not live yet.
+- Next: validate SQL and TypeScript, inspect diff, configure a dedicated OpenAI API project/key and billing limits in Staging secret manager, apply Staging migration under existing backup/restore safety gates, deploy/test Staging function, verify Member/Moderator 403 and Admin success, then separately review Production rollout. Production remains untouched.
+
+- Chat UI supports short multi-turn context held only in browser memory; it is cleared when the user presses Clear or reloads the page. Responses API requests set store=false; conversation prompts/replies are not deliberately persisted in OpenAI response storage by this integration.
+- Current quotas are request-count limits, not a guaranteed USD spend cap. Set a strict project spend limit in OpenAI Platform before enabling the Staging key.

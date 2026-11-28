@@ -639,6 +639,15 @@
 <div class="feature"><strong>Support & Notifications</strong><div class="status">পরবর্তী service integration প্রয়োজন</div></div>
 </div>
 </div>
+<section class="section item" id="adminAIAssistantPanel" hidden>
+ <h3>✧ Admin ChatGPT Assistant</h3>
+ <p class="muted small">শুধু Owner / Super Admin / Admin ব্যবহার করতে পারবেন। এটি রিপোর্ট ব্যাখ্যা, সমস্যা বিশ্লেষণ ও খসড়া তৈরিতে সাহায্য করবে; কোনো Wallet, Payment, Payout, Role বা Production setting নিজে পরিবর্তন করবে না।</p>
+ <div class="feature"><strong>AI সংযোগের অবস্থা</strong><div class="status" id="adminAIStatus">Admin access যাচাইয়ের অপেক্ষায়।</div></div>
+ <div id="adminAIConversation" class="feature-list" aria-live="polite"><div class="muted small">আপনার প্রশ্ন এখানে লিখুন। ব্যক্তিগত পাসওয়ার্ড, OTP, API key বা পেমেন্ট গোপন তথ্য দেবেন না।</div></div>
+ <div class="field"><label for="adminAIPrompt">আপনার প্রশ্ন</label><textarea id="adminAIPrompt" rows="4" maxlength="8000" placeholder="যেমন: MASTER WORLD VIP-এর Auto Work-এর বর্তমান বাধাগুলো বুঝিয়ে দিন।"></textarea></div>
+ <div class="actions"><select id="adminAILanguage" aria-label="AI response language"><option value="bn">বাংলা</option><option value="en">English</option></select><button class="btn" id="adminAISend" type="button">ChatGPT-কে পাঠান</button><button class="btn secondary" id="adminAIClear" type="button">কথোপকথন পরিষ্কার</button></div>
+ <p class="muted small">প্রাথমিক সীমা: প্রতি Admin-এ ৫টি অনুরোধ/মিনিট এবং ৩০টি/দিন। OpenAI API usage-এর জন্য আলাদা খরচ হতে পারে।</p>
+</section>
 <section class="section item" id="adminAutoWorkPanel" hidden>
  <h3>🤖 Admin Auto Work — পাঁচটি মডিউল</h3>
  <p class="muted small">এটি Admin-only status panel। পাঁচটি module একসঙ্গে সর্বোচ্চ একটি করে job চালানোর জন্য নকশা করা। Provider connector ও server worker live না হওয়া পর্যন্ত এখানে কোনো job execute হবে না; সব module default-এ disabled থাকবে।</p>
@@ -2086,18 +2095,58 @@ $('disablePushNotifications').onclick=disableDevicePush;
 // Owner-controlled Admin & Security UI. All privileged checks run on Supabase.
 async function refreshAdminAccess(){
   const roleEl=$('myAdminRole'),statusEl=$('myAdminAccessStatus'),compPanel=$('ownerCompensationPanel');
-  if(!client||!currentUser){roleEl.textContent='Guest';statusEl.textContent='Admin status দেখতে লগইন করুন।';if(compPanel)compPanel.hidden=true;return;}
+  if(!client||!currentUser){roleEl.textContent='Guest';statusEl.textContent='Admin status দেখতে লগইন করুন।';if(compPanel)compPanel.hidden=true;const aiPanel=$('adminAIAssistantPanel');if(aiPanel)aiPanel.hidden=true;return;}
   const {data,error}=await client.rpc('get_my_admin_access');
-  if(error){roleEl.textContent='Not configured';statusEl.textContent='Admin role migration/Owner bootstrap প্রয়োজন: '+error.message;if(compPanel)compPanel.hidden=true;return;}
+  if(error){roleEl.textContent='Not configured';statusEl.textContent='Admin role migration/Owner bootstrap প্রয়োজন: '+error.message;if(compPanel)compPanel.hidden=true;const aiPanel=$('adminAIAssistantPanel');if(aiPanel)aiPanel.hidden=true;return;}
   roleEl.textContent=data||'Member';
   statusEl.textContent=data==='owner'?'আপনি Owner — সব role নিয়ন্ত্রণ করতে পারবেন।':(data==='super_admin'?'Super Admin access':(data==='admin'?'Admin access':(data==='moderator'?'Moderator access':'সাধারণ সদস্য; Admin নিয়ন্ত্রণ নেই।')));
   if(compPanel)compPanel.hidden=data!=='owner';
+  const aiPanel=$('adminAIAssistantPanel');
+  const canUseAdminAI=['owner','super_admin','admin'].includes(data);
+  if(aiPanel)aiPanel.hidden=!canUseAdminAI;
+  if(canUseAdminAI)loadAdminAIStatus();
   const autoPanel=$('adminAutoWorkPanel');
   const canViewAutoWork=['owner','super_admin','admin'].includes(data);
   if(autoPanel)autoPanel.hidden=!canViewAutoWork;
   if(canViewAutoWork)await loadAdminAutoWorkOverview();
   if(data==='owner'){await loadOwnerCompensation();await loadOwnerWorkProfit();}
 }
+let adminAIHistory=[]; // in-memory only; never persisted to localStorage or the database
+function loadAdminAIStatus(){
+ const status=$('adminAIStatus');
+ if(!status)return;
+ if(!client||!currentUser){status.textContent='লগইন প্রয়োজন।';return;}
+ status.textContent='Admin role যাচাই হয়েছে। AI provider ও Staging configuration পরীক্ষা সাপেক্ষে ব্যবহার করা যাবে।';
+}
+function appendAdminAIMessage(role,message){
+ const host=$('adminAIConversation');if(!host)return;
+ const item=safeNode('div','feature');
+ item.append(safeNode('strong','',role==='user'?'আপনি':'MASTER WORLD VIP AI'));
+ const body=safeNode('div','status',message);body.style.whiteSpace='pre-wrap';item.append(body);host.append(item);
+}
+$('adminAISend')?.addEventListener('click',async()=>{
+ const prompt=$('adminAIPrompt')?.value.trim(),button=$('adminAISend'),status=$('adminAIStatus');
+ if(!client||!currentUser){if(status)status.textContent='আগে লগইন করুন।';return;}
+ if(!prompt){if(status)status.textContent='প্রশ্ন লিখুন।';return;}
+ if(prompt.length>8000){if(status)status.textContent='প্রশ্ন ৮,০০০ অক্ষরের মধ্যে রাখুন।';return;}
+ button.disabled=true;if(status)status.textContent='AI উত্তর তৈরি করছে…';
+ appendAdminAIMessage('user',prompt);
+ const nextHistory=adminAIHistory.concat([{role:'user',content:prompt}]).slice(-10);
+ try{
+  const {data,error}=await client.functions.invoke('ai-assistant',{body:{prompt,messages:nextHistory,language:$('adminAILanguage')?.value||'bn'}});
+  if(error)throw error;
+  if(data?.error)throw new Error(data.error);
+  if(typeof data?.reply!=='string'||!data.reply.trim())throw new Error('AI থেকে উত্তর পাওয়া যায়নি।');
+  adminAIHistory=nextHistory.concat([{role:'assistant',content:data.reply}]).slice(-10);
+  appendAdminAIMessage('assistant',data.reply);
+  if(status)status.textContent='উত্তর পাওয়া গেছে। কোনো Admin/Production পরিবর্তন স্বয়ংক্রিয়ভাবে করা হয়নি।';
+  $('adminAIPrompt').value='';
+ }catch(e){if(status)status.textContent='AI অনুরোধ ব্যর্থ: '+(e.message||String(e))+'। Provider secret, function deployment ও Staging quota যাচাই করুন।';}
+ finally{button.disabled=false;}
+});
+$('adminAIClear')?.addEventListener('click',()=>{
+ adminAIHistory=[];const host=$('adminAIConversation');if(host)host.replaceChildren(safeNode('div','muted small','কথোপকথন পরিষ্কার হয়েছে।'));
+});
 async function loadAdminAutoWorkOverview(){
  const status=$('adminAutoWorkStatus'),modules=$('adminAutoWorkModules'),jobs=$('adminAutoWorkJobs');
  if(!client||!currentUser){if(status)status.textContent='আগে লগইন করুন।';return;}
