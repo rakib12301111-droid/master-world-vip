@@ -84,6 +84,19 @@ jobs:
             *pooler.supabase.com*) ;;
             *) echo "::error::SUPABASE_DB_URL must use the Supabase Session Pooler host for IPv4-compatible GitHub Actions connectivity."; exit 1 ;;
           esac
+          python3 - <<'PY'
+          import os
+          from urllib.parse import urlsplit, unquote
+          expected_ref = "lztbbrzeuyjkuiyzrsxp"
+          u = urlsplit(os.environ["SUPABASE_DB_URL"].strip())
+          if u.scheme not in ("postgres", "postgresql") or not u.hostname or not u.hostname.endswith(".pooler.supabase.com"):
+              raise SystemExit("::error::Production DB URL must use a Supabase Session Pooler host.")
+          if u.port != 5432 or u.path != "/postgres" or u.query or u.fragment:
+              raise SystemExit("::error::Production DB URL must use port 5432, database /postgres, and no query/fragment.")
+          if unquote(u.username or "") != "postgres." + expected_ref or not unquote(u.password or ""):
+              raise SystemExit("::error::Production DB URL credentials are not bound to the approved Production project.")
+          print("Production DB URL project binding validated; credentials were not displayed.")
+          PY
           test "$SUPABASE_PROJECT_REF" = "lztbbrzeuyjkuiyzrsxp" || { echo "::error::Unexpected Supabase project."; exit 1; }
           echo "Required credentials are present; secret values are never printed."
 
