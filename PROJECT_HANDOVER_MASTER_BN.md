@@ -631,3 +631,29 @@ GitHub Actions-এ ব্যবহৃত secret নাম:
 - GitHub-এর চারটি branch pair সরাসরি compare করে বর্তমান ahead/behind, merge base ও changed-file inventory নথিভুক্ত করা হয়েছে।
 - এই update-এ কোনো PR branch rebase/force-push, source-file conflict overwrite, PR merge, Staging Auth/secret change, Staging/Production migration, Worker deploy, Payment/transfer action করা হয়নি। GitHub integration tool-এ conflict-aware rebase/automatic merge editor উপলব্ধ না থাকায় অসম্পূর্ণ source changes-কে resolved বলে commit করা হয়নি।
 - **Status: dependency graph audited; code conflict resolution, Staging acceptance, production migration, real Worker and Payment integration remain pending.**
+
+
+---
+
+## 30. ২৮ নভেম্বর ২০২৬ — Production DB URL project-binding security hardening
+
+### এই সেশনে সরাসরি করা কোড পরিবর্তন
+PR #23-এর বিদ্যমান feature branch `feature/admin-free-member-paid-plan-gates`-এ দুটি Production migration/update workflow-তে Secret-এর URL প্রকৃত Production Supabase project-এর সঙ্গে বাঁধা কি না যাচাই যোগ করা হয়েছে:
+- `.github/workflows/apply-supabase-migrations.yml` — commit `c7c0d0034141fc9a83ee36f7dfd9dcb8f2b655c0`।
+- `.github/workflows/secure-supabase-db-update.yml` — commit `ff95d52d8b90eac8c8910aa1e785e99256b373b2`।
+
+নতুন preflight যাচাই করে PostgreSQL URI scheme, Supabase Session Pooler host, port 5432, database `/postgres`, query/fragment অনুপস্থিতি, URL-decoded username `postgres.lztbbrzeuyjkuiyzrsxp`, এবং password field উপস্থিতি। কোনো credential log করা হয় না। ভুল করে Staging/অন্য Supabase project-এর URL বসালে migration preview/apply-এর আগেই workflow fail-closed হবে।
+
+### যাচাই ও বর্তমান অবস্থা
+- PR #23 head এখন `ff95d52d8b90eac8c8910aa1e785e99256b373b2`; PR Open/Draft/Unmerged এবং mergeable=false।
+- এই commit-এর জন্য PR-triggered workflow lookup-এ এখনো কোনো run ফেরত আসেনি; তাই নতুন preflight-এর CI PASS দাবি করা হচ্ছে না (CI status PENDING / NOT YET OBSERVED)।
+- PR #23 এখনো PR #20-এর planning branch-এর ওপর stacked; আলাদা করে main-এ merge করা যাবে না।
+- কোনো PR merge, Production/Staging migration, deployment, Worker activation, payment বা payout করা হয়নি।
+- এই hardening কেবল ভুল database target প্রতিরোধের একটি অতিরিক্ত স্তর; Production backup/restore, schema reconciliation, exact approval এবং Staging acceptance-এর বিকল্প নয়।
+
+### পরবর্তী নির্দিষ্ট কাজ
+1. PR #23-এর নতুন head-এ migration safety, Auto Work static safety এবং disposable migration/runtime workflows-এর নতুন CI ফলাফল সংগ্রহ ও যাচাই।
+2. PR #20 dependency-র বর্তমান conflict/merge-base পুনরায় পরীক্ষা; নিরাপদ integration ছাড়া merge নয়।
+3. Staging Owner/Admin/Member login এবং বাস্তব Worker/payment provider acceptance আলাদা করে সম্পন্ন করতে হবে।
+
+**সেশনের ফল:** Production database URL project-binding validation দুটি workflow-তে feature branch-এ commit হয়েছে; CI pending, live activation নয়।
