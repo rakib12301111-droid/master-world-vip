@@ -860,3 +860,14 @@ Latest observed head: `8903c42a732f690ce7f0235409af3a03828f4b6d`.
 - Integration plan: `docs/AI_ASSISTANT_INTEGRATION_PLAN_BN.md`. It records secure API-key isolation, JWT/role access, CORS allowlist, per-user rate limits, budget/usage controls, privacy, Staging tests and phased rollout.
 - Responses API migration is planned, not implemented. No OpenAI API key was created or stored by this change.
 - Production deployment remains disabled pending Staging tests and separate approval.
+
+## Section 44 — Owner-requested Admin-only ChatGPT Integration (2026-11-28)
+
+- Owner explicitly requested an OpenAI API assistant available only inside the existing MASTER WORLD VIP Admin Center; ordinary Members and Moderators must not see or invoke it.
+- Admin UI added to www/index.html; visibility is controlled by existing get_my_admin_access() result for owner, super_admin, or admin only. Frontend visibility is UX only; Edge Function independently enforces the same role on every request.
+- Edge Function changed to OpenAI Responses API. API key remains server-side in Supabase Edge Function secret AI_PROVIDER_API_KEY; no key was created or committed.
+- Added supabase/migrations/20261128120000_admin_ai_assistant_quota.sql: atomic quota RPC, 5 requests/minute and 30/day per Admin. Apply to Staging only after reviewing migration order and backup/restore gates.
+- Allowed web origin defaults to the existing GitHub Pages origin; AI_ALLOWED_ORIGINS can override via comma-separated exact origins. Verify deployed site's actual origin before Staging deployment.
+- AI is advisory only. It cannot autonomously mutate accounts, roles, wallets, payments, payouts, or Production settings. Admin approval remains required.
+- PR branch contains code only. No Staging migration applied, no Edge Function deployed, no OpenAI API key/billing configured, no live AI call tested. Not live yet.
+- Next: validate SQL and TypeScript, inspect diff, configure a dedicated OpenAI API project/key and billing limits in Staging secret manager, apply Staging migration under existing backup/restore safety gates, deploy/test Staging function, verify Member/Moderator 403 and Admin success, then separately review Production rollout. Production remains untouched.
