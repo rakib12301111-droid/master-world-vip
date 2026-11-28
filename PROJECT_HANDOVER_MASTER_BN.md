@@ -520,3 +520,55 @@ GitHub Actions-এ ব্যবহৃত secret নাম:
 - Existing staging acceptance gate remains blocked until Owner, Admin, and Member each have a distinct confirmed Auth identity and the workflow successfully authenticates all three. A Gmail plus-address is not evidence of a separately working login.
 - After Staging URL settings are corrected and invitations accepted, update the six `STAGING_OWNER_*`, `STAGING_ADMIN_*`, and `STAGING_MEMBER_*` repository Secrets with the exact corresponding email/password pairs (never share passwords in chat), then rerun the Staging acceptance workflow.
 - Production migrations remain prohibited until all safety gates pass and the explicit approval string is supplied.
+
+
+## 26. ২৮ নভেম্বর ২০২৬ — Auto Work / Customer Order / Member Settlement release audit
+
+### বর্তমান Pull Request dependency ও merge অবস্থা (GitHub API থেকে সরাসরি যাচাই)
+- **PR #20** — `Document 4,000-project automated dual-currency business model`
+  - Head: `2ea2fb0dada08189539a194c3b39d4e1334e9a32`; base: `main`
+  - State: OPEN / DRAFT; GitHub mergeability: **false** (বর্তমান main-এর সঙ্গে merge conflict/অমিল রয়েছে; আগে reconcile করতে হবে)।
+  - PR head-এ Update System, disposable migration validation, encrypted disposable backup/restore, Member finance ledger runtime, migration safety এবং Auto Work static safety workflow সব SUCCESS: runs `46055807860`, `46055807866`, `46055808004`, `46055807862`, `46055807958`, `46055807939`।
+  - Disposable migration job-এ fresh ও audited legacy-shape disposable DB-তে repository migration chain apply, worker kill-switch/handler allowlist এবং synthetic customer-order-to-Member-settlement test সফল হয়েছে। এটি Staging/Production database বা বাস্তব payment নয়।
+- **PR #21** — Customer Services MVP catalogue / quote-request foundation.
+  - Head: `e8c6be117809dd8f94578d8d87f5a3b031ec9eb1`; base: `main`; OPEN / DRAFT.
+  - **PR #22 stacked on PR #21**; #22-এর base হলো #21 head, তাই #22-কে main-এ আলাদা করে merge করা যাবে না।
+- **PR #22** — authenticated customer quote workflow and Admin inbox.
+  - Head: `a31884bd3d2dfbfc181cd86631fbd7a924d87053`; base: `feature/customer-services-mvp`; OPEN / DRAFT; GitHub mergeability true relative to its feature-branch base.
+  - Disposable migration/quote runtime, migration safety, update-system এবং Auto Work static checks PASS: runs `45986582752`, `45986582803`, `45986582889`, `45986582786`। PR-এর নিজস্ব সীমা অনুযায়ী quote acceptance এখনো paid order, payment, escrow/custody, Member assignment বা payout নয়; Staging acceptance ও live notification/mobile acceptance বাকি।
+- **PR #23** — Admin Free / Member Paid-only entitlement.
+  - Head: `635d5acdc3869cd2711012791c2524f29f0ba3d4`; base: `planning/4000-automated-project-economy`; OPEN / DRAFT; GitHub mergeability **false**; PR #20-এর ওপর stacked।
+  - Static migration safety, full disposable migration/runtime (Admin Free/Member Paid entitlement assertions) এবং Auto Work static checks PASS: runs `45969335522`, `45969335395`, `45969335549`।
+  - Entitlement helper যোগ হলেও প্রতিটি real worker/task/order entry point-এ Paid entitlement enforcement ও Staging acceptance ছাড়া Member Paid-only rule live বলে দাবি করা যাবে না।
+- PR #20, #21, #22, #23-এর কোনোটিরই submitted review পাওয়া যায়নি। সবগুলো এখনো Draft/Open; কোনোটি merge করা হয়নি। PR merge করার আগে latest base reconcile, review, CI এবং intended deployment impact পুনরায় যাচাই করতে হবে।
+
+### বাস্তব Worker audit — গুরুত্বপূর্ণ সীমাবদ্ধতা
+- PR #20 branch-এর `supabase/functions/project-automation-worker/index.ts`-এ বর্তমানে মাত্র তিনটি **read-only** handler আছে: `system_health_check`, `project_usage_digest`, `work_order_validate`।
+- Worker static run `46055807865` (job `140697886546`) SUCCESS; Deno type-check ও Staging-isolation/fail-closed checks পাস করেছে।
+- একই log-এ স্পষ্ট: claim allowlist শুধু এই তিনটি read-only handler; customer work delivery, document/PDF/image/translation processing, external provider calls, payment, revenue collection বা financial side effect implement করা হয়নি। Worker response-এ `revenue_enabled=false`; database kill switch default STOPPED, scheduler/project/budget default disabled/zero।
+- অতএব Worker framework/queue/lease/retry/budget/kill-switch foundation test-passed হলেও **বাস্তব ২৪/৭ production work execution এখনো নেই**। Worker function deploy/configure করা বা real worker service/cron চালু হওয়ার প্রমাণও পাওয়া যায়নি।
+
+### Customer order, payment, custody, settlement ও wallet
+- PR #20 disposable runtime test synthetic identities/transaction references ব্যবহার করে। এটি database posting logic পরীক্ষা করে; কোনো বাস্তব গ্রাহক payment বা provider settlement নয়।
+- Customer quote flow (#21/#22) quote request ও Admin review পর্যন্ত; quote acceptance নিজে order, checkout, escrow, funded custody, worker assignment বা payout তৈরি করে না।
+- PR #20-এ double-entry USD/BDT ledger ও guarded payout/refund request schema/runtime আছে; কিন্তু এগুলো internal accounting/request records। Bank/mobile-money custody, segregated real funds, signed provider webhook, merchant onboarding, daily external reconciliation, bKash/Nagad/bank/USD payout adapter বা বাস্তব transfer confirmation সংযুক্ত নয়।
+- Customer order fund-allocation rows বাস্তব bank custody-এর প্রমাণ নয়। Refund reserve ও Member payable-এর জন্য বাস্তব funded segregated custody ছাড়া কাজ শুরু করা যাবে না।
+- কোনো live customer order, settled provider payment, accepted work delivery, Member wallet cash credit, Admin commission receipt বা real payout প্রমাণিত হয়নি।
+
+### Staging ও Production release gate
+- Staging Run #15 (`46077272231`): encrypted Staging backup + isolated restore SUCCESS; Owner/Admin/Member Auth password-grant preflight FAIL; migration/role/RPC/worker acceptance ধাপ skipped।
+- ব্যবহারকারী ২৮ নভেম্বর Supabase invitation-এ `email rate limit exceeded` দেখেছেন; Member invitation এখনো সফল/confirmed নয়। তিনটি distinct confirmed Staging Auth account ও GitHub Secret matching যাচাই না হওয়া পর্যন্ত Staging acceptance blocked।
+- PR #20-এর latest head migration/static/runtime checks disposable environment-এ পাস করলেও PR নিজেই Draft/Open এবং mergeable false। PR #21/#22/#23 dependency chain ও merge conflicts আগে সমাধান করতে হবে।
+- Production migration apply হয়নি; Production Supabase project অপরিবর্তিত। Production migration-এর বাধ্যতামূলক পৃথক exact approval `APPLY-MASTER-WORLD-VIP-MIGRATIONS` এখনো পাওয়া যায়নি। User-এর সাধারণ “লাইভ করুন” অনুরোধ এই নির্দিষ্ট migration approval gate-কে প্রতিস্থাপন করে না।
+- এই audit-এ কোনো PR merge, Production migration, public Pages deployment, Supabase function deployment, payment/payout execution বা live account/provider change করা হয়নি।
+
+### বাস্তব Live acceptance-এর আগে আবশ্যিক deliverables
+1. PR dependency/conflict reconcile ও reviewed merge; main branch CI green।
+2. Staging Auth তিনটি distinct account দিয়ে সফল; staging-only migration, Owner/Admin RPC, RLS, customer A/B/Admin acceptance।
+3. বাস্তব customer quote → priced order → signed provider settlement webhook → segregated custody/funded order → scoped Member assignment → actual deliverable upload → customer acceptance/dispute/refund path।
+4. Real worker handler implementation, isolated worker runtime/hosting, scheduler/heartbeat/monitoring, kill-switch and per-task budget enforcement; synthetic runtime test ছাড়াও end-to-end acceptance/load/security tests।
+5. USD/BDT double-entry reconciliation, funded refund reserve, verified payout provider rails এবং actual transfer confirmation।
+6. Fresh encrypted backup + isolated restore; Production read-only schema audit; migration diff/rollback plan; তারপরই exact Owner migration approval এবং controlled production release।
+7. Production deploy evidence, health monitoring, smoke test, rollback evidence ও handover update।
+
+**Release truth as of this audit: FOUNDATION AND DISPOSABLE TESTS PASS; REAL 24/7 WORKER, CUSTOMER-FUNDED EXECUTION, PROVIDER SETTLEMENT, CASH PAYOUT AND PRODUCTION RELEASE ARE NOT LIVE.**
