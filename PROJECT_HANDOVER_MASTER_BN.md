@@ -692,3 +692,37 @@ PR #23-এর বিদ্যমান feature branch `feature/admin-free-member
 5. Production release কেবল backup/restore, migration preview, rollback, Staging acceptance এবং নির্দিষ্ট approval gate পূরণ হলে।
 
 **Status:** PR #20 CI PASS (feature branch only); PR #20 integration NOT DONE; PR #23 latest CI NOT RUN; Staging acceptance NOT RUN; Production unchanged.
+
+
+---
+
+## 32. ২৮ নভেম্বর ২০২৬ — No-money Local Work MVP (PR #26)
+
+### User priority correction
+বর্তমান অগ্রাধিকার হলো টাকা তোলা/Payment/Payout নয়; আগে প্রকৃত কাজ তৈরি, Queue, Worker processing এবং Member submission/review flow প্রস্তুত করা। PR #26-এ এই scope অনুযায়ী code foundation যোগ হয়েছে। কোনো member deposit বা paid package checkout নেই।
+
+### Code delivered in feature branch
+- Branch: `feature/no-money-local-work-mvp` (based on `planning/4000-automated-project-economy`, because it reuses the existing worker/control-plane schema).
+- PR #26: https://github.com/rakib12301111-droid/master-world-vip/pull/26 — Open, Ready for review, mergeable=true at last check; not merged.
+- Migration `20261128100000_local_work_execution_mvp.sql`: Admin-only task enqueue; four bounded local task types (`text_cleanup`, `text_quality_report`, `json_validate`, `csv_validate`); service-role worker claim/finish; leases/retries/expired-lease recovery; Member claim/submit; Admin accept/rework; RLS and RPC-only access; global worker emergency stop enforced.
+- Worker `supabase/functions/project-automation-worker/index.ts`: locally processes supplied text/JSON/CSV without provider APIs, payment or financial side effects; results are placed in the member review queue.
+- UI `www/local-work-ui.js`: Admin can create and review work; Member can claim, view assigned input/worker output, and submit. `www/index.html` now loads the Member dashboard and local work UI.
+- `scripts/verify-local-work-execution.py` added and wired into worker static CI. Guarded Production migration inventory and `supabase/README.md` updated to include the new migration.
+
+### Verified CI on latest observed PR #26 head
+Latest observed head: `8903c42a732f690ce7f0235409af3a03828f4b6d`.
+- Worker static/type-check and local-work verifier: SUCCESS, run `46130859779`.
+- Supabase migration safety (including repository migration inventory/community readiness): SUCCESS, run `46130859813`.
+- Update system: SUCCESS, run `46130859807`.
+- Auto Work static safety: SUCCESS, run `46130859764`.
+- Disposable migration validation: PENDING at last check, run `46130859791`; no PASS claimed until completed.
+
+### Important remaining launch requirements
+- PR #26 is not merged. It depends on PR #20's planning branch; main-vs-#20 divergence remains a separate integration blocker.
+- New SQL migration has not been applied to Staging or Production. The website UI will show RPC/migration errors until Staging migration is applied and tested.
+- Worker remains disabled by `MWVIP_WORKER_ENABLED` unless explicitly configured; database emergency stop defaults to engaged. No hosting/scheduler invocation has been configured or proven 24/7.
+- Staging Owner/Admin/Member login, member RLS, end-to-end queue/claim/submit/review acceptance and Worker deployment remain pending.
+- Local deterministic text/JSON/CSV tasks are an initial operational foundation, not AI translation/PDF/image processing, not proof of funded customer demand, and do not create guaranteed member income.
+- Payment collection, wallet funding, payout, refund, provider webhook and customer-money flows are deliberately excluded from this phase.
+
+**Status:** local work queue + deterministic Worker handlers + Admin/Member UI code committed to PR #26; 4 CI workflows observed SUCCESS; disposable migration validation PENDING; Staging/Production deployment NOT DONE; no money movement.
