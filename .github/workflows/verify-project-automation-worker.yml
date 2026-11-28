@@ -17,6 +17,7 @@ on:
       - ".github/workflows/staging-worker-scheduler.yml"
       - "scripts/verify-staging-worker-scheduler.py"
       - "scripts/verify-ai-assistant-ui.py"
+      - "supabase/functions/ai-assistant/**"
   push:
     branches: [main, planning/4000-automated-project-economy]
     paths:
@@ -45,8 +46,10 @@ jobs:
         uses: denoland/setup-deno@v2
         with:
           deno-version: v2.x
-      - name: Type-check Edge Function
-        run: deno check supabase/functions/project-automation-worker/index.ts
+      - name: Type-check Edge Functions
+        run: |
+          deno check supabase/functions/project-automation-worker/index.ts
+          deno check supabase/functions/ai-assistant/index.ts
       - name: Verify Staging isolation and fail-closed worker rules
         run: python scripts/verify-staging-worker-safety.py
       - name: Verify task engine, budgets, retries, audit and emergency stop
