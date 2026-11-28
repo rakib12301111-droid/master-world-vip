@@ -837,3 +837,17 @@ Latest observed head: `8903c42a732f690ce7f0235409af3a03828f4b6d`.
 - The assistant's current GitHub connection has no workflow-dispatch action and cannot inspect encrypted secret values or create/verify Supabase Auth users. Therefore it cannot truthfully claim to have run or passed Staging acceptance; repository owner must perform the manual dispatch after verifying the 11 values and three distinct Auth user IDs.
 - Keep `STAGING_WORKER_SCHEDULER_ENABLED` unset/false and do not set `STAGING_SUPABASE_SERVICE_ROLE_KEY` or enable Edge Function worker secrets until Staging acceptance passes. Afterward, configure the Staging-only worker secrets and deliberately enable the scheduler for a canary.
 - Production migrations, Production worker, payments, deposits, withdrawals and payouts remain untouched/disabled. No Production migration without the exact separate approval phrase `APPLY-MASTER-WORLD-VIP-MIGRATIONS`.
+
+## Section 40 — Authenticated AI Text Assistant UI integration prepared (2026-11-28)
+
+- Feature branch: `feature/ai-assistant-ui-connection-20261128`.
+- Existing AI Center now includes a Bengali/English prompt form, 12,000-character input cap, signed-in-user gate and invocation of the existing `ai-assistant` Supabase Edge Function.
+- Response is rendered as plain text. Provider credentials are not placed in browser code. Voice and licensed image search remain explicitly pending.
+- Added `scripts/verify-ai-assistant-ui.py` and wired it into the existing project worker/static CI workflow.
+- Updated the manual Staging acceptance workflow to deploy `ai-assistant` only to the pinned Staging project after the existing backup/migration/Auth/RBAC gates pass; the workflow does not set the provider key.
+- Update manifest now reports AI Text Assistant as `testing`, not Live.
+- **Not yet verified:** AI_PROVIDER_API_KEY / optional provider configuration in Supabase Edge Function Secrets, deployment to Staging, live authenticated request/response, provider usage limits and rate limiting.
+- Supabase connector access check returned an empty project list in this session; therefore direct Supabase project access is NOT connected/verified here. GitHub repository access is confirmed.
+- No Supabase secret was read or changed. No Edge Function was deployed. No Staging or Production migration, worker activation, scheduler activation, payment or payout was performed.
+- PR CI evidence on head `a1adaabeb03815801f321630ca1880f1ef074706`: Worker/static workflow run `46142055731` SUCCESS, including the new `Verify authenticated AI Center UI wiring` step; Supabase migration safety run `46142055696` SUCCESS; Auto Work Static Safety run `46142055704` SUCCESS; Update System run `46142055719` SUCCESS. These are code/static and migration-safety checks only; no Staging database/function was changed.
+- Next safe step: PR CI on this feature branch; then Staging-only provider configuration/deployment and authenticated response acceptance after the Owner completes the required Staging Auth/backup workflow. Production remains untouched.

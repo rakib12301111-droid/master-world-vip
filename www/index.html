@@ -510,12 +510,17 @@
 <article class="card"><h2>🌐 Online Games</h2><div class="notice">Online Multiplayer, বন্ধুদের সঙ্গে খেলা, Tournament, leaderboard ও game-room তৈরির জন্য backend, সদস্য অ্যাকাউন্ট, anti-cheat ও real-time service যুক্ত করা বাকি। এই সংস্করণে Online Game চালু নয়।</div></article>
 </section>
 
-<section class="page" id="ai"><article class="card"><h2>✧ AI Center</h2><p class="muted">বাংলা/ইংরেজি text assistant, voice assistant ও AI image search.</p><div class="feature-list">
-<div class="feature"><strong>AI Text Assistant</strong><div class="status">AI provider API + secure backend বাকি</div></div>
-<div class="feature"><strong>বাংলা / English Voice</strong><div class="status">Speech + AI service integration বাকি</div></div>
-<div class="feature"><strong>AI Image Search</strong><div class="status">Image provider integration বাকি</div></div>
-<div class="feature"><strong>Copyright & License Details</strong><div class="status">প্রতিটি ফলাফলে source/license metadata দরকার</div></div>
-</div><div class="notice">AI provider secret key কখনো এই HTML/Browser-এ রাখা হবে না। নিরাপদ backend দিয়ে API call করতে হবে।</div></article></section>
+<section class="page" id="ai"><article class="card"><h2>✧ AI Center</h2><p class="muted">MASTER WORLD VIP-এর authenticated AI text assistant.</p>
+<div class="field"><label for="mwAiLanguage">উত্তরের ভাষা</label><select id="mwAiLanguage"><option value="bn">বাংলা</option><option value="en">English</option></select></div>
+<div class="field"><label for="mwAiPrompt">আপনার প্রশ্ন বা কাজ</label><textarea id="mwAiPrompt" rows="5" maxlength="12000" placeholder="আপনার প্রশ্ন লিখুন…"></textarea></div>
+<button class="btn" id="mwAiSend" type="button">AI Assistant-কে পাঠান</button>
+<div class="notice" id="mwAiStatus" role="status" aria-live="polite">AI ব্যবহার করতে Supabase-এ লগইন করুন। Provider secret শুধু Supabase Edge Function-এ থাকবে।</div>
+<article class="feature" aria-live="polite"><strong>AI উত্তর</strong><div id="mwAiReply" class="status">এখনো কোনো উত্তর নেই।</div></article>
+<div class="feature-list">
+<div class="feature"><strong>বাংলা / English Voice</strong><div class="status">Speech input/output এখনো সংযুক্ত নয়।</div></div>
+<div class="feature"><strong>AI Image Search</strong><div class="status">Licensed image provider integration বাকি।</div></div>
+<div class="feature"><strong>Copyright & License Details</strong><div class="status">Image search চালুর আগে source/license metadata বাধ্যতামূলক।</div></div>
+</div><div class="notice">AI Text Assistant secure Edge Function ব্যবহার করে। Provider key কখনো HTML বা browser-এ রাখা হয় না। AI উত্তর ভুল হতে পারে; আর্থিক, আইনি বা account-security সিদ্ধান্ত যাচাই ছাড়া নেবেন না।</div></article></section>
 
 <section class="page" id="facebook"><article class="card"><h2>◎ Facebook Center</h2><p class="muted">Public Account Discovery এবং consent-based Active User Finder.</p>
 <div class="field"><label for="fbCountry">দেশ নির্বাচন</label><select id="fbCountry"><option value="">দেশ নির্বাচন করুন</option><option>Bangladesh</option><option>India</option><option>United States</option><option>United Kingdom</option><option>Saudi Arabia</option><option>Other</option></select></div>
@@ -1077,6 +1082,24 @@ loadSetupPrefs();
 let client=null,currentUser=null,pendingSignupEmail='';
 function continueStartup(){if(currentUser){showPage('overview');}else{showPage('account');}}
 function say(id,msg){$(id).textContent=msg;}
+async function sendMwVipAiPrompt(){
+ const button=$('mwAiSend'),prompt=$('mwAiPrompt')?.value.trim(),language=$('mwAiLanguage')?.value||'bn',status=$('mwAiStatus'),reply=$('mwAiReply');
+ if(!client||!currentUser){status.textContent='AI ব্যবহার করতে আগে Supabase account দিয়ে লগইন করুন।';return;}
+ if(!prompt||prompt.length>12000){status.textContent='১ থেকে ১২,০০০ অক্ষরের মধ্যে প্রশ্ন লিখুন।';return;}
+ button.disabled=true;status.textContent='নিরাপদ AI backend-এ অনুরোধ পাঠানো হচ্ছে…';reply.textContent='উত্তরের অপেক্ষায়…';
+ try{
+  const {data,error}=await client.functions.invoke('ai-assistant',{body:{prompt,language}});
+  if(error)throw error;
+  if(!data||typeof data.reply!=='string'||!data.reply.trim())throw new Error('AI backend থেকে ব্যবহারযোগ্য উত্তর পাওয়া যায়নি।');
+  reply.textContent=data.reply;status.textContent='AI উত্তর পাওয়া গেছে। এটি স্বয়ংক্রিয়ভাবে যাচাইকৃত তথ্য নয়।';
+ }catch(error){
+  reply.textContent='উত্তর পাওয়া যায়নি।';
+  const message=String(error?.message||'').toLowerCase();
+  status.textContent=message.includes('401')||message.includes('unauthorized')?'সেশন শেষ হয়েছে। আবার লগইন করুন।':message.includes('503')?'AI provider এখনো configure/deploy করা হয়নি। Owner-কে Supabase Edge Function Secrets যাচাই করতে হবে।':'AI request ব্যর্থ হয়েছে। Edge Function deployment, provider configuration ও protected logs পরীক্ষা প্রয়োজন।';
+ }finally{button.disabled=false;}
+}
+$('mwAiSend')?.addEventListener('click',sendMwVipAiPrompt);
+$('mwAiPrompt')?.addEventListener('keydown',event=>{if((event.ctrlKey||event.metaKey)&&event.key==='Enter')sendMwVipAiPrompt();});
 const SUPABASE_PROJECT_URL='https://lztbbrzeuyjkuiyzrsxp.supabase.co';
 const SUPABASE_PUBLISHABLE_KEY='sb_publishable_r6Qq3bM6nSgbqvKTYQZdUQ_ux2kUc8r';
 function config(){try{const saved=JSON.parse(localStorage.getItem('mwvip_supabase_config')||'{}');return {url:saved.url||SUPABASE_PROJECT_URL,key:saved.key||SUPABASE_PUBLISHABLE_KEY}}catch(e){return {url:SUPABASE_PROJECT_URL,key:SUPABASE_PUBLISHABLE_KEY}}}
