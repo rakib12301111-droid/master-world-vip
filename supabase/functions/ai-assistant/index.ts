@@ -49,6 +49,10 @@ Deno.serve(async (req) => {
     return json({ error: "Prompt must be 1–8000 characters" }, 400, origin);
   }
 
+  const key = Deno.env.get("AI_PROVIDER_API_KEY");
+  if (!key) return json({ error: "OpenAI API key is not configured in Supabase Edge Function secrets." }, 503, origin);
+  const model = Deno.env.get("AI_MODEL") || "gpt-4o-mini";
+
   const { error: quotaError } = await sb.rpc("consume_admin_ai_assistant_quota", {
     p_minute_limit: 5,
     p_daily_limit: 30,
@@ -58,10 +62,6 @@ Deno.serve(async (req) => {
     if (/rate limit|daily limit/i.test(message)) return json({ error: message }, 429, origin);
     return json({ error: "Admin AI quota check is not ready. Apply the Staging quota migration first." }, 503, origin);
   }
-
-  const key = Deno.env.get("AI_PROVIDER_API_KEY");
-  if (!key) return json({ error: "OpenAI API key is not configured in Supabase Edge Function secrets." }, 503, origin);
-  const model = Deno.env.get("AI_MODEL") || "gpt-4o-mini";
   const language = body.language === "en" ? "English" : "Bengali";
   const upstream = await fetch("https://api.openai.com/v1/responses", {
     method: "POST",
