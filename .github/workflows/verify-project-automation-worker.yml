@@ -14,6 +14,8 @@ on:
       - "www/index.html"
       - "supabase/tests/project-automation-kill-switch-runtime.sql"
       - ".github/workflows/verify-project-automation-worker.yml"
+      - ".github/workflows/staging-worker-scheduler.yml"
+      - "scripts/verify-staging-worker-scheduler.py"
   push:
     branches: [main, planning/4000-automated-project-economy]
     paths:
@@ -47,6 +49,8 @@ jobs:
         run: python scripts/verify-project-automation-engine.py
       - name: Verify no-money local work queue and member review flow
         run: python scripts/verify-local-work-execution.py
+      - name: Verify opt-in Staging Worker scheduler safety
+        run: python scripts/verify-staging-worker-scheduler.py
       - name: Check Admin and Member work UI JavaScript syntax
         run: |
           node --check www/local-work-ui.js
