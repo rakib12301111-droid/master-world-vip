@@ -9,6 +9,9 @@ on:
       - "supabase/migrations/20261127100000_worker_execution_kill_switch_and_handler_allowlist.sql"
       - "supabase/migrations/20261128100000_local_work_execution_mvp.sql"
       - "scripts/verify-local-work-execution.py"
+      - "www/local-work-ui.js"
+      - "www/member-dashboard.js"
+      - "www/index.html"
       - "supabase/tests/project-automation-kill-switch-runtime.sql"
       - ".github/workflows/verify-project-automation-worker.yml"
   push:
@@ -44,3 +47,7 @@ jobs:
         run: python scripts/verify-project-automation-engine.py
       - name: Verify no-money local work queue and member review flow
         run: python scripts/verify-local-work-execution.py
+      - name: Check Admin and Member work UI JavaScript syntax
+        run: |
+          node --check www/local-work-ui.js
+          node --check www/member-dashboard.js
