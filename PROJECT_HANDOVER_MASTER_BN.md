@@ -758,3 +758,29 @@ Latest observed head: `8903c42a732f690ce7f0235409af3a03828f4b6d`.
 - PR: https://github.com/rakib12301111-droid/master-world-vip/pull/26
 - This is a feature-branch integration only. It was NOT merged to `main`, NOT deployed to GitHub Pages, and NOT applied to Staging or Production.
 - Next required steps before live account work: reconcile the planning branch with current `main` safely; then apply the migration to Staging, verify separate Owner/Admin/Member accounts and RLS, configure and deploy the Worker with a controlled scheduler, and complete end-to-end Staging acceptance. Keep Production untouched and payments/deposits/withdrawals disabled.
+
+
+## Section 35 — Main integration and Staging launch blockers rechecked (2026-11-28)
+
+### Main integration
+- Current `main` head at check: `08fc96b9a60d911179ed710b49c8446ceb5a3702`.
+- Planning branch head: `1412fd22c8f3c8df129c6bc9670983f38cd6e8fb`.
+- GitHub compare reports branches **DIVERGED**: planning branch 256 commits ahead / 40 commits behind main; merge base `9c504237e8698ccacc891dc82a8aa23d98747585`.
+- Existing PR #20 is the integration PR targeting main, still Draft/Open/Unmerged and GitHub reports `mergeable=false`. PR #26's local-work code is already included in its planning-branch head through merge commit `1412fd22...`.
+- Do not force-push, retarget blindly, or merge the diverged PR. Resolve/review the 40-commit divergence and overlapping workflow/handover/index files, then run CI on the exact integration commit.
+
+### Staging launch
+- Staging workflow `.github/workflows/validate-staging-supabase.yml` is deliberately `workflow_dispatch` only because it performs an encrypted backup/restore, applies database migrations and deploys the Edge Function.
+- It requires Staging-only secrets: `STAGING_SUPABASE_ACCESS_TOKEN`, `STAGING_SUPABASE_DB_URL`, `STAGING_SUPABASE_PROJECT_REF`, `STAGING_SUPABASE_URL`, `STAGING_SUPABASE_ANON_KEY`, and distinct Owner/Admin/Member email + password pairs.
+- The workflow checks all three password-grant logins BEFORE it applies migrations; a missing/invalid account or secret fails closed and prevents migration.
+- Earlier evidence still records Staging Auth preflight failure for missing/rejected Owner/Admin/Member credentials. No verified successful Staging workflow run is recorded in this handover. Do not infer secrets are set merely because secret names appear in workflow code.
+- The workflow also applies migrations and deploys the Edge Function, but local work processing still needs the new handler deployment, server-side worker enablement only after acceptance, and an actual scheduler/cron invocation. No 24/7 scheduler has been configured or verified.
+- Worker secrets `SUPABASE_SERVICE_ROLE_KEY` and `MWVIP_WORKER_KEY` must be configured in Staging Edge Function secrets; keep `MWVIP_WORKER_ENABLED` false and emergency stop engaged until acceptance. No Production secrets or project refs may be used.
+
+### Current safe status
+- Disposable migration CI: PASS (run `46130859791`).
+- Local Work MVP PR #26: merged into planning branch only (merge commit `1412fd22c8f3c8df129c6bc9670983f38cd6e8fb`).
+- Main integration: BLOCKED by branch divergence / PR #20 mergeability false.
+- Staging deployment and Owner/Admin/Member acceptance: NOT VERIFIED / NOT DONE.
+- Live automatic task execution and scheduler: NOT ENABLED / NOT VERIFIED.
+- Production database, payment, deposit, withdrawal and payout: untouched/disabled.
