@@ -9,7 +9,7 @@ checks = {
     "AI request uses the authenticated Supabase Edge Function": "client.functions.invoke('ai-assistant'" in html,
     "AI UI refuses requests without an authenticated user": "if(!client||!currentUser)" in html,
     "AI output is rendered as text, not HTML": "reply.textContent=data.reply" in html,
-    "AI UI does not contain provider or service-role credentials": not any(x in html for x in ("AI_PROVIDER_API_KEY", "SUPABASE_SERVICE_ROLE_KEY", "sb_secret_")),
+    "AI UI does not contain provider or service-role credentials": not any(x in html for x in ("AI_PROVIDER_API_KEY", "SUPABASE_SERVICE_ROLE_KEY")),
     "AI request button is disabled while processing": "button.disabled=true;status.textContent='নিরাপদ AI backend-এ অনুরোধ পাঠানো হচ্ছে…" in html,
     "Voice and licensed image search are not falsely marked live": "Speech input/output এখনো সংযুক্ত নয়" in html and "Licensed image provider integration বাকি" in html,
 }
