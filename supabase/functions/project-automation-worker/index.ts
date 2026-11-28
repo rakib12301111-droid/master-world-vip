@@ -30,6 +30,90 @@ function executeAllowlistedTask(task: ClaimedTask): { success: boolean; result: 
   };
 }
 
+type LocalWorkTask = {
+  id: string;
+  task_type: "text_cleanup" | "text_quality_report" | "json_validate" | "csv_validate";
+  payload: Record<string, unknown>;
+  lease_token: string;
+};
+
+function countWords(value: string): number {
+  return (value.trim().match(/\S+/g) ?? []).length;
+}
+
+function parseCsv(value: string): string[][] {
+  const rows: string[][] = [];
+  let row: string[] = [];
+  let field = "";
+  let quoted = false;
+  for (let i = 0; i < value.length; i++) {
+    const ch = value[i];
+    if (quoted) {
+      if (ch === '"' && value[i + 1] === '"') { field += '"'; i++; }
+      else if (ch === '"') quoted = false;
+      else field += ch;
+    } else if (ch === '"' && field.length === 0) quoted = true;
+    else if (ch === ",") { row.push(field); field = ""; }
+    else if (ch === "\n") { row.push(field); rows.push(row); row = []; field = ""; }
+    else if (ch !== "\r") field += ch;
+  }
+  if (quoted) throw new Error("CSV contains an unclosed quoted field.");
+  if (field.length > 0 || row.length > 0) { row.push(field); rows.push(row); }
+  return rows.filter((entry) => entry.some((cell) => cell.length > 0));
+}
+
+function executeLocalWork(task: LocalWorkTask): Record<string, unknown> {
+  if (task.task_type === "text_cleanup" || task.task_type === "text_quality_report") {
+    const input = task.payload.text;
+    if (typeof input !== "string" || input.length > 50000) throw new Error("Text input missing or too large.");
+    const normalized = input.replace(/\r\n?/g, "\n");
+    const cleaned = normalized.split("\n").map((line) => line.trim().replace(/[ \t]+/g, " ")).join("\n").replace(/\n{3,}/g, "\n\n").trim();
+    const lines = normalized.length ? normalized.split("\n") : [];
+    const report = {
+      characters: input.length,
+      words: countWords(input),
+      lines: lines.length,
+      blank_lines: lines.filter((line) => line.trim().length === 0).length,
+      normalized_line_endings: normalized !== input,
+      leading_or_trailing_whitespace: input !== input.trim(),
+    };
+    return task.task_type === "text_cleanup"
+      ? { task_type: task.task_type, cleaned_text: cleaned, quality_report: report, processor: "mwvip-local-worker-1.0.0" }
+      : { task_type: task.task_type, quality_report: report, processor: "mwvip-local-worker-1.0.0" };
+  }
+  if (task.task_type === "json_validate") {
+    const input = task.payload.json_text;
+    if (typeof input !== "string" || input.length > 50000) throw new Error("JSON input missing or too large.");
+    const parsed = JSON.parse(input);
+    return {
+      task_type: task.task_type,
+      valid: true,
+      root_type: Array.isArray(parsed) ? "array" : parsed === null ? "null" : typeof parsed,
+      top_level_keys: parsed && typeof parsed === "object" && !Array.isArray(parsed) ? Object.keys(parsed).length : null,
+      array_items: Array.isArray(parsed) ? parsed.length : null,
+      processor: "mwvip-local-worker-1.0.0",
+    };
+  }
+  if (task.task_type === "csv_validate") {
+    const input = task.payload.csv_text;
+    if (typeof input !== "string" || input.length > 50000) throw new Error("CSV input missing or too large.");
+    const rows = parseCsv(input);
+    if (rows.length === 0) throw new Error("CSV is empty.");
+    const width = rows[0].length;
+    const inconsistent = rows.slice(1).map((row, index) => ({ row: index + 2, columns: row.length })).filter((row) => row.columns !== width);
+    return {
+      task_type: task.task_type,
+      valid: inconsistent.length === 0 && width > 0,
+      header_columns: width,
+      data_rows: Math.max(0, rows.length - 1),
+      headers: rows[0],
+      inconsistent_rows: inconsistent.slice(0, 100),
+      processor: "mwvip-local-worker-1.0.0",
+    };
+  }
+  throw new Error("Unsupported local work task type.");
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: cors });
   if (req.method !== "POST") return json({ error: "POST required" }, 405);
@@ -57,6 +141,40 @@ Deno.serve(async (req) => {
       p_currencies: ["USD", "BDT"],
     });
     await rpc("worker_heartbeat_project_automation", { p_worker_key: workerKey });
+
+    // No-money local work queue is checked first. These handlers process only supplied
+    // text/JSON/CSV content locally; they never call providers or move funds.
+    const localClaimed = await rpc("worker_claim_local_work_task") as LocalWorkTask[] | null;
+    const localTask = Array.isArray(localClaimed) ? localClaimed[0] : undefined;
+    if (localTask) {
+      try {
+        const result = executeLocalWork(localTask);
+        await rpc("worker_finish_local_work_task", {
+          p_task_id: localTask.id,
+          p_lease_token: localTask.lease_token,
+          p_success: true,
+          p_result: result,
+          p_error: null,
+        });
+        return json({
+          status: "local_work_available_for_member_review",
+          task_id: localTask.id,
+          task_type: localTask.task_type,
+          result,
+          financial_effects: false,
+          external_side_effects: false,
+        });
+      } catch {
+        await rpc("worker_finish_local_work_task", {
+          p_task_id: localTask.id,
+          p_lease_token: localTask.lease_token,
+          p_success: false,
+          p_result: {},
+          p_error: "Local content task failed validation or processing.",
+        });
+        return json({ status: "local_work_failed_or_requeued", task_id: localTask.id, financial_effects: false });
+      }
+    }
 
     const claimed = await rpc("worker_claim_project_automation_task", { p_worker_key: workerKey }) as ClaimedTask[] | null;
     const task = Array.isArray(claimed) ? claimed[0] : undefined;
