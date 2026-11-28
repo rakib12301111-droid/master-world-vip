@@ -126,7 +126,7 @@ end $$;
 create or replace function public.member_claim_next_local_work_task()
 returns setof public.mwvip_local_work_tasks
 language plpgsql security definer set search_path=''
-as $
+as $$
 declare v_id uuid;
 begin
   if public.get_my_admin_access()<>'member' then raise exception 'Member access required'; end if;
@@ -137,7 +137,7 @@ begin
   update public.mwvip_local_work_tasks set status='claimed',assigned_member_id=auth.uid(),updated_at=now()
   where id=v_id;
   return query select * from public.mwvip_local_work_tasks where id=v_id;
-end $;
+end $$;
 
 create or replace function public.admin_list_local_work_tasks()
 returns setof public.mwvip_local_work_tasks
@@ -146,7 +146,7 @@ as $
 begin
   if not public.is_admin_auto_work_admin() then raise exception 'Admin access required'; end if;
   return query select * from public.mwvip_local_work_tasks order by created_at desc limit 250;
-end $;
+end $$;
 
 create or replace function public.member_claim_local_work_task(p_task_id uuid)
 returns boolean
