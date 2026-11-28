@@ -73,9 +73,15 @@ as $$
 declare v_id uuid; v_lease uuid;
 begin
   if auth.role()<>'service_role' then raise exception 'Worker service role required'; end if;
+  update public.mwvip_local_work_tasks
+  set status='failed',lease_token=null,lease_expires_at=null,
+      last_error='Worker lease expired after maximum attempts',updated_at=now()
+  where status='running' and lease_expires_at<now() and attempts>=max_attempts;
+
   with candidate as (
     select id from public.mwvip_local_work_tasks
-    where status in ('queued','rework') and attempts<max_attempts
+    where (status in ('queued','rework') or (status='running' and lease_expires_at<now()))
+      and attempts<max_attempts
     order by created_at for update skip locked limit 1
   )
   select id into v_id from candidate;
