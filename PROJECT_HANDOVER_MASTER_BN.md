@@ -657,3 +657,38 @@ PR #23-এর বিদ্যমান feature branch `feature/admin-free-member
 3. Staging Owner/Admin/Member login এবং বাস্তব Worker/payment provider acceptance আলাদা করে সম্পন্ন করতে হবে।
 
 **সেশনের ফল:** Production database URL project-binding validation দুটি workflow-তে feature branch-এ commit হয়েছে; CI pending, live activation নয়।
+
+
+---
+
+## 31. ২৮ নভেম্বর ২০২৬ — PR #20/#23 latest CI ও integration recheck
+
+### Latest branch graph
+- PR #20 head 2ea2fb0dada08189539a194c3b39d4e1334e9a32; base main; Open/Draft/Unmerged; GitHub mergeable=false। Compare: ahead 255 / behind 36; merge base 9c504237e8698ccacc891dc82a8aa23d98747585।
+- PR #23 head ff95d52d8b90eac8c8910aa1e785e99256b373b2; base planning/4000-automated-project-economy; Open/Draft/Unmerged; mergeable=false। Compare: ahead 19 / behind 35; merge base 8b91824c69bac5fe654689c895740ffbde6632f2।
+- #23 এখনো #20-এর পুরোনো base-এর ওপর stacked; #20-এর integration ছাড়া #23 base retarget/merge নয়।
+
+### Latest visible CI evidence
+- PR #20 head-এর সাতটি PR workflow run পাওয়া গেছে এবং সবগুলো SUCCESS: Update System 46055807860; Disposable Migration Validation 46055807866; Disposable Backup/Restore 46055808004; Member Finance Ledger Runtime 46055807862; Migration Safety 46055807958; Auto Work Static Safety 46055807939; Worker Type Check 46055807865। এগুলো PR branch-এর static/disposable CI; Staging/Production নয়।
+- PR #23 latest head-এর জন্য PR-triggered workflow lookup-এ কোনো run নেই; combined commit status-ও খালি। তাই নতুন Production DB URL project-binding preflight-এর CI NOT RUN / NOT VERIFIED।
+
+### Conflict/integration inspection
+- #20-এর merge base থেকে main-এ 3টি file changed; PR #20 feature side-এ 49টি file changed। Shared changed paths-এর মধ্যে Staging validation workflow এবং handover রয়েছে।
+- validate-staging-supabase.yml-এর দুই branch সংস্করণে পার্থক্য আছে: default branch-এ Worker deployment conditionally source-present হলে deploy করে এবং project ref fixed Staging value; feature branch-এ unconditional deploy ও secret-supplied project ref ব্যবহার করা হয়েছে। এই safety-sensitive পার্থক্য review ছাড়া overwrite করা যাবে না।
+- Handover file-এ উভয় branch-এ আলাদা অগ্রগতি নথিভুক্ত; একটিকে অন্যটি দিয়ে প্রতিস্থাপন করলে release evidence হারানোর ঝুঁকি।
+- এই কারণে #20-এর conflict-free integration branch/merge commit তৈরি করা হয়নি; PR base বদলানো বা mergeability জোর করে বদলানো হয়নি। GitHub connector-এ native conflict-aware rebase/merge-resolution session বা Actions workflow_dispatch action নেই।
+
+### এই সেশনের সিদ্ধান্ত
+- PR #20-এর পূর্ববর্তী PASS CI পুনরায় নিশ্চিত; কিন্তু current main-এর সঙ্গে integration এখনও অসম্পন্ন।
+- PR #23-এর নতুন URL validation code-এর CI এখনও pending; PR #23-এ workflow run trigger/dispatch করার সমর্থিত action এই সংযোগে নেই।
+- Staging validation workflow চালানোর জন্য STAGING_SUPABASE_* এবং Owner/Admin/Member password secrets ও তিনটি পৃথক confirmed Auth identity প্রয়োজন। Secret value দেখা যায় না; dashboard/login evidence ছাড়া Staging acceptance দাবি করা যাবে না।
+- কোনো PR merge, force-push, Staging migration/deploy, Production migration, Worker activation, payment/payout করা হয়নি।
+
+### পরবর্তী কার্যকর পদক্ষেপ
+1. PR #20-এর দুটি shared file (Staging workflow ও handover) latest main-এর সঙ্গে human-reviewed merge resolution; এরপর feature files-সহ integration branch/PR এবং full CI।
+2. Integration head থেকে PR #23-এর base পুনর্গঠন; নতুন URL preflight-সহ static, disposable migration/runtime CI PASS।
+3. GitHub Actions-এ Staging-only validation workflow dispatch; তিনটি distinct login, backup/restore, migration/RPC/RLS/worker result ও artifacts যাচাই।
+4. Worker-এর বাস্তব processing handlers/hosting/scheduler এবং signed payment provider/refund reserve/payout integration আলাদা করে implement ও Staging-এ test।
+5. Production release কেবল backup/restore, migration preview, rollback, Staging acceptance এবং নির্দিষ্ট approval gate পূরণ হলে।
+
+**Status:** PR #20 CI PASS (feature branch only); PR #20 integration NOT DONE; PR #23 latest CI NOT RUN; Staging acceptance NOT RUN; Production unchanged.
