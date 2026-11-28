@@ -844,6 +844,7 @@ Latest observed head: `8903c42a732f690ce7f0235409af3a03828f4b6d`.
 - Existing AI Center now includes a Bengali/English prompt form, 12,000-character input cap, signed-in-user gate and invocation of the existing `ai-assistant` Supabase Edge Function.
 - Response is rendered as plain text. Provider credentials are not placed in browser code. Voice and licensed image search remain explicitly pending.
 - Added `scripts/verify-ai-assistant-ui.py` and wired it into the existing project worker/static CI workflow.
+- Updated the manual Staging acceptance workflow to deploy `ai-assistant` only to the pinned Staging project after the existing backup/migration/Auth/RBAC gates pass; the workflow does not set the provider key.
 - Update manifest now reports AI Text Assistant as `testing`, not Live.
 - **Not yet verified:** AI_PROVIDER_API_KEY / optional provider configuration in Supabase Edge Function Secrets, deployment to Staging, live authenticated request/response, provider usage limits and rate limiting.
 - Supabase connector access check returned an empty project list in this session; therefore direct Supabase project access is NOT connected/verified here. GitHub repository access is confirmed.
