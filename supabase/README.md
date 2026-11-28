@@ -165,7 +165,7 @@ A trusted backend must independently validate provider signatures/status before 
 See [docs/RELEASE_READINESS_MASTER_WORLD_VIP_BN.md](../docs/RELEASE_READINESS_MASTER_WORLD_VIP_BN.md) for the current verified CI evidence, full-chain validation requirements, provider/custody blockers and controlled release sequence. Passing isolated PostgreSQL/static CI is not Production approval. Do not apply migrations, deploy publicly or enable live money movement without the relevant separate owner approval and provider/legal prerequisites.
 
 
-## 10. No-money Local Work MVP (code foundation)
+## No-money Local Work MVP (code foundation)
 
 `20261128100000_local_work_execution_mvp.sql` adds an isolated local work queue. Admins can enqueue text cleanup, text quality report, JSON validation and CSV validation tasks. The Edge Worker processes supplied content locally with bounded input, lease/retry controls and the global emergency stop. Members can claim available outputs, submit their review/work, and Admins can accept or return submissions for rework. Direct table access is revoked and RPCs enforce Owner/Admin/Member/Worker roles.
 
