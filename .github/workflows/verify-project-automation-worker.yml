@@ -25,6 +25,8 @@ on:
       - "supabase/migrations/20261127100000_worker_execution_kill_switch_and_handler_allowlist.sql"
       - "supabase/tests/project-automation-kill-switch-runtime.sql"
       - ".github/workflows/verify-project-automation-worker.yml"
+      - ".github/workflows/staging-worker-scheduler.yml"
+      - "scripts/verify-staging-worker-scheduler.py"
   workflow_dispatch:
 
 permissions:
