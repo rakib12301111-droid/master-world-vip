@@ -376,3 +376,11 @@ Owner commission কেবল সব member payable, refund liability, provider 
 - Before activation, define and disclose the calculation basis, provider fees, tax, refund/chargeback reversal and rounding policy; show Member net payable before work; post commission only after accepted/completed work and settled/reconciled funds to a separate Company Revenue Ledger.
 - Keep USD and BDT calculations separate. No retroactive changes to accepted order terms.
 - **Status: recorded proposal only; no commission calculation, deduction, collection or live revenue is active.**
+
+## Update — 2026-11-28: Authenticated AI Text Assistant UI integration
+
+- Added a Bengali/English prompt interface to the existing AI Center; it requires a signed-in Supabase user and calls the existing `ai-assistant` Edge Function through `client.functions.invoke`.
+- User prompt is capped at 12,000 characters; returned content is inserted with `textContent`, not HTML. Provider credentials remain server-side and are not added to browser code.
+- Added explicit pending status for voice input/output and licensed image search; neither is represented as live.
+- Added static CI verification for authentication gating, invocation wiring, output rendering and absence of provider/service-role credentials in the frontend.
+- **Status: UI-to-function code integration prepared in feature branch; provider secret, Staging deployment and live authenticated response test are NOT verified.** This change does not connect ChatGPT itself as an external operator, and does not enable payments or Worker execution.
