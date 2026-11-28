@@ -12,7 +12,7 @@ checks = {
     "scheduler requires a Staging service-role secret": "STAGING_SUPABASE_SERVICE_ROLE_KEY" in workflow,
     "scheduler uses the deployed project automation Edge Function": "/functions/v1/project-automation-worker" in workflow,
     "scheduler sends service-role bearer and apikey headers": 'Authorization: Bearer $SERVICE_ROLE_KEY' in workflow and 'apikey: $SERVICE_ROLE_KEY' in workflow,
-    "scheduler fails if the Edge Function remains disabled": "status != \"disabled\"" in workflow,
+    "scheduler fails if the Edge Function remains disabled": 'test "$status" != "disabled"' in workflow,
     "scheduler never prints worker response/task content": "Never print the response body, task input, or task result." in workflow,
     "Edge Function remains disabled unless its separate function secret is explicitly true": 'Deno.env.get("MWVIP_WORKER_ENABLED") !== "true"' in worker,
     "worker requires exact service-role bearer authentication": 'auth !== `Bearer ${serviceKey}`' in worker,
