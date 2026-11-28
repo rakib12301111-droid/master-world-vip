@@ -461,3 +461,20 @@ GitHub Actions-এ ব্যবহৃত secret নাম:
 - Workflow-তে Owner, Admin ও Member—তিনটি পৃথক Staging Auth user-এর সঠিক email/password দিয়ে password-grant login বাধ্যতামূলক। ব্যবহারকারী এখন পর্যন্ত একটি Gmail-এ invitation পাঠিয়েছেন; একটি invitation দিয়ে তিনটি পৃথক test identity পূরণ হয় না। Owner/Admin/Member account তৈরি ও password নিশ্চিত না হওয়া পর্যন্ত Auth preflight ব্যর্থ থাকবে এবং migration preview/apply, role/RPC acceptance নিরাপত্তার কারণে চলবে না।
 - কোড পরিবর্তন করা হয়নি: Microsoft account prompt ব্রাউজার/ডিভাইসের sign-in flow; GitHub workflow বা application code দিয়ে তা ঠিক করা যায় না। Auth preflight bypass করা, একটি Gmail-কে তিনটি role হিসেবে ব্যবহার করা, অথবা invitation-কে confirmed/password-ready account ধরে নেওয়া নিরাপদ নয়।
 - সর্বশেষ প্রমাণিত workflow ফলাফল অপরিবর্তিত: Run #5 (46077272231) encrypted Staging backup + isolated restore PASS; Owner/Admin/Member password Auth preflight FAIL; migration ও role/RPC ধাপ skipped। Production database অপরিবর্তিত।
+
+## 23. ২৮ নভেম্বর ২০২৬ — Staging Validation Run #15: Backup/Restore PASS, তিন Auth login FAIL
+
+- GitHub Actions-এর official run number: **#15**; Run ID: `46077272231`; commit: `24917e39ee778233ada41a3102fdd6ad30a7f514`.
+- Run URL: https://github.com/rakib12301111-droid/master-world-vip/actions/runs/46077272231
+- Job `Encrypted Staging backup and isolated restore proof`: **SUCCESS**। Session Pooler URI validation, isolated PostgreSQL restore, non-empty schema proof এবং encrypted backup artifact upload—সব ধাপ সফল।
+- Job `staging-migrations`: **FAILURE**। Staging secret/project binding check PASS; ordered migration set validation PASS (৩০টি migration file; duplicate version নেই)।
+- ব্যর্থ ধাপ: `Preflight existing confirmed Owner, Admin and Member Auth accounts before any migration`।
+- Log-এ OWNER, ADMIN ও MEMBER—তিনটির জন্যই একই safe category: `Credentials rejected or account not found in this Staging project`। কোনো email/password/API key/JWT প্রকাশ করা হয়নি।
+- Migration Preview, Apply, role assignment, role/RPC verification ও queue-worker assessment—সবই Auth preflight failure-এর কারণে skipped। কোনো migration চালানো হয়নি।
+- **এটি নতুন আলাদা Run ID নয়**: পূর্ববর্তী নোটে এই ID-কে Run #5 বলা হয়েছিল; GitHub Actions API-তে official run_number হলো **15**। সঠিক রেফারেন্স এখন Run #15 (ID একই)।
+- **পরবর্তী প্রয়োজনীয় কাজ—শুধু Staging Auth account/secret মিল ঠিক করা:** Supabase Dashboard → Staging project `awatzrapqrteybgspqlq` → Authentication → Users-এ আলাদা Owner, Admin ও Member test account আছে এবং প্রত্যেকটির email confirmed কি না যাচাই করুন। এরপর GitHub Repository Secrets-এর `STAGING_OWNER_EMAIL/PASSWORD`, `STAGING_ADMIN_EMAIL/PASSWORD`, `STAGING_MEMBER_EMAIL/PASSWORD`-এ সেই একই account-এর exact email ও বর্তমান password রাখুন। Password অজানা হলে সংশ্লিষ্ট Staging account-এর password reset করে নতুন password কেবল GitHub Secret-এ সংরক্ষণ করুন। কোনো secret বা password chat-এ দেবেন না।
+- Supabase invitation email-এ Accept invitation পাঠানো মানেই password login প্রস্তুত/confirmed নয়; invitation accept করে account complete করতে হবে। একটি Gmail invitation তিনটি আলাদা test identity-এর বিকল্প নয়।
+- **কোড পরিবর্তন করে Auth gate পাশ করানো যাবে না**: invalid credentials-কে success দেখানো, preflight skip করা, তিন role এক user-এ মেশানো বা migration safety gate সরানো নিষিদ্ধ। GitHub encrypted Secrets-এর প্রকৃত মান assistant পড়তে/পরিবর্তন করতে পারে না; ব্যবহারকারী Secret আপডেট করার পর নতুন manual Staging run প্রয়োজন।
+- Production project `lztbbrzeuyjkuiyzrsxp` স্পর্শ করা হয়নি; Production migration হয়নি।
+- **প্রমাণিত সম্পন্ন:** Staging encrypted backup + isolated restore।
+- **এখনো অসম্পন্ন:** Auth preflight, Staging migration dry-run/apply, Owner/Admin/Member role acceptance, Admin RPC acceptance এবং queue-worker assessment।
