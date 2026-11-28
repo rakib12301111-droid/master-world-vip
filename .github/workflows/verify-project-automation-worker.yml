@@ -16,6 +16,7 @@ on:
       - ".github/workflows/verify-project-automation-worker.yml"
       - ".github/workflows/staging-worker-scheduler.yml"
       - "scripts/verify-staging-worker-scheduler.py"
+      - "scripts/verify-ai-assistant-ui.py"
   push:
     branches: [main, planning/4000-automated-project-economy]
     paths:
@@ -27,6 +28,7 @@ on:
       - ".github/workflows/verify-project-automation-worker.yml"
       - ".github/workflows/staging-worker-scheduler.yml"
       - "scripts/verify-staging-worker-scheduler.py"
+      - "scripts/verify-ai-assistant-ui.py"
   workflow_dispatch:
 
 permissions:
@@ -53,6 +55,8 @@ jobs:
         run: python scripts/verify-local-work-execution.py
       - name: Verify opt-in Staging Worker scheduler safety
         run: python scripts/verify-staging-worker-scheduler.py
+      - name: Verify authenticated AI Center UI wiring
+        run: python scripts/verify-ai-assistant-ui.py
       - name: Check Admin and Member work UI JavaScript syntax
         run: |
           node --check www/local-work-ui.js
