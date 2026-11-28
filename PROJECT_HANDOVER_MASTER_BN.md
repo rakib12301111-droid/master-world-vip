@@ -871,3 +871,6 @@ Latest observed head: `8903c42a732f690ce7f0235409af3a03828f4b6d`.
 - AI is advisory only. It cannot autonomously mutate accounts, roles, wallets, payments, payouts, or Production settings. Admin approval remains required.
 - PR branch contains code only. No Staging migration applied, no Edge Function deployed, no OpenAI API key/billing configured, no live AI call tested. Not live yet.
 - Next: validate SQL and TypeScript, inspect diff, configure a dedicated OpenAI API project/key and billing limits in Staging secret manager, apply Staging migration under existing backup/restore safety gates, deploy/test Staging function, verify Member/Moderator 403 and Admin success, then separately review Production rollout. Production remains untouched.
+
+- Chat UI supports short multi-turn context held only in browser memory; it is cleared when the user presses Clear or reloads the page. Responses API requests set store=false; conversation prompts/replies are not deliberately persisted in OpenAI response storage by this integration.
+- Current quotas are request-count limits, not a guaranteed USD spend cap. Set a strict project spend limit in OpenAI Platform before enabling the Staging key.
