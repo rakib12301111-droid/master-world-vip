@@ -264,6 +264,14 @@ jobs:
                 unset password
                 continue
               }
+            # A 429 is a project-wide Auth throttle signal. Stop immediately:
+            # do not send more password-grant requests for the remaining roles.
+            if [ "$http_code" = "429" ]; then
+              echo "::error::Staging Auth rate limit reached (HTTP 429). Stopping preflight immediately; wait for the Supabase limit window to reset before retrying."
+              rm -f "$response_file"
+              unset password
+              exit 1
+            fi
             token=$(jq -r '.access_token // empty' "$response_file" 2>/dev/null || true)
             if [ -n "$token" ]; then
               echo "::add-mask::$token"
