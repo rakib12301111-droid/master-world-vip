@@ -38,7 +38,7 @@ type LocalWorkTask = {
 };
 
 function countWords(value: string): number {
-  return (value.trim().match(/\\S+/g) ?? []).length;
+  return (value.trim().match(/\S+/g) ?? []).length;
 }
 
 function parseCsv(value: string): string[][] {
@@ -54,8 +54,8 @@ function parseCsv(value: string): string[][] {
       else field += ch;
     } else if (ch === '"' && field.length === 0) quoted = true;
     else if (ch === ",") { row.push(field); field = ""; }
-    else if (ch === "\\n") { row.push(field); rows.push(row); row = []; field = ""; }
-    else if (ch !== "\\r") field += ch;
+    else if (ch === "\n") { row.push(field); rows.push(row); row = []; field = ""; }
+    else if (ch !== "\r") field += ch;
   }
   if (quoted) throw new Error("CSV contains an unclosed quoted field.");
   if (field.length > 0 || row.length > 0) { row.push(field); rows.push(row); }
@@ -66,9 +66,9 @@ function executeLocalWork(task: LocalWorkTask): Record<string, unknown> {
   if (task.task_type === "text_cleanup" || task.task_type === "text_quality_report") {
     const input = task.payload.text;
     if (typeof input !== "string" || input.length > 50000) throw new Error("Text input missing or too large.");
-    const normalized = input.replace(/\\r\\n?/g, "\\n");
-    const cleaned = normalized.split("\\n").map((line) => line.trim().replace(/[ \\t]+/g, " ")).join("\\n").replace(/\\n{3,}/g, "\\n\\n").trim();
-    const lines = normalized.length ? normalized.split("\\n") : [];
+    const normalized = input.replace(/\r\n?/g, "\n");
+    const cleaned = normalized.split("\n").map((line) => line.trim().replace(/[ \t]+/g, " ")).join("\n").replace(/\n{3,}/g, "\n\n").trim();
+    const lines = normalized.length ? normalized.split("\n") : [];
     const report = {
       characters: input.length,
       words: countWords(input),
