@@ -383,4 +383,5 @@ Owner commission কেবল সব member payable, refund liability, provider 
 - User prompt is capped at 12,000 characters; returned content is inserted with `textContent`, not HTML. Provider credentials remain server-side and are not added to browser code.
 - Added explicit pending status for voice input/output and licensed image search; neither is represented as live.
 - Added static CI verification for authentication gating, invocation wiring, output rendering and absence of provider/service-role credentials in the frontend.
+- Updated the manual Staging acceptance workflow to deploy the AI Edge Function only to the pinned Staging project after the existing backup/migration/Auth/RBAC gates pass; the workflow does not configure or expose the provider key.
 - **Status: UI-to-function code integration prepared in feature branch; provider secret, Staging deployment and live authenticated response test are NOT verified.** This change does not connect ChatGPT itself as an external operator, and does not enable payments or Worker execution.
