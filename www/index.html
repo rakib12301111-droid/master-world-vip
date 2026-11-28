@@ -2095,9 +2095,9 @@ $('disablePushNotifications').onclick=disableDevicePush;
 // Owner-controlled Admin & Security UI. All privileged checks run on Supabase.
 async function refreshAdminAccess(){
   const roleEl=$('myAdminRole'),statusEl=$('myAdminAccessStatus'),compPanel=$('ownerCompensationPanel');
-  if(!client||!currentUser){roleEl.textContent='Guest';statusEl.textContent='Admin status দেখতে লগইন করুন।';if(compPanel)compPanel.hidden=true;return;}
+  if(!client||!currentUser){roleEl.textContent='Guest';statusEl.textContent='Admin status দেখতে লগইন করুন।';if(compPanel)compPanel.hidden=true;const aiPanel=$('adminAIAssistantPanel');if(aiPanel)aiPanel.hidden=true;return;}
   const {data,error}=await client.rpc('get_my_admin_access');
-  if(error){roleEl.textContent='Not configured';statusEl.textContent='Admin role migration/Owner bootstrap প্রয়োজন: '+error.message;if(compPanel)compPanel.hidden=true;return;}
+  if(error){roleEl.textContent='Not configured';statusEl.textContent='Admin role migration/Owner bootstrap প্রয়োজন: '+error.message;if(compPanel)compPanel.hidden=true;const aiPanel=$('adminAIAssistantPanel');if(aiPanel)aiPanel.hidden=true;return;}
   roleEl.textContent=data||'Member';
   statusEl.textContent=data==='owner'?'আপনি Owner — সব role নিয়ন্ত্রণ করতে পারবেন।':(data==='super_admin'?'Super Admin access':(data==='admin'?'Admin access':(data==='moderator'?'Moderator access':'সাধারণ সদস্য; Admin নিয়ন্ত্রণ নেই।')));
   if(compPanel)compPanel.hidden=data!=='owner';
