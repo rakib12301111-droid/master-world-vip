@@ -111,7 +111,8 @@ jobs:
             20261126150000_guarded_member_payout_refund_workflows.sql \
             20261127100000_worker_execution_kill_switch_and_handler_allowlist.sql \
             20261127120000_project_usage_digest_read_only_handler.sql \
-            20261127130000_work_order_validate_read_only_handler.sql \\\n            20261128100000_local_work_execution_mvp.sql; do
+            20261127130000_work_order_validate_read_only_handler.sql \
+            20261128100000_local_work_execution_mvp.sql; do
             test -f "supabase/migrations/$migration" || { echo "::error::Missing expected migration: $migration"; exit 1; }
           done
 
