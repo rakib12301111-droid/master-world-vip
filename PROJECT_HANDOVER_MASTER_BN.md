@@ -591,3 +591,16 @@ GitHub Actions-এ ব্যবহৃত secret নাম:
 - সাধারণ “চালু করার” অনুমতি নিরাপদ code/test/Staging কাজ এগোনোর অনুমতি হিসেবে ধরা হবে; এটি নির্দিষ্ট Production migration phrase-এর বিকল্প নয়।
 - `APPLY-MASTER-WORLD-VIP-MIGRATIONS` ছাড়া Production migration চালানো যাবে না। বাস্তব payment, custody বা payout provider setup/settlement evidence ছাড়া বাস্তব টাকা লেনদেন চালু বলে দেখানো যাবে না।
 - এই পুনঃযাচাইয়ে কোনো PR merge, Production migration, Supabase function deployment, payment/payout execution বা account/secret পরিবর্তন করা হয়নি।
+
+
+## 28. ২৮ নভেম্বর ২০২৬ — PR #20–#23 safe reconciliation runbook
+
+- Owner-এর অনুরোধে বিদ্যমান repository-তেই নতুন execution checklist তৈরি: `docs/PR20_PR23_SAFE_RECONCILIATION_RUNBOOK_BN.md`।
+- File commit: `956099a9a1364d48927c812168264361cf9b53b4`।
+- এতে PR #20 economy track → #23 entitlement dependency এবং PR #21 customer catalogue → #22 authenticated quote/Admin inbox dependency, merge order, conflict-resolution safeguards, required CI/Staging gates, real Worker/payment/custody deliverables এবং Production approval boundary লেখা হয়েছে।
+- GitHub branch search-এ সংশ্লিষ্ট চারটি branch পাওয়া গেছে: `planning/4000-automated-project-economy`, `feature/admin-free-member-paid-plan-gates`, `feature/customer-services-mvp`, `feature/customer-quote-workflow`।
+- এই documentation update কোনো source-code conflict নিজে resolve করে না। এই turn-এ branch ref সরানো, conflict file overwrite, PR merge, Staging/Production migration, Worker deployment বা payment/payout execution করা হয়নি।
+- পরবর্তী code-level ধাপ: প্রতিটি PR-এর বর্তমান head/base SHA ও changed-file diff নিয়ে আলাদা integration branch-এ reconcile; তারপর full disposable PostgreSQL, static safety, backup/restore, worker/finance runtime checks; এরপর Staging Auth তিন account দিয়ে acceptance।
+- Production migration এখনো নিষিদ্ধ থাকবে যতক্ষণ না সব gate PASS এবং exact approval `APPLY-MASTER-WORLD-VIP-MIGRATIONS` আলাদাভাবে দেওয়া হয়।
+- বাস্তব Worker, signed payment settlement, segregated funded custody ও payout rail ছাড়া ২৪/৭ আয় বা বাস্তব টাকা লেনদেন Live বলা যাবে না।
+- **Status: runbook committed; code reconciliation and release remain pending.**
