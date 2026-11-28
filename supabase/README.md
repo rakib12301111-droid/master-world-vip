@@ -47,6 +47,7 @@ This repository contains the database foundation, community, privacy, admin/broa
 34. `20261126130000_member_loss_prevention_hardening.sql` — immutable order financial terms and funded-order evidence, append-only fund allocations, allow-listed forward-only order state transitions and protected-order delete prevention. Database guard foundation only; external custody and runtime validation remain required.
 35. `20261126140000_append_only_double_entry_finance_ledger.sql` — append-only USD/BDT chart of accounts and balanced, idempotent journal posting with per-Member payable overdraft prevention. Accounting records are not external custody proof.
 36. `20261126150000_guarded_member_payout_refund_workflows.sql` — internal payout/refund requests with immutable financial terms, bounded state transitions, balance reservations and paid-state journal/provider reconciliation gates. No cash rail is connected.
+37. `20261128100000_local_work_execution_mvp.sql` — no-money local text/JSON/CSV processing queue, Member claim/submission and Admin review/rework workflow. Worker remains disabled until Staging and hosting/scheduler acceptance; no payment or payout fields.
 
 **Important:** Repository files and this checklist do not prove that any migration has been applied to your Supabase project. SQL is not run by the website automatically. Keep a record of each successfully applied migration. Do not rerun a migration blindly if the project already has part or all of its schema; inspect the database first.
 
@@ -162,3 +163,10 @@ A trusted backend must independently validate provider signatures/status before 
 ## 11. Release readiness and production gates
 
 See [docs/RELEASE_READINESS_MASTER_WORLD_VIP_BN.md](../docs/RELEASE_READINESS_MASTER_WORLD_VIP_BN.md) for the current verified CI evidence, full-chain validation requirements, provider/custody blockers and controlled release sequence. Passing isolated PostgreSQL/static CI is not Production approval. Do not apply migrations, deploy publicly or enable live money movement without the relevant separate owner approval and provider/legal prerequisites.
+
+
+## 10. No-money Local Work MVP (code foundation)
+
+`20261128100000_local_work_execution_mvp.sql` adds an isolated local work queue. Admins can enqueue text cleanup, text quality report, JSON validation and CSV validation tasks. The Edge Worker processes supplied content locally with bounded input, lease/retry controls and the global emergency stop. Members can claim available outputs, submit their review/work, and Admins can accept or return submissions for rework. Direct table access is revoked and RPCs enforce Owner/Admin/Member/Worker roles.
+
+This is a code foundation only until the migration is applied to Staging, separate Owner/Admin/Member login and RLS acceptance passes, and the Edge Function is deployed with a real scheduler/hosting invocation. Keep the Worker disabled and global emergency stop engaged until those checks pass. No external AI/provider APIs, payment collection, wallet credit, member earnings, payout or refund are included. Local text/JSON/CSV operations do not create customer demand or guarantee paid work.
