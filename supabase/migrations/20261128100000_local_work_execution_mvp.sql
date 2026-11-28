@@ -137,6 +137,9 @@ as $$
 declare v_id uuid;
 begin
   if public.get_my_admin_access()<>'member' then raise exception 'Member access required'; end if;
+  if (select count(*) from public.mwvip_local_work_tasks where assigned_member_id=auth.uid() and status in ('claimed','submitted'))>=3 then
+    raise exception 'A member may hold at most three active local work tasks';
+  end if;
   select id into v_id from public.mwvip_local_work_tasks
   where status='available' and assigned_member_id is null
   order by created_at for update skip locked limit 1;
@@ -161,6 +164,9 @@ language plpgsql security definer set search_path=''
 as $$
 begin
   if public.get_my_admin_access()<>'member' then raise exception 'Member access required'; end if;
+  if (select count(*) from public.mwvip_local_work_tasks where assigned_member_id=auth.uid() and status in ('claimed','submitted'))>=3 then
+    raise exception 'A member may hold at most three active local work tasks';
+  end if;
   update public.mwvip_local_work_tasks set status='claimed',assigned_member_id=auth.uid(),updated_at=now()
   where id=p_task_id and status='available' and assigned_member_id is null;
   if not found then raise exception 'Task is no longer available'; end if;
@@ -176,6 +182,7 @@ begin
   if jsonb_typeof(coalesce(p_submission,'{}'::jsonb))<>'object' or p_submission='{}'::jsonb then
     raise exception 'A non-empty submission object is required';
   end if;
+  if pg_column_size(p_submission)>100000 then raise exception 'Submission exceeds 100 KB'; end if;
   update public.mwvip_local_work_tasks
   set status='submitted',member_submission=p_submission,submitted_at=now(),updated_at=now()
   where id=p_task_id and status='claimed' and assigned_member_id=auth.uid();
