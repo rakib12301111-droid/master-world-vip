@@ -119,9 +119,34 @@ as $$
 begin
   if public.get_my_admin_access()<>'member' then raise exception 'Member access required'; end if;
   return query select * from public.mwvip_local_work_tasks
-    where status='available' or assigned_member_id=auth.uid()
+    where assigned_member_id=auth.uid()
     order by created_at desc limit 100;
 end $$;
+
+create or replace function public.member_claim_next_local_work_task()
+returns setof public.mwvip_local_work_tasks
+language plpgsql security definer set search_path=''
+as $
+declare v_id uuid;
+begin
+  if public.get_my_admin_access()<>'member' then raise exception 'Member access required'; end if;
+  select id into v_id from public.mwvip_local_work_tasks
+  where status='available' and assigned_member_id is null
+  order by created_at for update skip locked limit 1;
+  if v_id is null then return; end if;
+  update public.mwvip_local_work_tasks set status='claimed',assigned_member_id=auth.uid(),updated_at=now()
+  where id=v_id;
+  return query select * from public.mwvip_local_work_tasks where id=v_id;
+end $;
+
+create or replace function public.admin_list_local_work_tasks()
+returns setof public.mwvip_local_work_tasks
+language plpgsql stable security definer set search_path=''
+as $
+begin
+  if not public.is_admin_auto_work_admin() then raise exception 'Admin access required'; end if;
+  return query select * from public.mwvip_local_work_tasks order by created_at desc limit 250;
+end $;
 
 create or replace function public.member_claim_local_work_task(p_task_id uuid)
 returns boolean
@@ -161,6 +186,8 @@ begin
   if char_length(coalesce(p_review_note,''))>1000 then raise exception 'Review note is too long'; end if;
   update public.mwvip_local_work_tasks
   set status=case when p_accept then 'accepted' else 'rework' end,
+      assigned_member_id=case when p_accept then assigned_member_id else null end,
+      member_submission=case when p_accept then member_submission else '{}'::jsonb end,
       reviewed_by=auth.uid(),reviewed_at=now(),review_note=left(coalesce(p_review_note,''),1000),updated_at=now()
   where id=p_task_id and status='submitted';
   if not found then raise exception 'Submitted task not found'; end if;
@@ -171,6 +198,8 @@ revoke all on function public.admin_enqueue_local_work_task(text,jsonb,text) fro
 revoke all on function public.worker_claim_local_work_task() from public,anon,authenticated;
 revoke all on function public.worker_finish_local_work_task(uuid,uuid,boolean,jsonb,text) from public,anon,authenticated;
 revoke all on function public.member_list_local_work_tasks() from public,anon;
+revoke all on function public.member_claim_next_local_work_task() from public,anon;
+revoke all on function public.admin_list_local_work_tasks() from public,anon;
 revoke all on function public.member_claim_local_work_task(uuid) from public,anon;
 revoke all on function public.member_submit_local_work_task(uuid,jsonb) from public,anon;
 revoke all on function public.admin_review_local_work_task(uuid,boolean,text) from public,anon;
@@ -179,6 +208,8 @@ grant execute on function public.admin_enqueue_local_work_task(text,jsonb,text) 
 grant execute on function public.worker_claim_local_work_task() to service_role;
 grant execute on function public.worker_finish_local_work_task(uuid,uuid,boolean,jsonb,text) to service_role;
 grant execute on function public.member_list_local_work_tasks() to authenticated;
+grant execute on function public.member_claim_next_local_work_task() to authenticated;
+grant execute on function public.admin_list_local_work_tasks() to authenticated;
 grant execute on function public.member_claim_local_work_task(uuid) to authenticated;
 grant execute on function public.member_submit_local_work_task(uuid,jsonb) to authenticated;
 grant execute on function public.admin_review_local_work_task(uuid,boolean,text) to authenticated;
