@@ -78,6 +78,7 @@
      const row=make('div','mwrow');
      row.append(make('strong','',esc(task.task_type)+' · '+esc(task.status)));
      row.append(make('div','', 'Task ID: '+esc(task.id)));
+     row.append(make('pre','', 'Task input:\n'+JSON.stringify(task.payload||{},null,2)));
      row.append(make('pre','', 'Worker result:\n'+JSON.stringify(task.worker_result||{},null,2)));
      if(task.status==='claimed'){
       const submission=make('textarea');submission.rows=3;submission.placeholder='আপনার যাচাই/সংশোধিত ফলাফল বা মন্তব্য লিখুন…';
