@@ -572,3 +572,22 @@ GitHub Actions-এ ব্যবহৃত secret নাম:
 7. Production deploy evidence, health monitoring, smoke test, rollback evidence ও handover update।
 
 **Release truth as of this audit: FOUNDATION AND DISPOSABLE TESTS PASS; REAL 24/7 WORKER, CUSTOMER-FUNDED EXECUTION, PROVIDER SETTLEMENT, CASH PAYOUT AND PRODUCTION RELEASE ARE NOT LIVE.**
+
+
+## 27. ২৮ নভেম্বর ২০২৬ — PR dependency ও GitHub Pages পুনঃযাচাই
+
+### GitHub Pages
+- Pages workflow run **46129043470**-এর সর্বশেষ job status পুনরায় যাচাই করা হয়েছে: Build = SUCCESS, Deploy = SUCCESS, Verify live GitHub Pages release = SUCCESS।
+- এটি বর্তমান main branch-এর সাইট/ডকুমেন্ট প্রকাশের প্রমাণ; PR #20–#23-এর নতুন Auto Work/payment code main-এ merge বা deploy হওয়ার প্রমাণ নয়।
+
+### PR #20–#23-এর বর্তমান GitHub metadata ও CI
+- **#20**: OPEN / DRAFT / mergeable=false; head `planning/4000-automated-project-economy`, base `main`; 49 files, 255 commits। Head commit `2ea2fb0dada08189539a194c3b39d4e1334e9a32`-এর migration safety, disposable migration, backup/restore, finance ledger, Auto Work static এবং worker static runs SUCCESS (`46055807860`, `46055807866`, `46055808004`, `46055807862`, `459?`, `46055807939`, `46055807865`)।
+- **#21**: OPEN / DRAFT / mergeable=false; head `feature/customer-services-mvp`, base `main`; 3 files, 3 commits। এই head SHA-এর জন্য বর্তমান fetch-এ PR-triggered workflow run পাওয়া যায়নি। #21-এর body-ও বলে #22-এর authenticated workflow যুক্ত না করে #21 একা merge করা যাবে না।
+- **#22**: OPEN / DRAFT / mergeable=true; head `feature/customer-quote-workflow`, base `feature/customer-services-mvp`; 18 files, 67 commits। Disposable migration, migration safety, update system ও Auto Work static checks SUCCESS (`45986582752`, `45986582803`, `45986582889`, `45986582786`)। তবে Staging workflow চালানো, তিনটি Staging secret, manual Customer/Admin acceptance, Android accessibility এবং live HTTP check এখনো বাকি।
+- **#23**: OPEN / DRAFT / mergeable=false; head `feature/admin-free-member-paid-plan-gates`, base `planning/4000-automated-project-economy`; 10 files, 17 commits। Migration safety, disposable migration/runtime এবং Auto Work static checks SUCCESS (`45969335522`, `45969335395`, `45969335549`)। #23-কে #20 ছাড়া main-এ নেওয়া যাবে না; সব worker/task/order entry point-এ entitlement enforcement ও Staging acceptance এখনো প্রয়োজন।
+- কোনো PR merge করা হয়নি। #20/#21/#23-এর mergeability বাধা রয়ে গেছে; #22 mergeable হলেও Staging acceptance ও parent branch-এর release readiness ছাড়া merge নয়।
+
+### নিরাপত্তা সিদ্ধান্ত
+- সাধারণ “চালু করার” অনুমতি নিরাপদ code/test/Staging কাজ এগোনোর অনুমতি হিসেবে ধরা হবে; এটি নির্দিষ্ট Production migration phrase-এর বিকল্প নয়।
+- `APPLY-MASTER-WORLD-VIP-MIGRATIONS` ছাড়া Production migration চালানো যাবে না। বাস্তব payment, custody বা payout provider setup/settlement evidence ছাড়া বাস্তব টাকা লেনদেন চালু বলে দেখানো যাবে না।
+- এই পুনঃযাচাইয়ে কোনো PR merge, Production migration, Supabase function deployment, payment/payout execution বা account/secret পরিবর্তন করা হয়নি।
